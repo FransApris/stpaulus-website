@@ -9,7 +9,14 @@ export default defineEventHandler(async (event) => {
     const id = parseInt(getRouterParam(event, 'id')!)
 
     // Delete the regular mass schedule
-    runQuery('DELETE FROM regular_mass_schedules WHERE id = ?', [id])
+    const deleteResult = await runQuery('DELETE FROM regular_mass_schedules WHERE id = ?', [id])
+
+    if ((deleteResult as any).affectedRows === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Regular mass schedule not found'
+      })
+    }
 
     return { success: true, message: 'Regular mass schedule deleted successfully' }
   } catch (error: any) {

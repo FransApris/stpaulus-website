@@ -1,7 +1,10 @@
 <template>
-  <div class="min-h-screen pt-16 bg-gray-50">
-    <section class="py-16 bg-white">
-      <div class="container mx-auto px-4">
+  <div class="min-h-screen pt-16 bg-gray-50"
+    style="overflow-x: hidden !important; max-width: 100vw !important; box-sizing: border-box;">
+    <section class="py-16 bg-white"
+      style="overflow-x: hidden !important; max-width: 100vw !important; box-sizing: border-box;">
+      <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]"
+        style="overflow-x: hidden !important; max-width: 100% !important; box-sizing: border-box;">
         <Breadcrumb title="Pemesanan Ruangan" />
 
         <div class="text-center mb-12">
@@ -9,106 +12,720 @@
           <p class="text-xl text-gray-600">Pesan ruangan gereja untuk kegiatan Anda.</p>
         </div>
 
-        <!-- Login Section -->
-        <div v-if="!isLoggedIn" class="max-w-md mx-auto mb-12">
-          <h2 class="text-2xl font-semibold text-[#882f1d] mb-4">Login</h2>
-          <form @submit.prevent="login" class="space-y-4">
-            <input
-              v-model="loginForm.username"
-              type="text"
-              placeholder="Username"
-              class="w-full p-2 border rounded"
-              required
-            />
-            <input
-              v-model="loginForm.password"
-              type="password"
-              placeholder="Password"
-              class="w-full p-2 border rounded"
-              required
-            />
-            <button
-              type="submit"
-              :disabled="loginLoading"
-              class="bg-[#882f1d] text-white px-6 py-2 rounded hover:bg-[#6b2416] disabled:opacity-50"
-            >
-              {{ loginLoading ? 'Login...' : 'Login' }}
-            </button>
-          </form>
-          <p v-if="loginError" class="mt-4 text-red-600">{{ loginError }}</p>
+        <!-- Login Required Message -->
+        <div v-if="!isLoggedIn" class="max-w-2xl mx-auto mb-12">
+          <div
+            class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg p-8 text-center border-2 border-blue-200">
+            <div class="mb-6">
+              <svg class="w-20 h-20 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 class="text-3xl font-cinzel font-bold text-[#882f1d] mb-4">Login Diperlukan</h2>
+            <p class="text-lg text-gray-700 mb-6">
+              Silakan login terlebih dahulu untuk mengakses pemesanan ruang paroki.
+            </p>
+            <div class="bg-white/60 rounded-lg p-4 mb-6">
+              <p class="text-sm text-gray-600 mb-3">
+                <strong>Belum punya akun?</strong> Login di beranda untuk mendapatkan akses ke:
+              </p>
+              <ul class="text-left text-sm text-gray-700 space-y-2 max-w-md mx-auto">
+                <li class="flex items-center">
+                  <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd" />
+                  </svg>
+                  Pemesanan ruang paroki
+                </li>
+                <li class="flex items-center">
+                  <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd" />
+                  </svg>
+                  Kelola kronik (Admin & Pengurus)
+                </li>
+              </ul>
+            </div>
+            <NuxtLink to="/"
+              class="inline-flex items-center bg-[#882f1d] text-white px-8 py-4 rounded-xl hover:bg-[#6b2416] transition-all duration-300 shadow-md hover:shadow-xl font-semibold text-lg">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Kembali ke Beranda untuk Login
+            </NuxtLink>
+          </div>
         </div>
 
         <!-- Booking Section -->
         <div v-else>
           <!-- User Info -->
           <div class="mb-8 p-4 bg-gray-100 rounded">
-            <p><strong>Nama:</strong> {{ user.full_name }}</p>
-            <p><strong>Kategori:</strong> {{ user.user_category }}</p>
-            <p><strong>Unit:</strong> {{ user.unit_name }}</p>
+            <p><strong>Nama:</strong> {{ user?.full_name || 'Memuat...' }}</p>
+            <p><strong>Kategori:</strong> {{ user?.user_category || 'Memuat...' }}</p>
+            <p><strong>Unit:</strong> {{ user?.unit_name || 'Memuat...' }}</p>
             <button @click="logout" class="mt-2 text-red-600 hover:underline">Logout</button>
           </div>
 
-          <!-- Available Rooms -->
-          <div class="mb-8">
-            <h2 class="text-2xl font-semibold text-[#882f1d] mb-4">Ruangan Tersedia</h2>
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div v-for="room in rooms" :key="room.id" class="p-4 border rounded">
-                <h3 class="font-semibold">{{ room.name }}</h3>
-                <p>Kapasitas: {{ room.capacity }}</p>
-                <p>Lokasi: {{ room.location }}</p>
-                <p v-if="room.facilities">Fasilitas: {{ JSON.parse(room.facilities).join(', ') }}</p>
-                <button @click="selectRoom(room)" class="mt-2 bg-[#882f1d] text-white px-4 py-2 rounded">Pesan</button>
+          <!-- Petunjuk Penggunaan -->
+          <div class="mb-8 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+            <div class="flex items-start">
+              <svg class="w-6 h-6 text-blue-500 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h3 class="text-lg font-semibold text-blue-900 mb-3">📋 Cara Pemesanan Ruangan</h3>
+                <ol class="space-y-2 text-blue-800">
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">1.</span>
+                    <span><strong>Pilih Ruangan:</strong> Klik tombol "Pesan" pada ruangan yang tersedia di bawah</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">2.</span>
+                    <span><strong>Isi Detail:</strong> Masukkan nama acara, tanggal, jam mulai, dan jam selesai</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">3.</span>
+                    <span><strong>Konfirmasi:</strong> Klik "Konfirmasi Pemesanan" setelah mengisi semua data</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">4.</span>
+                    <span><strong>Tunggu Persetujuan:</strong> Pemesanan Anda akan diproses oleh admin</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">5.</span>
+                    <span><strong>Batalkan (Opsional):</strong> Anda dapat membatalkan pemesanan selama status masih
+                      <span class="font-semibold">PENDING</span></span>
+                  </li>
+                </ol>
+                <div class="mt-4 pt-4 border-t border-blue-200">
+                  <p class="text-sm text-blue-700">
+                    <strong>💡 Tips:</strong> Lihat pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
+                    berubah menjadi
+                    <span
+                      class="inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-semibold">DISETUJUI</span>
+                    atau
+                    <span
+                      class="inline-block px-2 py-0.5 bg-red-100 text-red-800 rounded text-xs font-semibold">DITOLAK</span>
+                    setelah ditinjau admin.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Booking Form -->
-          <div v-if="selectedRoom" class="mb-8">
-            <h2 class="text-2xl font-semibold text-[#882f1d] mb-4">Pesan {{ selectedRoom.name }}</h2>
-            <form @submit.prevent="createBooking" class="space-y-4">
-              <input
-                v-model="bookingForm.event_name"
-                type="text"
-                placeholder="Nama Acara"
-                class="w-full p-2 border rounded"
-                required
-              />
-              <input
-                v-model="bookingForm.start_time"
-                type="datetime-local"
-                class="w-full p-2 border rounded"
-                required
-              />
-              <input
-                v-model="bookingForm.end_time"
-                type="datetime-local"
-                class="w-full p-2 border rounded"
-                required
-              />
-              <button
-                type="submit"
-                :disabled="bookingLoading"
-                class="bg-[#882f1d] text-white px-6 py-2 rounded hover:bg-[#6b2416] disabled:opacity-50"
-              >
-                {{ bookingLoading ? 'Membuat Pemesanan...' : 'Pesan' }}
-              </button>
-              <button type="button" @click="cancelBooking" class="ml-2 text-gray-600">Batal</button>
-            </form>
-            <p v-if="bookingMessage" class="mt-4 text-green-600">{{ bookingMessage }}</p>
-            <p v-if="bookingError" class="mt-4 text-red-600">{{ bookingError }}</p>
+          <!-- Available Rooms -->
+          <div class="mb-8 w-full overflow-x-hidden">
+            <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-6">Ruangan Tersedia</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+              <div v-for="room in rooms" :key="room.id"
+                class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-gray-100 w-full max-w-full overflow-hidden">
+                <!-- Room Name -->
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">{{ room.name }}</h3>
+
+                <!-- Room Info -->
+                <div class="space-y-3 mb-6">
+                  <!-- Capacity -->
+                  <div class="flex items-center text-gray-700">
+                    <svg class="w-5 h-5 text-[#882f1d] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="text-base"><strong>{{ room.capacity }}</strong> orang</span>
+                  </div>
+
+                  <!-- Location -->
+                  <div class="flex items-center text-gray-700">
+                    <svg class="w-5 h-5 text-[#882f1d] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="text-base">{{ room.location }}</span>
+                  </div>
+
+                  <!-- Facilities -->
+                  <div v-if="room.facilities" class="flex items-start text-gray-700">
+                    <svg class="w-5 h-5 text-[#882f1d] mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-base">{{ parseFacilities(room.facilities).join(', ') }}</span>
+                  </div>
+                </div>
+
+                <!-- Button -->
+                <button @click="selectRoom(room)"
+                  class="w-full bg-[#882f1d] text-white px-6 py-3.5 rounded-xl hover:bg-[#6b2416] transition-colors font-semibold text-base">
+                  Pesan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking Modal -->
+          <div v-if="selectedRoom"
+            class="fixed top-16 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-10 p-4"
+            @click="closeBookingModal">
+            <div
+              class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
+              @click.stop>
+              <!-- Simple Header -->
+              <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h2 class="text-2xl font-cinzel font-bold text-gray-800">Pesan Ruangan</h2>
+                    <p class="text-sm text-gray-600 mt-1">
+                      {{ selectedRoom.name }} • {{ selectedRoom.capacity }} orang • {{ selectedRoom.location }}
+                    </p>
+                  </div>
+                  <button @click="closeBookingModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <form @submit.prevent="createBooking" class="p-6 space-y-5">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Acara *</label>
+                  <input v-model="bookingForm.event_name" type="text"
+                    placeholder="Contoh: Rapat Komisi, Pertemuan Kelompok"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                    required />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Acara *</label>
+                  <input v-model="bookingForm.event_date" type="date" :min="getTodayDate()"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                    required />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Mulai *</label>
+                    <input v-model="bookingForm.start_time" type="time"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                      required />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Selesai *</label>
+                    <input v-model="bookingForm.end_time" type="time"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                      required />
+                  </div>
+                </div>
+
+                <div v-if="bookingMessage"
+                  class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+                  <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ bookingMessage }}
+                </div>
+                <div v-if="bookingError"
+                  class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
+                  <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {{ bookingError }}
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                  <button type="submit" :disabled="bookingLoading"
+                    class="flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all">
+                    {{ bookingLoading ? 'Memproses...' : 'Konfirmasi Pemesanan' }}
+                  </button>
+                  <button type="button" @click="closeBookingModal"
+                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all">
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
 
           <!-- My Bookings -->
-          <div>
-            <h2 class="text-2xl font-semibold text-[#882f1d] mb-4">Pemesanan Saya</h2>
-            <div v-if="myBookings.length === 0" class="text-gray-600">Belum ada pemesanan.</div>
-            <div v-else class="space-y-4">
-              <div v-for="booking in myBookings" :key="booking.id" class="p-4 border rounded">
-                <h3 class="font-semibold">{{ booking.event_name }}</h3>
-                <p>Ruangan: {{ booking.room_name }}</p>
-                <p>Waktu: {{ new Date(booking.start_time).toLocaleString() }} - {{ new Date(booking.end_time).toLocaleString() }}</p>
-                <p>Status: <span :class="getStatusClass(booking.status)">{{ booking.status }}</span></p>
-                <p v-if="booking.rejection_reason" class="text-red-600">Alasan: {{ booking.rejection_reason }}</p>
+          <div class="mb-12 w-full overflow-x-hidden" id="pemesanan-saya">
+            <!-- Header dengan tombol filter -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+              <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d]">Pemesanan Saya</h2>
+
+              <!-- Toggle Button -->
+              <button @click="toggleHistory" :class="[
+                'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm',
+                showHistory
+                  ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                  : 'bg-[#882f1d] hover:bg-[#6b2416] text-white'
+              ]">
+                <svg v-if="!showHistory" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>{{ showHistory ? 'Kembali ke Aktif' : 'Lihat Riwayat' }}</span>
+              </button>
+            </div>
+
+            <!-- Info badge -->
+            <div v-if="!showHistory"
+              class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+              <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-sm text-blue-800">
+                Menampilkan pemesanan <strong>aktif dan akan datang</strong>. Klik "Lihat Riwayat" untuk melihat semua
+                pemesanan termasuk yang sudah lewat.
+              </p>
+            </div>
+            <div v-else class="mb-4 bg-gray-50 border border-gray-300 rounded-lg p-3 flex items-start gap-2">
+              <svg class="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-sm text-gray-700">
+                Menampilkan <strong>semua riwayat pemesanan</strong> termasuk yang sudah selesai.
+              </p>
+            </div>
+
+            <div v-if="filteredMyBookings.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+              <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <p class="text-gray-600 text-lg">
+                {{ emptyStateTitle }}
+              </p>
+              <p class="text-gray-500 text-sm mt-2">
+                {{ emptyStateMessage }}
+              </p>
+            </div>
+            <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+              <div v-for="booking in paginatedBookings" :key="booking.id"
+                class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer w-full max-w-full"
+                @click="viewBookingDetail(booking)">
+                <div class="p-5">
+                  <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-bold text-lg text-gray-800 truncate flex-1 mr-2">{{ booking.event_name }}</h3>
+                    <div class="flex flex-col gap-1 items-end">
+                      <span :class="getStatusBadgeClass(booking.status)"
+                        class="px-2.5 py-1 rounded-full text-xs font-semibold">
+                        {{ getStatusText(booking.status, booking.start_time) }}
+                      </span>
+                      <!-- Badge SELESAI untuk booking yang sudah lewat -->
+                      <span v-if="isBookingPassed(booking.end_time) && showHistory"
+                        class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-400 text-white">
+                        SELESAI
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="space-y-2 mb-4">
+                    <div class="flex items-center text-gray-600 text-sm">
+                      <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <span>{{ booking.room_name }}</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 text-sm">
+                      <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span>{{ formatBookingTime(booking.start_time, booking.end_time) }}</span>
+                    </div>
+                  </div>
+
+                  <div v-if="booking.rejection_reason"
+                    class="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded mb-2">
+                    <strong>Alasan penolakan:</strong> {{ booking.rejection_reason }}
+                  </div>
+
+                  <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                    <button class="text-[#882f1d] text-sm font-medium hover:underline">
+                      Lihat Detail →
+                    </button>
+                    <button v-if="booking.status === 'PENDING'" @click.stop="confirmCancelBooking(booking.id)"
+                      class="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-1 rounded transition-colors">
+                      ✕ Batalkan
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pagination -->
+            <div v-if="filteredMyBookings.length > 0" class="mt-6 space-y-3">
+              <!-- Pagination Controls - only show if more than 1 page -->
+              <div v-if="totalPages > 1" class="flex justify-center items-center gap-2">
+                <!-- Previous Button -->
+                <button @click="previousPage" :disabled="currentPage === 1"
+                  class="px-3 py-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                  :class="currentPage === 1 ? 'border-gray-200 text-gray-400' : 'border-gray-300 text-gray-700'">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+
+                <!-- Page Numbers -->
+                <div class="flex gap-1">
+                  <button v-for="page in paginationPages" :key="page" @click="goToPage(page)" :disabled="page === '...'"
+                    class="px-4 py-2 rounded-lg transition-colors font-medium" :class="[
+                      page === currentPage
+                        ? 'bg-[#882f1d] text-white'
+                        : page === '...'
+                          ? 'text-gray-400 cursor-default'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                    ]">
+                    {{ page }}
+                  </button>
+                </div>
+
+                <!-- Next Button -->
+                <button @click="nextPage" :disabled="currentPage === totalPages"
+                  class="px-3 py-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                  :class="currentPage === totalPages ? 'border-gray-200 text-gray-400' : 'border-gray-300 text-gray-700'">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Pagination Info - always show when there are bookings -->
+              <div class="text-center text-sm text-gray-600">
+                <span v-if="totalPages > 1">
+                  Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }} -
+                  {{ Math.min(currentPage * itemsPerPage, filteredMyBookings.length) }}
+                  dari {{ filteredMyBookings.length }} pemesanan
+                </span>
+                <span v-else>
+                  Total {{ filteredMyBookings.length }} pemesanan
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking Detail Modal -->
+          <div v-if="selectedBookingDetail"
+            class="fixed top-16 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-10 p-4"
+            @click="closeBookingDetail">
+            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full pointer-events-auto" @click.stop>
+              <div class="bg-[#882f1d] text-white p-6 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                  <h2 class="text-2xl font-cinzel font-bold">Detail Pemesanan</h2>
+                  <button @click.stop="closeBookingDetail" class="text-white hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="p-6 space-y-5">
+                <div>
+                  <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Nama Acara</label>
+                  <p class="text-lg font-bold text-gray-800 mt-1">{{ selectedBookingDetail.event_name }}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ruangan</label>
+                    <p class="text-gray-800 mt-1">{{ selectedBookingDetail.room_name }}</p>
+                  </div>
+                  <div>
+                    <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Status</label>
+                    <p class="mt-1">
+                      <span :class="getStatusBadgeClass(selectedBookingDetail.status)"
+                        class="inline-block px-3 py-1 rounded-full text-sm font-semibold">
+                        {{ getStatusText(selectedBookingDetail.status, selectedBookingDetail.start_time) }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Tanggal & Waktu</label>
+                  <div class="mt-2 bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center text-gray-700 mb-2">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span class="font-medium">{{ formatDate(selectedBookingDetail.start_time) }}</span>
+                    </div>
+                    <div class="flex items-center text-gray-700">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>{{ formatTime(selectedBookingDetail.start_time) }} - {{
+                        formatTime(selectedBookingDetail.end_time) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="selectedBookingDetail.rejection_reason"
+                  class="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <label class="text-sm font-semibold text-red-700 uppercase tracking-wide">Alasan Penolakan</label>
+                  <p class="text-red-800 mt-1">{{ selectedBookingDetail.rejection_reason }}</p>
+                </div>
+
+                <div class="pt-4">
+                  <button @click.stop="closeBookingDetail"
+                    class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Room Availability Table -->
+          <div class="overflow-x-hidden w-full">
+            <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-4">Peta Pemesanan Ruangan</h2>
+
+            <!-- Date Selector -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Tanggal</label>
+              <input v-model="selectedDate" type="date" @change="loadRoomAvailability" class="p-2 border rounded" />
+            </div>
+
+            <!-- Mobile View: Card Layout -->
+            <div class="md:hidden space-y-4 mb-6 w-full overflow-x-hidden mobile-cards-only">
+              <div v-for="room in roomAvailability" :key="room.id"
+                class="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300 w-full max-w-full overflow-hidden">
+                <!-- Room Name with Icon -->
+                <div class="flex items-center mb-4 pb-3 border-b-2 border-gray-100">
+                  <div class="bg-[#882f1d]/10 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <h3 class="text-xl font-bold text-gray-900 truncate flex-1">
+                    {{ room.name }}
+                  </h3>
+                </div>
+
+                <!-- Room Info (2-column grid) -->
+                <div class="grid grid-cols-2 gap-3 mb-4 w-full">
+                  <div class="min-w-0 bg-gray-50 p-3 rounded-lg">
+                    <div class="text-xs text-gray-500 uppercase font-semibold mb-2">Kapasitas</div>
+                    <div class="font-bold text-gray-900 flex items-center text-base">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d] flex-shrink-0" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span class="truncate">{{ room.capacity }}</span>
+                    </div>
+                  </div>
+                  <div class="min-w-0 bg-gray-50 p-3 rounded-lg">
+                    <div class="text-xs text-gray-500 uppercase font-semibold mb-2">Lokasi</div>
+                    <div class="font-bold text-gray-900 flex items-center text-base">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d] flex-shrink-0" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      </svg>
+                      <span class="truncate">{{ room.location }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Facilities -->
+                <div v-if="room.facilities" class="mb-4 pb-4 border-b border-gray-200 w-full overflow-hidden">
+                  <div class="text-xs text-gray-500 uppercase font-semibold mb-2 flex items-center">
+                    <svg class="w-4 h-4 mr-1 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Fasilitas
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <span v-for="(facility, index) in parseFacilities(room.facilities)" :key="index"
+                      class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                      <svg class="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="3" />
+                      </svg>
+                      {{ facility }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Status Badge -->
+                <div class="mb-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 uppercase font-semibold">Status</span>
+                    <span :class="getAvailabilityStatusClass(room.status)"
+                      class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
+                      <span class="w-2 h-2 rounded-full mr-2 animate-pulse" :class="{
+                        'bg-green-400': room.status === 'Tersedia',
+                        'bg-blue-400': room.status === 'Sedang Digunakan',
+                        'bg-yellow-400': room.status === 'Sudah Dipesan',
+                        'bg-orange-400': room.status === 'Menunggu Persetujuan'
+                      }"></span>
+                      {{ room.status }}
+                    </span>
+                  </div>
+                  <div v-if="room.statusDetails" class="text-sm text-gray-600 mt-2 italic">
+                    {{ room.statusDetails }}
+                  </div>
+                </div>
+
+                <!-- Bookings Today (Collapsible) -->
+                <div v-if="room.bookings && room.bookings.length > 0" class="border-t-2 border-gray-200 pt-4">
+                  <button @click="toggleRoomBookings(room.id)"
+                    class="flex items-center justify-between w-full text-base font-bold text-gray-800 mb-3 hover:text-[#882f1d] transition-colors bg-gray-50 p-3 rounded-lg">
+                    <span class="flex items-center">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Jadwal Hari Ini
+                      <span class="ml-2 px-2 py-0.5 bg-[#882f1d] text-white rounded-full text-xs font-bold">
+                        {{ room.bookings.length }}
+                      </span>
+                    </span>
+                    <svg class="w-6 h-6 transition-transform duration-300"
+                      :class="{ 'rotate-180': expandedRooms[room.id] }" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <div v-show="expandedRooms[room.id]" class="space-y-3 mt-2 animate-fade-in w-full">
+                    <div v-for="booking in room.bookings" :key="booking.id"
+                      class="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border-l-4 border-[#882f1d] w-full overflow-hidden shadow-sm">
+                      <div class="font-bold text-base text-gray-900 mb-2 break-words">
+                        {{ booking.event_name }}
+                      </div>
+                      <div class="text-sm text-gray-600 flex items-center mb-3">
+                        <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-semibold">{{ formatTime(booking.start_time) }} - {{
+                          formatTime(booking.end_time) }}</span>
+                      </div>
+                      <span :class="getBookingStatusBadgeClass(booking.status)"
+                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+                        {{ getBookingStatusText(booking.status) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- No Bookings Message -->
+                <div v-else class="text-center py-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                  <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p class="text-sm font-semibold text-gray-600">Tidak ada jadwal hari ini</p>
+                  <p class="text-xs text-gray-500 mt-1">Ruangan tersedia untuk dipesan</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Desktop View: Table -->
+            <div class="hidden md:block overflow-x-auto w-full table-desktop-only">
+              <table class="w-full bg-white border border-gray-300">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th class="px-4 py-2 border-b text-left">Nama Ruangan</th>
+                    <th class="px-4 py-2 border-b text-left">Kapasitas</th>
+                    <th class="px-4 py-2 border-b text-left">Lokasi</th>
+                    <th class="px-4 py-2 border-b text-left">Fasilitas</th>
+                    <th class="px-4 py-2 border-b text-left">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="room in roomAvailability" :key="room.id" class="hover:bg-gray-50">
+                    <td class="px-4 py-2 border-b font-medium">{{ room.name }}</td>
+                    <td class="px-4 py-2 border-b">{{ room.capacity }} orang</td>
+                    <td class="px-4 py-2 border-b">{{ room.location }}</td>
+                    <td class="px-4 py-2 border-b">
+                      <div v-if="room.facilities" class="text-sm">
+                        {{ parseFacilities(room.facilities).join(', ') }}
+                      </div>
+                      <span v-else class="text-gray-400">-</span>
+                    </td>
+                    <td class="px-4 py-2 border-b">
+                      <div class="flex flex-col">
+                        <span :class="getAvailabilityStatusClass(room.status)" class="font-medium">
+                          {{ room.status }}
+                        </span>
+                        <div v-if="room.statusDetails" class="text-sm text-gray-600 mt-1">
+                          {{ room.statusDetails }}
+                        </div>
+                        <div v-if="room.bookings && room.bookings.length > 0" class="mt-2">
+                          <div class="text-xs text-gray-500 mb-1">Jadwal Hari Ini:</div>
+                          <div v-for="booking in room.bookings.slice(0, 3)" :key="booking.id"
+                            class="text-xs bg-gray-100 p-1 rounded mb-1">
+                            <div class="font-medium">{{ booking.event_name }}</div>
+                            <div class="text-gray-600">
+                              {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
+                              <span :class="getBookingStatusBadgeClass(booking.status)">
+                                ({{ getBookingStatusText(booking.status) }})
+                              </span>
+                            </div>
+                          </div>
+                          <div v-if="room.bookings.length > 3" class="text-xs text-gray-500">
+                            +{{ room.bookings.length - 3 }} lainnya...
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+              <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Keterangan Status:
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
+                  <span class="w-4 h-4 bg-green-500 rounded-full mr-2.5 flex-shrink-0"></span>
+                  <span class="font-medium text-gray-700">Tersedia</span>
+                </div>
+                <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
+                  <span class="w-4 h-4 bg-blue-500 rounded-full mr-2.5 flex-shrink-0"></span>
+                  <span class="font-medium text-gray-700">Sedang Digunakan</span>
+                </div>
+                <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
+                  <span class="w-4 h-4 bg-yellow-500 rounded-full mr-2.5 flex-shrink-0"></span>
+                  <span class="font-medium text-gray-700">Sudah Dipesan</span>
+                </div>
+                <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
+                  <span class="w-4 h-4 bg-orange-500 rounded-full mr-2.5 flex-shrink-0"></span>
+                  <span class="font-medium text-gray-700">Menunggu Persetujuan</span>
+                </div>
               </div>
             </div>
           </div>
@@ -121,11 +738,40 @@
 </template>
 
 <script setup>
+// Use composable to prevent horizontal scroll
+usePreventHorizontalScroll();
+
+// Helper function to safely parse facilities
+const parseFacilities = (facilities) => {
+  if (!facilities) return []
+
+  try {
+    // If already an array, return it
+    if (Array.isArray(facilities)) return facilities
+
+    // Try to parse as JSON
+    const parsed = JSON.parse(facilities)
+    return Array.isArray(parsed) ? parsed : [facilities]
+  } catch {
+    // If parse fails, treat as plain text
+    return [facilities]
+  }
+}
+
 const isLoggedIn = ref(false)
 const user = ref({})
 const rooms = ref([])
 const myBookings = ref([])
+const showHistory = ref(false) // Toggle untuk melihat riwayat
 const selectedRoom = ref(null)
+const selectedBookingDetail = ref(null)
+const roomAvailability = ref([])
+const selectedDate = ref('')
+const expandedRooms = ref({}) // For mobile card collapse/expand
+
+// Pagination state
+const currentPage = ref(1)
+const itemsPerPage = ref(6) // Show 6 bookings per page (2 rows of 3 cards)
 
 const loginForm = ref({
   username: '',
@@ -134,6 +780,7 @@ const loginForm = ref({
 
 const bookingForm = ref({
   event_name: '',
+  event_date: '',
   start_time: '',
   end_time: ''
 })
@@ -144,20 +791,249 @@ const loginError = ref('')
 const bookingMessage = ref('')
 const bookingError = ref('')
 
+// Computed: Empty state messages
+const emptyStateTitle = computed(() =>
+  showHistory.value
+    ? 'Belum ada riwayat pemesanan'
+    : 'Tidak ada pemesanan aktif'
+)
+
+const emptyStateMessage = computed(() =>
+  showHistory.value
+    ? 'Semua pemesanan Anda akan muncul di sini'
+    : 'Pilih ruangan di atas untuk membuat pemesanan pertama Anda'
+)
+
+// Toggle room bookings visibility (mobile cards)
+const toggleRoomBookings = (roomId) => {
+  expandedRooms.value[roomId] = !expandedRooms.value[roomId]
+}
+
+// Computed: Filter pemesanan berdasarkan waktu
+const filteredMyBookings = computed(() => {
+  if (showHistory.value) {
+    // Tampilkan semua riwayat
+    return myBookings.value
+  } else {
+    // Hanya tampilkan pemesanan sekarang dan akan datang (tidak termasuk yang sudah lewat)
+    const now = new Date()
+    return myBookings.value.filter(booking => {
+      const bookingEndTime = new Date(booking.end_time)
+      return bookingEndTime >= now // Hanya yang belum selesai
+    })
+  }
+})
+
+// Computed: Pagination
+const totalPages = computed(() => {
+  return Math.ceil(filteredMyBookings.value.length / itemsPerPage.value)
+})
+
+const paginatedBookings = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredMyBookings.value.slice(start, end)
+})
+
+const paginationPages = computed(() => {
+  const pages = []
+  const total = totalPages.value
+  const current = currentPage.value
+
+  // Always show first page
+  pages.push(1)
+
+  if (total <= 7) {
+    // If 7 or fewer pages, show all
+    for (let i = 2; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    // Show pages with ellipsis
+    if (current > 3) {
+      pages.push('...')
+    }
+
+    // Show pages around current
+    const start = Math.max(2, current - 1)
+    const end = Math.min(total - 1, current + 1)
+
+    for (let i = start; i <= end; i++) {
+      if (!pages.includes(i)) {
+        pages.push(i)
+      }
+    }
+
+    if (current < total - 2) {
+      pages.push('...')
+    }
+
+    // Always show last page
+    if (!pages.includes(total)) {
+      pages.push(total)
+    }
+  }
+
+  return pages
+})
+
+// Toggle untuk menampilkan/menyembunyikan riwayat
+const toggleHistory = () => {
+  showHistory.value = !showHistory.value
+  currentPage.value = 1 // Reset to first page when toggling
+}
+
+// Pagination functions
+const goToPage = (page) => {
+  if (page === '...' || page < 1 || page > totalPages.value) return
+  currentPage.value = page
+
+  // Scroll to bookings section
+  const bookingsSection = document.querySelector('#pemesanan-saya')
+  if (bookingsSection) {
+    bookingsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+}
+
+const previousPage = () => {
+  if (currentPage.value > 1) {
+    goToPage(currentPage.value - 1)
+  }
+}
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    goToPage(currentPage.value + 1)
+  }
+}
+
+// Check if booking has passed
+const isBookingPassed = (endTime) => {
+  const now = new Date()
+  const bookingEndTime = new Date(endTime)
+  return bookingEndTime < now
+}
+
+// Helper functions
+const getTodayDate = () => {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
+}
+
+const viewBookingDetail = (booking) => {
+  console.log('[VIEW DETAIL] Opening booking detail:', booking)
+  selectedBookingDetail.value = booking
+}
+
+const closeBookingDetail = async () => {
+  console.log('[CLOSE DETAIL] Closing booking detail modal')
+  selectedBookingDetail.value = null
+  // Reload data to get latest status
+  console.log('[CLOSE DETAIL] Reloading booking data...')
+  await loadData()
+  console.log('[CLOSE DETAIL] Data reloaded')
+}
+
+const formatDate = (dateTime) => {
+  const date = new Date(dateTime)
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+  return date.toLocaleDateString('id-ID', options)
+}
+
+const formatTime = (dateTime) => {
+  const date = new Date(dateTime)
+  return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+}
+
+const getStatusBadgeClass = (status) => {
+  const classes = {
+    'PENDING': 'bg-yellow-100 text-yellow-800',
+    'APPROVED': 'bg-green-100 text-green-800',
+    'REJECTED': 'bg-red-100 text-red-800',
+    'COMPLETED': 'bg-blue-100 text-blue-800',
+    'CANCELLED': 'bg-gray-100 text-gray-800'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
 // Check if logged in
 onMounted(async () => {
+  console.log('[MOUNTED] Checking for existing token...')
+
+  // FORCE FIX HORIZONTAL SCROLL
+  if (process.client) {
+    setTimeout(() => {
+      // Force overflow hidden on all containers
+      const containers = ['html', 'body', '#__nuxt', 'main', 'section'];
+      containers.forEach(selector => {
+        const el = document.querySelector(selector);
+        if (el) {
+          el.style.setProperty('overflow-x', 'hidden', 'important');
+          el.style.setProperty('max-width', '100vw', 'important');
+          el.style.setProperty('width', '100%', 'important');
+        }
+      });
+
+      // Fix all wide elements
+      document.querySelectorAll('*').forEach(el => {
+        if (el.scrollWidth > window.innerWidth) {
+          el.style.setProperty('max-width', '100%', 'important');
+          el.style.setProperty('overflow-x', 'hidden', 'important');
+        }
+      });
+
+      console.log('✅ Horizontal scroll fix applied');
+    }, 100);
+  }
+
   const token = localStorage.getItem('auth_token')
   if (token) {
+    console.log('[MOUNTED] Token found, fetching user data...')
     try {
       const response = await $fetch('/api/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
+      console.log('[MOUNTED] User data loaded:', response)
+
+      // Check if user is admin - redirect to admin panel
+      const isAdmin = response.role === 'super_admin' ||
+        response.role === 'admin_komsos' ||
+        response.role === 'admin_sekretariat' ||
+        response.role_id !== null
+
+      if (isAdmin) {
+        console.log('[MOUNTED] Admin user detected, redirecting to admin panel...')
+        await navigateTo('/admin/bookings-new')
+        return
+      }
+
       user.value = response
       isLoggedIn.value = true
       await loadData()
-    } catch {
+    } catch (error) {
+      console.error('[MOUNTED] Token invalid, removing:', error)
       localStorage.removeItem('auth_token')
     }
+  } else {
+    console.log('[MOUNTED] No token found')
+  }
+
+  // Set default date to today
+  const today = new Date().toISOString().split('T')[0]
+  selectedDate.value = today
+
+  // Add window resize listener to reapply fix
+  if (process.client) {
+    window.addEventListener('resize', () => {
+      const containers = ['html', 'body', '#__nuxt', 'main'];
+      containers.forEach(selector => {
+        const el = document.querySelector(selector);
+        if (el) {
+          el.style.setProperty('overflow-x', 'hidden', 'important');
+          el.style.setProperty('max-width', '100vw', 'important');
+        }
+      });
+    });
   }
 })
 
@@ -169,11 +1045,37 @@ const login = async () => {
       method: 'POST',
       body: loginForm.value
     })
-    localStorage.setItem('auth_token', response.token)
-    user.value = response.user
+
+    console.log('[Booking Login] Response:', response)
+
+    // Use accessToken from response
+    const token = response.accessToken
+    localStorage.setItem('auth_token', token)
+
+    // Fetch complete user details after login
+    const userResponse = await $fetch('/api/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    console.log('[Booking Login] User response:', userResponse)
+
+    // Check if user is admin - redirect to admin panel
+    const isAdmin = userResponse.role === 'super_admin' ||
+      userResponse.role === 'admin_komsos' ||
+      userResponse.role === 'admin_sekretariat' ||
+      userResponse.role_id !== null
+
+    if (isAdmin) {
+      console.log('[Booking Login] Admin user detected, redirecting to admin panel...')
+      await navigateTo('/admin/bookings-new')
+      return
+    }
+
+    user.value = userResponse
     isLoggedIn.value = true
     await loadData()
   } catch (error) {
+    console.error('[Booking Login] Error:', error)
     loginError.value = error.data?.statusMessage || 'Login gagal'
   } finally {
     loginLoading.value = false
@@ -188,19 +1090,104 @@ const logout = () => {
   myBookings.value = []
 }
 
+const confirmCancelBooking = (bookingId) => {
+  if (confirm('Apakah Anda yakin ingin membatalkan pemesanan ini?')) {
+    cancelBooking(bookingId)
+  }
+}
+
+const cancelBooking = async (bookingId) => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    await $fetch(`/api/bookings/${bookingId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    // Remove from list optimistically
+    myBookings.value = myBookings.value.filter(b => b.id !== bookingId)
+
+    alert('Pemesanan berhasil dibatalkan')
+  } catch (err) {
+    console.error('Error canceling booking:', err)
+    alert('Gagal membatalkan pemesanan. Silakan coba lagi.')
+  }
+}
+
 const loadData = async () => {
   try {
     const token = localStorage.getItem('auth_token')
+
+    console.log('[LOAD DATA] Fetching rooms and bookings...')
+
     const [roomsRes, bookingsRes] = await Promise.all([
-      $fetch('/api/rooms'), // Assume we create this endpoint
+      $fetch('/api/rooms'),
       $fetch('/api/bookings', {
         headers: { Authorization: `Bearer ${token}` }
       })
     ])
+
     rooms.value = roomsRes
-    myBookings.value = bookingsRes.filter(b => b.user_id === user.value.id)
+
+    console.log('[LOAD DATA] API Response:', {
+      success: bookingsRes.success,
+      total: bookingsRes.data?.length || 0,
+      hasAdminAccess: bookingsRes.meta?.has_admin_access
+    })
+
+    console.log('[LOAD DATA] Current user:', {
+      id: user.value?.id,
+      name: user.value?.full_name,
+      email: user.value?.email
+    })
+
+    // Use data from API response
+    if (bookingsRes.success && bookingsRes.data) {
+      // Sort by latest first
+      myBookings.value = bookingsRes.data.sort((a, b) => {
+        return new Date(b.created_at || b.start_time) - new Date(a.created_at || a.start_time)
+      })
+
+      console.log('[LOAD DATA] Bookings loaded:', myBookings.value.length)
+
+      // Log summary by status
+      const statusSummary = myBookings.value.reduce((acc, b) => {
+        acc[b.status] = (acc[b.status] || 0) + 1
+        return acc
+      }, {})
+      console.log('[LOAD DATA] Status summary:', statusSummary)
+
+      // Log first few bookings
+      if (myBookings.value.length > 0) {
+        console.log('[LOAD DATA] Sample bookings:', myBookings.value.slice(0, 3).map(b => ({
+          id: b.id,
+          event_name: b.event_name,
+          status: b.status,
+          is_own: b.is_own_booking,
+          user_email: b.user_email
+        })))
+      }
+    } else {
+      console.error('[LOAD DATA] Invalid response format:', bookingsRes)
+      myBookings.value = []
+    }
+
+    await loadRoomAvailability()
   } catch (error) {
-    console.error('Failed to load data', error)
+    console.error('[LOAD DATA] Error:', error)
+    myBookings.value = []
+  }
+}
+
+const loadRoomAvailability = async () => {
+  try {
+    const params = selectedDate.value ? `?date=${selectedDate.value}` : ''
+    const availabilityRes = await $fetch(`/api/rooms-availability${params}`)
+    roomAvailability.value = availabilityRes.rooms
+  } catch (error) {
+    console.error('Failed to load room availability', error)
   }
 }
 
@@ -212,20 +1199,60 @@ const createBooking = async () => {
   bookingLoading.value = true
   bookingMessage.value = ''
   bookingError.value = ''
+
+  // Frontend validation
+  const eventDate = new Date(bookingForm.value.event_date)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  if (eventDate < today) {
+    bookingError.value = 'Tanggal acara tidak boleh di masa lalu'
+    bookingLoading.value = false
+    return
+  }
+
+  if (bookingForm.value.start_time >= bookingForm.value.end_time) {
+    bookingError.value = 'Waktu selesai harus lebih besar dari waktu mulai'
+    bookingLoading.value = false
+    return
+  }
+
   try {
+    // Combine date and time into DateTime objects
+    const startDateTime = new Date(`${bookingForm.value.event_date}T${bookingForm.value.start_time}`)
+    const endDateTime = new Date(`${bookingForm.value.event_date}T${bookingForm.value.end_time}`)
+
     const token = localStorage.getItem('auth_token')
+    console.log('[CREATE BOOKING] Token exists:', !!token)
+    console.log('[CREATE BOOKING] Request:', {
+      event_name: bookingForm.value.event_name,
+      start_time: startDateTime.toISOString(),
+      end_time: endDateTime.toISOString(),
+      room_id: selectedRoom.value.id
+    })
+
     const response = await $fetch('/api/bookings', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: {
-        ...bookingForm.value,
+        event_name: bookingForm.value.event_name,
+        start_time: startDateTime.toISOString(),
+        end_time: endDateTime.toISOString(),
         room_id: selectedRoom.value.id
       }
     })
     bookingMessage.value = response.message
-    selectedRoom.value = null
-    bookingForm.value = { event_name: '', start_time: '', end_time: '' }
+
+    // Refresh data immediately after successful booking
     await loadData()
+
+    // Close modal and reset form after showing success message
+    setTimeout(() => {
+      selectedRoom.value = null
+      bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
+      bookingMessage.value = ''
+    }, 2500)
+
   } catch (error) {
     bookingError.value = error.data?.statusMessage || 'Pemesanan gagal'
   } finally {
@@ -233,9 +1260,11 @@ const createBooking = async () => {
   }
 }
 
-const cancelBooking = () => {
+const closeBookingModal = () => {
   selectedRoom.value = null
-  bookingForm.value = { event_name: '', start_time: '', end_time: '' }
+  bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
+  bookingMessage.value = ''
+  bookingError.value = ''
 }
 
 const getStatusClass = (status) => {
@@ -247,4 +1276,220 @@ const getStatusClass = (status) => {
     default: return 'text-gray-600'
   }
 }
+
+const getStatusText = (status, startTime) => {
+  const now = new Date()
+  const eventStart = new Date(startTime)
+
+  if (status === 'APPROVED' && eventStart < now) {
+    return 'Selesai Digunakan'
+  }
+
+  switch (status) {
+    case 'APPROVED': return 'Disetujui'
+    case 'PENDING': return 'Menunggu Persetujuan'
+    case 'REJECTED': return 'Ditolak'
+    case 'CANCELLED': return 'Dibatalkan'
+    default: return status
+  }
+}
+
+const getAvailabilityStatusClass = (status) => {
+  switch (status) {
+    case 'Tersedia': return 'text-green-600'
+    case 'Sedang Digunakan': return 'text-blue-600'
+    case 'Sudah Dipesan': return 'text-yellow-600'
+    case 'Menunggu Persetujuan': return 'text-orange-600'
+    default: return 'text-gray-600'
+  }
+}
+
+const getBookingStatusBadgeClass = (status) => {
+  switch (status) {
+    case 'APPROVED': return ' text-green-600'
+    case 'PENDING': return ' text-orange-600'
+    case 'REJECTED': return ' text-red-600'
+    case 'CANCELLED': return ' text-gray-600'
+    default: return ' text-gray-600'
+  }
+}
+
+const getBookingStatusText = (status) => {
+  switch (status) {
+    case 'APPROVED': return 'Disetujui'
+    case 'PENDING': return 'Menunggu'
+    case 'REJECTED': return 'Ditolak'
+    case 'CANCELLED': return 'Dibatalkan'
+    default: return status
+  }
+}
+
+const formatBookingTime = (startTime, endTime) => {
+  const start = new Date(startTime)
+  const end = new Date(endTime)
+
+  const options = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  }
+
+  const dateStr = start.toLocaleDateString('id-ID', options)
+  const startTimeStr = start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+  const endTimeStr = end.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+
+  return `${dateStr} (${startTimeStr} - ${endTimeStr})`
+}
 </script>
+
+<style scoped>
+/* Modal animations */
+.fixed {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fixed>div {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Mobile card animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-cards-only>* {
+  animation: slideUp 0.4s ease-out backwards;
+}
+
+.mobile-cards-only>*:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.mobile-cards-only>*:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.mobile-cards-only>*:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.mobile-cards-only>*:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.mobile-cards-only>*:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+/* Global box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box !important;
+}
+
+/* Force hide horizontal scroll on ALL devices first */
+body,
+html {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
+/* Mobile specific overrides */
+@media (max-width: 767px) {
+
+  /* FORCE HIDE TABLE ON MOBILE - NO EXCEPTIONS */
+  .table-desktop-only,
+  .table-desktop-only *,
+  .md\:block {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Ensure mobile cards are visible and full width */
+  .mobile-cards-only,
+  .md\:hidden {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+  }
+
+  /* Prevent any element from exceeding viewport */
+  *:not(svg):not(path) {
+    max-width: 100vw !important;
+  }
+
+  /* Force all containers */
+  div,
+  section,
+  table,
+  td,
+  th {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
+
+/* Card hover effects */
+.hover\:shadow-md {
+  transition: all 0.3s ease;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+</style>

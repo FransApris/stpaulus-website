@@ -1,5 +1,6 @@
 import { runQuery, getQuery as getDbQuery } from '../../../database/db'
 import { requireAuth } from '../../../utils/auth'
+import { handleNewsKronikSync } from '../../../utils/news-kronik-sync'
 
 function createSlug(text: string): string {
   return text
@@ -15,9 +16,33 @@ export default defineEventHandler(async (event) => {
 
   try {
     const body = await readBody(event)
-    const { title, slug, excerpt, content, author, status, category_ids } = body
+    console.log('[News Create] Received body:', JSON.stringify(body, null, 2))
 
-    if (!title || !content) {
+    const {
+      title, slug, excerpt, content, author, status, category_ids, image,
+      when_date, when_time, where_location, who_participants, why_purpose, how_process,
+      gallery_images, ai_generated, ai_prompt
+    } = body
+
+    console.log('[News Create] Parsed values:', {
+      hasTitle: !!title,
+      titleLength: title?.length || 0,
+      hasContent: !!content,
+      contentLength: content?.length || 0,
+      contentPreview: content ? content.substring(0, 100) : 'null',
+      status,
+      categoryIds: category_ids
+    })
+
+    // Check if content is not just empty HTML tags
+    const contentText = content?.replace(/<[^>]*>/g, '').trim()
+
+    if (!title || !contentText || contentText.length === 0) {
+      console.error('[News Create] Validation failed:', {
+        title: title || 'MISSING',
+        contentText: contentText || 'EMPTY',
+        originalContent: content
+      })
       throw createError({
         statusCode: 400,
         statusMessage: 'Title and content are required'
@@ -26,7 +51,7 @@ export default defineEventHandler(async (event) => {
 
     const finalSlug = slug || createSlug(title)
 
-    const existingNews = getDbQuery('SELECT id FROM news WHERE slug = ?', [finalSlug])
+    const existingNews = await getDbQuery('SELECT id FROM news WHERE slug = ?', [finalSlug])
     if (existingNews) {
       throw createError({
         statusCode: 400,
@@ -34,35 +59,92 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const publishedAt = status === 'published' ? new Date().toISOString() : null
+    const publishedAt = status === 'published'
+      ? new Date().toISOString().slice(0, 19).replace('T', ' ')
+      : null
 
-    const result = runQuery(
-      `INSERT INTO news (title, slug, content, excerpt, author, status, published_at, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-      [title, finalSlug, content, excerpt || '', author || '', status || 'draft', publishedAt]
+    console.log('[News Create] Image value:', image ? image.substring(0, 50) : 'null')
+
+    // Ensure all undefined values are converted to null for MySQL
+    const params = [
+      title,
+      finalSlug,
+      content,
+      excerpt || null,
+      author || null,
+      status || 'draft',
+      image || null,
+      gallery_images ? JSON.stringify(gallery_images) : null,
+      when_date || null,
+      when_time || null,
+      where_location || null,
+      who_participants || null,
+      why_purpose || null,
+      how_process || null,
+      ai_generated || false,
+      ai_prompt || null,
+      publishedAt
+    ]
+
+    console.log('[News Create] SQL params:', params.map((p, i) => `[${i}]: ${p === null ? 'NULL' : typeof p}`))
+
+    const result = await runQuery(
+      `INSERT INTO news (
+        title, slug, content, excerpt, author, status, image, gallery_images,
+        when_date, when_time, where_location, who_participants, why_purpose, how_process,
+        ai_generated, ai_prompt, published_at, created_at, updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      params
     )
 
-    const newsId = result.lastInsertRowid
+    const newsId = (result as any).insertId
 
     // Insert category relations if provided
     if (category_ids && Array.isArray(category_ids) && category_ids.length > 0) {
-      for (const categoryId of category_ids) {
+      const categoryPromises = category_ids.map(categoryId =>
         runQuery(
           'INSERT INTO news_category_relations (news_id, category_id) VALUES (?, ?)',
           [newsId, categoryId]
         )
-      }
+      )
+      await Promise.all(categoryPromises)
     }
 
-    return {
-      id: newsId,
-      message: 'News created successfully'
+    // Auto-sync to kronik if status is published and category is configured
+    if (status === 'published' && category_ids && category_ids.length > 0) {
+      await handleNewsKronikSync(newsId, status, category_ids)
     }
-  } catch (error) {
+
+    // Fetch the created news with categories
+    const createdNews = await getDbQuery(
+      `SELECT n.*, 
+       GROUP_CONCAT(DISTINCT nc.id) as category_ids,
+       GROUP_CONCAT(DISTINCT nc.name) as category_names
+       FROM news n
+       LEFT JOIN news_category_relations ncr ON n.id = ncr.news_id
+       LEFT JOIN article_categories nc ON ncr.category_id = nc.id
+       WHERE n.id = ?
+       GROUP BY n.id`,
+      [newsId]
+    )
+
+    return {
+      success: true,
+      message: 'News created successfully',
+      data: createdNews
+    }
+  } catch (error: any) {
     console.error('Error creating news:', error)
+    console.error('Error stack:', error?.stack)
+    console.error('Error message:', error?.message)
     throw createError({
-      statusCode: 500,
-      statusMessage: 'Internal server error'
+      statusCode: error?.statusCode || 500,
+      statusMessage: error?.statusMessage || error?.message || 'Internal server error',
+      data: {
+        error: error?.message,
+        details: process.env.NODE_ENV === 'development' ? error?.stack : undefined
+      }
     })
   }
 })

@@ -13,24 +13,25 @@ export default defineEventHandler(async (event) => {
 
     // Get total count
     const countQuery = 'SELECT COUNT(*) as total FROM contact_messages'
-    const countResult = dbGetQuery(countQuery, []) as any
+    const countResult = await dbGetQuery(countQuery, []) as any
     const total = countResult ? countResult.total : 0
     const totalPages = Math.ceil(total / limit)
 
     // Get messages with pagination
     const messagesQuery = `
-      SELECT id, name, email, message, is_read, created_at
+      SELECT id, name, email, phone, message, is_read, created_at
       FROM contact_messages
       ORDER BY created_at DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
-    const messages = allQuery(messagesQuery, [limit, offset]) as any[]
+    const messages = await allQuery(messagesQuery, []) as any[]
 
     // Format messages
     const formattedMessages = messages.map(msg => ({
       id: msg.id,
       name: msg.name,
       email: msg.email,
+      phone: msg.phone,
       message_preview: msg.message.length > 50 ? msg.message.substring(0, 50) + '...' : msg.message,
       is_read: Boolean(msg.is_read),
       created_at: msg.created_at

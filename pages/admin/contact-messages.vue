@@ -82,6 +82,7 @@
                 </span>
               </div>
               <p class="text-xs text-gray-600 mb-1">{{ message.email }}</p>
+              <p class="text-xs text-gray-600 mb-1">{{ message.phone }}</p>
               <p class="text-sm text-gray-700 line-clamp-2">{{ message.message_preview }}</p>
             </div>
           </div>
@@ -128,15 +129,16 @@
               <div class="flex-1">
                 <div class="flex items-center space-x-3 mb-2">
                   <div class="w-10 h-10 rounded-full bg-[#882f1d] flex items-center justify-center text-white font-semibold">
-                    {{ selectedMessage.name.charAt(0).toUpperCase() }}
+                    {{ selectedMessage?.name?.charAt(0).toUpperCase() || '?' }}
                   </div>
                   <div>
-                    <h2 class="text-lg font-semibold text-gray-900">{{ selectedMessage.name }}</h2>
-                    <p class="text-sm text-gray-600">{{ selectedMessage.email }}</p>
+                    <h2 class="text-lg font-semibold text-gray-900">{{ selectedMessage?.name || 'N/A' }}</h2>
+                    <p class="text-sm text-gray-600">{{ selectedMessage?.email || 'N/A' }}</p>
+                    <p class="text-sm text-gray-600">{{ selectedMessage?.phone || 'N/A' }}</p>
                   </div>
                 </div>
                 <p class="text-sm text-gray-500">
-                  Dikirim pada {{ formatDate(selectedMessage.created_at) }}
+                  Dikirim pada {{ selectedMessage?.created_at ? formatDate(selectedMessage.created_at) : 'N/A' }}
                 </p>
               </div>
               <button
@@ -155,7 +157,7 @@
           <div class="flex-1 overflow-y-auto p-6">
             <div class="prose max-w-none">
               <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <p class="text-gray-900 whitespace-pre-wrap leading-relaxed">{{ selectedMessage.message }}</p>
+                <p class="text-gray-900 whitespace-pre-wrap leading-relaxed">{{ selectedMessage?.message || 'Tidak ada pesan' }}</p>
               </div>
             </div>
           </div>
@@ -165,7 +167,7 @@
             <div class="flex items-center justify-between">
               <div class="flex space-x-2">
                 <a
-                  :href="`mailto:${selectedMessage.email}`"
+                  :href="`mailto:${selectedMessage?.email || ''}`"
                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                 >
                   <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,6 +187,19 @@
         </div>
       </div>
     </div>
+
+    <!-- Toast Notification -->
+    <Transition name="toast">
+      <div
+        v-if="toast.show"
+        :class="[
+          'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium z-50',
+          toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        ]"
+      >
+        {{ toast.message }}
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -205,6 +220,15 @@ const pagination = ref({
 const selectedMessage = ref(null)
 const loading = ref(false)
 const filterStatus = ref('all')
+const toast = ref({ show: false, message: '', type: 'success' })
+
+// Toast notification function
+const showToast = (message, type = 'success') => {
+  toast.value = { show: true, message, type }
+  setTimeout(() => {
+    toast.value.show = false
+  }, 3000)
+}
 
 // Computed properties
 const unreadCount = computed(() => {
@@ -224,14 +248,14 @@ const fetchMessages = async (page = 1) => {
   try {
     const response = await $fetch(`/api/admin/contact-messages?page=${page}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     messages.value = response.messages
     pagination.value = response.pagination
   } catch (error) {
     if (error.statusCode === 401) {
-      localStorage.removeItem('admin_token')
+      sessionStorage.removeItem('admin_token')
       navigateTo('/admin/login')
       return
     }
@@ -254,52 +278,77 @@ const viewMessage = async (id) => {
   try {
     const message = await $fetch(`/api/admin/contact-messages/${id}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    selectedMessage.value = message
     
-    // Update is_read status in the list
-    const messageIndex = messages.value.findIndex(m => m.id === id)
-    if (messageIndex !== -1) {
-      messages.value[messageIndex].is_read = true
+    console.log('Received message:', message)
+    
+    // Ensure message has all required properties
+    if (message && message.id) {
+      selectedMessage.value = message
+      
+      // Update is_read status in the list
+      const messageIndex = messages.value.findIndex(m => m.id === id)
+      if (messageIndex !== -1) {
+        messages.value[messageIndex].is_read = true
+      }
+    } else {
+      showToast('Data pesan tidak lengkap', 'error')
+      console.error('Invalid message structure:', message)
     }
   } catch (error) {
     if (error.statusCode === 401) {
-      localStorage.removeItem('admin_token')
+      sessionStorage.removeItem('admin_token')
       navigateTo('/admin/login')
       return
     }
     console.error('Error fetching message detail:', error)
+    showToast('Gagal memuat detail pesan', 'error')
   }
 }
 
 // Delete message
 const deleteMessage = async (id) => {
   if (confirm('Apakah Anda yakin ingin menghapus pesan ini?')) {
+    // Optimistic update: Remove from UI immediately
+    const index = messages.value.findIndex(m => m.id === id)
+    const deletedMessage = index !== -1 ? { ...messages.value[index] } : null
+    
+    if (index !== -1) {
+      messages.value.splice(index, 1)
+    }
+    
+    // Close detail if deleted message is currently selected
+    if (selectedMessage.value?.id === id) {
+      selectedMessage.value = null
+    }
+    
     try {
       await $fetch(`/api/admin/contact-messages/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
         }
       })
       
-      // Close detail if deleted message is currently selected
-      if (selectedMessage.value?.id === id) {
-        selectedMessage.value = null
-      }
+      showToast('Pesan berhasil dihapus')
       
-      await fetchMessages(pagination.value.current_page)
-      alert('Pesan berhasil dihapus')
+      // Update pagination count
+      pagination.value.total_messages--
     } catch (error) {
       if (error.statusCode === 401) {
-        localStorage.removeItem('admin_token')
+        sessionStorage.removeItem('admin_token')
         navigateTo('/admin/login')
         return
       }
       console.error('Error deleting message:', error)
-      alert('Gagal menghapus pesan')
+      showToast('Gagal menghapus pesan', 'error')
+      
+      // Rollback: Re-add the deleted message
+      if (deletedMessage && index !== -1) {
+        messages.value.splice(index, 0, deletedMessage)
+      }
     }
   }
 }
@@ -348,3 +397,28 @@ onMounted(() => {
   fetchMessages()
 })
 </script>
+
+<style scoped>
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from {
+  opacity: 0;
+  transform: translateY(1rem);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(2rem);
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

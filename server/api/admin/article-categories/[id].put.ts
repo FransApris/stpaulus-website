@@ -4,6 +4,7 @@ import { requireAuth } from '../../../utils/auth'
 export default defineEventHandler(async (event) => {
   // Check authentication
   requireAuth(event)
+  requirePermission('manage_article_categories')(event)
 
   try {
     const id = getRouterParam(event, 'id')
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if category exists
-    const existingCategory = allQuery('SELECT id FROM article_categories WHERE id = ?', [id])
+    const existingCategory = await allQuery('SELECT id FROM article_categories WHERE id = ?', [id])
     if (!existingCategory || existingCategory.length === 0) {
       throw createError({
         statusCode: 404,
@@ -43,7 +44,7 @@ export default defineEventHandler(async (event) => {
       .trim()
 
     // Check if slug already exists (excluding current category)
-    const slugCheck = allQuery('SELECT id FROM article_categories WHERE slug = ? AND id != ?', [slug, id])
+    const slugCheck = await allQuery('SELECT id FROM article_categories WHERE slug = ? AND id != ?', [slug, id])
     if (slugCheck && slugCheck.length > 0) {
       throw createError({
         statusCode: 400,
@@ -60,7 +61,7 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      const parentCategory = allQuery('SELECT id FROM article_categories WHERE id = ?', [body.parent_id])
+      const parentCategory = await allQuery('SELECT id FROM article_categories WHERE id = ?', [body.parent_id])
       if (!parentCategory || parentCategory.length === 0) {
         throw createError({
           statusCode: 400,

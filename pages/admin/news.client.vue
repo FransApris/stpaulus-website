@@ -3,9 +3,12 @@
   <div class="mb-6">
     <button
       @click="showAddModal = true"
-      class="bg-[#882f1d] hover:bg-[#a55e1f] text-white px-4 py-2 rounded-md text-sm font-medium"
+      class="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-6 py-3 rounded-md text-sm font-medium shadow-lg flex items-center"
     >
-      Tambah Berita
+      <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+      ✨ Tambah Berita (dengan AI)
     </button>
   </div>
 
@@ -46,11 +49,25 @@
             <div v-else class="space-y-4">
               <div
                 v-for="newsItem in news"
-                :key="newsItem.id"
+                :key="`news-${newsItem.id}-${newsItem.status}`"
                 class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50"
               >
-                <div class="flex justify-between items-start">
-                  <div class="flex-1">
+                <div class="flex justify-between items-start gap-4">
+                  <!-- Thumbnail -->
+                  <div v-if="newsItem.image" class="flex-shrink-0">
+                    <img 
+                      :src="newsItem.image" 
+                      :alt="newsItem.title"
+                      class="w-32 h-24 object-cover rounded-lg"
+                    />
+                  </div>
+                  <div v-else class="flex-shrink-0 w-32 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                  </div>
+
+                  <div class="flex-1 min-w-0">
                     <h4 class="text-lg font-medium text-gray-900">{{ newsItem.title }}</h4>
                     <p class="text-sm text-gray-500 mt-1">{{ newsItem.excerpt || 'Tidak ada ringkasan' }}</p>
                     <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
@@ -64,25 +81,35 @@
                       </span>
                     </div>
                   </div>
-                  <div class="flex space-x-2 ml-4">
+                  <div class="flex space-x-2 flex-shrink-0">
                     <button
                       @click="editNews(newsItem)"
-                      class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                      title="Edit"
+                      class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded text-sm inline-flex items-center"
                     >
-                      Edit
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
                     </button>
                     <button
                       @click="togglePublish(newsItem)"
+                      :title="newsItem.status === 'published' ? 'Unpublish' : 'Publish'"
                       :class="newsItem.status === 'published' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'"
-                      class="text-white px-3 py-1 rounded text-sm"
+                      class="text-white p-2 rounded text-sm inline-flex items-center"
                     >
-                      {{ newsItem.status === 'published' ? 'Unpublish' : 'Publish' }}
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path v-if="newsItem.status === 'published'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                        <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
                     </button>
                     <button
                       @click="deleteNews(newsItem)"
-                      class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                      title="Hapus"
+                      class="bg-red-600 hover:bg-red-700 text-white p-2 rounded text-sm inline-flex items-center"
                     >
-                      Hapus
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
                     </button>
                   </div>
                 </div>
@@ -112,13 +139,22 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Slug</label>
+              <label class="block text-sm font-medium text-gray-700">
+                Slug 
+                <span class="text-xs text-gray-500">(otomatis dari judul)</span>
+              </label>
               <input
                 v-model="newsForm.slug"
                 type="text"
                 required
-                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#882f1d] focus:border-[#882f1d]"
+                readonly
+                disabled
+                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-100 text-gray-600 cursor-not-allowed"
+                title="Slug otomatis dibuat dari judul"
               />
+              <p class="mt-1 text-xs text-gray-500">
+                🔒 Slug dibuat otomatis dari judul dan tidak dapat diedit
+              </p>
             </div>
 
             <div>
@@ -130,97 +166,161 @@
               ></textarea>
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Konten</label>
-              <div class="mt-1 border border-gray-300 rounded-md shadow-sm focus-within:ring-[#882f1d] focus-within:border-[#882f1d]">
-                <div class="border-b border-gray-200 p-2 flex gap-2">
-                  <button
-                    @click="editor?.chain().focus().toggleBold().run()"
-                    :class="editor?.isActive('bold') ? 'bg-gray-200' : ''"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    <strong>B</strong>
-                  </button>
-                  <button
-                    @click="editor?.chain().focus().toggleItalic().run()"
-                    :class="editor?.isActive('italic') ? 'bg-gray-200' : ''"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    <em>I</em>
-                  </button>
-                  <button
-                    @click="editor?.chain().focus().toggleHeading({ level: 1 }).run()"
-                    :class="editor?.isActive('heading', { level: 1 }) ? 'bg-gray-200' : ''"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    H1
-                  </button>
-                  <button
-                    @click="editor?.chain().focus().toggleHeading({ level: 2 }).run()"
-                    :class="editor?.isActive('heading', { level: 2 }) ? 'bg-gray-200' : ''"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    H2
-                  </button>
-                  <button
-                    @click="editor?.chain().focus().toggleBulletList().run()"
-                    :class="editor?.isActive('bulletList') ? 'bg-gray-200' : ''"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    • List
-                  </button>
-                  <button
-                    @click="editor?.chain().focus().toggleOrderedList().run()"
-                    :class="editor?.isActive('orderedList') ? 'bg-gray-200' : ''"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    1. List
-                  </button>
-                  <button
-                    @click="editor?.chain().focus().toggleBlockquote().run()"
-                    :class="editor?.isActive('blockquote') ? 'bg-gray-200' : ''"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    "
-                  </button>
-                  <button
-                    @click="editor?.chain().focus().undo().run()"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    ↶
-                  </button>
-                  <button
-                    @click="editor?.chain().focus().redo().run()"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    ↷
-                  </button>
-                  <button
-                    @click="addLink"
-                    :class="editor?.isActive('link') ? 'bg-gray-200' : ''"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    🔗
-                  </button>
-                  <button
-                    @click="addImage"
-                    class="px-2 py-1 border rounded text-sm"
-                  >
-                    🖼️
-                  </button>
-
+            <!-- 5W1H Section -->
+            <div class="border-t border-gray-200 pt-4">
+              <h4 class="text-md font-semibold text-gray-900 mb-3 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Detail Peristiwa (5W1H) - Opsional
+              </h4>
+              <p class="text-xs text-gray-500 mb-3">Isi detail untuk generate narasi dengan AI</p>
+              
+              <div class="space-y-3">
+                <!-- When (Date + Time) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">📅 Kapan (Tanggal)</label>
+                    <input
+                      v-model="newsForm.when_date"
+                      type="date"
+                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#882f1d] focus:border-[#882f1d]"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700">🕐 Jam</label>
+                    <input
+                      v-model="newsForm.when_time"
+                      type="text"
+                      placeholder="08.00 - 12.00 WIB"
+                      class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#882f1d] focus:border-[#882f1d]"
+                    />
+                  </div>
                 </div>
-                <EditorContent :editor="editor" class="p-3 min-h-[200px] prose max-w-none" />
+
+                <!-- Where -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">📍 Dimana (Lokasi)</label>
+                  <textarea
+                    v-model="newsForm.where_location"
+                    rows="2"
+                    placeholder="Gereja Paroki St. Paulus"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#882f1d] focus:border-[#882f1d]"
+                  ></textarea>
+                </div>
+
+                <!-- Who -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">👥 Siapa (Peserta)</label>
+                  <textarea
+                    v-model="newsForm.who_participants"
+                    rows="2"
+                    placeholder="Seluruh umat paroki"
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#882f1d] focus:border-[#882f1d]"
+                  ></textarea>
+                </div>
+
+                <!-- Why -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">🎯 Mengapa (Tujuan)</label>
+                  <textarea
+                    v-model="newsForm.why_purpose"
+                    rows="2"
+                    placeholder="Merayakan..."
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#882f1d] focus:border-[#882f1d]"
+                  ></textarea>
+                </div>
+
+                <!-- How -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700">⚙️ Bagaimana (Proses)</label>
+                  <textarea
+                    v-model="newsForm.how_process"
+                    rows="2"
+                    placeholder="Dimulai dengan..."
+                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#882f1d] focus:border-[#882f1d]"
+                  ></textarea>
+                </div>
+              </div>
+
+              <!-- AI Generate Button -->
+              <div class="mt-4">
+                <button
+                  type="button"
+                  @click="generateNarasi"
+                  :disabled="aiGenerating || !newsForm.title"
+                  class="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  <svg v-if="aiGenerating" class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <svg v-else class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                  {{ aiGenerating ? 'Generating...' : '✨ Generate Narasi dengan AI' }}
+                </button>
+                <p class="mt-1 text-xs text-gray-500 text-center">AI akan membuat narasi dari data 5W1H</p>
               </div>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700">Penulis</label>
+              <label class="block text-sm font-medium text-gray-700">Konten</label>
+            <ClientOnly>
+              <CKEditorWrapper v-model="newsForm.content" placeholder="Tulis konten berita di sini..." />
+              <template #fallback>
+                <div class="mt-1 border border-gray-300 rounded-md shadow-sm p-3 min-h-[300px] bg-gray-50 flex items-center justify-center">
+                  <div class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-800 mx-auto"></div>
+                    <p class="mt-2 text-sm text-gray-500">Memuat editor...</p>
+                  </div>
+                </div>
+              </template>
+            </ClientOnly>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Penulis</label>
               <input
                 v-model="newsForm.author"
                 type="text"
                 class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#882f1d] focus:border-[#882f1d]"
               />
+            </div>
+
+            <!-- IMAGE UPLOAD COMPONENT -->
+            <AdminImageUpload
+              v-model="newsForm.image"
+              label="Gambar/Thumbnail Berita"
+              helper-text="Gambar akan tampil sebagai thumbnail di halaman utama dan detail berita"
+              type="news"
+            />
+
+            <!-- Gallery Images -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Gallery (Multiple)</label>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                @change="handleGalleryUpload"
+                ref="galleryInput"
+                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+              />
+              <div v-if="galleryPreviews.length > 0" class="mt-3 grid grid-cols-4 gap-2">
+                <div v-for="(preview, index) in galleryPreviews" :key="index" class="relative">
+                  <img :src="preview" class="w-full h-20 object-cover rounded shadow" />
+                  <button
+                    type="button"
+                    @click="removeGalleryImage(index)"
+                    class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -285,19 +385,23 @@
 
 <script setup>
 definePageMeta({
+  middleware: 'auth',
   layout: 'admin'
 })
 
-import { useEditor, EditorContent } from '@tiptap/vue-3'
-import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
-import Image from '@tiptap/extension-image'
+import { watch } from 'vue'
+
+// Components are auto-imported by Nuxt, no need for defineAsyncComponent
+// Just wrap them in <ClientOnly> in the template
+
 const news = ref([])
 const loading = ref(false)
 const showAddModal = ref(false)
 const editingNews = ref(null)
 const saving = ref(false)
 const filterStatus = ref('')
+const imageError = ref(false)
+const galleryInput = ref(null)
 
 const newsForm = ref({
   title: '',
@@ -305,28 +409,42 @@ const newsForm = ref({
   excerpt: '',
   content: '',
   author: '',
+  image: '',
+  gallery_images: [],
   status: 'draft',
-  category_ids: []
+  category_ids: [],
+  when_date: '',
+  when_time: '',
+  where_location: '',
+  who_participants: '',
+  why_purpose: '',
+  how_process: '',
+  ai_generated: false,
+  ai_prompt: ''
 })
+
+const galleryPreviews = ref([])
+const galleryFiles = ref([])
+const aiGenerating = ref(false)
 
 const allCategories = ref([])
 
-const editor = useEditor({
-  content: '',
-  extensions: [
-    StarterKit,
-    Link.configure({
-      openOnClick: false,
-    }),
-    Image,
-  ],
-  onUpdate: ({ editor }) => {
-    newsForm.value.content = editor.getHTML()
-  },
+// Auto-generate slug from title
+watch(() => newsForm.value.title, (newTitle) => {
+  if (newTitle && !editingNews.value) {
+    const slug = newTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove non-alphanumeric except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
+    newsForm.value.slug = slug
+  }
 })
 
 const handleLogout = () => {
-  localStorage.removeItem('admin_token')
+  localStorage.removeItem('admin_access_token')
+  localStorage.removeItem('admin_refresh_token')
   navigateTo('/admin/login')
 }
 
@@ -335,11 +453,14 @@ const fetchNews = async () => {
   loading.value = true
   try {
     const params = filterStatus.value ? `?status=${filterStatus.value}` : ''
-    const response = await $fetch(`/api/admin/news${params}`, {
+    const timestamp = `${params ? '&' : '?'}_=${Date.now()}`
+    const response = await $fetch(`/api/admin/news${params}${timestamp}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
+    
+    console.log('[fetchNews] Response:', response)
     news.value = response
   } catch (error) {
     console.error('Failed to fetch news:', error)
@@ -354,7 +475,7 @@ const fetchCategories = async () => {
   try {
     const response = await $fetch('/api/admin/article-categories', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -375,10 +496,104 @@ const fetchCategories = async () => {
   }
 }
 
+// Generate narasi with AI
+const generateNarasi = async () => {
+  if (!newsForm.value.title) {
+    alert('Judul harus diisi terlebih dahulu')
+    return
+  }
+
+  aiGenerating.value = true
+  try {
+    const response = await $fetch('/api/news/ai/generate-narasi', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+      },
+      body: {
+        what_title: newsForm.value.title,
+        when_date: newsForm.value.when_date,
+        when_time: newsForm.value.when_time,
+        where_location: newsForm.value.where_location,
+        who_participants: newsForm.value.who_participants,
+        why_purpose: newsForm.value.why_purpose,
+        how_process: newsForm.value.how_process
+      }
+    })
+
+    if (response.success) {
+      newsForm.value.content = response.narasi
+      newsForm.value.ai_generated = true
+      newsForm.value.ai_prompt = response.prompt
+      alert('✅ Narasi berhasil di-generate dengan AI!')
+    }
+  } catch (error) {
+    console.error('AI Generate Error:', error)
+    alert('Gagal generate narasi dengan AI: ' + (error.data?.message || error.message))
+  } finally {
+    aiGenerating.value = false
+  }
+}
+
+// Handle gallery upload
+const handleGalleryUpload = (event) => {
+  const files = Array.from(event.target.files || [])
+  
+  files.forEach(file => {
+    galleryFiles.value.push(file)
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      galleryPreviews.value.push(e.target?.result)
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+// Remove gallery image
+const removeGalleryImage = (index) => {
+  galleryFiles.value.splice(index, 1)
+  galleryPreviews.value.splice(index, 1)
+  if (newsForm.value.gallery_images[index]) {
+    newsForm.value.gallery_images.splice(index, 1)
+  }
+}
+
+// Upload gallery images
+const uploadGalleryImages = async () => {
+  if (galleryFiles.value.length === 0) return []
+
+  const formData = new FormData()
+  galleryFiles.value.forEach(file => {
+    formData.append('files', file)
+  })
+
+  try {
+    const response = await $fetch('/api/news/upload-images', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+      },
+      body: formData
+    })
+
+    return response.success ? response.files : []
+  } catch (error) {
+    console.error('Gallery upload error:', error)
+    return []
+  }
+}
+
 // Save news
 const saveNews = async () => {
   saving.value = true
   try {
+    // Upload gallery images first
+    const uploadedGallery = await uploadGalleryImages()
+    if (uploadedGallery.length > 0) {
+      newsForm.value.gallery_images = uploadedGallery
+    }
+
     const url = editingNews.value
       ? `/api/admin/news/${editingNews.value.id}`
       : '/api/admin/news'
@@ -387,7 +602,7 @@ const saveNews = async () => {
     await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: newsForm.value
@@ -407,35 +622,82 @@ const saveNews = async () => {
 // Edit news
 const editNews = (newsItem) => {
   editingNews.value = newsItem
+  imageError.value = false
+  
+  // Parse gallery_images if it's a JSON string
+  let galleryImages = []
+  if (newsItem.gallery_images) {
+    try {
+      galleryImages = typeof newsItem.gallery_images === 'string' 
+        ? JSON.parse(newsItem.gallery_images) 
+        : newsItem.gallery_images
+    } catch (e) {
+      console.error('Failed to parse gallery_images:', e)
+      galleryImages = []
+    }
+  }
+
+  // Set gallery previews
+  galleryPreviews.value = Array.isArray(galleryImages) ? [...galleryImages] : []
+  galleryFiles.value = []
+  
   newsForm.value = {
     title: newsItem.title,
     slug: newsItem.slug,
     excerpt: newsItem.excerpt || '',
     content: newsItem.content,
     author: newsItem.author || '',
+    image: newsItem.image || '',
+    gallery_images: galleryImages,
     status: newsItem.status,
-    category_ids: newsItem.categories ? newsItem.categories.map(cat => cat.id) : []
+    category_ids: newsItem.categories ? newsItem.categories.map(cat => cat.id) : [],
+    when_date: newsItem.when_date || '',
+    when_time: newsItem.when_time || '',
+    where_location: newsItem.where_location || '',
+    who_participants: newsItem.who_participants || '',
+    why_purpose: newsItem.why_purpose || '',
+    how_process: newsItem.how_process || '',
+    ai_generated: newsItem.ai_generated || false,
+    ai_prompt: newsItem.ai_prompt || ''
   }
-  nextTick(() => {
-    editor.value?.commands.setContent(newsItem.content)
-  })
 }
 
 // Toggle publish status
 const togglePublish = async (newsItem) => {
   try {
     const newStatus = newsItem.status === 'published' ? 'draft' : 'published'
+    
+    console.log('[Toggle Publish] newsItem:', newsItem)
+    console.log('[Toggle Publish] newsItem.image:', newsItem.image)
+    console.log('[Toggle Publish] Before:', newsItem.status, '→ After:', newStatus)
+    
     await $fetch(`/api/admin/news/${newsItem.id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
-      body: { ...newsItem, status: newStatus }
+      body: {
+        title: newsItem.title,
+        slug: newsItem.slug,
+        excerpt: newsItem.excerpt || '',
+        content: newsItem.content,
+        author: newsItem.author || '',
+        status: newStatus,
+        image: newsItem.image || null,
+        category_ids: newsItem.categories ? newsItem.categories.map(cat => cat.id) : []
+      }
     })
 
+    console.log('[Toggle Publish] API success, waiting 100ms...')
+    
+    // Small delay to ensure database is updated
+    await new Promise(resolve => setTimeout(resolve, 100))
+    
+    // Force refresh list from server with cache bust
     await fetchNews()
-    alert(`Berita ${newStatus === 'published' ? 'dipublikasikan' : 'disimpan sebagai draft'}`)
+    
+    console.log('[Toggle Publish] List refreshed, new data:', news.value.find(n => n.id === newsItem.id))
   } catch (error) {
     console.error('Failed to toggle publish status:', error)
     alert('Gagal mengubah status berita')
@@ -452,7 +714,7 @@ const deleteNews = async (newsItem) => {
     await $fetch(`/api/admin/news/${newsItem.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -468,32 +730,27 @@ const deleteNews = async (newsItem) => {
 const closeModal = () => {
   showAddModal.value = false
   editingNews.value = null
+  galleryPreviews.value = []
+  galleryFiles.value = []
+  aiGenerating.value = false
   newsForm.value = {
     title: '',
     slug: '',
     excerpt: '',
     content: '',
     author: '',
+    image: '',
+    gallery_images: [],
     status: 'draft',
-    category_ids: []
-  }
-  nextTick(() => {
-    editor.value?.commands.setContent('')
-  })
-}
-
-// TipTap functions
-const addLink = () => {
-  const url = window.prompt('Enter URL:')
-  if (url) {
-    editor.value?.chain().focus().setLink({ href: url }).run()
-  }
-}
-
-const addImage = () => {
-  const url = window.prompt('Enter image URL:')
-  if (url) {
-    editor.value?.chain().focus().setImage({ src: url }).run()
+    category_ids: [],
+    when_date: '',
+    when_time: '',
+    where_location: '',
+    who_participants: '',
+    why_purpose: '',
+    how_process: '',
+    ai_generated: false,
+    ai_prompt: ''
   }
 }
 
@@ -534,7 +791,7 @@ const getStatusText = (status) => {
 
 // Check authentication and fetch data on mount
 onMounted(async () => {
-  const token = localStorage.getItem('admin_token')
+  const token = localStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

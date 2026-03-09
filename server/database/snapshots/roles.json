@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "super_admin",
+    "display_name": "Super Admin",
+    "description": "Akses penuh ke semua fitur",
+    "created_at": "2025-10-09 17:15:02",
+    "updated_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 2,
+    "name": "admin_komsos",
+    "display_name": "Admin Komsos",
+    "description": "Kelola konten dan komunikasi",
+    "created_at": "2025-10-09 17:15:02",
+    "updated_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 3,
+    "name": "admin_sekretariat",
+    "display_name": "Admin Sekretariat",
+    "description": "Kelola agenda dan administrasi",
+    "created_at": "2025-10-09 17:15:02",
+    "updated_at": "2025-10-09 17:15:02"
+  }
+]

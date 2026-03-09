@@ -2,7 +2,7 @@ import { allQuery } from '../../../database/db'
 
 export default defineEventHandler(async (event) => {
   try {
-    const categories = allQuery('SELECT * FROM agenda_categories ORDER BY name ASC')
+    const categories = await allQuery('SELECT * FROM agenda_categories ORDER BY name ASC')
 
     return categories.map((category: any) => ({
       id: category.id,

@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Rapat",
+    "slug": "rapat",
+    "description": "Kegiatan rapat dan pertemuan paroki",
+    "color": "#3B82F6",
+    "created_at": "2025-10-10 11:38:57",
+    "updated_at": "2025-10-10 11:38:57"
+  },
+  {
+    "id": 2,
+    "name": "Ibadat",
+    "slug": "ibadat",
+    "description": "Kegiatan ibadat dan liturgi",
+    "color": "#10B981",
+    "created_at": "2025-10-10 11:38:57",
+    "updated_at": "2025-10-10 11:38:57"
+  },
+  {
+    "id": 3,
+    "name": "Keluarga",
+    "slug": "keluarga",
+    "description": "Kegiatan untuk keluarga dan anak-anak",
+    "color": "#F59E0B",
+    "created_at": "2025-10-10 11:38:57",
+    "updated_at": "2025-10-10 11:38:57"
+  }
+]

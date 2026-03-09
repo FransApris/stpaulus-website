@@ -1,27 +1,21 @@
 <template>
   <!-- No ClientOnly - Direct Render (SSR + Client Safe) -->
-  <div 
-    v-if="props.showHero"
-    class="relative min-h-screen pt-16 overflow-hidden bg-cover bg-center bg-no-repeat hero-container"
-    :class="className"
-    :style="{ backgroundImage: `url(${resolvedHeroImage})` }"
-  >
+  <div v-if="props.showHero"
+    class="relative min-h-screen pt-16 overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0"
+    :class="className" :style="{ backgroundImage: `url(${resolvedHeroImage})` }">
     <!-- No Hidden Img - Use CSS Bg Only (No Events) -->
-    
+
     <!-- Absolute Center Content -->
     <div class="absolute inset-0 flex items-center justify-center z-10 bg-black/20">
       <div class="px-6 text-center text-white md:px-12 w-full max-w-4xl mx-auto">
         <h1 class="mb-4 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-cinzel drop-shadow-lg">
           {{ title }}
         </h1>
-        <h3 class="mb-8 text-lg md:text-xl lg:text-2xl font-semibold leading-relaxed max-w-3xl font-lora drop-shadow-md">
+        <h3 class="mb-8 text-lg md:text-xl lg:text-2xl leading-relaxed max-w-3xl font-lora drop-shadow-md">
           {{ subtitle }}
         </h3>
-        <NuxtLink 
-          v-if="ctaTo" 
-          :to="ctaTo" 
-          class="inline-block rounded-full border-2 border-white px-8 py-3 text-base font-medium uppercase leading-normal text-white transition-all duration-300 ease-in-out hover:border-paulus-blue hover:text-paulus-blue hover:bg-white/20 focus:border-paulus-blue focus:text-paulus-blue focus:outline-none focus:ring-2 focus:ring-paulus-blue ring-0 active:border-paulus-blue active:text-paulus-blue shadow-lg hover:shadow-xl drop-shadow-md"
-        >
+        <NuxtLink v-if="ctaTo" :to="ctaTo"
+          class="inline-block rounded-full border-2 border-white px-8 py-3 text-base font-medium uppercase leading-normal text-white transition-all duration-300 ease-in-out hover:border-paulus-blue hover:text-paulus-blue hover:bg-white/20 focus:border-paulus-blue focus:text-paulus-blue focus:outline-none focus:ring-2 focus:ring-paulus-blue ring-0 active:border-paulus-blue active:text-paulus-blue shadow-lg hover:shadow-xl drop-shadow-md">
           {{ ctaText }}
         </NuxtLink>
       </div>
@@ -60,6 +54,11 @@ const resolvedHeroImage = computed(() => {
   display: block !important;
 }
 
-h1 { text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); }
-h3 { text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); }
+h1 {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+h3 {
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
 </style>

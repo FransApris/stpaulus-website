@@ -16,9 +16,9 @@ export default defineEventHandler(async (event) => {
 
     // Delete agenda
     const sql = 'DELETE FROM agendas WHERE id = ?'
-    const result = runQuery(sql, [id])
+    const result = await runQuery(sql, [id]) as any
 
-    if (result.changes === 0) {
+    if (result.affectedRows === 0) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Agenda not found'

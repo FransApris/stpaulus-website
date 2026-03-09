@@ -1,18 +1,12 @@
 import { allQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
   const userId = decoded.userId
 
-  // Check if user is admin
-  const user = allQuery('SELECT role FROM users WHERE id = ?', [userId])[0] as any
-  if (user.role !== 'admin') {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Akses ditolak'
-    })
-  }
+  // Check permissions using RBAC
+  requirePermission('manage_rooms')(event)
 
   const rooms = allQuery(`
     SELECT id, name, capacity, location, facilities, photo_url, requires_approval, allowed_categories, is_active, created_at

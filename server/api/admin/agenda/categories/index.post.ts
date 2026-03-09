@@ -1,4 +1,4 @@
-import { runQuery, getQuery } from '../../../../database/db'
+import { runQuery, getQuery, allQuery } from '../../../../database/db'
 import { requireAuth } from '../../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
       .trim()
 
     // Check if name already exists
-    const existingName = getQuery('SELECT id FROM agenda_categories WHERE name = ?', [name])
+    const existingName = await getQuery('SELECT id FROM agenda_categories WHERE name = ?', [name])
     if (existingName) {
       throw createError({
         statusCode: 400,
@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if slug already exists (fallback)
-    const existingSlug = getQuery('SELECT id FROM agenda_categories WHERE slug = ?', [slug])
+    const existingSlug = await getQuery('SELECT id FROM agenda_categories WHERE slug = ?', [slug])
     if (existingSlug) {
       throw createError({
         statusCode: 400,
@@ -49,18 +49,17 @@ export default defineEventHandler(async (event) => {
       VALUES (?, ?, ?, ?)
     `
 
-    const result = runQuery(sql, [
+    const result = await runQuery(sql, [
       name,
       slug,
       body.description || null,
       color
     ])
 
-    return {
-      success: true,
-      message: 'Category created successfully',
-      id: result.lastInsertRowid
-    }
+    // Get the newly created category
+    const categories = await allQuery('SELECT * FROM agenda_categories WHERE id = ?', [result.insertId])
+
+    return categories[0]
   } catch (error: any) {
     console.error('Error creating category:', error)
     if (error.statusCode) {

@@ -1,18 +1,12 @@
 import { runQuery, getQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
   const userId = decoded.userId
 
-  // Check if user is admin
-  const user = getQuery('SELECT role FROM users WHERE id = ?', [userId]) as any
-  if (user.role !== 'admin') {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Akses ditolak'
-    })
-  }
+  // Check permissions using RBAC
+  requirePermission('manage_chatbot_faqs')(event)
 
   const id = getRouterParam(event, 'id')
   if (!id) {
@@ -33,7 +27,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if FAQ exists
-  const existing = getQuery('SELECT id FROM chatbot_faqs WHERE id = ?', [id]) as any
+  const existing = await getQuery('SELECT id FROM chatbot_faqs WHERE id = ?', [id]) as any
   if (!existing) {
     throw createError({
       statusCode: 404,
@@ -53,13 +47,18 @@ export default defineEventHandler(async (event) => {
     keywordsJson = JSON.stringify(keywords)
   }
 
-  runQuery(`
+  await runQuery(`
     UPDATE chatbot_faqs
     SET question = ?, answer = ?, category = ?, keywords = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `, [question, answer, category || null, keywordsJson, is_active !== undefined ? (is_active ? 1 : 0) : 1, id])
 
+  // Fetch updated data to return
+  const updatedFaq = await getQuery('SELECT * FROM chatbot_faqs WHERE id = ?', [id])
+
   return {
-    message: 'FAQ berhasil diperbarui'
+    success: true,
+    message: 'FAQ berhasil diperbarui',
+    data: updatedFaq
   }
 })

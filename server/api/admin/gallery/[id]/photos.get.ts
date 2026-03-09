@@ -1,6 +1,5 @@
-import { readdir } from 'node:fs/promises'
-import { join } from 'node:path'
 import { requireAuth } from '../../../../utils/auth'
+import { allQuery } from '../../../../database/db'
 
 export default defineEventHandler(async (event) => {
   // Authentication check
@@ -16,31 +15,42 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const albumPath = join('public/images/album', albumId)
+    // Debug logging
+    console.log('📸 Fetching photos for album ID:', albumId)
+    
+    // Query photos from database
+    const photos = await allQuery(`
+      SELECT 
+        gp.id,
+        gp.filename,
+        gp.original_filename,
+        gp.path,
+        gp.size,
+        gp.mime_type,
+        gp.created_at,
+        ga.title as album_title,
+        ga.slug as album_slug
+      FROM gallery_photos gp
+      INNER JOIN gallery_albums ga ON gp.album_id = ga.id
+      WHERE ga.id = ?
+      ORDER BY gp.created_at ASC
+    `, [albumId])
+    
+    console.log('📸 Found', photos.length, 'photos for album', albumId)
 
-    // Check if album directory exists
-    try {
-      await readdir(albumPath)
-    } catch (error) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Album not found'
-      })
-    }
-
-    const photoFiles = await readdir(albumPath)
-    const imageFiles = photoFiles
-      .filter(file => /\.(jpg|jpeg|png|gif|webp)$/i.test(file))
-      .sort()
-
-    const photos = imageFiles.map((file, index) => ({
-      id: `${albumId}-photo-${index + 1}`,
-      url: `/images/album/${albumId}/${file}`,
-      filename: file,
-      title: file.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '').replace(/-/g, ' ')
+    // Format photos for frontend
+    const formattedPhotos = photos.map((photo: any) => ({
+      id: photo.id,
+      url: photo.path,
+      filename: photo.filename,
+      original_filename: photo.original_filename,
+      title: photo.original_filename ? photo.original_filename.replace(/\.(jpg|jpeg|png|gif|webp)$/i, '') : photo.filename,
+      size: photo.size,
+      mime_type: photo.mime_type,
+      created_at: photo.created_at
     }))
 
-    return { photos }
+    return { photos: formattedPhotos }
 
   } catch (error: any) {
     console.error('Error fetching album photos:', error)

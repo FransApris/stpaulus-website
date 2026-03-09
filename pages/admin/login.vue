@@ -61,7 +61,7 @@
         </form>
 
         <div class="mt-6 text-center text-sm text-gray-600">
-          <p>Default login: admin / admin123</p>
+          <p>Pengelolan Konten Website St. Paulus - Juanda</p>
         </div>
       </div>
     </div>
@@ -69,6 +69,9 @@
 </template>
 
 <script setup>
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase || ''
+
 const form = ref({
   username: '',
   password: ''
@@ -82,28 +85,106 @@ const handleLogin = async () => {
   error.value = ''
 
   try {
-    const response = await $fetch('/api/admin/login', {
+    // IMPORTANT: Clear any existing tokens and auth state BEFORE login
+    // This prevents token mixing between different users
+    console.log('[Login] Clearing old tokens before new login')
+    localStorage.removeItem('admin_access_token')
+    localStorage.removeItem('admin_refresh_token')
+    
+    // Clear useState auth state
+    const auth = useAuth()
+    auth.logout()
+    
+    // Wait longer to ensure cleanup completes and old tokens are cleared from memory
+    await new Promise(resolve => setTimeout(resolve, 300))
+
+    // IMPORTANT: Use /api/admin/login for admin panel login
+    // NOT /api/auth/login (that's for booking users)
+    console.log('[Login] Attempting login for:', form.value.username)
+    const response = await $fetch(`${apiBase}/api/admin/login`, {
       method: 'POST',
       body: form.value
     })
 
-    // Store token in localStorage
-    localStorage.setItem('admin_token', response.token)
+    console.log('[Login] Login successful, response:', {
+      hasAccessToken: !!response.accessToken,
+      user: response.user
+    })
+    
+    // Store NEW tokens in localStorage (persistent across sessions)
+    console.log('[Login] Storing new tokens')
+    localStorage.setItem('admin_access_token', response.accessToken)
+    localStorage.setItem('admin_refresh_token', response.refreshToken)
 
-    // Redirect to dashboard
-    await navigateTo('/admin/dashboard')
+    // Wait for localStorage to commit (critical for token update)
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 200))
+
+    // Verify tokens are stored
+    const storedToken = localStorage.getItem('admin_access_token')
+    console.log('[Login] Token stored successfully:', !!storedToken, 'Length:', storedToken?.length)
+
+    // Fetch user data with NEW token
+    console.log('[Login] Fetching user data with new token...')
+    await auth.fetchUserData(true) // Force refresh to clear cache
+    console.log('[Login] User data fetched:', {
+      username: auth.user.value?.username,
+      role: auth.user.value?.role,
+      id: auth.user.value?.id
+    })
+
+    // Small delay to ensure everything is ready
+    await new Promise(resolve => setTimeout(resolve, 100))
+
+    // Verify token is set before redirect with additional checks
+    const accessToken = localStorage.getItem('admin_access_token')
+    const refreshToken = localStorage.getItem('admin_refresh_token')
+
+    if (accessToken && refreshToken && auth.user.value) {
+      // Additional validation: ensure tokens are properly formatted and user data loaded
+      try {
+        const accessParts = accessToken.split('.')
+        const refreshParts = refreshToken.split('.')
+        if (accessParts.length === 3 && refreshParts.length === 3) {
+          // Tokens appear valid and user data loaded, redirect to dashboard
+          console.log('[Login] All checks passed, redirecting to dashboard')
+          await navigateTo('/admin/dashboard')
+          return
+        }
+      } catch (error) {
+        console.warn('[Login] Token validation failed during login')
+      }
+    }
+
+    throw new Error('Token storage, user data fetch, or validation failed')
   } catch (err) {
-    error.value = err.data?.message || 'Login gagal'
+    error.value = err.data?.message || err.message || 'Login gagal'
+    // Clear any partially stored tokens on failure
+    localStorage.removeItem('admin_access_token')
+    localStorage.removeItem('admin_refresh_token')
   } finally {
     loading.value = false
   }
 }
 
-// Redirect if already logged in
+// Redirect if already logged in, but also clear old state
 onMounted(() => {
-  const token = localStorage.getItem('admin_token')
-  if (token) {
+  const accessToken = localStorage.getItem('admin_access_token')
+  const route = useRoute()
+  
+  // Check if redirected due to token expiration
+  if (route.query.expired === 'true') {
+    error.value = 'Sesi Anda telah berakhir. Silakan login kembali.'
+  }
+  
+  if (accessToken) {
+    // Already logged in, redirect to dashboard
     navigateTo('/admin/dashboard')
+  } else {
+    // Not logged in, ensure clean state
+    const auth = useAuth()
+    auth.logout()
+    console.log('[Login Page] Mounted - clean state ensured')
   }
 })
 </script>

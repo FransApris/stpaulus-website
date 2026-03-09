@@ -1,6 +1,11 @@
 import { allQuery } from '../database/db'
 
 export default defineEventHandler(async (event) => {
+  // Set cache headers to prevent stale data
+  setHeader(event, 'Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  setHeader(event, 'Pragma', 'no-cache')
+  setHeader(event, 'Expires', '0')
+  
   try {
     // Get query parameters for filtering
     const query = getQuery(event)
@@ -8,12 +13,12 @@ export default defineEventHandler(async (event) => {
     const month = query?.month as string
     const year = query?.year as string
 
-    // Build query - show all events with JOIN
+    // Build query - show only upcoming events with JOIN
     let sql = `
       SELECT a.*, c.name as category_name, c.color as category_color
       FROM agendas a
       LEFT JOIN agenda_categories c ON a.category_id = c.id
-      WHERE 1=1
+      WHERE a.start_date >= NOW()
     `
     let params: any[] = []
 
@@ -23,19 +28,19 @@ export default defineEventHandler(async (event) => {
     }
 
     if (month && year) {
-      sql += ' AND strftime(\'%m\', start_date) = ? AND strftime(\'%Y\', start_date) = ?'
+      sql += ' AND MONTH(start_date) = ? AND YEAR(start_date) = ?'
       params.push(month.padStart(2, '0'), year)
     } else if (month) {
-      sql += ' AND strftime(\'%m\', start_date) = ?'
+      sql += ' AND MONTH(start_date) = ?'
       params.push(month.padStart(2, '0'))
     } else if (year) {
-      sql += ' AND strftime(\'%Y\', start_date) = ?'
+      sql += ' AND YEAR(start_date) = ?'
       params.push(year)
     }
 
     sql += ' ORDER BY start_date ASC'
 
-    const agendas = allQuery(sql, params)
+    const agendas = await allQuery(sql, params)
 
     // Convert to plain objects for JSON serialization
     return agendas.map((agenda: any) => ({

@@ -1,22 +1,23 @@
+import { allQuery } from '../../database/db'
+
 export default defineEventHandler(async (event) => {
   try {
-    // Mock categories for now
-    const categories = [
-      {
-        id: 1,
-        name: 'Renungan',
-        slug: 'renungan',
-        description: 'Artikel renungan harian',
-        article_count: 5
-      },
-      {
-        id: 2,
-        name: 'Warta Paroki',
-        slug: 'warta-paroki',
-        description: 'Berita dan informasi paroki',
-        article_count: 3
-      }
-    ];
+    // Query actual article counts from database
+    const sql = `
+      SELECT
+        ac.id,
+        ac.name,
+        ac.slug,
+        ac.description,
+        COUNT(DISTINCT a.id) as article_count
+      FROM article_categories ac
+      LEFT JOIN article_category_relations acr ON ac.id = acr.category_id
+      LEFT JOIN articles a ON acr.article_id = a.id AND a.status = 'published'
+      GROUP BY ac.id, ac.name, ac.slug, ac.description
+      ORDER BY ac.name ASC
+    `;
+
+    const categories = await allQuery(sql);
 
     return categories;
   } catch (error) {

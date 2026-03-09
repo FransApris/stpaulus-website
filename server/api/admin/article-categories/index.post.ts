@@ -4,6 +4,7 @@ import { requireAuth } from '../../../utils/auth'
 export default defineEventHandler(async (event) => {
   // Check authentication
   requireAuth(event)
+  requirePermission('manage_article_categories')(event)
 
   try {
     const body = await readBody(event)
@@ -26,7 +27,7 @@ export default defineEventHandler(async (event) => {
       .trim()
 
     // Check if name already exists
-    const existingName = getQuery('SELECT id FROM article_categories WHERE name = ?', [name])
+    const existingName = await getQuery('SELECT id FROM article_categories WHERE name = ?', [name])
     if (existingName) {
       throw createError({
         statusCode: 400,
@@ -35,7 +36,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if slug already exists
-    const existingSlug = getQuery('SELECT id FROM article_categories WHERE slug = ?', [slug])
+    const existingSlug = await getQuery('SELECT id FROM article_categories WHERE slug = ?', [slug])
     if (existingSlug) {
       throw createError({
         statusCode: 400,
@@ -45,7 +46,7 @@ export default defineEventHandler(async (event) => {
 
     // Validate parent_id if provided
     if (body.parent_id) {
-      const parentCategory = getQuery('SELECT id FROM article_categories WHERE id = ?', [body.parent_id])
+      const parentCategory = await getQuery('SELECT id FROM article_categories WHERE id = ?', [body.parent_id])
       if (!parentCategory) {
         throw createError({
           statusCode: 400,
@@ -60,7 +61,7 @@ export default defineEventHandler(async (event) => {
       VALUES (?, ?, ?, ?)
     `
 
-    const result = runQuery(sql, [
+    const result = await runQuery(sql, [
       name,
       slug,
       body.parent_id || null,
@@ -70,7 +71,7 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       message: 'Category created successfully',
-      id: result.lastInsertRowid
+      id: result.insertId
     }
   } catch (error: any) {
     console.error('Error creating article category:', error)

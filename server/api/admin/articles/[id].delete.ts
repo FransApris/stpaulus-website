@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if article exists
-    const existingArticle = getDbQuery('SELECT id FROM articles WHERE id = ?', [id])
+    const existingArticle = await getDbQuery('SELECT id FROM articles WHERE id = ?', [id])
     if (!existingArticle) {
       throw createError({
         statusCode: 404,
@@ -24,7 +24,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // Delete article
-    runQuery('DELETE FROM articles WHERE id = ?', [id])
+    const deleteResult = await runQuery('DELETE FROM articles WHERE id = ?', [id])
+
+    if ((deleteResult as any).affectedRows === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Article not found or already deleted'
+      })
+    }
 
     return {
       message: 'Article deleted successfully'

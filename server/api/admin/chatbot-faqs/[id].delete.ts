@@ -1,18 +1,12 @@
 import { runQuery, getQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
   const userId = decoded.userId
 
-  // Check if user is admin
-  const user = getQuery('SELECT role FROM users WHERE id = ?', [userId]) as any
-  if (user.role !== 'admin') {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Akses ditolak'
-    })
-  }
+  // Check permissions using RBAC
+  requirePermission('manage_chatbot_faqs')(event)
 
   const id = getRouterParam(event, 'id')
   if (!id) {
@@ -23,7 +17,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if FAQ exists
-  const existing = getQuery('SELECT id FROM chatbot_faqs WHERE id = ?', [id]) as any
+  const existing = await getQuery('SELECT id FROM chatbot_faqs WHERE id = ?', [id]) as any
   if (!existing) {
     throw createError({
       statusCode: 404,
@@ -31,7 +25,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  runQuery('DELETE FROM chatbot_faqs WHERE id = ?', [id])
+  const deleteResult = await runQuery('DELETE FROM chatbot_faqs WHERE id = ?', [id])
+
+  if ((deleteResult as any).affectedRows === 0) {
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'FAQ tidak ditemukan atau sudah dihapus'
+    })
+  }
 
   return {
     message: 'FAQ berhasil dihapus'

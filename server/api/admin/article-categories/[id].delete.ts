@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if category exists
-    const existingCategory = allQuery('SELECT id FROM article_categories WHERE id = ?', [id])
+    const existingCategory = await allQuery('SELECT id FROM article_categories WHERE id = ?', [id])
     if (!existingCategory || existingCategory.length === 0) {
       throw createError({
         statusCode: 404,
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if category has child categories
-    const childCategories = allQuery('SELECT id FROM article_categories WHERE parent_id = ? LIMIT 1', [id])
+    const childCategories = await allQuery('SELECT id FROM article_categories WHERE parent_id = ? LIMIT 1', [id])
     if (childCategories && childCategories.length > 0) {
       throw createError({
         statusCode: 400,
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if category is being used by any articles
-    const articlesUsingCategory = allQuery('SELECT article_id FROM article_category_relations WHERE category_id = ? LIMIT 1', [id])
+    const articlesUsingCategory = await allQuery('SELECT article_id FROM article_category_relations WHERE category_id = ? LIMIT 1', [id])
     if (articlesUsingCategory && articlesUsingCategory.length > 0) {
       throw createError({
         statusCode: 400,
@@ -42,7 +42,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // Delete category
-    runQuery('DELETE FROM article_categories WHERE id = ?', [id])
+    const deleteResult = await runQuery('DELETE FROM article_categories WHERE id = ?', [id])
+
+    if ((deleteResult as any).affectedRows === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Category not found or already deleted'
+      })
+    }
 
     return {
       success: true,

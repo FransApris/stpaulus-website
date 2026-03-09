@@ -1,6 +1,11 @@
 import { allQuery, getQuery as dbGetQuery } from '../../../database/db'
 
 export default defineEventHandler(async (event) => {
+  // Set cache headers to prevent stale data
+  setHeader(event, 'Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  setHeader(event, 'Pragma', 'no-cache')
+  setHeader(event, 'Expires', '0')
+  
   try {
     const query = getQuery(event)
     const typeId = query?.type_id || query?.type as string  // Support both type_id and type parameters
@@ -36,14 +41,29 @@ export default defineEventHandler(async (event) => {
       JOIN liturgy_types lt ON ls.liturgy_type_id = lt.id
       ${whereClause}
     `
-    const countResult = dbGetQuery(countSql, params) as { total: number }
-    const total = countResult.total
+    const countResult = await dbGetQuery(countSql, params) as any
+    const total = countResult?.total || 0
     const totalPages = Math.ceil(total / limit)
 
     // Get paginated schedules - match admin API ordering (newest first)
+    // Using string interpolation for LIMIT/OFFSET to avoid prepared statement issues
     let sql = `
       SELECT
-        ls.*,
+        ls.id,
+        ls.liturgy_type_id,
+        ls.title,
+        ls.date,
+        ls.time,
+        ls.language,
+        ls.priest_name,
+        ls.location,
+        ls.notes,
+        ls.is_recurring,
+        ls.recurrence_pattern,
+        ls.recurrence_end_date,
+        ls.status,
+        ls.created_at,
+        ls.updated_at,
         lt.name as liturgy_type_name,
         lt.slug as liturgy_type_slug,
         lt.icon as liturgy_type_icon,
@@ -52,11 +72,10 @@ export default defineEventHandler(async (event) => {
       JOIN liturgy_types lt ON ls.liturgy_type_id = lt.id
       ${whereClause}
       ORDER BY ls.date DESC, ls.time DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `
-    params.push(limit, offset)
 
-    const schedules = allQuery(sql, params)
+    const schedules = await allQuery(sql, params)
 
     // Convert to plain objects for JSON serialization
     return {

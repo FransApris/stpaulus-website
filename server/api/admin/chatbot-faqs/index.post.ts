@@ -1,18 +1,12 @@
 import { runQuery, getQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
   const userId = decoded.userId
 
-  // Check if user is admin
-  const user = getQuery('SELECT role FROM users WHERE id = ?', [userId]) as any
-  if (user.role !== 'admin') {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Akses ditolak'
-    })
-  }
+  // Check permissions using RBAC
+  requirePermission('manage_chatbot_faqs')(event)
 
   const body = await readBody(event)
   const { question, answer, category, keywords } = body
@@ -36,13 +30,19 @@ export default defineEventHandler(async (event) => {
     keywordsJson = JSON.stringify(keywords)
   }
 
-  const result = runQuery(`
+  const result = await runQuery(`
     INSERT INTO chatbot_faqs (question, answer, category, keywords)
     VALUES (?, ?, ?, ?)
   `, [question, answer, category || null, keywordsJson])
 
+  const insertId = (result as any).insertId
+
+  // Fetch created data to return
+  const createdFaq = await getQuery('SELECT * FROM chatbot_faqs WHERE id = ?', [insertId])
+
   return {
-    id: result.lastInsertRowid,
-    message: 'FAQ berhasil ditambahkan'
+    success: true,
+    message: 'FAQ berhasil ditambahkan',
+    data: createdFaq
   }
 })

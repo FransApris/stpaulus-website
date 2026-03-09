@@ -9,16 +9,68 @@ dist
 # Node dependencies
 node_modules
 
-# Logs
-logs
+# Logs (including security logs)
+logs/
 *.log
+server.log
+server_output.log
+server_startup.log
+test_output*.log
+*_test_results*.log
+security.log
+error.log
+access.log
 
 # Misc
 .DS_Store
 .fleet
 .idea
 
+# Temporary files
+temp_*.txt
+cookies.txt
+*_token.txt
+*_output.txt
+create_user_payload.json
+curl_*.json
+
+# Test/Debug scripts (if regenerated)
+create_test_user.ts
+generate_*_token*.ts
+insert_admins.js
+keyboard_navigation_test.cjs
+API_TEST_TOOL.html
+*_API_TESTS*.sh
+test_*.sh
+
+# Old documentation (keep only in git history)
+*_FIX*.md
+*_REPORT.md
+*_CHECKLIST.md
+*_PROGRESS.md
+*_STATUS.md
+*_SUMMARY.md
+PHASE*.md
+DIAGNOSTIC*.md
+!CLEANUP_SUMMARY.md
+
+# Performance reports (keep only latest)
+lighthouse-*.json
+!lighthouse-homepage-new.json
+
 # Local env files
 .env
 .env.*
 !.env.example
+.archive_cleanup/
+
+# Database backups and SQL files
+backup DB/
+backups/
+*.sql
+!migrations/*.sql
+
+# Files containing sensitive credentials
+GOOGLE_PHOTOS_SETUP_COMPLETE.md
+*_CREDENTIALS*.md
+*_SETUP_COMPLETE.md

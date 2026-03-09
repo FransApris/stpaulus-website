@@ -7,12 +7,12 @@ export default defineEventHandler(async (event) => {
       SELECT a.*, c.name as category_name, c.color as category_color
       FROM agendas a
       LEFT JOIN agenda_categories c ON a.category_id = c.id
-      WHERE a.start_date >= datetime('now')
+      WHERE a.start_date >= CURDATE()
       ORDER BY start_date ASC
       LIMIT 5
     `
 
-    const agendas = allQuery(sql)
+    const agendas = await allQuery(sql)
 
     // Convert to plain objects for JSON serialization
     return agendas.map((agenda: any) => ({

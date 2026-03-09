@@ -1,8 +1,6 @@
 <template>
   <header
-    class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 shadow-lg"
-    :class="{ 'bg-[#882f1d]/95 backdrop-blur-md': localShowHero }"
-  >
+    class="fixed top-0 left-0 right-0 z-[99999] transition-all duration-300 shadow-lg overflow-visible bg-[#882f1d]">
     <Navbar :show-hero="localShowHero" />
   </header>
 </template>

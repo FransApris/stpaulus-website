@@ -27,11 +27,19 @@ export default defineEventHandler(async (event) => {
     }
 
     // Validate category exists
-    const categoryCheck = allQuery('SELECT id FROM agenda_categories WHERE id = ?', [category_id])
+    const categoryCheck = await allQuery('SELECT id FROM agenda_categories WHERE id = ?', [category_id])
     if (!categoryCheck || categoryCheck.length === 0) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Invalid category'
+      })
+    }
+
+    // Validate date logic: start_date should be before end_date if end_date is provided
+    if (body.end_date && new Date(start_date) >= new Date(body.end_date)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Start date must be before end date'
       })
     }
 
@@ -42,7 +50,7 @@ export default defineEventHandler(async (event) => {
       WHERE id = ?
     `
 
-    const result = runQuery(sql, [
+    const result = await runQuery(sql, [
       title,
       body.description || null,
       start_date,
@@ -51,9 +59,9 @@ export default defineEventHandler(async (event) => {
       category_id,
       body.contact_person || null,
       id
-    ])
+    ]) as any
 
-    if (result.changes === 0) {
+    if (result.affectedRows === 0) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Agenda not found'

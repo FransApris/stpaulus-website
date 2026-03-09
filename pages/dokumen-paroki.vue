@@ -1,0 +1,288 @@
+<template>
+  <div class="min-h-screen pt-16 bg-gray-50">
+    <section class="py-16 bg-white">
+      <div class="container mx-auto px-4">
+        <!-- Breadcrumb -->
+        <Breadcrumb title="Dokumen Paroki" />
+
+        <div class="text-center mb-12">
+          <h1 class="text-4xl font-cinzel text-[#882f1d] mb-4">Dokumen Paroki</h1>
+          <p class="text-xl text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting Gereja St. Paulus Juanda</p>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="mb-8">
+          <div class="flex flex-wrap justify-center gap-4">
+            <button
+              @click="selectedCategory = ''"
+              :class="[
+                'px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200',
+                selectedCategory === ''
+                  ? 'bg-[#882f1d] text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ]"
+            >
+              Semua Dokumen
+            </button>
+            <button
+              v-for="category in categories"
+              :key="category.id"
+              @click="selectedCategory = category.id"
+              :class="[
+                'px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 flex items-center',
+                selectedCategory === category.id
+                  ? 'bg-[#882f1d] text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              ]"
+            >
+              <div class="w-3 h-3 rounded mr-2" :style="{ backgroundColor: category.color }"></div>
+              {{ category.name }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Documents Grid -->
+        <div v-if="loading" class="text-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#882f1d] mx-auto"></div>
+          <p class="mt-4 text-gray-600">Memuat dokumen...</p>
+        </div>
+
+        <div v-else-if="filteredDocuments.length === 0" class="text-center py-12">
+          <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">Tidak ada dokumen ditemukan</h3>
+          <p class="mt-2 text-gray-500">Belum ada dokumen yang tersedia untuk kategori ini.</p>
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            v-for="doc in filteredDocuments"
+            :key="doc.id"
+            class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden"
+          >
+            <div class="p-6">
+              <!-- Category Badge -->
+              <div class="flex items-center mb-3">
+                <div class="flex-shrink-0 w-4 h-4 rounded mr-2" :style="{ backgroundColor: doc.category_color }"></div>
+                <span class="text-sm font-medium text-gray-600">{{ doc.category_name }}</span>
+              </div>
+
+              <!-- Title -->
+              <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ doc.title }}</h3>
+
+              <!-- Description -->
+              <p v-if="doc.description" class="text-gray-600 text-sm mb-4 line-clamp-3">
+                {{ doc.description }}
+              </p>
+
+              <!-- File Info -->
+              <div class="text-sm text-gray-500 mb-2">
+                {{ doc.original_filename }} • {{ formatFileSize(doc.file_size) }}
+              </div>
+
+              <!-- Upload Date and Action Buttons Row -->
+              <div class="flex items-center justify-between">
+                <!-- Upload Date -->
+                <div class="text-xs text-gray-400">
+                  Diunggah: {{ formatDate(doc.created_at) }}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex space-x-1">
+                  <button
+                    @click="viewDocument(doc)"
+                    class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-200"
+                    title="Lihat Dokumen"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                  </button>
+                  <button
+                    @click="printDocument(doc)"
+                    class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200"
+                    title="Cetak Dokumen"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                  </button>
+                  <button
+                    @click="downloadDocument(doc)"
+                    class="p-2 text-gray-600 hover:text-[#882f1d] hover:bg-red-50 rounded-md transition-colors duration-200"
+                    title="Download Dokumen"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Back Button -->
+        <BackButton position="bottom" />
+      </div>
+    </section>
+  </div>
+</template>
+
+<script setup>
+// Page meta
+definePageMeta({
+  title: 'Dokumen Paroki - St. Paulus'
+})
+
+// Reactive data
+const categories = ref([])
+const documents = ref([])
+const loading = ref(false)
+const selectedCategory = ref('')
+
+// Computed filtered documents
+const filteredDocuments = computed(() => {
+  if (!selectedCategory.value) {
+    return documents.value
+  }
+  return documents.value.filter(doc => doc.category_id === selectedCategory.value)
+})
+
+// Fetch categories
+const fetchCategories = async () => {
+  try {
+    const response = await $fetch('/api/document-categories')
+    categories.value = response
+  } catch (error) {
+    console.error('Failed to fetch categories:', error)
+  }
+}
+
+// Fetch documents
+const fetchDocuments = async () => {
+  loading.value = true
+  try {
+    const response = await $fetch('/api/documents', { server: false })
+    documents.value = response
+  } catch (error) {
+    console.error('Failed to fetch documents:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// View document
+const viewDocument = async (doc) => {
+  if (process.client) {
+    try {
+      const response = await fetch(`/api/documents/${doc.id}/download`)
+      if (!response.ok) throw new Error('Failed to fetch document')
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      globalThis.window.open(url, '_blank')
+      
+      // Cleanup after a delay to allow the new window to load
+      setTimeout(() => URL.revokeObjectURL(url), 100)
+    } catch (error) {
+      console.error('Failed to view document:', error)
+      alert('Gagal membuka dokumen')
+    }
+  }
+}
+
+// Print document
+const printDocument = async (doc) => {
+  if (process.client) {
+    try {
+      const response = await fetch(`/api/documents/${doc.id}/download`)
+      if (!response.ok) throw new Error('Failed to fetch document')
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const printWindow = globalThis.window.open(url, '_blank')
+
+      if (printWindow) {
+        printWindow.onload = () => {
+          printWindow.print()
+        }
+        // Cleanup after printing
+        setTimeout(() => URL.revokeObjectURL(url), 1000)
+      }
+    } catch (error) {
+      console.error('Failed to print document:', error)
+      alert('Gagal mencetak dokumen')
+    }
+  }
+}
+
+// Download document
+const downloadDocument = async (doc) => {
+  if (process.client) {
+    try {
+      const response = await fetch(`/api/documents/${doc.id}/download`)
+      if (!response.ok) throw new Error('Failed to fetch document')
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      
+      // Create download link
+      const a = globalThis.document.createElement('a')
+      a.href = url
+      a.download = doc.original_filename
+      globalThis.document.body.appendChild(a)
+      a.click()
+      
+      // Cleanup
+      globalThis.document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to download document:', error)
+      alert('Gagal mengunduh dokumen')
+    }
+  }
+}
+
+// Utility functions
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
+
+// Initialize
+onMounted(async () => {
+  await Promise.all([fetchCategories(), fetchDocuments()])
+})
+</script>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-clamp: 2;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-clamp: 3;
+}
+</style>

@@ -2,7 +2,7 @@ import { allQuery } from '../../../database/db'
 
 export default defineEventHandler(async (event) => {
   try {
-    const types = allQuery(`
+    const types = await allQuery(`
       SELECT id, name, slug, icon, color, description, display_order
       FROM liturgy_types
       WHERE is_active = 1

@@ -1,3 +1,151 @@
 {
-  "css.customData": [".vscode/css-custom-data.json"]
+  "css.customData": [
+    ".vscode/css-custom-data.json"
+  ],
+  // ========================================
+  // VS Code Performance Optimization
+  // ========================================
+  // Exclude heavy folders from file explorer
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/.archive_cleanup": true,
+    "**/.nuxt": false,
+    "**/node_modules": false
+  },
+  // Don't watch these folders for changes (MAJOR PERFORMANCE BOOST)
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.nuxt/**": true,
+    "**/.output/**": true,
+    "**/.archive_cleanup/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/.data/**": true,
+    "**/package-lock.json": true
+  },
+  // Don't search in these folders (SEARCH PERFORMANCE)
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.nuxt": true,
+    "**/.output": true,
+    "**/.archive_cleanup": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.data": true,
+    "**/package-lock.json": true,
+    "**/*.md": false
+  },
+  // ========================================
+  // TypeScript & JavaScript Performance
+  // ========================================
+  "typescript.tsserver.maxTsServerMemory": 8192,
+  "typescript.disableAutomaticTypeAcquisition": false,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.tsserver.watchOptions": {
+    "watchFile": "useFsEventsOnParentDirectory"
+  },
+  "typescript.tsserver.useSyntaxServer": "auto",
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  // ========================================
+  // Git Performance
+  // ========================================
+  "git.enabled": true,
+  "git.autorefresh": false,
+  "git.autofetch": false,
+  "git.decorations.enabled": true,
+  "git.ignoreLimitWarning": true,
+  // ========================================
+  // Editor Performance
+  // ========================================
+  "editor.suggest.showStatusBar": true,
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": true
+  },
+  "editor.suggestSelection": "first",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.minimap.enabled": true,
+  "editor.minimap.maxColumn": 80,
+  // ========================================
+  // Terminal Performance
+  // ========================================
+  "terminal.integrated.scrollback": 1000,
+  "terminal.integrated.enablePersistentSessions": false,
+  // ========================================
+  // Nuxt/Vue Specific
+  // ========================================
+  "vue.server.hybridMode": true,
+  "vue.inlayHints.inlineHandlerLeading": true,
+  "vue.updateImportsOnFileMove.enabled": true,
+  // ========================================
+  // ESLint Performance
+  // ========================================
+  "eslint.enable": true,
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+    "vue"
+  ],
+  // ========================================
+  // File Associations
+  // ========================================
+  "files.associations": {
+    "*.vue": "vue",
+    "*.mjs": "javascript",
+    "*.cjs": "javascript"
+  },
+  // ========================================
+  // Formatting
+  // ========================================
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  // ========================================
+  // Additional Performance Tweaks
+  // ========================================
+  "extensions.autoUpdate": false,
+  "extensions.autoCheckUpdates": false,
+  "workbench.enableExperiments": false,
+  "npm.fetchOnlinePackageInfo": false,
+  // Prevent crash from large files
+  "files.maxMemoryForLargeFilesMB": 4096,
+  // Disable telemetry to reduce overhead
+  "telemetry.telemetryLevel": "off",
+  // Reduce auto-save frequency
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 2000,
+  // Limit breadcrumbs
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.symbolPath": "last",
+  // Reduce semantic highlighting load
+  "editor.semanticHighlighting.enabled": true,
+  // Disable unnecessary features
+  "editor.foldingImportsByDefault": true,
+  "editor.suggest.localityBonus": true,
+  "editor.hover.delay": 300,
+  "editor.suggest.filterGraceful": false
 }

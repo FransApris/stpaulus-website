@@ -6,26 +6,35 @@
       class="masonry-item"
     >
       <a :href="photo.url" target="_blank" rel="noopener noreferrer">
-        <img
+        <NuxtImg
           :src="photo.url"
           :alt="photo.caption"
+          :width="400"
+          :height="300"
+          :sizes="imageSizes"
           class="w-full h-auto rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
           loading="lazy"
+          format="webp"
+          quality="80"
         />
       </a>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+interface Photo {
+  id: number | string
+  url: string
+  caption: string
+}
+
 // Komponen ini menerima 'props' bernama 'photos' dari halaman induk ([id].vue)
-defineProps({
-  photos: {
-    type: Array,
-    required: true,
-    default: () => []
-  }
-});
+defineProps<{
+  photos: Photo[]
+}>()
+
+const imageSizes = 'sm:100vw md:50vw lg:33vw'
 
 // PENTING: Kode di atas mengasumsikan setiap 'photo' dalam array 'photos'
 // adalah sebuah objek yang memiliki properti 'id', 'url', dan 'caption'.

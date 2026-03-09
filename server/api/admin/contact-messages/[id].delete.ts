@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     // Check if message exists
-    const existingMessage = getQuery('SELECT id FROM contact_messages WHERE id = ?', [id]) as any
+    const existingMessage = await getQuery('SELECT id FROM contact_messages WHERE id = ?', [id]) as any
 
     if (!existingMessage) {
       throw createError({
@@ -26,7 +26,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // Delete message
-    runQuery('DELETE FROM contact_messages WHERE id = ?', [id])
+    const deleteResult = await runQuery('DELETE FROM contact_messages WHERE id = ?', [id])
+
+    if ((deleteResult as any).affectedRows === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Pesan tidak ditemukan atau sudah dihapus'
+      })
+    }
 
     return {
       message: 'Pesan berhasil dihapus'

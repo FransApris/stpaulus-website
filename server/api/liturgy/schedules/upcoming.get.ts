@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     const todayStr = today.toISOString().split('T')[0]
     const endDateStr = endDate.toISOString().split('T')[0]
 
-    const schedules = allQuery(`
+    const schedules = await allQuery(`
       SELECT
         ls.*,
         lt.name as liturgy_type_name,
@@ -27,8 +27,8 @@ export default defineEventHandler(async (event) => {
         AND ls.date >= ?
         AND ls.date <= ?
       ORDER BY ls.date ASC, ls.time ASC
-      LIMIT ?
-    `, [todayStr, endDateStr, limit])
+      LIMIT ${limit}
+    `, [todayStr, endDateStr])
 
     // Group by date
     const groupedSchedules: { [key: string]: any[] } = {}

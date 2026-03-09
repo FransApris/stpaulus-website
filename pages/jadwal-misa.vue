@@ -297,6 +297,10 @@ const fetchSchedules = async () => {
     if (filters.value.startDate) params.append('start_date', filters.value.startDate)
     if (filters.value.endDate) params.append('end_date', filters.value.endDate)
 
+    // Add cache busting timestamp
+    const timestamp = Date.now()
+    params.append('_', timestamp.toString())
+
     const response = await $fetch(`/api/liturgy/schedules?${params}`)
     schedules.value = response.schedules
   } catch (error) {

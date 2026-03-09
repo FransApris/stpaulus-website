@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const body = await readBody(event)
-    const { title, slug, excerpt, content, author, status, category_ids } = body
+    const { title, slug, excerpt, content, author, status, category_ids, image } = body
 
     // Validation
     if (!title || !content) {
@@ -26,11 +26,17 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    // Ensure all values are defined (not undefined)
+    const safeExcerpt = excerpt !== undefined ? excerpt : null
+    const safeAuthor = author !== undefined ? author : null
+    const safeStatus = status !== undefined ? status : 'draft'
+    const safeImage = image !== undefined ? image : null
+
     // Generate slug if not provided
     const finalSlug = slug || createSlug(title)
 
     // Check if slug already exists
-    const existingArticle = getDbQuery('SELECT id FROM articles WHERE slug = ?', [finalSlug])
+    const existingArticle = await getDbQuery('SELECT id FROM articles WHERE slug = ?', [finalSlug])
     if (existingArticle) {
       throw createError({
         statusCode: 400,
@@ -41,7 +47,7 @@ export default defineEventHandler(async (event) => {
     // Validate category_ids if provided
     if (category_ids && Array.isArray(category_ids)) {
       for (const categoryId of category_ids) {
-        const category = getDbQuery('SELECT id FROM article_categories WHERE id = ?', [categoryId])
+        const category = await getDbQuery('SELECT id FROM article_categories WHERE id = ?', [categoryId])
         if (!category) {
           throw createError({
             statusCode: 400,
@@ -52,20 +58,23 @@ export default defineEventHandler(async (event) => {
     }
 
     // Insert article
-    const publishedAt = status === 'published' ? new Date().toISOString() : null
+    const publishedAt = status === 'published' ? new Date().toISOString().slice(0, 19).replace('T', ' ') : null
 
-    const result = runQuery(
-      `INSERT INTO articles (title, slug, content, excerpt, author, status, published_at, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
-      [title, finalSlug, content, excerpt || '', author || '', status || 'draft', publishedAt]
+    const result: any = await runQuery(
+      `INSERT INTO articles (title, slug, content, excerpt, author, status, image, published_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [title, finalSlug, content, excerpt || '', author || '', status || 'draft', safeImage, publishedAt]
     )
 
-    const articleId = result.lastInsertRowid
+    // Handle different database result formats
+    const articleId = result.insertId || result.lastInsertRowid || result[0]?.insertId
+
+    console.log('[Article Create] Insert result:', { result, articleId })
 
     // Insert category relations if provided
     if (category_ids && Array.isArray(category_ids) && category_ids.length > 0) {
       for (const categoryId of category_ids) {
-        runQuery(
+        await runQuery(
           'INSERT INTO article_category_relations (article_id, category_id) VALUES (?, ?)',
           [articleId, categoryId]
         )
@@ -74,6 +83,14 @@ export default defineEventHandler(async (event) => {
 
     return {
       id: articleId,
+      title,
+      slug: finalSlug,
+      content,
+      excerpt: excerpt || '',
+      author: author || '',
+      status: status || 'draft',
+      image: safeImage,
+      published_at: publishedAt,
       message: 'Article created successfully'
     }
   } catch (error) {

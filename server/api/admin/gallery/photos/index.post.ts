@@ -81,7 +81,7 @@ export default defineEventHandler(async (event) => {
       files: uploadedFiles
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Upload error:', error)
     throw createError({
       statusCode: error.statusCode || 500,

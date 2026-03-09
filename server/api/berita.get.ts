@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
       ORDER BY n.published_at DESC, n.created_at DESC
     `;
 
-    const newsList = allQuery(sql);
+    const newsList = await allQuery(sql);
 
     // Process categories for each news item
     const processedNews = newsList.map((news: any) => {
@@ -54,8 +54,11 @@ export default defineEventHandler(async (event) => {
           month: 'long',
           day: 'numeric'
         }),
-        image: '/images/default-news.jpg',
-        categories: categories
+        image: news.image || '/images/default-news.jpg',
+        categories: categories,
+        likes_count: news.likes_count || 0,
+        shares_count: news.shares_count || 0,
+        views_count: news.views_count || 0
       };
     });
 

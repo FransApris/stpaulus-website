@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
       WHERE a.id = ?
       GROUP BY a.id
     `
-    const article = dbGetQuery(articleQuery, [id]) as any
+    const article = await dbGetQuery(articleQuery, [id]) as any
 
     if (!article) {
       throw createError({

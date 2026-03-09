@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "name": "Renungan",
+    "slug": "renungan",
+    "parent_id": null,
+    "description": "",
+    "created_at": "2025-10-10 02:38:24",
+    "updated_at": "2025-10-10 02:38:24"
+  },
+  {
+    "id": 2,
+    "name": "Warta Paroki",
+    "slug": "warta-paroki",
+    "parent_id": null,
+    "description": "",
+    "created_at": "2025-10-10 02:38:24",
+    "updated_at": "2025-10-10 02:38:24"
+  },
+  {
+    "id": 3,
+    "name": "Sejarah Santo/Santa",
+    "slug": "sejarah-santosanta",
+    "parent_id": null,
+    "description": "",
+    "created_at": "2025-10-10 02:38:24",
+    "updated_at": "2025-10-10 02:38:24"
+  },
+  {
+    "id": 4,
+    "name": "Kegiatan",
+    "slug": "kegiatan",
+    "parent_id": null,
+    "description": "",
+    "created_at": "2025-10-10 02:38:24",
+    "updated_at": "2025-10-10 02:38:24"
+  },
+  {
+    "id": 5,
+    "name": "Pengumuman",
+    "slug": "pengumuman",
+    "parent_id": null,
+    "description": "",
+    "created_at": "2025-10-10 02:38:24",
+    "updated_at": "2025-10-10 02:38:24"
+  },
+  {
+    "id": 6,
+    "name": "OMK",
+    "slug": "omk",
+    "parent_id": 4,
+    "description": "",
+    "created_at": "2025-10-10 02:38:24",
+    "updated_at": "2025-10-10 02:38:24"
+  },
+  {
+    "id": 7,
+    "name": "Legio Maria",
+    "slug": "legio-maria",
+    "parent_id": 4,
+    "description": "",
+    "created_at": "2025-10-10 02:38:24",
+    "updated_at": "2025-10-10 02:38:24"
+  }
+]

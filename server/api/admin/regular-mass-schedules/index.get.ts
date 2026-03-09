@@ -6,7 +6,7 @@ export default defineEventHandler(async (event) => {
   requireAuth(event)
 
   try {
-    const schedules = allQuery(`
+    const schedules = await allQuery(`
       SELECT id, day_of_week, time, mass_type, is_active, created_at, updated_at
       FROM regular_mass_schedules
       ORDER BY

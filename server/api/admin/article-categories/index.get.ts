@@ -1,5 +1,5 @@
 import { allQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 interface Category {
   id: number
@@ -14,11 +14,12 @@ interface Category {
 }
 
 export default defineEventHandler(async (event) => {
-  // Check authentication
+  // Check authentication and permissions
   requireAuth(event)
+  requirePermission('manage_article_categories')(event)
 
   try {
-    const categories = allQuery(`
+    const categories = await allQuery(`
       SELECT
         ac.*,
         parent.name as parent_name

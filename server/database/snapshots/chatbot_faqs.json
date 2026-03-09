@@ -1,0 +1,156 @@
+[
+  {
+    "id": 1,
+    "question": "Jadwal misa hari Minggu?",
+    "answer": "Misa Hari Minggu di Gereja St. Paulus Juanda diadakan pada:\n* Pagi: Pukul 07.00 dan 09.00 WIB \n* Sore: Pukul 17.00 WIB Mohon hadir 30 menit lebih awal untuk persiapan batin. Tuhan Memberkati.",
+    "category": "mass",
+    "keywords": "[\"misa\",\"jadwal\",\"waktu\"]",
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:19:57",
+    "updated_at": "2025-10-10 11:22:46"
+  },
+  {
+    "id": 2,
+    "question": "Jadwal misa setiap hari?",
+    "answer": "Ya, Misa Harian diadakan setiap hari Senin hingga Sabtu pada pukul [05.30 WIB]. Untuk informasi jadwal Misa Harian jika ada perubahan, silakan cek warta paroki terbaru.",
+    "category": "mass",
+    "keywords": "[\"misa\",\"jadwal\",\"waktu\"]",
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:21:05",
+    "updated_at": "2025-10-10 11:22:40"
+  },
+  {
+    "id": 3,
+    "question": "Info Misa Jumat Pertama?",
+    "answer": "Misa Jumat Pertama Hati Kudus Yesus diadakan setiap hari Jumat pertama dalam bulan, pada pukul [18.00 WIB]. Misa ini biasanya didahului dengan Adorasi Sakramen Mahakudus.",
+    "category": "mass",
+    "keywords": "[\"misa\",\"jadwal\",\"waktu\"]",
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:21:49",
+    "updated_at": "2025-10-10 11:22:36"
+  },
+  {
+    "id": 4,
+    "question": "Jadwal Sakramen Tobat?",
+    "answer": "Pelayanan Sakramen Tobat (Pengakuan Dosa) tersedia [30 menit sebelum setiap Misa Hari Minggu]. Anda juga bisa membuat janji khusus dengan Romo melalui Sekretariat Paroki.",
+    "category": "sacraments",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:23:39",
+    "updated_at": "2025-10-10 11:23:39"
+  },
+  {
+    "id": 5,
+    "question": "Prosedur baptisan bayi? ",
+    "answer": "Pendaftaran Sakramen Baptis Bayi dilakukan melalui Ketua Lingkungan. Orang tua diharap melengkapi dokumen berikut dan menyerahkannya ke sekretariat:\n1. Formulir Pendaftaran Baptis (dari sekretariat). \n2. Surat Pengantar dari Ketua Lingkungan. \n3. Fotokopi Kartu Keluarga (KK) Gereja & KK Sipil. \n4. Fotokopi Surat Perkawinan Gereja orang tua. \n5. Fotokopi Surat Baptis Calon Wali Baptis. Pembaptisan biasanya diadakan setiap [hari Minggu pertama setiap bulan]. ",
+    "category": "sacraments",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:24:08",
+    "updated_at": "2025-10-10 11:24:17"
+  },
+  {
+    "id": 6,
+    "question": "Info pendaftaran Sakramen Komuni Pertama / Krisma?",
+    "answer": "Pendaftaran untuk penerimaan Sakramen Komuni Pertama dan Sakramen Krisma biasanya dibuka setahun sekali, sekitar bulan [Januari - Februari]. Pengumuman resmi akan disampaikan melalui warta paroki dan ketua lingkungan. Calon penerima wajib mengikuti program pembinaan yang telah ditentukan.",
+    "category": "sacraments",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:24:54",
+    "updated_at": "2025-10-10 11:24:54"
+  },
+  {
+    "id": 7,
+    "question": "Syarat menikah di gereja katolik? ",
+    "answer": "Untuk persiapan Sakramen Perkawinan, calon mempelai diharap segera menghubungi Sekretariat Paroki minimal 3 (tiga) bulan sebelum tanggal pernikahan untuk penjadwalan dan proses kanonik. Kedua calon juga wajib mengikuti Kursus Persiapan Perkawinan (KPP).\n",
+    "category": "sacraments",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:25:29",
+    "updated_at": "2025-10-10 11:25:29"
+  },
+  {
+    "id": 8,
+    "question": "Bagaimana jika butuh layanan Sakramen Perminyakan Orang Sakit? ",
+    "answer": "Untuk pelayanan Sakramen Perminyakan Orang Sakit, terutama dalam keadaan darurat, keluarga dapat segera menghubungi Sekretariat Paroki di nomor telepon [NOMOR TELEPON SEKRETARIAT] atau nomor darurat [NOMOR KONTAK DARURAT JIKA ADA].\n",
+    "category": "sacraments",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:26:01",
+    "updated_at": "2025-10-10 11:26:01"
+  },
+  {
+    "id": 9,
+    "question": "Jam operasional sekretariat?",
+    "answer": "Sekretariat Paroki St. Paulus Juanda buka pada:\n* Selasa - Jumat: Pukul [08.00 - 15.00 WIB] \n* Sabtu: Pukul [08.00 - 12.00 WIB] \n* Minggu: [Setelah Misa Pagi] \n* Senin & Hari Libur Nasional: Tutup. \n",
+    "category": "parish_info",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:26:39",
+    "updated_at": "2025-10-10 11:26:39"
+  },
+  {
+    "id": 10,
+    "question": "Kontak sekretariat paroki?",
+    "answer": "Anda dapat menghubungi Sekretariat Paroki melalui WhatsApp di nomor [NOMOR WA SEKRETARIAT]. Mohon untuk berkirim pesan pada jam kerja agar dapat direspons dengan baik.\n",
+    "category": "parish_info",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:27:08",
+    "updated_at": "2025-10-10 11:27:08"
+  },
+  {
+    "id": 11,
+    "question": "Bagaimana cara bertemu dengan Romo?",
+    "answer": "Jika Anda ingin bertemu atau berkonsultasi dengan Romo, disarankan untuk membuat janji terlebih dahulu melalui Sekretariat Paroki agar dapat disesuaikan dengan jadwal pelayanan Romo.\n",
+    "category": "parish_info",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:27:35",
+    "updated_at": "2025-10-10 11:29:19"
+  },
+  {
+    "id": 12,
+    "question": "Bagaimana cara bergabung dengan Orang Muda Katolik (OMK)?",
+    "answer": "Tentu! Orang Muda Katolik (OMK) St. Paulus Juanda aktif dengan berbagai kegiatan. Kamu bisa datang langsung ke kegiatan mereka atau menghubungi pengurus melalui Sekretariat Paroki untuk mendapatkan kontak lebih lanjut.\n",
+    "category": "parish_info",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:28:10",
+    "updated_at": "2025-10-10 11:29:14"
+  },
+  {
+    "id": 13,
+    "question": "Bagaimana cara memberikan persembahan/donasi?",
+    "answer": "Terima kasih atas niat baik Anda. Persembahan kasih untuk pembangunan dan kegiatan gereja dapat ditransfer ke rekening resmi paroki di:\n* Bank: [NAMA BANK] \n* Nomor Rekening: [NOMOR REKENING] \n* Atas Nama: [GEREJA KATOLIK ST PAULUS JUANDA] Tuhan memberkati kemurahan hati Anda. ",
+    "category": "parish_info",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:28:35",
+    "updated_at": "2025-10-10 11:28:35"
+  },
+  {
+    "id": 14,
+    "question": "(Pertanyaan aneh atau di luar konteks)",
+    "answer": "Mohon maaf, saya belum mengerti pertanyaan Anda. Untuk informasi lebih lanjut yang tidak dapat saya jawab, silakan hubungi Sekretariat Paroki melalui WhatsApp di nomor [NOMOR WA SEKRETARIAT] pada jam kerja. Terima kasih.",
+    "category": "parish_info",
+    "keywords": null,
+    "is_active": 1,
+    "usage_count": 0,
+    "created_at": "2025-10-10 11:29:00",
+    "updated_at": "2025-10-10 11:29:00"
+  }
+]

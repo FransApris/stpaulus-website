@@ -1,0 +1,13 @@
+# Exclude from VS Code indexing to prevent crash
+node_modules/
+.nuxt/
+.output/
+dist/
+build/
+.data/
+.archive_cleanup/
+.git/objects/
+*.log
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

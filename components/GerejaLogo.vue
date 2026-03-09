@@ -1,27 +1,27 @@
 <template>
-  <div class="flex items-center space-x-3 p-2 rounded-lg transition-all duration-200 hover:shadow-md" :class="customClasses">
+  <div class="flex items-center space-x-3 transition-all duration-200" :class="customClasses">
     <!-- Logo Image -->
     <img
       v-if="resolvedLogoSrc"
       :src="resolvedLogoSrc"
       alt="Logo Paroki St. Paulus"
-      :class="[logoSize, 'object-contain rounded-md shadow-sm flex-shrink-0']"
+      :class="[logoSize, 'object-contain flex-shrink-0']"
       loading="lazy"
       width="64"
       height="64"
       @error="onImageError"
     />
     <!-- Fallback Icon -->
-    <div v-else :class="[logoSize, 'bg-paulus-blue rounded-md flex items-center justify-center flex-shrink-0 relative fallback-icon']">
+    <div v-else :class="[logoSize, 'bg-paulus-blue flex items-center justify-center flex-shrink-0 relative fallback-icon']">
       <svg class="h-3/4 w-3/4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2l3.09 6.26L22 9.27l-5 15.56-1.33-4.4L12 22l-5.67 1.83-1.33 4.4L2 15.27l-5-15.56L8.91 8.26L12 2z" />
       </svg>
     </div>
     
-    <!-- Teks Judul dan Subtitle (Fonts Diperbarui) -->
-    <div class="flex flex-col min-w-0">
+    <!-- Teks Judul dan Subtitle (Tampilkan hanya jika showText === true) -->
+    <div v-if="showText" class="flex flex-col min-w-0">
       <h1 class="font-bold truncate" :class="[titleFont, titleSize, titleClasses]">{{ titleText }}</h1>
-      <p class="text-sm text-gray-600 dark:text-gray-400 truncate" :class="subtitleFont">{{ subtitleText }}</p>  <!-- Apply subtitleFont -->
+      <p class="text-sm text-gray-600 dark:text-gray-400 truncate" :class="subtitleFont">{{ subtitleText }}</p>
     </div>
   </div>
 </template>
@@ -60,9 +60,13 @@ const props = defineProps({
     type: String,
     default: 'font-cinzel'  // Cinzel untuk title
   },
-  subtitleFont: {  // Prop baru: Font untuk subtitle
+  subtitleFont: {
     type: String,
-    default: 'font-lora'  // Lora untuk subtitle/body
+    default: 'font-lora'
+  },
+  showText: {
+    type: Boolean,
+    default: true
   }
 })
 

@@ -1,65 +1,49 @@
-import { rm, access } from 'node:fs/promises'
-import { join } from 'node:path'
+import { requireAuth, requirePermission } from '../../../utils/auth'
+import { runQuery, getQuery } from '../../../database/db'
 
 export default defineEventHandler(async (event) => {
-  // Check authentication
-  const authHeader = getHeader(event, 'authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
-  }
+  // Check authentication and permissions
+  requireAuth(event)
+  requirePermission('manage_gallery')(event)
 
-  const token = authHeader.substring(7)
-  try {
-    if (!token) {
-      throw new Error('Invalid token')
-    }
-  } catch (error) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Invalid token'
-    })
-  }
+  const albumId = getRouterParam(event, 'id')
 
-  const id = getRouterParam(event, 'id')
-  if (!id) {
+  if (!albumId) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Album ID is required'
     })
   }
 
-  const albumsBaseDir = 'public/images/album'
-  const albumPath = join(albumsBaseDir, id)
-
   try {
     // Check if album exists
-    try {
-      await access(albumPath)
-    } catch (error) {
+    const existingAlbum = await getQuery('SELECT id, title FROM gallery_albums WHERE slug = ?', [albumId]) as any
+    if (!existingAlbum) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Album not found'
       })
     }
 
-    // Delete the entire album directory
-    await rm(albumPath, { recursive: true, force: true })
+    // Delete album (photos will be deleted automatically due to CASCADE)
+    const deleteResult = await runQuery('DELETE FROM gallery_albums WHERE slug = ?', [albumId])
+
+    if ((deleteResult as any).affectedRows === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Album not found or already deleted'
+      })
+    }
 
     return {
       success: true,
-      message: 'Album deleted successfully'
+      message: `Album "${existingAlbum.title}" has been deleted successfully`
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting album:', error)
-    if (error.statusCode) {
-      throw error
-    }
     throw createError({
       statusCode: 500,
-      statusMessage: 'Could not delete album.',
+      statusMessage: 'Failed to delete album'
     })
   }
 })

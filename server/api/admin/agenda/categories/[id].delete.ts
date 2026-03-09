@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if category exists
-    const existingCategory = allQuery('SELECT id FROM agenda_categories WHERE id = ?', [id])
+    const existingCategory = await allQuery('SELECT id FROM agenda_categories WHERE id = ?', [id])
     if (!existingCategory || existingCategory.length === 0) {
       throw createError({
         statusCode: 404,
@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if category is being used by any agendas
-    const agendasUsingCategory = allQuery('SELECT id FROM agendas WHERE category_id = ? LIMIT 1', [id])
+    const agendasUsingCategory = await allQuery('SELECT id FROM agendas WHERE category_id = ? LIMIT 1', [id])
     if (agendasUsingCategory && agendasUsingCategory.length > 0) {
       throw createError({
         statusCode: 400,
@@ -33,7 +33,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // Delete category
-    runQuery('DELETE FROM agenda_categories WHERE id = ?', [id])
+    const deleteResult = await runQuery('DELETE FROM agenda_categories WHERE id = ?', [id])
+
+    if ((deleteResult as any).affectedRows === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'Category not found or already deleted'
+      })
+    }
 
     return {
       success: true,

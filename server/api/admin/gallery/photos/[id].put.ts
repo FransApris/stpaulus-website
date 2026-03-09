@@ -1,6 +1,6 @@
 import { writeFile, readFile } from 'fs/promises'
 import { join } from 'path'
-import { verifyToken } from '~/server/utils/auth'
+import { requireAuth } from '~/server/utils/auth'
 
 interface PhotoMeta {
   filename: string
@@ -16,22 +16,8 @@ interface AlbumMeta {
 
 export default defineEventHandler(async (event) => {
   try {
-    // Verify authentication
-    const token = getHeader(event, 'authorization')?.replace('Bearer ', '')
-    if (!token) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Unauthorized'
-      })
-    }
-
-    const user = await verifyToken(token)
-    if (!user) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Invalid token'
-      })
-    }
+    // Check authentication using JWT
+    requireAuth(event)
 
     const photoId = getRouterParam(event, 'id')
     if (!photoId) {

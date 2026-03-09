@@ -1,14 +1,23 @@
 import { allQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
+  // Check authentication and permissions
   requireAuth(event)
+  // Allow read access for content management permissions
+  const authContext = event.context.auth
+  if (!authContext || !authContext.permissions?.some((perm: string) =>
+    ['manage_articles', 'manage_news', 'manage_gallery', 'manage_agenda', 'manage_users', 'manage_rooms', 'manage_bookings'].includes(perm)
+  )) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden: Insufficient permissions'
+    })
+  }
 
   try {
-    const query = getQuery(event)
-    const status = query?.status as string
-
-    let sql = `
+    // Fetch all news with categories (including drafts)
+    const sql = `
       SELECT
         n.*,
         GROUP_CONCAT(ac.name) as category_names,
@@ -17,20 +26,15 @@ export default defineEventHandler(async (event) => {
       FROM news n
       LEFT JOIN news_category_relations ncr ON n.id = ncr.news_id
       LEFT JOIN article_categories ac ON ncr.category_id = ac.id
-    `
-    let params: any[] = []
+      GROUP BY n.id
+      ORDER BY n.created_at DESC
+      LIMIT 50
+    `;
 
-    if (status) {
-      sql += ' WHERE n.status = ? '
-      params = [status]
-    }
+    const newsList = await allQuery(sql);
 
-    sql += ' GROUP BY n.id ORDER BY n.created_at DESC'
-
-    const newsList = allQuery(sql, params)
-
-    return newsList.map((news: any) => {
-      // Parse categories
+    // Process categories for each news item
+    const processedNews = newsList.map((news: any) => {
       const categories: Array<{id: number, name: string, slug: string}> = [];
       if (news.category_names) {
         const names = news.category_names.split(',');
@@ -38,11 +42,13 @@ export default defineEventHandler(async (event) => {
         const slugs = news.category_slugs.split(',');
 
         names.forEach((name: string, index: number) => {
-          categories.push({
-            id: parseInt(ids[index]),
-            name: name,
-            slug: slugs[index]
-          });
+          if (name) {
+            categories.push({
+              id: parseInt(ids[index]),
+              name: name,
+              slug: slugs[index]
+            });
+          }
         });
       }
 
@@ -51,20 +57,23 @@ export default defineEventHandler(async (event) => {
         title: news.title,
         slug: news.slug,
         content: news.content,
-        excerpt: news.excerpt,
-        author: news.author,
+        excerpt: news.excerpt || '',
+        author: news.author || '',
+        image: news.image || null,
         status: news.status,
         published_at: news.published_at,
         created_at: news.created_at,
         updated_at: news.updated_at,
         categories: categories
-      }
-    })
+      };
+    });
+
+    return processedNews;
   } catch (error) {
-    console.error('Error fetching news:', error)
+    console.error('Error fetching admin news:', error);
     throw createError({
       statusCode: 500,
       statusMessage: 'Internal server error'
-    })
+    });
   }
-})
+});

@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if category exists
-    const existingCategory = allQuery('SELECT id FROM agenda_categories WHERE id = ?', [id])
+    const existingCategory = await allQuery('SELECT id FROM agenda_categories WHERE id = ?', [id])
     if (!existingCategory || existingCategory.length === 0) {
       throw createError({
         statusCode: 404,
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
       .trim()
 
     // Check if slug already exists (excluding current category)
-    const slugCheck = allQuery('SELECT id FROM agenda_categories WHERE slug = ? AND id != ?', [slug, id])
+    const slugCheck = await allQuery('SELECT id FROM agenda_categories WHERE slug = ? AND id != ?', [slug, id])
     if (slugCheck && slugCheck.length > 0) {
       throw createError({
         statusCode: 400,
@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
       WHERE id = ?
     `
 
-    runQuery(sql, [
+    await runQuery(sql, [
       name,
       slug,
       body.description || null,
@@ -66,10 +66,10 @@ export default defineEventHandler(async (event) => {
       id
     ])
 
-    return {
-      success: true,
-      message: 'Category updated successfully'
-    }
+    // Get updated category
+    const categories = await allQuery('SELECT * FROM agenda_categories WHERE id = ?', [id])
+
+    return categories[0]
   } catch (error: any) {
     console.error('Error updating category:', error)
     if (error.statusCode) {

@@ -1,0 +1,127 @@
+import { allQuery } from '../database/db'
+
+export default defineEventHandler(async (event) => {
+  try {
+    const query = getQuery(event)
+    const searchTerm = query.q as string
+
+    if (!searchTerm || searchTerm.trim().length < 2) {
+      return {
+        query: searchTerm || '',
+        results: [],
+        total: 0
+      }
+    }
+
+    const cleanSearchTerm = searchTerm.trim()
+
+    // Search across articles, news, and agendas
+    // Using UNION to combine results from all three tables
+    const sql = `
+      SELECT
+        'article' as type,
+        a.id,
+        a.title,
+        a.excerpt,
+        a.content,
+        a.slug,
+        a.published_at as date,
+        a.created_at,
+        a.author,
+        '' as location,
+        '' as category_name,
+        '' as category_color
+      FROM articles a
+      WHERE a.status = 'published'
+        AND (a.title LIKE ? OR a.content LIKE ? OR a.excerpt LIKE ?)
+
+      UNION ALL
+
+      SELECT
+        'news' as type,
+        n.id,
+        n.title,
+        n.excerpt,
+        n.content,
+        n.slug,
+        n.published_at as date,
+        n.created_at,
+        n.author,
+        '' as location,
+        '' as category_name,
+        '' as category_color
+      FROM news n
+      WHERE n.status = 'published'
+        AND (n.title LIKE ? OR n.content LIKE ? OR n.excerpt LIKE ?)
+
+      UNION ALL
+
+      SELECT
+        'agenda' as type,
+        ag.id,
+        ag.title,
+        ag.description as excerpt,
+        '' as content,
+        CONCAT('agenda/', ag.id) as slug,
+        ag.start_date as date,
+        ag.created_at,
+        ag.contact_person as author,
+        ag.location,
+        c.name as category_name,
+        c.color as category_color
+      FROM agendas ag
+      LEFT JOIN agenda_categories c ON ag.category_id = c.id
+      WHERE ag.start_date >= NOW()
+        AND (ag.title LIKE ? OR ag.description LIKE ?)
+
+      ORDER BY date DESC
+      LIMIT 50
+    `
+
+    const searchPattern = `%${cleanSearchTerm}%`
+    const titlePattern = `%${cleanSearchTerm}%`
+
+    const params = [
+      searchPattern, searchPattern, searchPattern, // articles
+      searchPattern, searchPattern, searchPattern, // news
+      searchPattern, searchPattern // agendas
+    ]
+
+    console.log('SQL:', sql)
+    console.log('Params:', params)
+    const results = await allQuery(sql, params)
+
+    // Process results to add formatted date and highlight matches
+    const processedResults = results.map((result: any) => ({
+      type: result.type,
+      id: result.id,
+      title: result.title,
+      excerpt: result.excerpt || '',
+      slug: result.slug,
+      date: result.date,
+      formatted_date: result.date ? new Date(result.date).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }) : '',
+      author: result.author || '',
+      location: result.location || '',
+      category_name: result.category_name || '',
+      category_color: result.category_color || '',
+      url: result.type === 'agenda' ? `/${result.slug}` : `/${result.type}/${result.slug}`
+    }))
+
+    return {
+      query: cleanSearchTerm,
+      results: processedResults,
+      total: processedResults.length
+    }
+
+  } catch (error) {
+    console.error('Error performing search:', error)
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Internal server error'
+    })
+  }
+})

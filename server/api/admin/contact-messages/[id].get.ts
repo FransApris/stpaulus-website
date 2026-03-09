@@ -17,11 +17,11 @@ export default defineEventHandler(async (event) => {
   try {
     // Get message and mark as read
     const messageQuery = `
-      SELECT id, name, email, message, is_read, created_at, updated_at
+      SELECT id, name, email, phone, message, is_read, created_at, updated_at
       FROM contact_messages
       WHERE id = ?
     `
-    const message = getQuery(messageQuery, [id]) as any
+    const message = await getQuery(messageQuery, [id]) as any
 
     if (!message) {
       throw createError({
@@ -37,13 +37,14 @@ export default defineEventHandler(async (event) => {
         SET is_read = TRUE, updated_at = CURRENT_TIMESTAMP
         WHERE id = ?
       `
-      runQuery(updateQuery, [id])
+      await runQuery(updateQuery, [id])
     }
 
     return {
       id: message.id,
       name: message.name,
       email: message.email,
+      phone: message.phone,
       message: message.message,
       is_read: true, // Always return true since we mark it as read
       created_at: message.created_at,

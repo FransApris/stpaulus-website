@@ -51,7 +51,6 @@
     <div
       v-if="showModal"
       class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50"
-      @click="closeModal"
     >
       <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" @click.stop>
         <div class="mt-3">
@@ -129,6 +128,8 @@
 </template>
 
 <script setup>
+import { defineComponent, h } from 'vue'
+
 definePageMeta({
   layout: 'admin'
 })
@@ -188,12 +189,22 @@ const CategoryTreeItem = defineComponent({
         h('div', { class: 'flex space-x-2' }, [
           h('button', {
             onClick: () => emit('edit', props.category),
-            class: 'text-[#882f1d] hover:text-[#6b2416] text-sm'
-          }, 'Edit'),
+            title: 'Edit',
+            class: 'text-[#882f1d] hover:text-[#6b2416] p-1 inline-flex items-center'
+          }, [
+            h('svg', { class: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+              h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' })
+            ])
+          ]),
           h('button', {
             onClick: () => emit('delete', props.category.id),
-            class: 'text-red-600 hover:text-red-900 text-sm'
-          }, 'Hapus')
+            title: 'Hapus',
+            class: 'text-red-600 hover:text-red-900 p-1 inline-flex items-center'
+          }, [
+            h('svg', { class: 'w-5 h-5', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
+              h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16' })
+            ])
+          ])
         ])
       ]),
       // Description
@@ -214,9 +225,11 @@ const CategoryTreeItem = defineComponent({
 const fetchCategories = async () => {
   loading.value = true
   try {
-    const response = await $fetch('/api/admin/article-categories', {
+    // Add cache busting timestamp
+    const timestamp = new Date().getTime()
+    const response = await $fetch(`/api/admin/article-categories?_=${timestamp}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
     categories.value = response
@@ -282,17 +295,35 @@ const saveCategory = async () => {
 
     const method = isEditing.value ? 'PUT' : 'POST'
 
-    await $fetch(url, {
+    // Simpan context sebelum close modal
+    const wasEditing = isEditing.value
+    const currentEditingId = editingId.value
+    const formData = { ...form.value }
+    
+    // Close modal immediately for better UX
+    closeModal()
+
+    const result = await $fetch(url, {
       method,
-      body: form.value,
+      body: formData,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
 
-    alert(isEditing.value ? 'Kategori berhasil diupdate' : 'Kategori berhasil ditambahkan')
-    closeModal()
-    fetchCategories()
+    // Optimistic update - langsung update state
+    if (wasEditing) {
+      const index = categories.value.findIndex(c => c.id === currentEditingId)
+      if (index !== -1) {
+        categories.value[index] = { ...categories.value[index], ...result }
+      }
+    } else {
+      categories.value.push(result)
+    }
+
+    setTimeout(() => {
+      alert(wasEditing ? 'Kategori berhasil diupdate' : 'Kategori berhasil ditambahkan')
+    }, 100)
   } catch (error) {
     console.error('Failed to save category:', error)
     alert(error.data?.message || 'Gagal menyimpan kategori')
@@ -308,15 +339,26 @@ const deleteCategory = async (id) => {
   }
 
   try {
-    await $fetch(`/api/admin/article-categories/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
-      }
-    })
+    // Optimistic update - langsung hapus dari UI
+    const originalCategories = [...categories.value]
+    categories.value = categories.value.filter(c => c.id !== id)
 
-    alert('Kategori berhasil dihapus')
-    fetchCategories()
+    try {
+      await $fetch(`/api/admin/article-categories/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        }
+      })
+
+      setTimeout(() => {
+        alert('Kategori berhasil dihapus')
+      }, 100)
+    } catch (deleteError) {
+      // Rollback on error
+      categories.value = originalCategories
+      throw deleteError
+    }
   } catch (error) {
     console.error('Failed to delete category:', error)
     alert(error.data?.message || 'Gagal menghapus kategori')
@@ -325,7 +367,7 @@ const deleteCategory = async (id) => {
 
 // Initialize
 onMounted(async () => {
-  const token = localStorage.getItem('admin_token')
+  const token = localStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

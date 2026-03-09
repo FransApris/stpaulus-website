@@ -1,6 +1,11 @@
 import { allQuery } from '../database/db'
 
 export default defineEventHandler(async (event) => {
+  // Set cache headers to prevent stale data
+  setHeader(event, 'Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  setHeader(event, 'Pragma', 'no-cache')
+  setHeader(event, 'Expires', '0')
+  
   try {
     // Fetch articles with categories (only published ones for public API)
     const sql = `
@@ -17,7 +22,7 @@ export default defineEventHandler(async (event) => {
       ORDER BY a.published_at DESC, a.created_at DESC
     `;
 
-    const articlesList = allQuery(sql);
+    const articlesList = await allQuery(sql);
 
     // Process categories for each article item
     const processedArticles = articlesList.map((article: any) => {
@@ -54,8 +59,11 @@ export default defineEventHandler(async (event) => {
           month: 'long',
           day: 'numeric'
         }),
-        image: '/images/default-article.jpg',
-        categories: categories
+        image: article.image || '/images/default-article.jpg',
+        categories: categories,
+        likes_count: article.likes_count || 0,
+        shares_count: article.shares_count || 0,
+        views_count: article.views_count || 0
       };
     });
 

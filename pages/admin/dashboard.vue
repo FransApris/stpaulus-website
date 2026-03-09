@@ -1,11 +1,48 @@
 <template>
+  <!-- Welcome Header with Role Badge -->
+  <div class="mb-6 bg-white shadow rounded-lg p-6">
+    <ClientOnly>
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <h2 class="text-2xl font-bold text-gray-900">Selamat Datang, {{ auth.user.value?.username || 'Admin' }}!</h2>
+          <p class="text-gray-600 mt-1">Dashboard {{ getRoleName(userRole) }}</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="px-4 py-2 rounded-full" :class="getRoleBadgeClass(userRole)">
+            <span class="text-sm font-semibold">{{ getRoleName(userRole) }}</span>
+          </div>
+          <button 
+            @click="handleLogout"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+      <template #fallback>
+        <div class="flex items-center justify-between animate-pulse">
+          <div class="flex-1">
+            <div class="h-8 bg-gray-200 rounded w-64 mb-2"></div>
+            <div class="h-5 bg-gray-200 rounded w-48"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-24 bg-gray-200 rounded-full"></div>
+            <div class="h-10 w-20 bg-gray-200 rounded-lg"></div>
+          </div>
+        </div>
+      </template>
+    </ClientOnly>
+  </div>
+
   <!-- Statistics Section -->
   <div class="mb-8">
     <div class="bg-white shadow rounded-lg">
       <div class="px-6 py-5">
         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Statistik</h3>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div class="bg-gray-50 p-4 rounded-lg">
+        <ClientOnly>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- Artikel - Super Admin & Admin Komsos -->
+            <div v-if="canViewContent" class="bg-gray-50 p-4 rounded-lg">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -14,12 +51,13 @@
               </div>
               <div class="ml-4">
                 <dt class="text-sm font-medium text-gray-500 truncate">Artikel</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.articles }}</dd>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.articles || 0 }}</dd>
               </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 p-4 rounded-lg">
+          <!-- Berita - Super Admin & Admin Komsos -->
+          <div v-if="canViewContent" class="bg-gray-50 p-4 rounded-lg">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,12 +66,13 @@
               </div>
               <div class="ml-4">
                 <dt class="text-sm font-medium text-gray-500 truncate">Berita</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.news }}</dd>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.news || 0 }}</dd>
               </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 p-4 rounded-lg">
+          <!-- Album - Super Admin & Admin Komsos -->
+          <div v-if="canViewGallery" class="bg-gray-50 p-4 rounded-lg">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,12 +81,13 @@
               </div>
               <div class="ml-4">
                 <dt class="text-sm font-medium text-gray-500 truncate">Album</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.albums }}</dd>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.albums || 0 }}</dd>
               </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 p-4 rounded-lg">
+          <!-- Foto - Super Admin & Admin Komsos -->
+          <div v-if="canViewGallery" class="bg-gray-50 p-4 rounded-lg">
             <div class="flex items-center">
               <div class="flex-shrink-0">
                 <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -56,17 +96,262 @@
               </div>
               <div class="ml-4">
                 <dt class="text-sm font-medium text-gray-500 truncate">Foto</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.photos }}</dd>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.photos || 0 }}</dd>
+              </div>
+            </div>
+          </div>
+
+          <!-- Agenda - Super Admin & Admin Sekretariat -->
+          <div v-if="canViewAgenda" class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <dt class="text-sm font-medium text-gray-500 truncate">Agenda</dt>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.agenda || 0 }}</dd>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bookings - Super Admin & Admin Sekretariat -->
+          <div v-if="canViewBookings" class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <dt class="text-sm font-medium text-gray-500 truncate">Bookings</dt>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.bookings || 0 }}</dd>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ruangan - Super Admin & Admin Sekretariat -->
+          <div v-if="canViewRooms" class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <dt class="text-sm font-medium text-gray-500 truncate">Ruangan</dt>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.rooms || 0 }}</dd>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dokumen - Super Admin & Admin Sekretariat -->
+          <div v-if="canViewDocuments" class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <dt class="text-sm font-medium text-gray-500 truncate">Dokumen</dt>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.documents || 0 }}</dd>
+              </div>
+            </div>
+          </div>
+
+          <!-- Users - Super Admin Only -->
+          <div v-if="auth.isSuperAdmin.value" class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <dt class="text-sm font-medium text-gray-500 truncate">Users</dt>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.users || 0 }}</dd>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Messages - Super Admin & Admin Sekretariat -->
+          <div v-if="canViewContactMessages" class="bg-gray-50 p-4 rounded-lg">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+              <div class="ml-4">
+                <dt class="text-sm font-medium text-gray-500 truncate">Pesan</dt>
+                <dd class="text-lg font-semibold text-gray-900">{{ stats.contactMessages || 0 }}</dd>
               </div>
             </div>
           </div>
         </div>
+        <template #fallback>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
+            <div v-for="i in 8" :key="i" class="bg-gray-100 p-4 rounded-lg h-24"></div>
+          </div>
+        </template>
+      </ClientOnly>
       </div>
     </div>
   </div>
 
-  <!-- Recent Content Section -->
-  <div class="bg-white shadow rounded-lg">
+  <!-- Booking Status Section - Only for superadmin and admin_sekretariat -->
+  <ClientOnly>
+    <div v-if="canViewBookingList" class="mb-8 bg-white shadow rounded-lg">
+    <div class="px-6 py-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Status Pemesanan Ruangan</h3>
+        <!-- Link disabled - bookings page not yet created -->
+        <!-- <NuxtLink 
+          to="/admin/bookings" 
+          class="text-sm text-[#882f1d] hover:text-[#6b2416] font-medium"
+        >
+          Lihat Semua →
+        </NuxtLink> -->
+      </div>
+
+      <!-- Loading State -->
+      <div v-if="loadingBookings" class="text-center py-8">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"></div>
+        <p class="mt-2 text-sm text-gray-500">Memuat data booking...</p>
+      </div>
+
+      <!-- Bookings Table -->
+      <div v-else-if="bookings.length > 0">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pemesan</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  #{{ booking.id }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900">{{ booking.user_name || booking.name }}</div>
+                  <div class="text-sm text-gray-500">{{ booking.user_email || booking.email }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ booking.room_name }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ formatBookingDate(booking.booking_date) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span
+                    :class="getBookingStatusClass(booking.status)"
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                  >
+                    {{ getBookingStatusText(booking.status) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Booking Pagination - Always show if there are bookings -->
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
+          <div class="flex-1 flex justify-between sm:hidden">
+            <button
+              @click="currentBookingPage > 1 && currentBookingPage--"
+              :disabled="currentBookingPage === 1"
+              class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Sebelumnya
+            </button>
+            <button
+              @click="currentBookingPage < totalBookingPages && currentBookingPage++"
+              :disabled="currentBookingPage === totalBookingPages"
+              class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Selanjutnya
+            </button>
+          </div>
+          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm text-gray-700">
+                Menampilkan
+                <span class="font-medium">{{ (currentBookingPage - 1) * bookingsPerPage + 1 }}</span>
+                sampai
+                <span class="font-medium">{{ Math.min(currentBookingPage * bookingsPerPage, bookings.length) }}</span>
+                dari
+                <span class="font-medium">{{ bookings.length }}</span>
+                pemesanan
+              </p>
+            </div>
+            <div v-if="totalBookingPages > 1">
+              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                <button
+                  @click="currentBookingPage > 1 && currentBookingPage--"
+                  :disabled="currentBookingPage === 1"
+                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span class="sr-only">Sebelumnya</span>
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <button
+                  v-for="page in visibleBookingPages"
+                  :key="page"
+                  @click="currentBookingPage = page"
+                  :class="[
+                    'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                    currentBookingPage === page
+                      ? 'z-10 bg-[#882f1d] border-[#882f1d] text-white'
+                      : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                  ]"
+                >
+                  {{ page }}
+                </button>
+                <button
+                  @click="currentBookingPage < totalBookingPages && currentBookingPage++"
+                  :disabled="currentBookingPage === totalBookingPages"
+                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span class="sr-only">Selanjutnya</span>
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div v-else class="text-center py-8">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+        <p class="mt-2 text-sm text-gray-500">Tidak ada data pemesanan</p>
+      </div>
+    </div>
+  </div>
+  </ClientOnly>
+
+  <!-- Recent Content Section - Only for users with content permissions -->
+  <ClientOnly>
+    <div v-if="canViewContent" class="bg-white shadow rounded-lg">
     <div class="px-6 py-5">
       <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Konten Terbaru</h3>
 
@@ -196,26 +481,121 @@
       </div>
     </div>
   </div>
+  </ClientOnly>
 </template>
 
 <script setup>
 definePageMeta({
   middleware: 'auth',
-  layout: 'admin'
+  layout: 'admin',
+  ssr: false // Disable SSR to prevent hydration mismatch with role-based content - now using ClientOnly components
 })
+
+// Import auth composable
+const auth = useAuth()
 
 const stats = ref({
   articles: 0,
   news: 0,
   albums: 0,
-  photos: 0
+  photos: 0,
+  agenda: 0,
+  bookings: 0,
+  rooms: 0,
+  documents: 0,
+  users: 0,
+  contactMessages: 0
 })
 
 const articles = ref([])
 const news = ref([])
+const bookings = ref([])
 const loading = ref(false)
+const loadingBookings = ref(false)
 const currentPage = ref(1)
 const itemsPerPage = 5
+
+// Pagination state for bookings
+const currentBookingPage = ref(1)
+const bookingsPerPage = 5  // Changed from 10 to 5 for better pagination visibility
+
+// Get user role
+const userRole = computed(() => {
+  const role = auth.user.value?.role || 'admin'
+  console.log('[Dashboard] userRole computed:', role, 'from user:', auth.user.value)
+  return role
+})
+
+// Permission-based computed properties
+const canViewContent = computed(() => {
+  const result = auth.hasPermission('view_articles') || auth.hasPermission('manage_content')
+  console.log('[Dashboard] canViewContent:', result)
+  return result
+})
+
+const canViewGallery = computed(() => {
+  const result = auth.hasPermission('view_gallery') || auth.hasPermission('manage_gallery')
+  console.log('[Dashboard] canViewGallery:', result)
+  return result
+})
+
+const canViewAgenda = computed(() => {
+  const result = auth.hasPermission('view_agenda') || auth.hasPermission('manage_agenda')
+  console.log('[Dashboard] canViewAgenda:', result)
+  return result
+})
+
+const canViewBookings = computed(() => {
+  const result = auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings')
+  console.log('[Dashboard] canViewBookings:', result)
+  return result
+})
+
+// Show booking list only for superadmin and admin_sekretariat (not admin_komsos)
+const canViewBookingList = computed(() => {
+  const role = auth.user.value?.role || ''
+  const result = (role === 'superadmin' || role === 'admin_sekretariat') && 
+                 (auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings'))
+  console.log('[Dashboard] canViewBookingList:', result, 'role:', role)
+  return result
+})
+
+const canViewRooms = computed(() => {
+  const result = auth.hasPermission('manage_rooms')
+  console.log('[Dashboard] canViewRooms:', result)
+  return result
+})
+
+const canViewDocuments = computed(() => {
+  const result = auth.hasPermission('manage_documents')
+  console.log('[Dashboard] canViewDocuments:', result)
+  return result
+})
+
+const canViewContactMessages = computed(() => {
+  const result = auth.hasPermission('manage_contact_messages')
+  console.log('[Dashboard] canViewContactMessages:', result)
+  return result
+})
+
+// Helper functions for role badges
+const getRoleName = (role) => {
+  const roleNames = {
+    'super_admin': 'Super Admin',
+    'admin_komsos': 'Admin Komsos',
+    'admin_sekretariat': 'Admin Sekretariat'
+  }
+  return roleNames[role] || 'Admin'
+}
+
+const getRoleBadgeClass = (role) => {
+  const roleClasses = {
+    'super_admin': 'bg-purple-100 text-purple-800',
+    'admin_komsos': 'bg-blue-100 text-blue-800',
+    'admin_sekretariat': 'bg-green-100 text-green-800'
+  }
+  return roleClasses[role] || 'bg-gray-100 text-gray-800'
+}
 
 const combinedContent = computed(() => {
   const allContent = [
@@ -269,8 +649,53 @@ const visiblePages = computed(() => {
   return pages.filter(page => page !== '...')
 })
 
+// Pagination for bookings
+const totalBookingPages = computed(() => Math.ceil(bookings.value.length / bookingsPerPage))
+
+const paginatedBookings = computed(() => {
+  const start = (currentBookingPage.value - 1) * bookingsPerPage
+  const end = start + bookingsPerPage
+  return bookings.value.slice(start, end)
+})
+
+const visibleBookingPages = computed(() => {
+  const pages = []
+  const total = totalBookingPages.value
+  const current = currentBookingPage.value
+
+  if (total <= 7) {
+    for (let i = 1; i <= total; i++) {
+      pages.push(i)
+    }
+  } else {
+    if (current <= 4) {
+      for (let i = 1; i <= 5; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    } else if (current >= total - 3) {
+      pages.push(1)
+      pages.push('...')
+      for (let i = total - 4; i <= total; i++) {
+        pages.push(i)
+      }
+    } else {
+      pages.push(1)
+      pages.push('...')
+      for (let i = current - 1; i <= current + 1; i++) {
+        pages.push(i)
+      }
+      pages.push('...')
+      pages.push(total)
+    }
+  }
+
+  return pages.filter(page => page !== '...')
+})
+
 const handleLogout = () => {
-  localStorage.removeItem('admin_token')
+  auth.logout()
   navigateTo('/admin/login')
 }
 
@@ -279,13 +704,13 @@ const fetchStats = async () => {
   try {
     const response = await $fetch('/api/admin/stats', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
     stats.value = response
   } catch (error) {
     if (error.statusCode === 401) {
-      localStorage.removeItem('admin_token')
+      auth.logout()
       navigateTo('/admin/login')
       return
     }
@@ -293,19 +718,23 @@ const fetchStats = async () => {
   }
 }
 
-// Fetch articles and news
+// Fetch articles and news - only if user has content permissions
 const fetchContent = async () => {
+  if (!canViewContent.value) {
+    return // Skip fetching if user doesn't have content permissions
+  }
+  
   loading.value = true
   try {
     const [articlesResponse, newsResponse] = await Promise.all([
       $fetch('/api/admin/articles', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
         }
       }),
       $fetch('/api/admin/news', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_token')}`
+          'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
         }
       })
     ])
@@ -314,7 +743,7 @@ const fetchContent = async () => {
     news.value = newsResponse
   } catch (error) {
     if (error.statusCode === 401) {
-      localStorage.removeItem('admin_token')
+      auth.logout()
       navigateTo('/admin/login')
       return
     }
@@ -324,15 +753,73 @@ const fetchContent = async () => {
   }
 }
 
+// Fetch bookings - only for superadmin and admin_sekretariat
+const fetchBookings = async () => {
+  if (!canViewBookingList.value) {
+    return // Skip fetching if user is not superadmin or admin_sekretariat
+  }
+  
+  loadingBookings.value = true
+  try {
+    const response = await $fetch('/api/admin/bookings', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+      }
+    })
+
+    // Sort bookings: PENDING first, then by booking date descending
+    bookings.value = response
+      .sort((a, b) => {
+        // First sort by status (PENDING first)
+        if (a.status === 'PENDING' && b.status !== 'PENDING') return -1
+        if (a.status !== 'PENDING' && b.status === 'PENDING') return 1
+        
+        // Then by booking date (newest first)
+        return new Date(b.booking_date) - new Date(a.booking_date)
+      })
+  } catch (error) {
+    if (error.statusCode === 401) {
+      auth.logout()
+      navigateTo('/admin/login')
+      return
+    }
+    console.error('Failed to fetch bookings:', error)
+    bookings.value = []
+  } finally {
+    loadingBookings.value = false
+  }
+}
+
 // Helper functions
 const formatDate = (dateString) => {
+  if (!dateString) return '-'
   return new Date(dateString).toLocaleDateString('id-ID', {
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+    day: 'numeric'
   })
+}
+
+// Format tanggal pendek untuk dashboard booking
+const formatBookingDate = (dateString) => {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  })
+}
+
+// Format waktu simple (HH:MM)
+const formatTime = (timeString) => {
+  if (!timeString) return '-'
+  // Jika format sudah HH:MM:SS, ambil hanya HH:MM
+  if (timeString.includes(':')) {
+    const parts = timeString.split(':')
+    return `${parts[0]}:${parts[1]}`
+  }
+  return timeString
 }
 
 const getStatusClass = (status) => {
@@ -361,13 +848,67 @@ const getStatusText = (status) => {
   }
 }
 
+// Booking status helper functions
+const getBookingStatusClass = (status) => {
+  switch (status?.toUpperCase()) {
+    case 'PENDING':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'APPROVED':
+      return 'bg-green-100 text-green-800'
+    case 'REJECTED':
+      return 'bg-red-100 text-red-800'
+    case 'CANCELLED':
+      return 'bg-gray-100 text-gray-800'
+    case 'COMPLETED':
+      return 'bg-blue-100 text-blue-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const getBookingStatusText = (status) => {
+  switch (status?.toUpperCase()) {
+    case 'PENDING':
+      return 'Menunggu'
+    case 'APPROVED':
+      return 'Disetujui'
+    case 'REJECTED':
+      return 'Ditolak'
+    case 'CANCELLED':
+      return 'Dibatalkan'
+    case 'COMPLETED':
+      return 'Selesai'
+    default:
+      return status || '-'
+  }
+}
+
 // Watch for page changes and reset to first page when content changes
 watch([articles, news], () => {
   currentPage.value = 1
 })
 
+// Watch for auth user changes and fetch data when user is ready
+watch(() => auth.user.value, (newUser, oldUser) => {
+  console.log('[Dashboard] Auth user changed:', { old: oldUser?.username, new: newUser?.username })
+  if (newUser && !oldUser) {
+    // User just logged in or data loaded
+    console.log('[Dashboard] User data loaded, fetching stats, content, and bookings')
+    fetchStats()
+    fetchContent()
+    fetchBookings()
+  }
+}, { immediate: true })
+
 // Fetch data on mount (middleware already checks auth)
 onMounted(async () => {
-  await Promise.all([fetchStats(), fetchContent()])
+  console.log('[Dashboard] onMounted - Auth user:', auth.user.value)
+  // Only fetch if user is already loaded (from plugin)
+  if (auth.user.value) {
+    await Promise.all([fetchStats(), fetchContent(), fetchBookings()])
+  } else {
+    // If not loaded yet, wait for plugin to finish
+    console.log('[Dashboard] Waiting for auth to load...')
+  }
 })
 </script>

@@ -1,5 +1,6 @@
 import { runQuery, getQuery as getDbQuery } from '../../../database/db'
 import { requireAuth } from '../../../utils/auth'
+import { unsyncNewsFromKronik } from '../../../utils/news-kronik-sync'
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)
@@ -13,7 +14,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const existingNews = getDbQuery('SELECT id FROM news WHERE id = ?', [id])
+    const existingNews = await getDbQuery('SELECT id FROM news WHERE id = ?', [id])
     if (!existingNews) {
       throw createError({
         statusCode: 404,
@@ -21,7 +22,17 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    runQuery('DELETE FROM news WHERE id = ?', [id])
+    // Remove from kronik if it was synced
+    await unsyncNewsFromKronik(parseInt(id))
+
+    const deleteResult = await runQuery('DELETE FROM news WHERE id = ?', [id])
+
+    if ((deleteResult as any).affectedRows === 0) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: 'News not found or already deleted'
+      })
+    }
 
     return {
       message: 'News deleted successfully'

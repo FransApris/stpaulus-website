@@ -15,7 +15,7 @@
     <!-- Content Section -->
     <div class="p-6">
       <h3 class="text-xl font-semibold text-[#882f1d] mb-2">{{ title }}</h3>
-      <p class="text-gray-600 mb-4">{{ description }}</p>
+      <p class="text-gray-600 mb-4">{{ truncatedDescription }}</p>
       <div v-if="date" class="flex justify-between items-center">
         <span class="text-sm text-gray-500">{{ date }}</span>
         <NuxtLink :to="to" class="text-[#882f1d] hover:underline font-medium">{{ linkText }}</NuxtLink>
@@ -28,7 +28,9 @@
 </template>
 
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   title: {
     type: String,
     required: true
@@ -61,5 +63,24 @@ defineProps({
     type: String,
     default: 'Baca Selengkapnya →'
   }
+})
+
+// Truncate to 2 sentences
+const truncatedDescription = computed(() => {
+  if (!props.description) return ''
+  
+  // Match sentences ending with ., !, or ?
+  const sentences = props.description.match(/[^.!?]+[.!?]+/g)
+  
+  if (!sentences || sentences.length === 0) {
+    // If no sentences found, truncate by characters (150 chars)
+    return props.description.length > 150 
+      ? props.description.substring(0, 150) + '...' 
+      : props.description
+  }
+  
+  // Return first 2 sentences
+  const firstTwoSentences = sentences.slice(0, 2).join(' ').trim()
+  return firstTwoSentences
 })
 </script>

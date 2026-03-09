@@ -1,0 +1,18 @@
+{
+    "recommendations": [
+        // Essential for Vue/Nuxt development
+        "Vue.volar",
+        "Vue.vscode-typescript-vue-plugin",
+        // Essential for development
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        // Useful but optional
+        "bradlc.vscode-tailwindcss",
+        "christian-kohler.path-intellisense",
+        "usernamehw.errorlens"
+    ],
+    "unwantedRecommendations": [
+        // Old Vue extension (replaced by Volar)
+        "octref.vetur"
+    ]
+}

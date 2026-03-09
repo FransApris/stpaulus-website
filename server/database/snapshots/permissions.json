@@ -1,0 +1,93 @@
+[
+  {
+    "id": 1,
+    "name": "manage_articles",
+    "display_name": "Kelola Artikel",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 2,
+    "name": "manage_news",
+    "display_name": "Kelola Berita",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 3,
+    "name": "manage_article_categories",
+    "display_name": "Kelola Kategori Artikel/Berita",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 4,
+    "name": "manage_gallery",
+    "display_name": "Kelola Galeri",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 5,
+    "name": "manage_agenda",
+    "display_name": "Kelola Agenda",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 6,
+    "name": "manage_agenda_categories",
+    "display_name": "Kelola Kategori Agenda",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 7,
+    "name": "manage_regular_mass_schedules",
+    "display_name": "Kelola Jadwal Misa Rutin",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 8,
+    "name": "manage_contact_messages",
+    "display_name": "Kelola Pesan Masuk",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 9,
+    "name": "manage_users",
+    "display_name": "Kelola Semua Pengguna",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 10,
+    "name": "manage_users_komsos_sekretariat",
+    "display_name": "Kelola Admin Komsos & Sekretariat",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 11,
+    "name": "manage_rooms",
+    "display_name": "Kelola Ruangan",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 12,
+    "name": "manage_bookings",
+    "display_name": "Kelola Pemesanan",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  },
+  {
+    "id": 13,
+    "name": "manage_chatbot_faqs",
+    "display_name": "Kelola Chatbot FAQ",
+    "description": null,
+    "created_at": "2025-10-09 17:15:02"
+  }
+]

@@ -1,0 +1,363 @@
+<template>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h1 class="text-2xl font-bold text-gray-900 mb-2">Pengelola Tema Hero</h1>
+      <p class="text-gray-600">Kelola gambar hero section halaman depan</p>
+
+      <!-- Image Guidelines -->
+      <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <h3 class="text-sm font-semibold text-blue-800 mb-2">Rekomendasi Ukuran Gambar Hero</h3>
+        <ul class="text-sm text-blue-700 space-y-1">
+          <li><strong>Lebar:</strong> 1920px (Full HD)</li>
+          <li><strong>Tinggi:</strong> 1080px</li>
+          <li><strong>Rasio:</strong> 16:9 (landscape)</li>
+          <li><strong>Format:</strong> JPG atau WebP (untuk performa optimal)</li>
+          <li><strong>Ukuran file:</strong> Maksimal 2MB</li>
+        </ul>
+        <h4 class="text-sm font-semibold text-blue-800 mt-3 mb-1">Alasan Rekomendasi</h4>
+        <ul class="text-sm text-blue-700 space-y-1">
+          <li>Hero container menggunakan min-h-screen (100vh) dengan bg-cover</li>
+          <li>Background position: center dengan cover scaling</li>
+          <li>Responsivitas: Gambar akan di-crop otomatis untuk berbagai ukuran layar</li>
+          <li>Performance: Gambar besar memastikan kualitas pada layar retina/high-DPI</li>
+        </ul>
+        <h4 class="text-sm font-semibold text-blue-800 mt-3 mb-1">Tips Upload</h4>
+        <ul class="text-sm text-blue-700 space-y-1">
+          <li>Gunakan gambar horizontal dengan subjek di tengah</li>
+          <li>Pastikan teks overlay masih terbaca dengan background apa pun</li>
+          <li>Kompresi gambar tanpa kehilangan kualitas signifikan</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Add Theme Button -->
+    <div class="bg-white p-6 rounded-lg shadow">
+      <button @click="showCreateModal = true" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        Tambah Tema Baru
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div v-if="loading" class="bg-white p-6 rounded-lg shadow">
+      <p class="text-gray-500">Loading...</p>
+    </div>
+
+    <!-- Themes List -->
+    <div v-else-if="themes.length > 0" class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-lg font-semibold mb-4">Daftar Tema Hero</h2>
+      <div class="overflow-x-auto">
+        <table class="min-w-full table-auto">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-2 text-left">Preview</th>
+              <th class="px-4 py-2 text-left">Nama</th>
+              <th class="px-4 py-2 text-left">Status</th>
+              <th class="px-4 py-2 text-left">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="theme in themes" :key="theme.id" class="border-t">
+              <td class="px-4 py-2">
+                <div class="relative group">
+                  <img 
+                    :src="theme.image_path" 
+                    :alt="theme.name"
+                    class="w-24 h-16 object-cover rounded shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                    @click="openPreviewModal(theme)"
+                  />
+                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded transition-all flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-2">{{ theme.name }}</td>
+              <td class="px-4 py-2">
+                <span :class="theme.is_active ? 'text-green-600' : 'text-gray-500'">
+                  {{ theme.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                </span>
+              </td>
+              <td class="px-4 py-2">
+                <div class="flex space-x-2">
+                  <button v-if="!theme.is_active" @click="activateTheme(theme.id)" title="Aktifkan" class="text-green-600 hover:text-green-800 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
+                  <button @click="deleteTheme(theme.id)" title="Hapus" class="text-red-600 hover:text-red-800 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else class="bg-white p-6 rounded-lg shadow">
+      <p class="text-gray-500">Belum ada tema hero. Klik tombol "Tambah Tema Baru" untuk membuat tema pertama!</p>
+    </div>
+
+    <!-- Create Modal -->
+    <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold mb-4">Tambah Tema Baru</h3>
+        <form @submit.prevent="createTheme" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tema</label>
+            <input v-model="newTheme.name" type="text" placeholder="Nama tema" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Gambar</label>
+            <input type="file" @change="handleFileChange" accept="image/*" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button type="button" @click="showCreateModal = false" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">
+              Batal
+            </button>
+            <button type="submit" :disabled="loading" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+              {{ loading ? 'Menyimpan...' : 'Simpan' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div v-if="showPreviewModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" @click="showPreviewModal = false">
+      <div class="relative max-w-6xl w-full" @click.stop>
+        <button 
+          @click="showPreviewModal = false"
+          class="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
+        >
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <div class="bg-white rounded-lg overflow-hidden shadow-2xl">
+          <div class="p-4 bg-gray-50 border-b">
+            <h3 class="text-lg font-semibold text-gray-900">{{ previewTheme?.name }}</h3>
+            <p class="text-sm text-gray-600">
+              Status: <span :class="previewTheme?.is_active ? 'text-green-600 font-medium' : 'text-gray-500'">
+                {{ previewTheme?.is_active ? 'Aktif' : 'Tidak Aktif' }}
+              </span>
+            </p>
+          </div>
+          <div class="relative">
+            <img 
+              :src="previewTheme?.image_path" 
+              :alt="previewTheme?.name"
+              class="w-full h-auto max-h-[70vh] object-contain"
+            />
+          </div>
+          <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+              <p>Dibuat: {{ formatDate(previewTheme?.created_at) }}</p>
+            </div>
+            <div class="space-x-2">
+              <button 
+                v-if="!previewTheme?.is_active"
+                @click="activateTheme(previewTheme?.id); showPreviewModal = false"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Aktifkan
+              </button>
+              <button 
+                @click="deleteTheme(previewTheme?.id); showPreviewModal = false"
+                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <Transition name="toast">
+      <div
+        v-if="toast.show"
+        :class="[
+          'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium z-50',
+          toast.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        ]"
+      >
+        {{ toast.message }}
+      </div>
+    </Transition>
+  </div>
+</template>
+
+<script setup>
+definePageMeta({
+  layout: 'admin'
+})
+
+const themes = ref([])
+const loading = ref(true)
+const showCreateModal = ref(false)
+const showPreviewModal = ref(false)
+const previewTheme = ref(null)
+const newTheme = ref({ name: '', image: null })
+const toast = ref({ show: false, message: '', type: 'success' })
+
+// Toast notification function
+const showToast = (message, type = 'success') => {
+  toast.value = { show: true, message, type }
+  setTimeout(() => {
+    toast.value.show = false
+  }, 3000)
+}
+
+onMounted(async () => {
+  await fetchThemes()
+})
+
+const fetchThemes = async () => {
+  try {
+    const response = await $fetch('/api/admin/hero-themes', {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+      }
+    })
+    themes.value = response.data
+  } catch (error) {
+    console.error('Error fetching themes:', error)
+    showToast('Gagal memuat daftar tema', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleFileChange = (event) => {
+  newTheme.value.image = event.target.files[0]
+}
+
+const createTheme = async () => {
+  loading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('name', newTheme.value.name)
+    formData.append('image', newTheme.value.image)
+
+    await $fetch('/api/admin/hero-themes', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+      },
+      body: formData
+    })
+
+    showCreateModal.value = false
+    newTheme.value = { name: '', image: null }
+    showToast('Tema berhasil ditambahkan')
+    await fetchThemes()
+  } catch (error) {
+    console.error('Error creating theme:', error)
+    showToast('Gagal menambahkan tema', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const activateTheme = async (themeId) => {
+  // Save original state for rollback
+  const originalThemes = themes.value.map(t => ({ ...t }))
+  
+  // Optimistic update - instant UI change
+  themes.value = themes.value.map(t => ({
+    ...t,
+    is_active: t.id === themeId
+  }))
+  
+  try {
+    await $fetch(`/api/admin/hero-themes/${themeId}/activate`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+      }
+    })
+    showToast('Tema berhasil diaktifkan')
+  } catch (error) {
+    // Rollback on error
+    themes.value = originalThemes
+    console.error('Error activating theme:', error)
+    showToast('Gagal mengaktifkan tema', 'error')
+  }
+}
+
+const deleteTheme = async (themeId) => {
+  // Confirmation dialog
+  if (!confirm('Apakah Anda yakin ingin menghapus tema ini?')) {
+    return
+  }
+  
+  // Optimistic update: Remove from UI immediately
+  const index = themes.value.findIndex(t => t.id === themeId)
+  const deletedTheme = index !== -1 ? { ...themes.value[index] } : null
+  
+  if (index !== -1) {
+    themes.value.splice(index, 1)
+  }
+  
+  try {
+    await $fetch(`/api/admin/hero-themes/${themeId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+      }
+    })
+    showToast('Tema berhasil dihapus')
+  } catch (error) {
+    console.error('Error deleting theme:', error)
+    showToast('Gagal menghapus tema', 'error')
+    
+    // Rollback: Re-add the deleted theme
+    if (deletedTheme && index !== -1) {
+      themes.value.splice(index, 0, deletedTheme)
+    }
+  }
+}
+
+const openPreviewModal = (theme) => {
+  previewTheme.value = theme
+  showPreviewModal.value = true
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return date.toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+</script>
+
+<style scoped>
+/* Toast animations */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from {
+  opacity: 0;
+  transform: translateY(1rem);
+}
+
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(2rem);
+}
+</style>

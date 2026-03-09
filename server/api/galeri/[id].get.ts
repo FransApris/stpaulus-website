@@ -1,71 +1,86 @@
-import { readdir, stat, readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { getQuery, allQuery } from '../../database/db'
 
 export default defineEventHandler(async (event) => {
-  const id = getRouterParam(event, 'id')
+  const slug = getRouterParam(event, 'id')
 
-  if (!id) {
+  if (!slug) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Album ID is required'
+      statusMessage: 'Album slug is required'
     })
   }
 
   try {
-    const albumsBaseDir = 'public/images/album'
-    const albumPath = join(albumsBaseDir, id)
+    // Get album details with category
+    const albumSql = `
+      SELECT
+        a.id,
+        a.title,
+        a.slug,
+        a.description,
+        a.tanggal_peristiwa,
+        a.cover_image,
+        a.status,
+        a.created_at,
+        c.nama_kategori as category_name,
+        c.color as category_color
+      FROM gallery_albums a
+      LEFT JOIN gallery_categories c ON a.category_id = c.id
+      WHERE a.slug = ? AND a.status = 'published'
+      LIMIT 1
+    `
 
-    // Check if album directory exists
-    try {
-      await stat(albumPath)
-    } catch (e) {
+    const album = await getQuery(albumSql, [slug])
+
+    if (!album) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Album not found'
       })
     }
 
-    let title = id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-    let description = 'Tidak ada deskripsi.'
+    // Get all photos for this album
+    const photosSql = `
+      SELECT
+        id,
+        filename,
+        original_filename,
+        path,
+        size,
+        mime_type,
+        created_at
+      FROM gallery_photos
+      WHERE album_id = ?
+      ORDER BY created_at ASC
+    `
 
-    // Try to read meta.json for better title and description
-    try {
-      const metaPath = join(albumPath, 'meta.json')
-      const metaContent = await readFile(metaPath, 'utf-8')
-      const metaData = JSON.parse(metaContent)
-      title = metaData.title || title
-      description = metaData.description || description
-    } catch (e) {
-      // If meta.json doesn't exist, use title from folder name
-    }
+    const photos = await allQuery(photosSql, [album.id])
 
-    const photoFiles = await readdir(albumPath)
-    const imageFiles = photoFiles
-      .filter(file => /\.(jpg|jpeg|png|gif|webp)$/i.test(file))
-      .sort()
-
-    if (imageFiles.length === 0) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'No photos found in album'
-      })
-    }
-
-    const album = {
-      id,
-      title,
-      description,
-      thumbnail: `/images/album/${id}/${imageFiles[0]}`,
-      photos: imageFiles.map((file, index) => ({
-        id: `${id}-photo-${index + 1}`,
-        url: `/images/album/${id}/${file}`,
-        caption: file
+    // Format response
+    const formattedAlbum = {
+      id: album.slug,
+      title: album.title,
+      description: album.description,
+      tanggal_peristiwa: album.tanggal_peristiwa,
+      thumbnail: album.cover_image,
+      category: album.category_name ? {
+        name: album.category_name,
+        color: album.category_color
+      } : null,
+      photos: photos.map(photo => ({
+        id: photo.id,
+        url: photo.path,
+        filename: photo.filename,
+        originalName: photo.original_filename,
+        size: photo.size,
+        mimeType: photo.mime_type,
+        caption: photo.original_filename || photo.filename
       }))
     }
 
-    return album
+    return formattedAlbum
   } catch (error: any) {
-    console.error('Error fetching album:', error)
+    console.error('Error fetching album detail:', error)
     if (error.statusCode) {
       throw error
     }

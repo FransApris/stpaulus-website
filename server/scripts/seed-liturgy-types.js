@@ -79,7 +79,7 @@ try {
   console.log('🌱 Seeding liturgy types...')
   
   const insert = db.prepare(`
-    INSERT OR REPLACE INTO liturgy_types (name, slug, icon, color, description, display_order, is_active)
+    INSERT OR IGNORE INTO liturgy_types (name, slug, icon, color, description, display_order, is_active)
     VALUES (?, ?, ?, ?, ?, ?, 1)
   `)
   

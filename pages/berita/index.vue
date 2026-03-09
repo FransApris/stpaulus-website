@@ -1,9 +1,24 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <Breadcrumb title="Berita" />
+  <div class="min-h-screen pt-20 bg-gray-50">
+    <!-- Pull to Refresh Indicator -->
+    <div
+      v-if="pullState.isPulling || pullState.isRefreshing"
+      class="fixed top-20 left-0 right-0 z-40 bg-[#882f1d] text-white text-center py-2 transition-transform duration-200"
+      :style="{ transform: `translateY(${Math.max(0, pullState.pullDistance - 20)}px)` }"
+    >
+      <div class="flex items-center justify-center space-x-2">
+        <div v-if="pullState.isRefreshing" class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+        <span class="text-sm font-medium">
+          {{ pullState.isRefreshing ? 'Memuat ulang...' : pullState.canRefresh ? 'Lepaskan untuk memuat ulang' : 'Tarik ke bawah untuk memuat ulang' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <Breadcrumb title="Berita" />
     <!-- Header Halaman -->
     <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-900 mb-4">Berita Gereja Paulus Juanda</h1>
+      <h1 class="text-4xl font-cinzel text-[#882f1d] mb-4">Berita Gereja Paulus Juanda</h1>
       <p class="text-lg text-gray-600">Update terbaru tentang kegiatan dan acara gereja kami.</p>
     </div>
 
@@ -19,7 +34,11 @@
     </div>
 
     <!-- Daftar Berita (Grid Card) -->
-    <div v-else-if="posts && posts.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      v-else-if="posts && posts.length > 0"
+      ref="contentRef"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+    >
       <ArticleCard
         v-for="post in posts"
         :key="post.id"
@@ -28,7 +47,8 @@
         :title="post.title"
         :description="post.excerpt"
         :date="post.date"
-        :to="`/berita/${post.id}`"
+        :to="`/berita/${post.slug}`"
+        class="touch-manipulation"
       />
     </div>
 
@@ -36,10 +56,51 @@
     <div v-else class="text-center py-12">
       <p class="text-gray-500 text-lg">Belum ada berita tersedia. Silakan cek lagi nanti!</p>
     </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 // Fetch data dinamis dari API
-const { data: posts, pending, error } = await useAsyncData('posts', () => $fetch('/api/berita'));
+const { data: posts, pending, error, refresh } = await useAsyncData('posts', 
+  async () => {
+    try {
+      return await $fetch('/api/berita')
+    } catch (err) {
+      console.error('Failed to fetch news:', err)
+      return []
+    }
+  },
+  {
+    default: () => [],
+    transform: (data) => data || []
+  }
+);
+
+// Pull to refresh setup
+const contentRef = ref(null)
+let pullToRefreshInstance = null
+
+// Initialize pull state as reactive ref
+const pullState = ref({
+  isPulling: false,
+  pullDistance: 0,
+  isRefreshing: false,
+  canRefresh: false
+})
+
+// Update pull to refresh element reference when component mounts
+onMounted(() => {
+  if (contentRef.value) {
+    // Initialize pull to refresh with the actual element
+    pullToRefreshInstance = usePullToRefresh(contentRef.value, {
+      threshold: 80,
+      onRefresh: async () => {
+        await refresh()
+      }
+    })
+    // Update the reactive state reference
+    pullState.value = pullToRefreshInstance.pullState
+  }
+})
 </script>

@@ -1,99 +1,94 @@
-import { writeFile, access, readFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { requireAuth, requirePermission } from '../../../utils/auth'
+import { runQuery, getQuery } from '../../../database/db'
 
 export default defineEventHandler(async (event) => {
-  // Check authentication
-  const authHeader = getHeader(event, 'authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Unauthorized'
-    })
-  }
+  // Check authentication and permissions
+  requireAuth(event)
+  requirePermission('manage_gallery')(event)
 
-  const token = authHeader.substring(7)
-  try {
-    if (!token) {
-      throw new Error('Invalid token')
-    }
-  } catch (error) {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Invalid token'
-    })
-  }
+  const albumId = getRouterParam(event, 'id')
+  const body = await readBody(event)
+  const { title, description, tanggal_peristiwa, category_id } = body
 
-  const id = getRouterParam(event, 'id')
-  if (!id) {
+  if (!albumId) {
     throw createError({
       statusCode: 400,
       statusMessage: 'Album ID is required'
     })
   }
 
-  const body = await readBody(event)
-  const { title, description } = body
-
-  if (!title) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Title is required'
-    })
-  }
-
-  const albumsBaseDir = 'public/images/album'
-  const albumPath = join(albumsBaseDir, id)
-  const metaPath = join(albumPath, 'meta.json')
-
   try {
     // Check if album exists
-    try {
-      await access(albumPath)
-    } catch (error) {
+    const existingAlbum = await getQuery('SELECT id FROM gallery_albums WHERE slug = ?', [albumId])
+    if (!existingAlbum) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Album not found'
       })
     }
 
-    // Read existing meta.json
-    let metaData
-    try {
-      const metaContent = await readFile(metaPath, 'utf-8')
-      metaData = JSON.parse(metaContent)
-    } catch (error) {
-      // If meta.json doesn't exist, create default
-      metaData = {
-        title: id.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-        description: '',
-        created_at: new Date().toISOString()
+    // Update album
+    const updateResult = await runQuery(`
+      UPDATE gallery_albums
+      SET title = ?, description = ?, tanggal_peristiwa = ?, category_id = ?, updated_at = NOW()
+      WHERE slug = ?
+    `, [title, description, tanggal_peristiwa, category_id, albumId])
+
+    if ((updateResult as any).affectedRows === 0) {
+      // Check if album still exists (in case it was deleted concurrently)
+      const check = await getQuery('SELECT id FROM gallery_albums WHERE slug = ?', [albumId])
+      if (!check) {
+        throw createError({
+          statusCode: 404,
+          statusMessage: 'Album not found'
+        })
       }
+      // If exists but no changes, still success
     }
 
-    // Update metadata
-    metaData.title = title.trim()
-    metaData.description = description ? description.trim() : ''
-    metaData.updated_at = new Date().toISOString()
-
-    // Write updated meta.json
-    await writeFile(metaPath, JSON.stringify(metaData, null, 2), 'utf-8')
+    // Get updated album with category info
+    const album = await getQuery(`
+      SELECT
+        a.id,
+        a.title,
+        a.slug,
+        a.description,
+        a.tanggal_peristiwa,
+        a.cover_image,
+        a.status,
+        a.created_at,
+        a.updated_at,
+        c.nama_kategori as category_name,
+        c.color as category_color,
+        COUNT(p.id) as photo_count
+      FROM gallery_albums a
+      LEFT JOIN gallery_categories c ON a.category_id = c.id
+      LEFT JOIN gallery_photos p ON a.id = p.album_id
+      WHERE a.slug = ?
+      GROUP BY a.id
+    `, [albumId]) as any
 
     return {
       success: true,
       album: {
-        id,
-        title: metaData.title,
-        description: metaData.description
+        id: album.slug,
+        title: album.title,
+        description: album.description,
+        tanggal_peristiwa: album.tanggal_peristiwa,
+        thumbnail: album.cover_image,
+        category: album.category_name ? {
+          name: album.category_name,
+          color: album.category_color
+        } : null,
+        photos: [],
+        photos_count: album.photo_count
       }
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error updating album:', error)
-    if (error.statusCode) {
-      throw error
-    }
     throw createError({
       statusCode: 500,
-      statusMessage: 'Could not update album.',
+      statusMessage: 'Failed to update album'
     })
   }
 })
