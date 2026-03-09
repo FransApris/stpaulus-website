@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/.cache
+
+# Nuxt build artifacts  
+.nuxt
+.output
+
+# Development files
+.vscode
+.idea
+*.log
+logs/
+
+# Testing
+coverage
+*.test.*
+**/__tests__
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Backups
+backup*/
+backups/
+*.backup
+*.bak
+
+# Git
+.git
+.gitignore
+
+# Environment
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
