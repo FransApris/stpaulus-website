@@ -62,12 +62,14 @@ Write-Host "Running migration..." -ForegroundColor Yellow
 try {
     if ([string]::IsNullOrEmpty($dbPasswordPlain)) {
         # No password
-        cmd /c "mysql --host=$dbHost --user=$dbUser $dbName < $migrationFile"
+        $sqlContent = Get-Content $migrationFile -Raw
+        $sqlContent | & mysql --host=$dbHost --user=$dbUser $dbName
     }
     else {
         # With password
         $env:MYSQL_PWD = $dbPasswordPlain
-        cmd /c "mysql --host=$dbHost --user=$dbUser $dbName < $migrationFile"
+        $sqlContent = Get-Content $migrationFile -Raw
+        $sqlContent | & mysql --host=$dbHost --user=$dbUser $dbName
         Remove-Item Env:\MYSQL_PWD
     }
     
