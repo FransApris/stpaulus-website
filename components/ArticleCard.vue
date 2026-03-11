@@ -2,7 +2,7 @@
   <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
     <!-- Image Section -->
     <div v-if="image" class="w-full h-48 bg-gradient-to-br from-[#882f1d] to-[#c58229] relative flex items-center justify-center overflow-hidden">
-      <img v-if="imageType === 'url'" :src="image" :alt="title" class="w-full h-full object-cover" />
+      <img v-if="imageType === 'url'" :src="imageSrc" :alt="title" class="w-full h-full object-cover" @error="handleImageError" />
       <div v-else class="absolute inset-0 flex items-center justify-center bg-black/20">
         <span class="text-white text-lg font-semibold font-cinzel drop-shadow-md">{{ image }}</span>
         <div v-if="showClock" class="absolute top-4 right-4 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps({
   title: {
@@ -64,6 +64,13 @@ const props = defineProps({
     default: 'Baca Selengkapnya →'
   }
 })
+
+// Handle image source with fallback
+const imageSrc = ref(props.image)
+const handleImageError = () => {
+  console.log('[ArticleCard] Image failed to load, using fallback:', props.image)
+  imageSrc.value = '/images/default-article.jpg'
+}
 
 // Truncate to 2 sentences
 const truncatedDescription = computed(() => {
