@@ -76,7 +76,7 @@ export default defineNuxtConfig({
         { property: 'og:site_name', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
         { property: 'og:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
         { property: 'og:description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
-        { property: 'og:image', content: 'https://web-production-892f8.up.railway.app/images/logo-paulus-juanda.png' },
+        { property: 'og:image', content: 'https://stpaulusjuanda.org/images/logo-paulus-juanda.png' },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         { property: 'og:image:alt', content: 'Logo Paroki St. Paulus Juanda' },
@@ -87,7 +87,7 @@ export default defineNuxtConfig({
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
         { name: 'twitter:description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
-        { name: 'twitter:image', content: 'https://web-production-892f8.up.railway.app/images/logo-paulus-juanda.png' },
+        { name: 'twitter:image', content: 'https://stpaulusjuanda.org/images/logo-paulus-juanda.png' },
         { name: 'twitter:image:alt', content: 'Logo Paroki St. Paulus Juanda' }
       ],
       link: [
