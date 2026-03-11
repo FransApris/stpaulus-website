@@ -1,5 +1,5 @@
 <template>
-  <footer class="relative bg-gray-800 text-white py-8 pb-24 md:pb-8 dark:bg-gray-900 z-0">
+  <footer class="relative bg-gray-800 text-white py-8 dark:bg-gray-900 z-0">
     <div class="container mx-auto max-w-7xl px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
       <!-- Footer Description and Address -->
       <div v-if="footerData.settings?.footer_description || footerData.settings?.physical_address" class="mb-8">
@@ -84,11 +84,14 @@
       </div>
 
       <!-- Copyright -->
-      <div class="border-t border-gray-700 pt-8 text-center">
+      <div class="border-t border-gray-700 pt-8 text-center mb-4">
         <p class="text-sm text-gray-300">
           © {{ currentYear }} {{ footerData.settings?.copyright_entity || 'KOMSOS Paroki St. Paulus - Juanda' }}
         </p>
       </div>
+      
+      <!-- Mobile Bottom Nav Spacer - ensures content is above mobile nav -->
+      <div class="h-16 md:hidden" aria-hidden="true"></div>
     </div>
   </footer>
 </template>
