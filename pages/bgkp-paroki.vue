@@ -252,11 +252,11 @@ import { ref, computed, onMounted } from 'vue'
 
 // SEO
 useHead({
-    title: 'Badan Gereja Katolik Paroki - Paroki St. Paulus Surabaya',
+    title: 'Badan Gereja Katolik Paroki - Paroki St. Paulus Sidoarjo',
     meta: [
         {
             name: 'description',
-            content: 'Daftar anggota Badan Gereja Katolik Paroki (BGKP) St. Paulus Surabaya'
+            content: 'Daftar anggota Badan Gereja Katolik Paroki (BGKP) St. Paulus Sidoarjo'
         }
     ]
 })

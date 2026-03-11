@@ -221,11 +221,11 @@ import { ref, computed, onMounted } from 'vue'
 
 // SEO
 useHead({
-    title: 'Dewan Pastoral Paroki - Paroki St. Paulus Surabaya',
+    title: 'Dewan Pastoral Paroki - Paroki St. Paulus Sidoarjo',
     meta: [
         {
             name: 'description',
-            content: 'Daftar pengurus Dewan Pastoral Paroki (DPP) St. Paulus Surabaya'
+            content: 'Daftar pengurus Dewan Pastoral Paroki (DPP) St. Paulus Sidoarjo'
         }
     ]
 })
