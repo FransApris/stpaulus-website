@@ -3,9 +3,17 @@ import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise'
 import * as path from 'path'
 import * as fs from 'fs'
 
-// Helper function to get env var (supports both MYSQL_* and MYSQL* formats)
+// Helper function to get env var (supports multiple Railway MySQL formats)
 const getEnvVar = (withUnderscore: string, withoutUnderscore: string): string | undefined => {
   return process.env[withUnderscore] || process.env[withoutUnderscore]
+}
+
+// Special handler for password (Railway uses MYSQL_ROOT_PASSWORD)
+const getPassword = (): string => {
+  return process.env.MYSQL_PASSWORD || 
+         process.env.MYSQLPASSWORD || 
+         process.env.MYSQL_ROOT_PASSWORD || 
+         ''
 }
 
 // Validate required environment variables (check both formats)
@@ -22,12 +30,12 @@ if (!hasRequiredVars) {
 }
 
 // Database configuration with fallbacks for development
-// Supports both MYSQL_* (with underscore) and MYSQL* (without underscore) formats
+// Supports Railway MySQL formats: MYSQL_*, MYSQL*, and MYSQL_ROOT_PASSWORD
 const dbConfig = {
   host: getEnvVar('MYSQL_HOST', 'MYSQLHOST') || 'localhost',
   port: parseInt(getEnvVar('MYSQL_PORT', 'MYSQLPORT') || '3306'),
   user: getEnvVar('MYSQL_USER', 'MYSQLUSER') || 'root',
-  password: getEnvVar('MYSQL_PASSWORD', 'MYSQLPASSWORD') || '',
+  password: getPassword(),
   database: getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE') || 'stpaulus_cms_db',
   waitForConnections: true,
   connectionLimit: 10,

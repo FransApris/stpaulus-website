@@ -11,12 +11,20 @@ const getEnvVar = (withUnderscore, withoutUnderscore) => {
   return process.env[withUnderscore] || process.env[withoutUnderscore]
 }
 
+// Get password (Railway uses MYSQL_ROOT_PASSWORD)
+const getPassword = () => {
+  return process.env.MYSQL_PASSWORD || 
+         process.env.MYSQLPASSWORD || 
+         process.env.MYSQL_ROOT_PASSWORD || 
+         ''
+}
+
 // MySQL configuration
 const mysqlConfig = {
   host: getEnvVar('MYSQL_HOST', 'MYSQLHOST') || 'localhost',
   port: parseInt(getEnvVar('MYSQL_PORT', 'MYSQLPORT') || '3306'),
   user: getEnvVar('MYSQL_USER', 'MYSQLUSER') || 'root',
-  password: getEnvVar('MYSQL_PASSWORD', 'MYSQLPASSWORD') || '',
+  password: getPassword(),
   database: getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE') || 'stpaulus_cms_db',
   multipleStatements: true
 }

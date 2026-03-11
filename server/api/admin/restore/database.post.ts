@@ -51,12 +51,20 @@ export default defineEventHandler(async (event) => {
             return process.env[withUnderscore] || process.env[withoutUnderscore]
         }
 
+        // Get password (Railway uses MYSQL_ROOT_PASSWORD)
+        const getPassword = (): string => {
+            return process.env.MYSQL_PASSWORD || 
+                   process.env.MYSQLPASSWORD || 
+                   process.env.MYSQL_ROOT_PASSWORD || 
+                   ''
+        }
+
         // Create database connection
         const connection = await mysql.createConnection({
             host: getEnvVar('MYSQL_HOST', 'MYSQLHOST') || 'localhost',
             port: parseInt(getEnvVar('MYSQL_PORT', 'MYSQLPORT') || '3306'),
             user: getEnvVar('MYSQL_USER', 'MYSQLUSER') || 'root',
-            password: getEnvVar('MYSQL_PASSWORD', 'MYSQLPASSWORD') || '',
+            password: getPassword(),
             database: getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE') || 'stpaulus_cms_db',
             multipleStatements: true // Important for executing multiple SQL statements
         })
