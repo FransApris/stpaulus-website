@@ -1,15 +1,15 @@
 <template>
-  <div class="chat-widget fixed bottom-4 z-50" style="right: 5%">
+  <div class="chat-widget fixed bottom-20 md:bottom-6 z-50" style="right: 5%">
     <!-- Chat Button -->
     <button @click="toggleChat"
-      class="bg-paulus-blue hover:bg-blue-700 text-white rounded-full w-20 h-20 md:w-24 md:h-24 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
+      class="bg-paulus-blue hover:bg-blue-700 text-white rounded-full w-16 h-16 md:w-20 md:h-20 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
       :class="{ 'rotate-45': isOpen }">
-      <svg v-if="!isOpen" class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg v-if="!isOpen" class="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
         </path>
       </svg>
-      <svg v-else class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg v-else class="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
       </svg>
     </button>
@@ -17,10 +17,10 @@
     <!-- Chat Window with optimized transition -->
     <Transition name="chat">
       <div v-if="isOpen"
-        class="absolute bottom-16 right-0 w-80 h-96 bg-white rounded-lg shadow-xl border flex flex-col">
+        class="absolute bottom-20 md:bottom-24 right-0 w-80 h-96 bg-white rounded-lg shadow-xl border flex flex-col">
         <!-- Header -->
         <div class="bg-paulus-blue text-white p-4 rounded-t-lg">
-          <h3 class="font-semibold">Chatbot Gereja St. Paulus</h3>
+          <h3 class="font-semibold">Chatbot St. Paulus Juanda</h3>
           <p class="text-sm opacity-90">Tanya tentang misa, sakramen, dan paroki</p>
         </div>
 
@@ -78,7 +78,7 @@ const isFirstOpen = ref(true)  // Track first open for instant greeting
 // Pre-defined welcome message (no computation overhead)
 const welcomeMessage = {
   id: 'welcome',
-  text: 'Selamat datang! Saya adalah chatbot Gereja St. Paulus. Saya dapat membantu Anda dengan informasi tentang jadwal misa, sakramen, dan kegiatan paroki. Apa yang ingin Anda tanyakan?',
+  text: 'Selamat datang! Saya adalah chatbot St. Paulus Juanda. Saya dapat membantu Anda dengan informasi tentang jadwal misa, sakramen, dan kegiatan paroki. Apa yang ingin Anda tanyakan?',
   sender: 'bot'
 }
 
