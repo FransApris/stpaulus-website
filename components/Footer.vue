@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-gray-800 text-white py-8 dark:bg-gray-900">
+  <footer class="bg-gray-800 text-white py-8 pb-24 md:pb-8 dark:bg-gray-900">
     <div class="container mx-auto max-w-7xl px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
       <!-- Footer Description and Address -->
       <div v-if="footerData.settings?.footer_description || footerData.settings?.physical_address" class="mb-8">
