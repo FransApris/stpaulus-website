@@ -39,6 +39,7 @@
     "@vueuse/core": "^14.0.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.9.0",
     "date-fns": "^4.1.0",
     "groq-sdk": "^0.37.0",
     "jsonwebtoken": "^9.0.2",

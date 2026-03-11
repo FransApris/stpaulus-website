@@ -1,6 +1,7 @@
 import { requireAuth } from '../../../utils/auth'
 import { writeFile, mkdir } from 'node:fs/promises'
 import { join, extname } from 'node:path'
+import { uploadToCloudinary, isCloudinaryEnabled } from '../../../utils/cloudinary'
 
 export default defineEventHandler(async (event) => {
   // Authentication check
@@ -10,6 +11,7 @@ export default defineEventHandler(async (event) => {
     const formData = await readMultipartFormData(event)
 
     console.log('[Upload] Received form data:', formData?.length || 0, 'files')
+    console.log('[Upload] Cloudinary enabled:', isCloudinaryEnabled())
 
     if (!formData || formData.length === 0) {
       throw createError({
@@ -18,13 +20,13 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Create articles upload directory
+    // Create articles upload directory (for local fallback)
     const uploadDir = join('public/uploads/articles')
     try {
       await mkdir(uploadDir, { recursive: true })
-      console.log('[Upload] Directory ensured:', uploadDir)
+      console.log('[Upload] Local directory ensured:', uploadDir)
     } catch (error) {
-      console.log('[Upload] Directory already exists')
+      console.log('[Upload] Local directory already exists')
     }
 
     const uploadedFiles = []
@@ -58,22 +60,43 @@ export default defineEventHandler(async (event) => {
         continue
       }
 
-      // Generate unique filename
+      let fileUrl: string
+
+      // Try Cloudinary first, fallback to local storage
+      if (isCloudinaryEnabled()) {
+        try {
+          console.log('[Upload] Uploading to Cloudinary...')
+          fileUrl = await uploadToCloudinary(file.data, 'articles', file.filename)
+          console.log('[Upload] Cloudinary upload success:', fileUrl)
+          
+          uploadedFiles.push({
+            url: fileUrl,
+            filename: file.filename,
+            originalFilename: file.filename,
+            storage: 'cloudinary'
+          })
+          continue
+        } catch (cloudError) {
+          console.error('[Upload] Cloudinary upload failed, falling back to local:', cloudError)
+          // Continue to local storage fallback
+        }
+      }
+
+      // Local storage (fallback or primary if Cloudinary not configured)
       const timestamp = Date.now()
       const random = Math.random().toString(36).substring(2, 8)
       const finalExtension = extension || '.jpg'
       const filename = `article-${timestamp}-${random}${finalExtension}`
-
       const filePath = join(uploadDir, filename)
 
-      // Save file
       await writeFile(filePath, file.data)
-      console.log('[Upload] File saved:', filePath)
+      console.log('[Upload] Local file saved:', filePath)
 
       uploadedFiles.push({
         url: `/uploads/articles/${filename}`,
         filename: filename,
-        originalFilename: file.filename
+        originalFilename: file.filename,
+        storage: 'local'
       })
     }
 
@@ -85,12 +108,15 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    console.log('[Upload] Success:', uploadedFiles[0].url)
+    const uploadedFile = uploadedFiles[0]
+    console.log('[Upload] Success:', uploadedFile.url, '| Storage:', uploadedFile.storage)
 
     // Return the first uploaded file URL (for single image upload)
     return {
       success: true,
-      url: uploadedFiles[0].url
+      url: uploadedFile.url,
+      storage: uploadedFile.storage,
+      filename: uploadedFile.filename
     }
 
   } catch (error: any) {
