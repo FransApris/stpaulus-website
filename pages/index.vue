@@ -609,7 +609,18 @@
 useHead({
   title: 'Beranda',
   meta: [
-    { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Surabaya - Informasi jadwal misa, berita gereja, dan kegiatan paroki' }
+    { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
+    
+    // Open Graph for homepage
+    { property: 'og:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
+    { property: 'og:description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
+    { property: 'og:image', content: 'https://web-production-892f8.up.railway.app/images/logo-paulus-juanda.png' },
+    { property: 'og:url', content: 'https://stpaulusjuanda.org' },
+    
+    // Twitter Card for homepage
+    { name: 'twitter:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
+    { name: 'twitter:description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
+    { name: 'twitter:image', content: 'https://web-production-892f8.up.railway.app/images/logo-paulus-juanda.png' }
   ],
   link: [
     {

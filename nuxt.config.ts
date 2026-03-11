@@ -63,13 +63,32 @@ export default defineNuxtConfig({
   // Performance optimization for Google Maps
   app: {
     head: {
-      title: 'St. Paulus Juanda',
-      titleTemplate: '%s - St. Paulus Juanda',
+      title: 'Paroki St. Paulus - Juanda, Sidoarjo',
+      titleTemplate: '%s - Paroki St. Paulus Juanda',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Surabaya - Informasi misa, kegiatan paroki, dan pelayanan umat' },
-        { name: 'keywords', content: 'Gereja Katolik, Paroki St. Paulus, Juanda, Surabaya, jadwal misa, kegiatan gereja' }
+        { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
+        { name: 'keywords', content: 'Gereja Katolik, Paroki St. Paulus, Juanda, Sidoarjo, Surabaya, jadwal misa, kegiatan gereja, umat katolik' },
+        
+        // Open Graph / Facebook
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
+        { property: 'og:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
+        { property: 'og:description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
+        { property: 'og:image', content: 'https://web-production-892f8.up.railway.app/images/logo-paulus-juanda.png' },
+        { property: 'og:image:width', content: '1200' },
+        { property: 'og:image:height', content: '630' },
+        { property: 'og:image:alt', content: 'Logo Paroki St. Paulus Juanda' },
+        { property: 'og:url', content: 'https://stpaulusjuanda.org' },
+        { property: 'og:locale', content: 'id_ID' },
+        
+        // Twitter Card
+        { name: 'twitter:card', content: 'summary_large_image' },
+        { name: 'twitter:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
+        { name: 'twitter:description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
+        { name: 'twitter:image', content: 'https://web-production-892f8.up.railway.app/images/logo-paulus-juanda.png' },
+        { name: 'twitter:image:alt', content: 'Logo Paroki St. Paulus Juanda' }
       ],
       link: [
         // Preconnect to Google Maps for faster loading
