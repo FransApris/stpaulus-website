@@ -29,6 +29,8 @@
             <li v-for="link in footerData.links.legal" :key="link.id">
               <NuxtLink
                 :to="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="text-gray-300 hover:text-white transition-colors duration-200"
               >
                 {{ link.title }}
@@ -44,6 +46,8 @@
             <li v-for="link in footerData.links.support" :key="link.id">
               <NuxtLink
                 :to="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="text-gray-300 hover:text-white transition-colors duration-200"
               >
                 {{ link.title }}
@@ -59,6 +63,8 @@
             <li v-for="link in footerData.links.content" :key="link.id">
               <NuxtLink
                 :to="link.url"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="text-gray-300 hover:text-white transition-colors duration-200"
               >
                 {{ link.title }}
