@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen pt-16 bg-gray-50">
     <!-- HeroSection (Dynamic based on active theme) - FULL WIDTH -->
-    <HeroSection :show-hero="true" title="Selamat Datang di Website Gereja Paulus Juanda"
+    <HeroSection :show-hero="true" title="Selamat Datang di Paroki St. Paulus Juanda"
       subtitle="Temukan berita, artikel, galeri kegiatan, dan agenda terbaru kami." cta-text="Lihat Jadwal Misa"
       cta-to="/misa" :hero-image="activeTheme?.image_path || '/images/gereja-stpaulus-hero.jpg'" />
 
@@ -605,8 +605,12 @@
 </template>
 
 <script setup>
-// Preconnect to Google Maps for faster loading when user clicks
+// Set page title and meta
 useHead({
+  title: 'Beranda',
+  meta: [
+    { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Surabaya - Informasi jadwal misa, berita gereja, dan kegiatan paroki' }
+  ],
   link: [
     {
       rel: 'preconnect',

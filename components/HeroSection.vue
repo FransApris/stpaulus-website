@@ -27,7 +27,7 @@
 // Props (Simple Defaults - No withDefaults)
 const props = defineProps({
   showHero: { type: Boolean, default: true },
-  title: { type: String, default: 'Selamat Datang di Website Gereja Paulus Juanda' },
+  title: { type: String, default: 'Selamat Datang di Paroki St. Paulus Juanda' },
   subtitle: { type: String, default: 'Temukan berita, artikel, galeri kegiatan, dan agenda terbaru kami.' },
   ctaText: { type: String, default: 'Lihat Jadwal Misa' },
   ctaTo: { type: String, default: '/misa' },

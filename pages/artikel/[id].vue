@@ -323,7 +323,7 @@ const showToastMessage = (message, type = 'success') => {
 
 // Meta tags
 useHead(() => ({
-  title: article.value ? `${article.value.title} - Gereja Paulus Juanda` : 'Detail Artikel',
+  title: article.value ? `${article.value.title}` : 'Detail Artikel',
   meta: [{ 
     name: 'description', 
     content: article.value?.excerpt || 'Artikel rohani dari Gereja Katolik St. Paulus Juanda.' 

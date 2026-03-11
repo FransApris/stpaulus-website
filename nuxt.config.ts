@@ -63,6 +63,14 @@ export default defineNuxtConfig({
   // Performance optimization for Google Maps
   app: {
     head: {
+      title: 'St. Paulus Juanda',
+      titleTemplate: '%s - St. Paulus Juanda',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Surabaya - Informasi misa, kegiatan paroki, dan pelayanan umat' },
+        { name: 'keywords', content: 'Gereja Katolik, Paroki St. Paulus, Juanda, Surabaya, jadwal misa, kegiatan gereja' }
+      ],
       link: [
         // Preconnect to Google Maps for faster loading
         { rel: 'preconnect', href: 'https://www.google.com' },
