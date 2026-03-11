@@ -63,13 +63,13 @@ try {
     if ([string]::IsNullOrEmpty($dbPasswordPlain)) {
         # No password
         $sqlContent = Get-Content $migrationFile -Raw
-        $sqlContent | & mysql --host=$dbHost --user=$dbUser $dbName
+        $sqlContent | mysql --host=$dbHost --user=$dbUser $dbName
     }
     else {
         # With password
         $env:MYSQL_PWD = $dbPasswordPlain
         $sqlContent = Get-Content $migrationFile -Raw
-        $sqlContent | & mysql --host=$dbHost --user=$dbUser $dbName
+        $sqlContent | mysql --host=$dbHost --user=$dbUser $dbName
         Remove-Item Env:\MYSQL_PWD
     }
     
