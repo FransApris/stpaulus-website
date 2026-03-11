@@ -3,24 +3,32 @@ import type { RowDataPacket, ResultSetHeader } from 'mysql2/promise'
 import * as path from 'path'
 import * as fs from 'fs'
 
-// Validate required environment variables
-const requiredEnvVars = ['MYSQL_HOST', 'MYSQL_USER', 'MYSQL_DATABASE']
-const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName])
+// Helper function to get env var (supports both MYSQL_* and MYSQL* formats)
+const getEnvVar = (withUnderscore: string, withoutUnderscore: string): string | undefined => {
+  return process.env[withUnderscore] || process.env[withoutUnderscore]
+}
 
-if (missingEnvVars.length > 0) {
+// Validate required environment variables (check both formats)
+const hasRequiredVars = 
+  (getEnvVar('MYSQL_HOST', 'MYSQLHOST') && 
+   getEnvVar('MYSQL_USER', 'MYSQLUSER') && 
+   getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE'))
+
+if (!hasRequiredVars) {
   console.warn(
-    `⚠️ WARNING: Missing database environment variables: ${missingEnvVars.join(', ')}\n` +
+    `⚠️ WARNING: Missing database environment variables\n` +
     `Application will continue but database features may not work.`
   )
 }
 
 // Database configuration with fallbacks for development
+// Supports both MYSQL_* (with underscore) and MYSQL* (without underscore) formats
 const dbConfig = {
-  host: process.env.MYSQL_HOST || 'localhost',
-  port: parseInt(process.env.MYSQL_PORT || '3306'),
-  user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || '',
-  database: process.env.MYSQL_DATABASE || 'stpaulus_cms_db',
+  host: getEnvVar('MYSQL_HOST', 'MYSQLHOST') || 'localhost',
+  port: parseInt(getEnvVar('MYSQL_PORT', 'MYSQLPORT') || '3306'),
+  user: getEnvVar('MYSQL_USER', 'MYSQLUSER') || 'root',
+  password: getEnvVar('MYSQL_PASSWORD', 'MYSQLPASSWORD') || '',
+  database: getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE') || 'stpaulus_cms_db',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -55,12 +63,14 @@ export const initDatabase = async () => {
             host: dbConfig.host,
             port: dbConfig.port,
             user: dbConfig.user,
-            database: dbConfig.database
+            database: dbConfig.database,
+            passwordLength: dbConfig.password?.length || 0
           })
+          console.error('🔑 Password status:', dbConfig.password ? `Set (${dbConfig.password.length} chars)` : 'NOT SET or EMPTY')
           console.error('\n💡 Possible solutions:')
-          console.error('   1. Start MySQL: npm run mysql:start')
-          console.error('   2. Use auto-start: npm run dev:auto')
-          console.error('   3. Check MySQL status: npm run mysql:status')
+          console.error('   1. Verify MYSQL_PASSWORD in Railway Variables')
+          console.error('   2. Use reference: ${{MySQL.MYSQL_PASSWORD}}')
+          console.error('   3. Check MySQL service credentials')
           console.error('\n🔍 Error details:', error.message)
           throw error
         }

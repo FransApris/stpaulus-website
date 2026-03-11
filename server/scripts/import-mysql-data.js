@@ -6,13 +6,18 @@ import { config } from 'dotenv'
 // Load environment variables
 config()
 
+// Helper to get env var (supports both MYSQL_* and MYSQL* formats)
+const getEnvVar = (withUnderscore, withoutUnderscore) => {
+  return process.env[withUnderscore] || process.env[withoutUnderscore]
+}
+
 // MySQL configuration
 const mysqlConfig = {
-  host: process.env.MYSQL_HOST || 'localhost',
-  port: parseInt(process.env.MYSQL_PORT || '3306'),
-  user: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || '',
-  database: process.env.MYSQL_DATABASE || 'stpaulus_cms_db',
+  host: getEnvVar('MYSQL_HOST', 'MYSQLHOST') || 'localhost',
+  port: parseInt(getEnvVar('MYSQL_PORT', 'MYSQLPORT') || '3306'),
+  user: getEnvVar('MYSQL_USER', 'MYSQLUSER') || 'root',
+  password: getEnvVar('MYSQL_PASSWORD', 'MYSQLPASSWORD') || '',
+  database: getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE') || 'stpaulus_cms_db',
   multipleStatements: true
 }
 

@@ -46,13 +46,18 @@ export default defineEventHandler(async (event) => {
 
         console.log('[Database Restore] SQL file size:', sqlContent.length, 'characters')
 
+        // Helper to get env var (supports both formats)
+        const getEnvVar = (withUnderscore: string, withoutUnderscore: string): string | undefined => {
+            return process.env[withUnderscore] || process.env[withoutUnderscore]
+        }
+
         // Create database connection
         const connection = await mysql.createConnection({
-            host: process.env.MYSQL_HOST || 'localhost',
-            port: parseInt(process.env.MYSQL_PORT || '3306'),
-            user: process.env.MYSQL_USER || 'root',
-            password: process.env.MYSQL_PASSWORD || '',
-            database: process.env.MYSQL_DATABASE || 'stpaulus_cms_db',
+            host: getEnvVar('MYSQL_HOST', 'MYSQLHOST') || 'localhost',
+            port: parseInt(getEnvVar('MYSQL_PORT', 'MYSQLPORT') || '3306'),
+            user: getEnvVar('MYSQL_USER', 'MYSQLUSER') || 'root',
+            password: getEnvVar('MYSQL_PASSWORD', 'MYSQLPASSWORD') || '',
+            database: getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE') || 'stpaulus_cms_db',
             multipleStatements: true // Important for executing multiple SQL statements
         })
 
