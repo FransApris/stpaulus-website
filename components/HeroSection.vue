@@ -1,8 +1,8 @@
 <template>
   <!-- No ClientOnly - Direct Render (SSR + Client Safe) -->
   <div v-if="props.showHero"
-    class="relative min-h-screen pt-2 md:pt-4 overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0"
-    :class="className" :style="{ backgroundImage: `url(${resolvedHeroImage})` }">>
+    class="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0"
+    :class="className" :style="{ backgroundImage: `url(${resolvedHeroImage})` }">
     <!-- No Hidden Img - Use CSS Bg Only (No Events) -->
 
     <!-- Absolute Center Content -->
