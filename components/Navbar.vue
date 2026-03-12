@@ -434,11 +434,25 @@
                   </svg>
                 </button>
                 <transition name="dropdown">
-                  <div v-if="activeMobileDropdown === link.title" class="ml-4 mt-2 space-y-1">
+                  <div v-if="activeMobileDropdown === link.title" class="ml-4 mt-2 space-y-2">
                     <div v-for="item in link.items" :key="item.path">
                       <NuxtLink :to="item.path" @click="closeMobileMenuAndDropdown"
-                        class="block py-2 px-3 rounded-lg transition-all duration-200 text-gray-700 hover:text-white hover:bg-[#c58229] text-base">
-                        {{ item.title }}
+                        class="flex items-start gap-3 py-3 px-3 rounded-lg transition-all duration-200 hover:bg-gray-50 group">
+                        <!-- Icon -->
+                        <svg class="w-6 h-6 flex-shrink-0 text-[#882f1d] group-hover:text-[#c58229] transition-colors mt-0.5"
+                          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                          stroke-linejoin="round" viewBox="0 0 24 24">
+                          <path :d="iconPaths[item.icon]" />
+                        </svg>
+                        <!-- Text Content -->
+                        <div class="flex-1 min-w-0">
+                          <div class="font-medium text-gray-900 group-hover:text-[#882f1d] transition-colors text-base">
+                            {{ item.title }}
+                          </div>
+                          <div class="text-sm text-gray-500 mt-0.5 leading-tight">
+                            {{ item.description }}
+                          </div>
+                        </div>
                       </NuxtLink>
                     </div>
                   </div>
