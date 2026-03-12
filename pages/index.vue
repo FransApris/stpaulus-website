@@ -12,9 +12,11 @@
     <section class="py-16 bg-white">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-12">
-          <h2 class="text-4xl font-cinzel text-[#882f1d] mb-4">Paroki St. Paulus- Juanda</h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">Jl. Juanda No. 123, Sidoarjo, Jawa Timur 61234, Tel:
-            (031) 123-4567 | Email: info@stpaulusjuanda.org</p>
+          <div class="flex items-center justify-center mb-3">
+            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+          </div>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Paroki St. Paulus Juanda</h2>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jl. Juanda No. 123, Sidoarjo, Jawa Timur 61234<br/>Tel: (031) 123-4567 | Email: info@stpaulusjuanda.org</p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
           <SimpleCard title="Gallery Foto"
@@ -38,8 +40,11 @@
       <section class="py-16 bg-gray-50">
         <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
           <div class="text-center mb-12">
-            <h2 class="text-3xl font-cinzel text-[#882f1d] mb-4">Teritorial Lingkungan</h2>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">Peta wilayah teritorial Paroki St. Paulus Juanda.</p>
+            <div class="flex items-center justify-center mb-3">
+              <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+            </div>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Teritorial Lingkungan</h2>
+            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Peta wilayah teritorial Paroki St. Paulus Juanda.</p>
           </div>
           <div class="max-w-6xl mx-auto">
             <MapEmbed :height="480" :lat="-7.3917066" :lng="112.7296374" title="Teritorial Lingkungan Paroki St. Paulus"
@@ -58,8 +63,11 @@
     <section class="py-16 bg-white">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-12">
-          <h2 class="text-3xl font-cinzel text-[#882f1d] mb-4">Album Terbaru</h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">Lihat album foto terbaru dari kegiatan paroki kami.</p>
+          <div class="flex items-center justify-center mb-3">
+            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+          </div>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Album Terbaru</h2>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Lihat album foto terbaru dari kegiatan paroki kami.</p>
         </div>
 
         <!-- Loading Skeleton -->
@@ -110,7 +118,7 @@
 
               <!-- Album Info -->
               <div class="p-5">
-                <h3 class="text-xl font-cinzel text-[#882f1d] mb-2 group-hover:underline line-clamp-2">
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2 group-hover:underline line-clamp-2">
                   {{ album.title }}
                 </h3>
                 <p class="text-gray-600 text-sm line-clamp-2 mb-3">
@@ -169,7 +177,13 @@
     <!-- Section 4: Latest News / Events Teaser -->
     <section class="py-12 bg-gray-50">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <h2 class="text-3xl font-cinzel text-[#882f1d] text-center mb-6">Berita Terbaru</h2>
+        <div class="text-center mb-8">
+          <div class="flex items-center justify-center mb-3">
+            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+          </div>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Berita Terbaru</h2>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Informasi dan berita terkini dari Paroki St. Paulus Juanda.</p>
+        </div>
         <div v-if="newsPending" class="text-center text-gray-500">
           Memuat berita terbaru...
         </div>
@@ -207,10 +221,12 @@
     <!-- Section 5: Dokumen Paroki -->
     <section class="py-12 bg-white">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <div class="text-center mb-6">
-          <h2 class="text-3xl font-cinzel text-[#882f1d] mb-4">DOKUMEN</h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting Gereja St.
-            Paulus Juanda.</p>
+        <div class="text-center mb-8">
+          <div class="flex items-center justify-center mb-3">
+            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+          </div>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Dokumen Paroki</h2>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting Gereja St. Paulus Juanda.</p>
         </div>
         <div v-if="featuredDocumentsPending" class="text-center text-gray-500">
           Memuat dokumen unggulan...
@@ -230,7 +246,7 @@
               </div>
 
               <!-- Title -->
-              <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ doc.title }}</h3>
+              <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ doc.title }}</h3>
 
               <!-- Description -->
               <p v-if="doc.description" class="text-gray-600 text-sm mb-4 line-clamp-3">
@@ -305,10 +321,12 @@
     <!-- Section 6: Artikel Terbaru (Updated to use API) -->
     <section class="py-12 bg-gray-50">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <div class="text-center mb-6">
-          <h2 class="text-3xl font-cinzel text-[#882f1d] mb-4">Artikel & Renungan</h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">Baca inspirasi rohani, khotbah, dan artikel dari pastor
-            serta komunitas paroki kami.</p>
+        <div class="text-center mb-8">
+          <div class="flex items-center justify-center mb-3">
+            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+          </div>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Artikel & Renungan</h2>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Baca inspirasi rohani, khotbah, dan artikel dari pastor serta komunitas paroki kami.</p>
         </div>
         <div v-if="articlesPending" class="text-center text-gray-500">
           Memuat artikel terbaru...
@@ -346,10 +364,12 @@
     <!-- Section 7: Agenda Mendatang -->
     <section class="py-12 bg-white">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <div class="text-center mb-6">
-          <h2 class="text-3xl font-cinzel text-[#882f1d] mb-4">Agenda Mendatang</h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">Jadwal kegiatan dan acara mendatang di Paroki St. Paulus
-            Juanda.</p>
+        <div class="text-center mb-8">
+          <div class="flex items-center justify-center mb-3">
+            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+          </div>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Agenda Mendatang</h2>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jadwal kegiatan dan acara mendatang di Paroki St. Paulus Juanda.</p>
         </div>
         <div v-if="agendaPending" class="text-center text-gray-500">
           Memuat agenda mendatang...
@@ -368,7 +388,7 @@
                 </span>
               </div>
 
-              <h3 class="text-xl font-cinzel font-semibold text-gray-900 mb-3">{{ agenda.title }}</h3>
+              <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">{{ agenda.title }}</h3>
 
               <div class="flex items-center text-gray-600 mb-2">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
