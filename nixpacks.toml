@@ -1,0 +1,27 @@
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cmds = [
+  "PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install --ignore-scripts --legacy-peer-deps"
+]
+
+[phases.build]
+cmds = [
+  "npm run build",
+  "npm prune --production"
+]
+
+[phases.optimize]
+cmds = [
+  "rm -rf .nuxt/analyze",
+  "rm -rf node_modules/.cache"
+]
+
+[start]
+cmd = "node .output/server/index.mjs"
+
+[variables]
+PORT = "3000"
+HOST = "0.0.0.0"
+NODE_ENV = "production"

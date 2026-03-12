@@ -70,7 +70,7 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
         { name: 'keywords', content: 'Gereja Katolik, Paroki St. Paulus, Juanda, Sidoarjo, Surabaya, jadwal misa, kegiatan gereja, umat katolik' },
-        
+
         // Open Graph / Facebook
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
@@ -82,7 +82,7 @@ export default defineNuxtConfig({
         { property: 'og:image:alt', content: 'Logo Paroki St. Paulus Juanda' },
         { property: 'og:url', content: 'https://stpaulusjuanda.org' },
         { property: 'og:locale', content: 'id_ID' },
-        
+
         // Twitter Card
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
@@ -156,6 +156,9 @@ export default defineNuxtConfig({
   // Penambahan blok nitro untuk menghilangkan warning
   nitro: {
     compatibilityDate: '2025-11-09',
+    // 🚀 RAILWAY FIX: Listen on dynamic PORT from Railway
+    port: parseInt(process.env.PORT || '3000'),
+    host: process.env.HOST || '0.0.0.0',
     externals: {
       inline: ['xlsx']
     },
