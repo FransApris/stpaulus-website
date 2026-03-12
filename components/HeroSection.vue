@@ -1,12 +1,12 @@
 <template>
   <!-- No ClientOnly - Direct Render (SSR + Client Safe) -->
   <div v-if="props.showHero"
-    class="relative min-h-screen pt-20 md:pt-16 overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0"
+    class="relative min-h-screen pt-16 overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0"
     :class="className" :style="{ backgroundImage: `url(${resolvedHeroImage})` }">
     <!-- No Hidden Img - Use CSS Bg Only (No Events) -->
 
-    <!-- Absolute Center Content - FIXED: respect navbar space -->
-    <div class="absolute inset-x-0 top-20 md:top-16 bottom-0 flex items-center justify-center z-10 bg-black/20">
+    <!-- Absolute Center Content -->
+    <div class="absolute inset-0 flex items-center justify-center z-10 bg-black/20">
       <div class="px-6 text-center text-white md:px-12 w-full max-w-4xl mx-auto">
         <h1 class="mb-4 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-cinzel drop-shadow-lg">
           {{ title }}
