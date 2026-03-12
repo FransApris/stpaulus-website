@@ -91,6 +91,9 @@ export default defineNuxtConfig({
         { name: 'twitter:image:alt', content: 'Logo Paroki St. Paulus Juanda' }
       ],
       link: [
+        // Favicon - Logo Paroki St. Paulus
+        { rel: 'icon', type: 'image/png', href: '/images/logo-paulus-juanda.png' },
+        { rel: 'apple-touch-icon', href: '/images/logo-paulus-juanda.png' },
         // Preconnect to Google Maps for faster loading
         { rel: 'preconnect', href: 'https://www.google.com' },
         { rel: 'preconnect', href: 'https://maps.google.com' },
