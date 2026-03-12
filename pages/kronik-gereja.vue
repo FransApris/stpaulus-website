@@ -105,7 +105,6 @@
           <BackButton position="bottom" />
         </div>
       </div>
-    </div>
   </div>
 </template>
 

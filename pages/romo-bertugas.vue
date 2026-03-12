@@ -75,7 +75,6 @@
         <!-- Back Button -->
         <BackButton position="bottom" />
       </div>
-    </div>
   </div>
 </template>
 
