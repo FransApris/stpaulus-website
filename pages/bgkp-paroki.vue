@@ -1,17 +1,23 @@
 <template>
-    <div class="min-h-screen pt-16 bg-gray-50">
-        <section class="py-8 md:py-16 bg-white">
-            <div class="container mx-auto px-4">
-                <!-- Breadcrumb -->
-                <Breadcrumb title="BGKP Paroki" />
-
-                <!-- Header Section -->
-                <div class="text-center mb-8 md:mb-12">
-                    <h1 class="text-3xl md:text-4xl font-cinzel text-[#882f1d] mb-3 md:mb-4">Badan Gereja Katolik Paroki</h1>
-                    <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-                        {{ decreeInfo.periodLabel }}
+    <div class="min-h-screen bg-gray-50">
+        <!-- Header -->
+        <div class="bg-[#882f1d] text-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="text-center">
+                    <h1 class="text-4xl font-cinzel font-bold mb-4">BGKP Paroki</h1>
+                    <p class="text-xl text-gray-200 max-w-2xl mx-auto">
+                        Badan Gereja Katolik Paroki - {{ decreeInfo.periodLabel }}
                     </p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Breadcrumb -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <Breadcrumb title="BGKP Paroki" />
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
                 <!-- Loading State -->
                 <div v-if="loading" class="py-12">
@@ -242,8 +248,7 @@
                 <p class="text-gray-500">Belum ada data anggota BGKP yang tersedia.</p>
             </div>
                 </div>
-            </div>
-        </section>
+        </div>
     </div>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen pt-20 bg-gray-50">
+  <div class="min-h-screen bg-gray-50">
     <!-- Pull to Refresh Indicator -->
     <div
       v-if="pullState.isPulling || pullState.isRefreshing"
@@ -14,13 +14,24 @@
       </div>
     </div>
 
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-      <Breadcrumb title="Berita" />
-    <!-- Header Halaman -->
-    <div class="text-center mb-8">
-      <h1 class="text-4xl font-cinzel text-[#882f1d] mb-4">Berita Gereja Paulus Juanda</h1>
-      <p class="text-lg text-gray-600">Update terbaru tentang kegiatan dan acara gereja kami.</p>
+    <!-- Header -->
+    <div class="bg-[#882f1d] text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center">
+          <h1 class="text-4xl font-cinzel font-bold mb-4">Berita Paroki</h1>
+          <p class="text-xl text-gray-200 max-w-2xl mx-auto">
+            Update terbaru tentang kegiatan dan acara gereja kami
+          </p>
+        </div>
+      </div>
     </div>
+
+    <!-- Breadcrumb -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Breadcrumb title="Berita" />
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
     <!-- Loading State -->
     <div v-if="pending" class="text-center py-8">
@@ -52,10 +63,10 @@
       />
     </div>
 
-    <!-- State Kosong -->
-    <div v-else class="text-center py-12">
-      <p class="text-gray-500 text-lg">Belum ada berita tersedia. Silakan cek lagi nanti!</p>
-    </div>
+      <!-- State Kosong -->
+      <div v-else class="text-center py-12">
+        <p class="text-gray-500 text-lg">Belum ada berita tersedia. Silakan cek lagi nanti!</p>
+      </div>
     </div>
   </div>
 </template>

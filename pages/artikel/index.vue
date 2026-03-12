@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen pt-20 bg-gray-50">
+  <div class="min-h-screen bg-gray-50">
     <!-- Pull to Refresh Indicator -->
     <div
       v-if="pullState.isPulling || pullState.isRefreshing"
@@ -14,17 +14,27 @@
       </div>
     </div>
 
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="bg-[#882f1d] text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center">
+          <h1 class="text-4xl font-cinzel font-bold mb-4">Artikel & Renungan</h1>
+          <p class="text-xl text-gray-200 max-w-2xl mx-auto">
+            Temukan artikel mendalam tentang pengajaran Alkitab, renungan harian, dan inspirasi rohani
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Breadcrumb title="Artikel" />
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
       <!-- Main Content -->
       <div class="lg:col-span-9">
-        <Breadcrumb title="Artikel" />
-
-        <!-- Header Halaman -->
-        <div class="text-center mb-8">
-          <h1 class="text-4xl font-cinzel text-[#882f1d] mb-4">Artikel Gereja Paulus Juanda</h1>
-          <p class="text-lg text-gray-600">Temukan artikel mendalam tentang pengajaran Alkitab, renungan harian, dan inspirasi rohani untuk memperkuat iman Anda.</p>
-        </div>
 
         <!-- Loading State -->
         <div v-if="pending" class="text-center py-8">
@@ -110,7 +120,7 @@
       </div>
 
       <!-- Sidebar -->
-      <div class="lg:col-span-3 lg:mt-24">
+      <div class="lg:col-span-3">
         <!-- Categories Widget -->
         <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
           <h3 class="text-lg font-bold text-gray-900 mb-4">Kategori Artikel</h3>

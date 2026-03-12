@@ -1,17 +1,23 @@
 <template>
-  <div class="min-h-screen pt-16 bg-gray-50">
-    <section class="py-16 bg-white">
-      <div class="container mx-auto px-4">
-        <!-- Breadcrumb (NEW) -->
-        <Breadcrumb title="Kontak Kami" />
-
-        <!-- Tombol Top -->
-        <!-- <BackButton position="top" /> -->
-
-        <div class="text-center mb-12">
-          <h1 class="text-4xl font-cinzel text-[#882f1d] mb-4">Kontak Kami</h1>
-          <p class="text-xl text-gray-600">Hubungi paroki untuk informasi lebih lanjut atau pertanyaan rohani.</p>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <div class="bg-[#882f1d] text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div class="text-center">
+          <h1 class="text-4xl font-cinzel font-bold mb-4">Kontak Kami</h1>
+          <p class="text-xl text-gray-200 max-w-2xl mx-auto">
+            Hubungi paroki untuk informasi lebih lanjut atau pertanyaan rohani
+          </p>
         </div>
+      </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Breadcrumb title="Kontak Kami" />
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- Info Kontak dengan margin 10% kanan kiri -->
         <div class="grid md:grid-cols-2 gap-8 mx-[10%]">
@@ -79,7 +85,7 @@
         <!-- Tombol Bottom -->
         <BackButton position="bottom" />
       </div>
-    </section>
+    </div>
   </div>
 </template>
 
