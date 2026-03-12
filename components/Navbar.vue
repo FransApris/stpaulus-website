@@ -426,13 +426,16 @@
               <div class="py-2">
                 <button @click="toggleMobileDropdown(link.title)" type="button"
                   class="flex items-center justify-between w-full px-3 py-3 rounded-lg transition-all duration-200 text-[#882f1d] hover:text-white hover:bg-[#882f1d] font-medium text-base focus:outline-none">
-                  <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-3 flex-1 min-w-0">
                     <!-- Icon -->
                     <svg v-if="link.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" 
                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                       <path :d="iconPaths[link.icon]" />
                     </svg>
-                    <span>{{ link.title }}</span>
+                    <div class="flex-1 min-w-0 text-left">
+                      <div>{{ link.title }}</div>
+                      <div v-if="link.description" class="text-xs text-gray-500 mt-0.5 font-normal">{{ link.description }}</div>
+                    </div>
                   </div>
                   <svg class="w-4 h-4 transition-transform duration-200"
                     :class="{ 'rotate-180': activeMobileDropdown === link.title }" fill="none" stroke="currentColor"
@@ -476,7 +479,10 @@
                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                   <path :d="iconPaths[link.icon]" />
                 </svg>
-                <span>{{ link.title }}</span>
+                <div class="flex-1 min-w-0">
+                  <div>{{ link.title }}</div>
+                  <div v-if="link.description" :class="`text-xs mt-0.5 font-normal ${route.path === link.path ? 'text-white/80' : 'text-gray-500'}`">{{ link.description }}</div>
+                </div>
               </NuxtLink>
             </template>
           </li>
@@ -538,10 +544,11 @@ watch(showLoginModal, (newVal) => {
 
 // Nav Links
 const navLinks = [
-  { title: 'BERANDA', path: '/', icon: 'home' },
+  { title: 'BERANDA', path: '/', icon: 'home', description: 'Halaman utama paroki' },
   {
     title: 'PROFIL PAROKI',
     icon: 'user-circle',
+    description: 'Informasi tentang gereja',
     dropdown: true,
     items: [
       {
@@ -591,6 +598,7 @@ const navLinks = [
   {
     title: 'KONTEN',
     icon: 'collection',
+    description: 'Berita, artikel, dan galeri',
     dropdown: true,
     items: [
       {
@@ -622,6 +630,7 @@ const navLinks = [
   {
     title: 'KEGIATAN & JADWAL',
     icon: 'calendar',
+    description: 'Agenda dan jadwal misa',
     dropdown: true,
     items: [
       {
@@ -638,8 +647,8 @@ const navLinks = [
       }
     ]
   },
-  { title: 'PEMESANAN RUANGAN', path: '/booking', icon: 'office-building' },
-  { title: 'KONTAK', path: '/kontak', icon: 'phone' }
+  { title: 'PEMESANAN RUANGAN', path: '/booking', icon: 'office-building', description: 'Booking fasilitas gereja' },
+  { title: 'KONTAK', path: '/kontak', icon: 'phone', description: 'Hubungi kami' }
 ]
 
 // Icon SVG paths (Heroicons style)
