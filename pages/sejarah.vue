@@ -28,7 +28,7 @@
         <div class="mt-8 md:mt-12">
           <BackButton position="bottom" />
         </div>
-      </div>
+    </div>
   </div>
 </template>
 
