@@ -1,7 +1,7 @@
 <template>
   <!-- No ClientOnly - Direct Render (SSR + Client Safe) -->
   <div v-if="props.showHero"
-    class="relative min-h-screen pt-16 overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0"
+    class="relative min-h-screen pt-6 md:pt-12 overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0"
     :class="className" :style="{ backgroundImage: `url(${resolvedHeroImage})` }">
     <!-- No Hidden Img - Use CSS Bg Only (No Events) -->
 
@@ -47,7 +47,6 @@ const resolvedHeroImage = computed(() => {
 .hero-container {
   height: 100vh !important;
   min-height: 100vh !important;
-  padding-top: 4rem !important;
   background-size: cover !important;
   background-position: center !important;
   background-repeat: no-repeat !important;
