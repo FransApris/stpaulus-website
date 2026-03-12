@@ -65,8 +65,13 @@ const props = defineProps({
   }
 })
 
-// Handle image source with fallback
-const imageSrc = ref(props.image)
+// Handle image source with fallback and cache busting
+const imageSrc = computed(() => {
+  if (!props.image) return '/images/default-article.jpg'
+  // Add cache busting parameter to force refresh
+  return props.image.includes('?') ? `${props.image}&v=${Date.now()}` : `${props.image}?v=${Date.now()}`
+})
+
 const handleImageError = () => {
   console.log('[ArticleCard] Image failed to load, using fallback:', props.image)
   imageSrc.value = '/images/default-article.jpg'

@@ -52,7 +52,7 @@
             <div class="w-full h-48 bg-gray-200 overflow-hidden relative">
               <img 
                 v-if="article.image && article.image !== '/images/default-article.jpg'"
-                :src="article.image" 
+                :src="`${article.image}?v=${Date.now()}`"
                 :alt="article.title" 
                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 @error="(e) => { console.error('Image failed to load:', article.image); e.target.style.display = 'none'; e.target.parentElement.classList.add('show-gradient'); }"
