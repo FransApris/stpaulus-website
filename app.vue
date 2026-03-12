@@ -6,7 +6,14 @@
 </template>
 
 <script setup>
-// Empty script
+// Scroll to top on route change
+const route = useRoute()
+
+watch(() => route.path, () => {
+  if (process.client) {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}, { immediate: false })
 </script>
 
 <style>

@@ -104,8 +104,8 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css' }
       ]
     },
-    // Disable prefetch for client-only pages to avoid 404 errors
-    pageTransition: false,
+    // Page transition for smooth scroll to top
+    pageTransition: { name: 'page', mode: 'out-in' }
   },
 
   // Router configuration
@@ -114,6 +114,7 @@ export default defineNuxtConfig({
       linkPrefetchedClass: 'nuxt-link-prefetched',
       linkExactActiveClass: 'nuxt-link-exact-active',
       linkActiveClass: 'nuxt-link-active',
+      scrollBehaviorType: 'smooth'
     }
   },
 
