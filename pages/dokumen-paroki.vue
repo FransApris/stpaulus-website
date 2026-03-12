@@ -135,8 +135,7 @@
 
         <!-- Back Button -->
         <BackButton position="bottom" />
-      </div>
-    </section>
+    </div>
   </div>
 </template>
 
