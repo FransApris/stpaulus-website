@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen pt-16 bg-gray-50">
+  <div class="min-h-screen pt-10 bg-gray-50">
     <!-- HeroSection (Dynamic based on active theme) - FULL WIDTH -->
     <HeroSection :show-hero="true" title="Selamat Datang di Paroki St. Paulus Juanda"
       subtitle="Temukan berita, artikel, galeri kegiatan, dan agenda terbaru kami." cta-text="Lihat Jadwal Misa"
@@ -42,8 +42,8 @@
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">Peta wilayah teritorial Paroki St. Paulus Juanda.</p>
           </div>
           <div class="max-w-6xl mx-auto">
-            <MapEmbed :height="480" :lat="-7.3917066" :lng="112.7296374"
-              title="Teritorial Lingkungan Paroki St. Paulus" address="Paroki St Paulus Juanda Sidoarjo" />
+            <MapEmbed :height="480" :lat="-7.3917066" :lng="112.7296374" title="Teritorial Lingkungan Paroki St. Paulus"
+              address="Paroki St Paulus Juanda Sidoarjo" />
           </div>
         </div>
       </section>
@@ -88,19 +88,21 @@
 
         <!-- Albums Grid -->
         <div v-else-if="latestAlbums && latestAlbums.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <a v-for="album in latestAlbums" :key="album.id" :href="album.share_url" target="_blank" rel="noopener noreferrer" class="group">
+          <a v-for="album in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
+            rel="noopener noreferrer" class="group">
             <div
               class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <!-- Album Cover -->
               <div class="relative overflow-hidden h-48">
                 <img :src="album.thumbnail_url || '/images/default-gallery.jpg'" :alt="album.title"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  crossorigin="anonymous"
-                  referrerpolicy="no-referrer">
+                  crossorigin="anonymous" referrerpolicy="no-referrer">
                 <!-- Google Photos Badge -->
-                <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1">
+                <div
+                  class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 .5a11.5 11.5 0 0 1 11.5 11.5A11.5 11.5 0 0 1 12 23.5 11.5 11.5 0 0 1 .5 12 11.5 11.5 0 0 1 12 .5zm3.5 4.5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/>
+                    <path
+                      d="M12 .5a11.5 11.5 0 0 1 11.5 11.5A11.5 11.5 0 0 1 12 23.5 11.5 11.5 0 0 1 .5 12 11.5 11.5 0 0 1 12 .5zm3.5 4.5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" />
                   </svg>
                   Google Photos
                 </div>
@@ -220,84 +222,84 @@
           <div v-for="doc in featuredDocuments.slice(0, 3)" :key="doc.id"
             class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
             <div class="p-6">
-                <!-- Category Badge -->
-                <div class="flex items-center mb-3">
-                  <div class="flex-shrink-0 w-4 h-4 rounded mr-2" :style="{ backgroundColor: doc.category_color }">
-                  </div>
-                  <span class="text-sm font-medium text-gray-600">{{ doc.category_name }}</span>
+              <!-- Category Badge -->
+              <div class="flex items-center mb-3">
+                <div class="flex-shrink-0 w-4 h-4 rounded mr-2" :style="{ backgroundColor: doc.category_color }">
+                </div>
+                <span class="text-sm font-medium text-gray-600">{{ doc.category_name }}</span>
+              </div>
+
+              <!-- Title -->
+              <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ doc.title }}</h3>
+
+              <!-- Description -->
+              <p v-if="doc.description" class="text-gray-600 text-sm mb-4 line-clamp-3">
+                {{ doc.description }}
+              </p>
+
+              <!-- File Info -->
+              <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+                <span>{{ doc.original_filename }}</span>
+                <span>{{ formatFileSize(doc.file_size) }}</span>
+              </div>
+
+              <!-- Upload Date and Action Buttons Row -->
+              <div class="flex items-center justify-between">
+                <!-- Upload Date -->
+                <div class="text-xs text-gray-400">
+                  Diunggah: {{ formatDate(doc.created_at) }}
                 </div>
 
-                <!-- Title -->
-                <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ doc.title }}</h3>
-
-                <!-- Description -->
-                <p v-if="doc.description" class="text-gray-600 text-sm mb-4 line-clamp-3">
-                  {{ doc.description }}
-                </p>
-
-                <!-- File Info -->
-                <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <span>{{ doc.original_filename }}</span>
-                  <span>{{ formatFileSize(doc.file_size) }}</span>
-                </div>
-
-                <!-- Upload Date and Action Buttons Row -->
-                <div class="flex items-center justify-between">
-                  <!-- Upload Date -->
-                  <div class="text-xs text-gray-400">
-                    Diunggah: {{ formatDate(doc.created_at) }}
-                  </div>
-
-                  <!-- Action Buttons -->
-                  <div class="flex space-x-1">
-                    <button @click="viewDocument(doc)"
-                      class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-200"
-                      title="Lihat Dokumen">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
-                    </button>
-                    <button @click="printDocument(doc)"
-                      class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200"
-                      title="Cetak Dokumen">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                      </svg>
-                    </button>
-                    <button @click="downloadDocument(doc)"
-                      class="p-2 text-gray-600 hover:text-[#882f1d] hover:bg-red-50 rounded-md transition-colors duration-200"
-                      title="Download Dokumen">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </button>
-                  </div>
+                <!-- Action Buttons -->
+                <div class="flex space-x-1">
+                  <button @click="viewDocument(doc)"
+                    class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-200"
+                    title="Lihat Dokumen">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  </button>
+                  <button @click="printDocument(doc)"
+                    class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200"
+                    title="Cetak Dokumen">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                  </button>
+                  <button @click="downloadDocument(doc)"
+                    class="p-2 text-gray-600 hover:text-[#882f1d] hover:bg-red-50 rounded-md transition-colors duration-200"
+                    title="Download Dokumen">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-          <div v-else class="text-center text-gray-500">
-            <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-              </path>
-            </svg>
-            <h3 class="text-lg font-cinzel font-medium text-gray-900 mb-2">Belum ada dokumen unggulan</h3>
-            <p class="text-gray-600">Belum ada dokumen yang ditandai sebagai unggulan.</p>
-          </div>
-          <!-- CTA ke Full Dokumen -->
-          <div class="text-center mt-6">
-            <NuxtLink to="/dokumen-paroki"
-              class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
-              Lihat Semua Dokumen
-            </NuxtLink>
-          </div>
         </div>
+        <div v-else class="text-center text-gray-500">
+          <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+            </path>
+          </svg>
+          <h3 class="text-lg font-cinzel font-medium text-gray-900 mb-2">Belum ada dokumen unggulan</h3>
+          <p class="text-gray-600">Belum ada dokumen yang ditandai sebagai unggulan.</p>
+        </div>
+        <!-- CTA ke Full Dokumen -->
+        <div class="text-center mt-6">
+          <NuxtLink to="/dokumen-paroki"
+            class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
+            Lihat Semua Dokumen
+          </NuxtLink>
+        </div>
+      </div>
     </section>
 
     <!-- Section 6: Artikel Terbaru (Updated to use API) -->
@@ -426,8 +428,7 @@
 
         <!-- Info Badge: Filter Active -->
         <div class="mb-6 max-w-4xl mx-auto bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-          <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-            viewBox="0 0 24 24">
+          <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -475,7 +476,7 @@
                 <!-- Time -->
                 <div class="bg-gray-50 rounded-xl p-3">
                   <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">🕐 Waktu</p>
-                <p class="text-sm font-bold text-gray-800">{{ booking.start_time }}</p>
+                  <p class="text-sm font-bold text-gray-800">{{ booking.start_time }}</p>
                   <p class="text-xs text-gray-600">s/d {{ booking.end_time }}</p>
                 </div>
 
@@ -610,13 +611,13 @@ useHead({
   title: 'Beranda',
   meta: [
     { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
-    
+
     // Open Graph for homepage
     { property: 'og:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
     { property: 'og:description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
     { property: 'og:image', content: 'https://stpaulusjuanda.org/images/logo-paulus-juanda.png' },
     { property: 'og:url', content: 'https://stpaulusjuanda.org' },
-    
+
     // Twitter Card for homepage
     { name: 'twitter:title', content: 'Paroki St. Paulus - Juanda, Sidoarjo' },
     { name: 'twitter:description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
@@ -805,7 +806,7 @@ const featuredDocuments = computed(() => {
 // Get public bookings dengan filter: hanya hari ini dan mendatang
 const publicBookings = computed(() => {
   const bookings = bookingsData.value?.bookings || [];
-  
+
   console.log('[Homepage] Total bookings from API:', bookings.length);
   console.log('[Homepage] Sample booking data:', bookings[0]);
 
@@ -815,7 +816,7 @@ const publicBookings = computed(() => {
     try {
       // Handle different date formats
       let eventDateStr = booking.event_date;
-      
+
       // If event_date is a Date object, convert to string
       if (eventDateStr instanceof Date) {
         const year = eventDateStr.getFullYear();
@@ -823,7 +824,7 @@ const publicBookings = computed(() => {
         const day = String(eventDateStr.getDate()).padStart(2, '0');
         eventDateStr = `${year}-${month}-${day}`;
       }
-      
+
       // MySQL returns date as "YYYY-MM-DD" string
       const [year, month, day] = eventDateStr.split('-').map(Number);
 
@@ -850,7 +851,7 @@ const publicBookings = computed(() => {
       return false;
     }
   });
-  
+
   console.log('[Homepage] Filtered bookings count:', filtered.length);
   return filtered;
 });
