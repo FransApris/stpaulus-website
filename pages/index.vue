@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen pt-10 bg-gray-50">
+  <div class="min-h-screen pt-4 bg-gray-50">
     <!-- HeroSection (Dynamic based on active theme) - FULL WIDTH -->
     <HeroSection :show-hero="true" title="Selamat Datang di Paroki St. Paulus Juanda"
       subtitle="Temukan berita, artikel, galeri kegiatan, dan agenda terbaru kami." cta-text="Lihat Jadwal Misa"
