@@ -186,7 +186,7 @@ definePageMeta({
   layout: 'admin'
 })
 
-import { watch } from 'vue'
+import { watch, nextTick } from 'vue'
 
 // Components are auto-imported by Nuxt, no need for defineAsyncComponent
 // Just wrap them in <ClientOnly> in the template
@@ -362,9 +362,11 @@ const saveArticle = async () => {
 }
 
 // Edit article
-const editArticle = (article) => {
+const editArticle = async (article) => {
   editingArticle.value = article
   imageError.value = false
+  
+  // Set form data first
   articleForm.value = {
     title: article.title,
     slug: article.slug,
@@ -376,6 +378,13 @@ const editArticle = (article) => {
     category_ids: article.categories ? article.categories.map(cat => cat.id) : []
   }
 
+  console.log('[Articles] Editing article with image:', article.image)
+  console.log('[Articles] Form image value:', articleForm.value.image)
+  
+  // Wait for next tick to ensure reactive updates
+  await nextTick()
+  
+  // Then show modal
   showAddModal.value = true
 }
 
@@ -451,6 +460,7 @@ const closeModal = () => {
     excerpt: '',
     content: '',
     author: '',
+    image: '',
     status: 'draft',
     category_ids: []
   }

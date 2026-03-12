@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 interface Props {
   modelValue?: string
@@ -105,15 +105,24 @@ const emit = defineEmits<{
 }>()
 
 const fileInput = ref<HTMLInputElement | null>(null)
-const previewUrl = ref<string>(props.modelValue || '')
+const previewUrl = ref<string>('')
 const isDragging = ref(false)
 const uploading = ref(false)
+
+// Initialize preview from modelValue
+if (props.modelValue) {
+  previewUrl.value = props.modelValue
+}
 
 // Watch for modelValue changes from parent (for edit mode)
 watch(() => props.modelValue, (newValue) => {
   console.log('[AdminImageUpload] ModelValue changed:', newValue)
-  if (newValue && newValue !== previewUrl.value) {
-    previewUrl.value = newValue
+  console.log('[AdminImageUpload] Current preview URL:', previewUrl.value)
+  
+  // Always update preview when modelValue changes, even if empty
+  if (newValue !== previewUrl.value) {
+    previewUrl.value = newValue || ''
+    console.log('[AdminImageUpload] Preview updated to:', previewUrl.value)
   }
 }, { immediate: true })
 
