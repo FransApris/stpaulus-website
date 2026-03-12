@@ -48,7 +48,12 @@
     </div>
 
     <!-- Preview -->
-    <div v-if="previewUrl || uploading" class="relative">
+    <div v-if="previewUrl || uploading" class="relative space-y-2">
+      <!-- Debug Info -->
+      <div class="text-xs text-gray-500 bg-gray-100 p-2 rounded">
+        <strong>Debug:</strong> {{ previewUrl ? 'Image URL: ' + previewUrl.substring(0, 50) + '...' : 'No preview URL' }}
+      </div>
+      
       <!-- Loading Overlay -->
       <div v-if="uploading" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg z-10">
         <div class="text-center text-white">
@@ -57,22 +62,27 @@
         </div>
       </div>
       
-      <img 
-        :src="previewUrl" 
-        alt="Preview" 
-        class="max-h-48 w-auto mx-auto rounded-lg border border-gray-300 shadow-sm" 
-      />
-      <button
-        v-if="!uploading"
-        type="button"
-        @click.stop="clearImage"
-        class="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
-        title="Hapus gambar"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+      <div class="relative">
+        <img 
+          v-if="previewUrl"
+          :src="previewUrl" 
+          alt="Preview" 
+          class="max-h-48 w-auto mx-auto rounded-lg border border-gray-300 shadow-sm" 
+          @load="() => console.log('[AdminImageUpload] Image loaded successfully')"
+          @error="(e) => { console.error('[AdminImageUpload] Image failed to load:', previewUrl); e.target.src = '/images/default-article.jpg'; }"
+        />
+        <button
+          v-if="!uploading"
+          type="button"
+          @click.stop="clearImage"
+          class="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+          title="Hapus gambar"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
     </div>
 
     <!-- Helper Text -->
@@ -83,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onMounted } from 'vue'
 
 interface Props {
   modelValue?: string
@@ -109,21 +119,23 @@ const previewUrl = ref<string>('')
 const isDragging = ref(false)
 const uploading = ref(false)
 
+console.log('[AdminImageUpload] Component mounted with modelValue:', props.modelValue)
+
 // Initialize preview from modelValue
-if (props.modelValue) {
-  previewUrl.value = props.modelValue
-}
+onMounted(() => {
+  if (props.modelValue) {
+    console.log('[AdminImageUpload] onMounted - Setting preview from modelValue:', props.modelValue)
+    previewUrl.value = props.modelValue
+  }
+})
 
 // Watch for modelValue changes from parent (for edit mode)
 watch(() => props.modelValue, (newValue) => {
-  console.log('[AdminImageUpload] ModelValue changed:', newValue)
-  console.log('[AdminImageUpload] Current preview URL:', previewUrl.value)
+  console.log('[AdminImageUpload] ModelValue changed from', previewUrl.value, 'to', newValue)
   
-  // Always update preview when modelValue changes, even if empty
-  if (newValue !== previewUrl.value) {
-    previewUrl.value = newValue || ''
-    console.log('[AdminImageUpload] Preview updated to:', previewUrl.value)
-  }
+  // Always update preview when modelValue changes
+  previewUrl.value = newValue || ''
+  console.log('[AdminImageUpload] Preview updated to:', previewUrl.value)
 }, { immediate: true })
 
 const triggerFileInput = () => {
