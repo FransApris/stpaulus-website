@@ -426,7 +426,14 @@
               <div class="py-2">
                 <button @click="toggleMobileDropdown(link.title)" type="button"
                   class="flex items-center justify-between w-full px-3 py-3 rounded-lg transition-all duration-200 text-[#882f1d] hover:text-white hover:bg-[#882f1d] font-medium text-base focus:outline-none">
-                  {{ link.title }}
+                  <div class="flex items-center gap-3">
+                    <!-- Icon -->
+                    <svg v-if="link.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" 
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                      <path :d="iconPaths[link.icon]" />
+                    </svg>
+                    <span>{{ link.title }}</span>
+                  </div>
                   <svg class="w-4 h-4 transition-transform duration-200"
                     :class="{ 'rotate-180': activeMobileDropdown === link.title }" fill="none" stroke="currentColor"
                     viewBox="0 0 24 24">
@@ -463,8 +470,13 @@
               <!-- Mobile Regular Link -->
               <NuxtLink :to="link.path" @click="closeMobileMenu" @keydown.enter="closeMobileMenu"
                 @keydown.space.prevent="closeMobileMenu"
-                :class="`block py-3 px-3 rounded-lg transition-all duration-200 font-medium text-base focus:outline-none ${route.path === link.path ? 'text-white bg-[#882f1d]' : 'text-[#882f1d] hover:text-white hover:bg-[#882f1d]'}`">
-                {{ link.title }}
+                :class="`flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 font-medium text-base focus:outline-none ${route.path === link.path ? 'text-white bg-[#882f1d]' : 'text-[#882f1d] hover:text-white hover:bg-[#882f1d]'}`">
+                <!-- Icon -->
+                <svg v-if="link.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" 
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path :d="iconPaths[link.icon]" />
+                </svg>
+                <span>{{ link.title }}</span>
               </NuxtLink>
             </template>
           </li>
@@ -526,9 +538,10 @@ watch(showLoginModal, (newVal) => {
 
 // Nav Links
 const navLinks = [
-  { title: 'BERANDA', path: '/' },
+  { title: 'BERANDA', path: '/', icon: 'home' },
   {
     title: 'PROFIL PAROKI',
+    icon: 'user-circle',
     dropdown: true,
     items: [
       {
@@ -577,6 +590,7 @@ const navLinks = [
   },
   {
     title: 'KONTEN',
+    icon: 'collection',
     dropdown: true,
     items: [
       {
@@ -607,6 +621,7 @@ const navLinks = [
   },
   {
     title: 'KEGIATAN & JADWAL',
+    icon: 'calendar',
     dropdown: true,
     items: [
       {
@@ -623,8 +638,8 @@ const navLinks = [
       }
     ]
   },
-  { title: 'PEMESANAN RUANGAN', path: '/booking' },
-  { title: 'KONTAK', path: '/kontak' }
+  { title: 'PEMESANAN RUANGAN', path: '/booking', icon: 'office-building' },
+  { title: 'KONTAK', path: '/kontak', icon: 'phone' }
 ]
 
 // Icon SVG paths (Heroicons style)
@@ -639,7 +654,13 @@ const iconPaths = {
   'document': 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z',
   'photograph': 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z',
   'clock': 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z',
-  'calendar': 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+  'calendar': 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z',
+  'user-group': 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+  'home': 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6',
+  'user-circle': 'M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+  'collection': 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
+  'office-building': 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+  'phone': 'M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z'
 }
 
 // Methods
