@@ -1,23 +1,19 @@
 <template>
   <div class="min-h-screen pt-16 bg-gray-50">
-    <section class="py-16 bg-white">
+    <section class="py-8 md:py-16 bg-white">
       <div class="container mx-auto px-4">
-        <!-- Breadcrumb (NEW) -->
+        <!-- Breadcrumb -->
         <Breadcrumb title="Jadwal Misa" />
 
-        <!-- Tombol Top -->
-        <!-- <BackButton position="top" /> -->
-
-        <div class="text-center mb-12">
-          <h1 class="text-4xl font-cinzel text-[#882f1d] mb-4">Jadwal Misa Paroki St. Paulus</h1>
-          <p class="text-xl text-gray-600">Jadwal misa harian dan akhir pekan. Datanglah dan ikuti perayaan Ekaristi.
-          </p>
+        <div class="text-center mb-8 md:mb-12">
+          <h1 class="text-3xl md:text-4xl font-cinzel text-[#882f1d] mb-3 md:mb-4">Jadwal Misa Paroki St. Paulus</h1>
+          <p class="text-base md:text-xl text-gray-600">Jadwal misa harian dan akhir pekan. Datanglah dan ikuti perayaan Ekaristi.</p>
         </div>
 
         <!-- Loading -->
         <div v-if="loading" class="text-center py-8">
           <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d]"></div>
-          <p class="mt-2 text-gray-600">Memuat jadwal misa...</p>
+          <p class="mt-2 text-gray-600 text-sm md:text-base">Memuat jadwal misa...</p>
         </div>
 
         <!-- Error -->
@@ -37,50 +33,164 @@
           </div>
         </div>
 
-        <!-- Tabel Jadwal -->
-        <div v-else class="overflow-x-auto">
-          <table class="w-4/5 mx-auto bg-white border border-gray-300 rounded-lg">
-            <thead>
-              <tr class="bg-[#882f1d] text-white">
-                <th class="px-4 py-2">Hari/Tanggal</th>
-                <th class="px-4 py-2">Waktu</th>
-                <th class="px-4 py-2">Judul</th>
-                <th class="px-4 py-2">Kategori</th>
-                <th class="px-4 py-2">Jenis Liturgi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="schedule in allSchedules" :key="`${schedule.type}-${schedule.id}`" class="border-t">
-                <td class="px-4 py-2 text-center">{{ schedule.display_date }}</td>
-                <td class="px-4 py-2 text-center">{{ schedule.display_time }}</td>
-                <td class="px-4 py-2 text-center">{{ schedule.display_title }}</td>
-                <td class="px-4 py-2 text-center">
-                  <span :class="{
-                    'bg-blue-100 text-blue-800': schedule.type === 'special',
-                    'bg-green-100 text-green-800': schedule.type === 'regular',
-                    'bg-purple-100 text-purple-800': schedule.type === 'devotion'
-                  }" class="px-2 py-1 rounded-full text-xs font-medium">
-                    <template v-if="schedule.type === 'special'">Misa Khusus</template>
-                    <template v-else-if="schedule.type === 'devotion'">Devosi</template>
-                    <template v-else>Misa Rutin</template>
-                  </span>
-                </td>
-                <td class="px-4 py-2 text-center">
-                  <template v-if="schedule.type === 'special'">{{ schedule.liturgy_type?.name ||
-                    schedule.liturgy_type_name || '' }}</template>
-                  <template v-else-if="schedule.type === 'devotion'">{{ schedule.type_name || 'Devosi' }}</template>
-                </td>
-              </tr>
-              <tr v-if="allSchedules.length === 0" class="border-t">
-                <td colspan="5" class="px-4 py-8 text-center text-gray-500">
-                  Belum ada jadwal misa yang tersedia.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Jadwal dengan Kategori -->
+        <div v-else class="space-y-8 md:space-y-12">
+          
+          <!-- MISA RUTIN SECTION -->
+          <div v-if="groupedSchedules.regular.length > 0" class="bg-white shadow-lg rounded-xl overflow-hidden border border-green-200">
+            <div class="bg-gradient-to-r from-green-600 to-green-700 px-4 md:px-6 py-3 md:py-4">
+              <h2 class="text-lg md:text-2xl font-cinzel font-bold text-white flex items-center">
+                <svg class="w-5 h-5 md:w-6 md:h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Misa Rutin
+              </h2>
+              <p class="text-green-100 text-xs md:text-sm mt-1">Jadwal misa harian dan mingguan</p>
+            </div>
+            <div class="p-3 md:p-6">
+              <!-- Desktop Table -->
+              <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-green-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-green-800 uppercase">Hari</th>
+                      <th class="px-4 py-3 text-center text-sm font-bold text-green-800 uppercase">Waktu</th>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-green-800 uppercase">Judul</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-100">
+                    <tr v-for="schedule in groupedSchedules.regular" :key="`regular-${schedule.id}`" class="hover:bg-green-50 transition-colors">
+                      <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ schedule.display_date }}</td>
+                      <td class="px-4 py-3 text-sm text-center text-gray-700">{{ schedule.display_time }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-700">{{ schedule.display_title }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile Cards -->
+              <div class="md:hidden space-y-3">
+                <div v-for="schedule in groupedSchedules.regular" :key="`regular-mobile-${schedule.id}`" 
+                  class="bg-green-50 rounded-lg p-4 border-l-4 border-green-600">
+                  <div class="flex justify-between items-start mb-2">
+                    <span class="font-bold text-gray-900 text-sm">{{ schedule.display_date }}</span>
+                    <span class="bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">{{ schedule.display_time }}</span>
+                  </div>
+                  <p class="text-sm text-gray-700">{{ schedule.display_title }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MISA KHUSUS SECTION -->
+          <div v-if="groupedSchedules.special.length > 0" class="bg-white shadow-lg rounded-xl overflow-hidden border border-blue-200">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 py-3 md:py-4">
+              <h2 class="text-lg md:text-2xl font-cinzel font-bold text-white flex items-center">
+                <svg class="w-5 h-5 md:w-6 md:h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                </svg>
+                Misa Khusus
+              </h2>
+              <p class="text-blue-100 text-xs md:text-sm mt-1">Perayaan liturgi khusus</p>
+            </div>
+            <div class="p-3 md:p-6">
+              <!-- Desktop Table -->
+              <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-blue-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-blue-800 uppercase">Tanggal</th>
+                      <th class="px-4 py-3 text-center text-sm font-bold text-blue-800 uppercase">Waktu</th>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-blue-800 uppercase">Judul</th>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-blue-800 uppercase">Jenis Liturgi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-100">
+                    <tr v-for="schedule in groupedSchedules.special" :key="`special-${schedule.id}`" class="hover:bg-blue-50 transition-colors">
+                      <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ schedule.display_date }}</td>
+                      <td class="px-4 py-3 text-sm text-center text-gray-700">{{ schedule.display_time }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-700">{{ schedule.display_title }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-600">{{ schedule.liturgy_type?.name || schedule.liturgy_type_name || '' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile Cards -->
+              <div class="md:hidden space-y-3">
+                <div v-for="schedule in groupedSchedules.special" :key="`special-mobile-${schedule.id}`" 
+                  class="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-600">
+                  <div class="flex justify-between items-start mb-2">
+                    <span class="font-bold text-gray-900 text-xs">{{ schedule.display_date }}</span>
+                    <span class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-medium">{{ schedule.display_time }}</span>
+                  </div>
+                  <p class="text-sm font-semibold text-gray-900 mb-1">{{ schedule.display_title }}</p>
+                  <p class="text-xs text-gray-600">{{ schedule.liturgy_type?.name || schedule.liturgy_type_name || '' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- DEVOSI/IBADAT SECTION -->
+          <div v-if="groupedSchedules.devotion.length > 0" class="bg-white shadow-lg rounded-xl overflow-hidden border border-purple-200">
+            <div class="bg-gradient-to-r from-purple-600 to-purple-700 px-4 md:px-6 py-3 md:py-4">
+              <h2 class="text-lg md:text-2xl font-cinzel font-bold text-white flex items-center">
+                <svg class="w-5 h-5 md:w-6 md:h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                Devosi & Ibadat Lainnya
+              </h2>
+              <p class="text-purple-100 text-xs md:text-sm mt-1">Doa Rosario, Adorasi, dan kegiatan rohani</p>
+            </div>
+            <div class="p-3 md:p-6">
+              <!-- Desktop Table -->
+              <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-purple-50">
+                    <tr>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-purple-800 uppercase">Hari</th>
+                      <th class="px-4 py-3 text-center text-sm font-bold text-purple-800 uppercase">Waktu</th>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-purple-800 uppercase">Judul</th>
+                      <th class="px-4 py-3 text-left text-sm font-bold text-purple-800 uppercase">Jenis</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-100">
+                    <tr v-for="schedule in groupedSchedules.devotion" :key="`devotion-${schedule.id}`" class="hover:bg-purple-50 transition-colors">
+                      <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ schedule.display_date }}</td>
+                      <td class="px-4 py-3 text-sm text-center text-gray-700">{{ schedule.display_time }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-700">{{ schedule.display_title }}</td>
+                      <td class="px-4 py-3 text-sm text-gray-600">{{ schedule.type_name || 'Devosi' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile Cards -->
+              <div class="md:hidden space-y-3">
+                <div v-for="schedule in groupedSchedules.devotion" :key="`devotion-mobile-${schedule.id}`" 
+                  class="bg-purple-50 rounded-lg p-4 border-l-4 border-purple-600">
+                  <div class="flex justify-between items-start mb-2">
+                    <span class="font-bold text-gray-900 text-sm">{{ schedule.display_date }}</span>
+                    <span class="bg-purple-600 text-white px-2 py-1 rounded text-xs font-medium">{{ schedule.display_time }}</span>
+                  </div>
+                  <p class="text-sm font-semibold text-gray-900 mb-1">{{ schedule.display_title }}</p>
+                  <p class="text-xs text-gray-600">{{ schedule.type_name || 'Devosi' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="groupedSchedules.regular.length === 0 && groupedSchedules.special.length === 0 && groupedSchedules.devotion.length === 0" 
+            class="text-center py-12 bg-white rounded-lg shadow">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p class="mt-4 text-gray-500">Belum ada jadwal misa yang tersedia.</p>
+          </div>
         </div>
 
-        <!-- Tombol Bottom -->
+        <!-- Back Button -->
         <BackButton position="bottom" />
       </div>
     </section>
@@ -137,9 +247,9 @@ const fetchDevotions = async () => {
   }
 }
 
-// Combine and sort all schedules
-const allSchedules = computed(() => {
-  console.log('[Misa Page - Computed] Building allSchedules...', {
+// Combine and group all schedules by category
+const groupedSchedules = computed(() => {
+  console.log('[Misa Page - Computed] Building groupedSchedules...', {
     regularCount: schedules.value.length,
     specialCount: specialSchedules.value.length,
     devotionsCount: devotions.value.length
@@ -149,13 +259,14 @@ const allSchedules = computed(() => {
   const dayOfMonth = currentDate.getDate()
   const isFirstWeek = dayOfMonth >= 1 && dayOfMonth <= 7
 
+  // Regular mass schedules
   const regular = schedules.value
     .filter(schedule => {
       // Special handling: Misa Jumat Pertama hanya di minggu pertama
       if (schedule.mass_type && schedule.mass_type.includes('Jumat Pertama')) {
         // Jika bukan minggu pertama, tambahkan note
         if (!isFirstWeek) {
-          schedule.note = '(Hanya minggu pertama bulan)'
+          schedule.note = ' (Hanya minggu pertama bulan)'
         }
       }
       return true // Tampilkan semua untuk informasi
@@ -168,29 +279,39 @@ const allSchedules = computed(() => {
       display_title: schedule.mass_type + (schedule.note || ''),
       sort_key: getSortKey(schedule.day_of_week, schedule.time)
     }))
+    .sort((a, b) => a.sort_key - b.sort_key)
 
-  const special = specialSchedules.value.map(schedule => ({
-    ...schedule,
-    type: 'special',
-    display_date: formatDate(schedule.date),
-    display_time: formatTime(schedule.time),
-    display_title: schedule.title,
-    liturgy_type_name: schedule.liturgy_type_name,
-    sort_key: getSortKeyForSpecial(schedule.date, schedule.time)
-  }))
+  // Special mass schedules
+  const special = specialSchedules.value
+    .map(schedule => ({
+      ...schedule,
+      type: 'special',
+      display_date: formatDate(schedule.date),
+      display_time: formatTime(schedule.time),
+      display_title: schedule.title,
+      liturgy_type_name: schedule.liturgy_type_name,
+      sort_key: getSortKeyForSpecial(schedule.date, schedule.time)
+    }))
+    .sort((a, b) => a.sort_key - b.sort_key)
 
-  const devotionSchedules = devotions.value.map(devotion => ({
-    ...devotion,
-    type: 'devotion',
-    display_date: devotion.day_of_week,
-    display_time: formatTime(devotion.time),
-    display_title: devotion.title,
-    type_name: devotion.type_name,
-    sort_key: getSortKey(devotion.day_of_week, devotion.time)
-  }))
+  // Devotions schedules
+  const devotion = devotions.value
+    .map(devotionItem => ({
+      ...devotionItem,
+      type: 'devotion',
+      display_date: devotionItem.day_of_week,
+      display_time: formatTime(devotionItem.time),
+      display_title: devotionItem.title,
+      type_name: devotionItem.type_name,
+      sort_key: getSortKey(devotionItem.day_of_week, devotionItem.time)
+    }))
+    .sort((a, b) => a.sort_key - b.sort_key)
 
-  // Combine and sort by date/time
-  return [...regular, ...special, ...devotionSchedules].sort((a, b) => a.sort_key - b.sort_key)
+  return {
+    regular,
+    special,
+    devotion
+  }
 })
 
 // Helper function to get sort key for regular schedules
