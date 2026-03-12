@@ -137,8 +137,12 @@
           </div>
 
           <!-- IMAGE UPLOAD COMPONENT -->
-          <AdminImageUpload v-model="articleForm.image" label="Gambar/Thumbnail Artikel"
-            helper-text="Gambar akan tampil sebagai thumbnail di halaman utama dan detail artikel" type="article" />
+          <AdminImageUpload 
+            :key="editingArticle ? `edit-${editingArticle.id}-${articleForm.image}` : `new-${Date.now()}`"
+            v-model="articleForm.image" 
+            label="Gambar/Thumbnail Artikel"
+            helper-text="Gambar akan tampil sebagai thumbnail di halaman utama dan detail artikel" 
+            type="article" />
 
           <div>
             <label class="block text-sm font-medium text-gray-700">Kategori</label>
