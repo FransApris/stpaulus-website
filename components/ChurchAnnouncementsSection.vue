@@ -3,10 +3,13 @@
         <div class="container mx-auto px-4">
             <!-- Header -->
             <div class="text-center mb-12">
-                <h2 class="text-3xl font-cinzel text-[#882f1d] mb-4">
+                <div class="flex items-center justify-center mb-3">
+                    <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+                </div>
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">
                     Pengumuman Gereja
                 </h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
                     Jadwal kegiatan dan acara terbaru Paroki St. Paulus
                 </p>
             </div>

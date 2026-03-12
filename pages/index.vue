@@ -441,9 +441,11 @@
     <section id="booking-section" class="py-16 bg-gray-50">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-12">
-          <h2 class="text-3xl font-cinzel text-[#882f1d] mb-4">Status Pemesanan Ruangan</h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">Status pemesanan ruangan di Paroki St. Paulus - Juanda.
-          </p>
+          <div class="flex items-center justify-center mb-3">
+            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+          </div>
+          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Status Pemesanan Ruangan</h2>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Status pemesanan ruangan di Paroki St. Paulus - Juanda.</p>
         </div>
 
         <!-- Info Badge: Filter Active -->
