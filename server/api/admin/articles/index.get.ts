@@ -58,6 +58,7 @@ export default defineEventHandler(async (event) => {
         content: article.content,
         excerpt: article.excerpt || '',
         author: article.author || '',
+        image: article.image || '',
         status: article.status,
         published_at: article.published_at,
         created_at: article.created_at,
