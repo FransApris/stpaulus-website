@@ -154,11 +154,6 @@
                   <li>• <strong>Kronik Paroki</strong> - Ketua & Pengurus (DPP, BGKP, Wilayah, Lingkungan)</li>
                   <li>• <strong>Pemesanan Ruang</strong> - Semua user terdaftar</li>
                 </ul>
-                <div class="mt-3 pt-3 border-t border-blue-300">
-                  <p class="text-xs text-blue-600 font-semibold">⚠️ Untuk Admin:</p>
-                  <p class="text-xs text-blue-600">Admin harus login melalui <strong>Panel Admin</strong> di
-                    /admin/login</p>
-                </div>
               </div>
             </div>
           </div>
