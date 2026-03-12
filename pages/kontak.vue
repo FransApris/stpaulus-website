@@ -85,7 +85,6 @@
         <!-- Tombol Bottom -->
         <BackButton position="bottom" />
       </div>
-    </div>
   </div>
 </template>
 
