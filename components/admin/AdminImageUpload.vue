@@ -48,13 +48,22 @@
     </div>
 
     <!-- Preview -->
-    <div v-if="previewUrl" class="relative">
+    <div v-if="previewUrl || uploading" class="relative">
+      <!-- Loading Overlay -->
+      <div v-if="uploading" class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg z-10">
+        <div class="text-center text-white">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-2"></div>
+          <p class="text-sm font-medium">Uploading...</p>
+        </div>
+      </div>
+      
       <img 
         :src="previewUrl" 
         alt="Preview" 
         class="max-h-48 w-auto mx-auto rounded-lg border border-gray-300 shadow-sm" 
       />
       <button
+        v-if="!uploading"
         type="button"
         @click.stop="clearImage"
         class="absolute top-2 right-2 p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
@@ -74,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 interface Props {
   modelValue?: string
@@ -98,6 +107,15 @@ const emit = defineEmits<{
 const fileInput = ref<HTMLInputElement | null>(null)
 const previewUrl = ref<string>(props.modelValue || '')
 const isDragging = ref(false)
+const uploading = ref(false)
+
+// Watch for modelValue changes from parent (for edit mode)
+watch(() => props.modelValue, (newValue) => {
+  console.log('[AdminImageUpload] ModelValue changed:', newValue)
+  if (newValue && newValue !== previewUrl.value) {
+    previewUrl.value = newValue
+  }
+}, { immediate: true })
 
 const triggerFileInput = () => {
   fileInput.value?.click()
@@ -128,7 +146,8 @@ const processFile = async (file: File) => {
     return
   }
 
-  // Create preview for UI
+  // Show temporary preview while uploading
+  uploading.value = true
   const reader = new FileReader()
   reader.onload = (e) => {
     const result = e.target?.result as string
@@ -138,6 +157,7 @@ const processFile = async (file: File) => {
 
   // Upload file to server
   try {
+    console.log('[AdminImageUpload] Uploading file:', file.name)
     const formData = new FormData()
     formData.append('file', file)
     formData.append('type', props.type)
@@ -147,14 +167,22 @@ const processFile = async (file: File) => {
       body: formData
     })
 
-    // Emit the server path, not base64
+    console.log('[AdminImageUpload] Upload response:', response)
+
+    // Update preview with server URL and emit
     if (response && response.url) {
+      previewUrl.value = response.url
       emit('update:modelValue', response.url)
+      console.log('[AdminImageUpload] Upload success, URL:', response.url)
+    } else {
+      throw new Error('No URL in response')
     }
   } catch (error) {
-    console.error('Upload failed:', error)
+    console.error('[AdminImageUpload] Upload failed:', error)
     alert('Gagal upload gambar. Silakan coba lagi.')
     clearImage()
+  } finally {
+    uploading.value = false
   }
 }
 
