@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS kronik_categories (
 INSERT INTO kronik_categories (name, slug, icon, order_index, description) VALUES
 ('Gereja', 'gereja', 'church', 1, 'Kronik kegiatan gereja secara umum'),
 ('DPP', 'dpp', 'users', 2, 'Kronik Dewan Pengurus Paroki'),
-('BGKP', 'bgkp', 'user-group', 3, 'Kronik Badan Gotong Royong Karya Paroki'),
+('BGKP', 'bgkp', 'user-group', 3, 'Kronik Badan Gereja Katolik Paroki'),
 ('Wilayah', 'wilayah', 'map', 4, 'Kronik kegiatan per wilayah'),
 ('Lingkungan', 'lingkungan', 'home', 5, 'Kronik kegiatan per lingkungan');
 
