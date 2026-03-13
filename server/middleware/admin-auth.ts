@@ -1,70 +1,65 @@
 import { requireAuth, getUserPermissions } from '../utils/auth'
 
-export default defineEventHandler(async (event) => {
-  // Hanya berlaku untuk rute API admin, kecuali login dan OPTIONS preflight requests
-  if (event.node.req.url?.startsWith('/api/admin') && !event.node.req.url?.startsWith('/api/admin/login')) {
-    console.log('Admin auth middleware triggered for:', event.method, event.node.req.url)
+// In-memory cache for permissions per role_id (keyed by role_id number)
+// Avoids a DB round-trip on every admin API request
+const permissionsCacheTTL = 5 * 60 * 1000 // 5 minutes
+const permissionsCache = new Map<number, { permissions: string[], expiresAt: number }>()
 
-    // Skip auth check for OPTIONS preflight requests
+// Role name → id mapping (must match the database)
+const roleIdMap: Record<string, number> = {
+  super_admin: 1,
+  admin_komsos: 2,
+  admin_sekretariat: 3
+}
+
+export default defineEventHandler(async (event) => {
+  // Only applies to admin API routes, except login and OPTIONS preflight
+  if (event.node.req.url?.startsWith('/api/admin') && !event.node.req.url?.startsWith('/api/admin/login')) {
     if (event.method === 'OPTIONS') {
-      console.log('[Auth Middleware] Skipping auth check for OPTIONS preflight request');
-      return;
+      return
     }
 
     try {
       const decoded = requireAuth(event)
-      console.log('Token decoded successfully:', decoded)
       if (decoded) {
-        // Create user object with role from JWT payload
-        const user: any = { role_id: null, role: decoded.role }
+        const roleId = roleIdMap[decoded.role] ?? null
+        const user: any = { role_id: roleId, role: decoded.role }
 
-        // Determine role_id based on role name for permission checking
-        if (decoded.role === 'super_admin') {
-          user.role_id = 1
-        } else if (decoded.role === 'admin_komsos') {
-          user.role_id = 2
-        } else if (decoded.role === 'admin_sekretariat') {
-          user.role_id = 3
+        let permissions: string[]
+
+        // Check cache first (avoid DB query on every request)
+        const cacheKey = roleId ?? decoded.role
+        const cached = permissionsCache.get(cacheKey as number)
+        if (cached && Date.now() < cached.expiresAt) {
+          permissions = cached.permissions
+        } else {
+          try {
+            permissions = await getUserPermissions(user)
+            permissionsCache.set(cacheKey as number, {
+              permissions,
+              expiresAt: Date.now() + permissionsCacheTTL
+            })
+          } catch (permError) {
+            console.error('[Auth Middleware] Error getting permissions:', permError)
+            permissions = []
+          }
         }
 
-        try {
-          const permissions = await getUserPermissions(user)
-          console.log('User permissions:', permissions)
-          // Simpan user dan permissions di dalam context event
-          event.context.auth = {
-            userId: decoded.userId,
-            role: decoded.role,
-            permissions: permissions
-          }
-        } catch (permError) {
-          console.error('[Auth Middleware] Error getting permissions:', permError)
-          // Set auth context with empty permissions and continue
-          // Don't throw error here, let the endpoint handle authorization
-          event.context.auth = {
-            userId: decoded.userId,
-            role: decoded.role,
-            permissions: []
-          }
+        event.context.auth = {
+          userId: decoded.userId,
+          role: decoded.role,
+          permissions
         }
       }
     } catch (error) {
-      // Log auth failures as info/warning instead of error (expected for invalid/expired tokens)
-      const statusCode = error && typeof error === 'object' && 'statusCode' in error ? error.statusCode : 'unknown'
-      const message = error instanceof Error ? error.message : String(error)
-
-      // Only log detailed error for unexpected failures (not 401)
+      const statusCode = error && typeof error === 'object' && 'statusCode' in error ? (error as any).statusCode : 'unknown'
       if (statusCode !== 401) {
         console.error('[Auth Middleware] Unexpected auth failure:', {
-          message,
+          message: error instanceof Error ? error.message : String(error),
           statusCode,
           url: event.node.req.url
         })
-      } else {
-        // 401 is expected when token is invalid/expired - just log as info
-        console.log('[Auth Middleware] Auth check failed (invalid/expired token) for:', event.node.req.url)
       }
-
-      // Jika auth gagal, throw error untuk ditangani oleh error handler
       throw error
     }
   }

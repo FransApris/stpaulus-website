@@ -10,17 +10,17 @@ const getEnvVar = (withUnderscore: string, withoutUnderscore: string): string | 
 
 // Special handler for password (Railway uses MYSQL_ROOT_PASSWORD)
 const getPassword = (): string => {
-  return process.env.MYSQL_PASSWORD || 
-         process.env.MYSQLPASSWORD || 
-         process.env.MYSQL_ROOT_PASSWORD || 
-         ''
+  return process.env.MYSQL_PASSWORD ||
+    process.env.MYSQLPASSWORD ||
+    process.env.MYSQL_ROOT_PASSWORD ||
+    ''
 }
 
 // Validate required environment variables (check both formats)
-const hasRequiredVars = 
-  (getEnvVar('MYSQL_HOST', 'MYSQLHOST') && 
-   getEnvVar('MYSQL_USER', 'MYSQLUSER') && 
-   getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE'))
+const hasRequiredVars =
+  (getEnvVar('MYSQL_HOST', 'MYSQLHOST') &&
+    getEnvVar('MYSQL_USER', 'MYSQLUSER') &&
+    getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE'))
 
 if (!hasRequiredVars) {
   console.warn(
@@ -39,7 +39,12 @@ const dbConfig = {
   database: getEnvVar('MYSQL_DATABASE', 'MYSQLDATABASE') || 'stpaulus_cms_db',
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  // Keep connections alive so Railway doesn't drop idle connections
+  enableKeepAlive: true,
+  keepAliveInitialDelay: 10000,
+  // Fail fast on connect timeout instead of hanging
+  connectTimeout: 10000
 }
 
 // Initialize database connection pool
@@ -55,8 +60,8 @@ export const initDatabase = async () => {
 
     // Test connection with retry
     let connection
-    let retries = 5 // Increase retries
-    const delayMs = 3000 // 3 seconds delay
+    let retries = 3 // Reduced from 5 to fail faster
+    const delayMs = 1000 // Reduced from 3000ms to 1s per retry
 
     while (retries > 0) {
       try {
@@ -66,7 +71,7 @@ export const initDatabase = async () => {
       } catch (error: any) {
         retries--
         if (retries === 0) {
-          console.error('\n❌ Failed to connect to MySQL after 5 attempts')
+          console.error('\n❌ Failed to connect to MySQL after 3 attempts')
           console.error('📋 Connection config:', {
             host: dbConfig.host,
             port: dbConfig.port,
@@ -82,7 +87,7 @@ export const initDatabase = async () => {
           console.error('\n🔍 Error details:', error.message)
           throw error
         }
-        console.log(`⏳ Retrying database connection... (${5 - retries}/5) - waiting ${delayMs / 1000}s`)
+        console.log(`⏳ Retrying database connection... (${3 - retries}/3) - waiting ${delayMs / 1000}s`)
         await new Promise(resolve => setTimeout(resolve, delayMs))
       }
     }

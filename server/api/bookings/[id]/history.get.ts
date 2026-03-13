@@ -2,6 +2,7 @@ import { runQuery, getQuery as dbGetQuery } from '~/server/database/db'
 import { requireAuth, requirePermission, getUserPermissions } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
+  setHeader(event, 'Cache-Control', 'no-store, no-cache, must-revalidate')
   try {
     // Verify authentication
     const decoded = requireAuth(event)

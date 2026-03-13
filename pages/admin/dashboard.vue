@@ -520,63 +520,24 @@ const currentBookingPage = ref(1)
 const bookingsPerPage = 5  // Changed from 10 to 5 for better pagination visibility
 
 // Get user role
-const userRole = computed(() => {
-  const role = auth.user.value?.role || 'admin'
-  console.log('[Dashboard] userRole computed:', role, 'from user:', auth.user.value)
-  return role
-})
+const userRole = computed(() => auth.user.value?.role || 'admin')
 
 // Permission-based computed properties
-const canViewContent = computed(() => {
-  const result = auth.hasPermission('view_articles') || auth.hasPermission('manage_content')
-  console.log('[Dashboard] canViewContent:', result)
-  return result
-})
-
-const canViewGallery = computed(() => {
-  const result = auth.hasPermission('view_gallery') || auth.hasPermission('manage_gallery')
-  console.log('[Dashboard] canViewGallery:', result)
-  return result
-})
-
-const canViewAgenda = computed(() => {
-  const result = auth.hasPermission('view_agenda') || auth.hasPermission('manage_agenda')
-  console.log('[Dashboard] canViewAgenda:', result)
-  return result
-})
-
-const canViewBookings = computed(() => {
-  const result = auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings')
-  console.log('[Dashboard] canViewBookings:', result)
-  return result
-})
+const canViewContent = computed(() => auth.hasPermission('view_articles') || auth.hasPermission('manage_content'))
+const canViewGallery = computed(() => auth.hasPermission('view_gallery') || auth.hasPermission('manage_gallery'))
+const canViewAgenda = computed(() => auth.hasPermission('view_agenda') || auth.hasPermission('manage_agenda'))
+const canViewBookings = computed(() => auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings'))
 
 // Show booking list only for superadmin and admin_sekretariat (not admin_komsos)
 const canViewBookingList = computed(() => {
   const role = auth.user.value?.role || ''
-  const result = (role === 'superadmin' || role === 'admin_sekretariat') && 
-                 (auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings'))
-  console.log('[Dashboard] canViewBookingList:', result, 'role:', role)
-  return result
+  return (role === 'superadmin' || role === 'admin_sekretariat') &&
+         (auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings'))
 })
 
-const canViewRooms = computed(() => {
-  const result = auth.hasPermission('manage_rooms')
-  console.log('[Dashboard] canViewRooms:', result)
-  return result
-})
-
-const canViewDocuments = computed(() => {
-  const result = auth.hasPermission('manage_documents')
-  console.log('[Dashboard] canViewDocuments:', result)
-  return result
-})
-
-const canViewContactMessages = computed(() => {
-  const result = auth.hasPermission('manage_contact_messages')
-  console.log('[Dashboard] canViewContactMessages:', result)
-  return result
-})
+const canViewRooms = computed(() => auth.hasPermission('manage_rooms'))
+const canViewDocuments = computed(() => auth.hasPermission('manage_documents'))
+const canViewContactMessages = computed(() => auth.hasPermission('manage_contact_messages'))
 
 // Helper functions for role badges
 const getRoleName = (role) => {
@@ -890,10 +851,7 @@ watch([articles, news], () => {
 
 // Watch for auth user changes and fetch data when user is ready
 watch(() => auth.user.value, (newUser, oldUser) => {
-  console.log('[Dashboard] Auth user changed:', { old: oldUser?.username, new: newUser?.username })
   if (newUser && !oldUser) {
-    // User just logged in or data loaded
-    console.log('[Dashboard] User data loaded, fetching stats, content, and bookings')
     fetchStats()
     fetchContent()
     fetchBookings()
@@ -902,13 +860,8 @@ watch(() => auth.user.value, (newUser, oldUser) => {
 
 // Fetch data on mount (middleware already checks auth)
 onMounted(async () => {
-  console.log('[Dashboard] onMounted - Auth user:', auth.user.value)
-  // Only fetch if user is already loaded (from plugin)
   if (auth.user.value) {
     await Promise.all([fetchStats(), fetchContent(), fetchBookings()])
-  } else {
-    // If not loaded yet, wait for plugin to finish
-    console.log('[Dashboard] Waiting for auth to load...')
   }
 })
 </script>

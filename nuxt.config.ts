@@ -192,6 +192,22 @@ export default defineNuxtConfig({
           'cache-control': 'public,max-age=60'
         }
       },
+      // Admin API: NEVER cache - always return fresh data
+      '/api/admin/**': {
+        headers: {
+          'cache-control': 'no-store, no-cache, must-revalidate',
+          'pragma': 'no-cache',
+          'expires': '0'
+        }
+      },
+      // Bookings API: contains sensitive user data, also used by admin with auth tokens
+      '/api/bookings/**': {
+        headers: {
+          'cache-control': 'no-store, no-cache, must-revalidate',
+          'pragma': 'no-cache',
+          'expires': '0'
+        }
+      },
       '/**': {
         headers: {
           // 🔒 Security headers
