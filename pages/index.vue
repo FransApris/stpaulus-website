@@ -518,6 +518,12 @@
                   </span>
                 </div>
               </div>
+
+              <div class="bg-gray-50 rounded-xl p-3">
+                <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">👤 Pemesan</p>
+                <p class="text-sm font-bold text-gray-800">{{ booking.requester_name || booking.user_name || '-' }}</p>
+                <p class="text-xs text-gray-600">Username: {{ booking.username || '-' }}</p>
+              </div>
             </div>
           </div>
 
@@ -531,6 +537,8 @@
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
                     Acara</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pemesan
                   </th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status
                   </th>
@@ -548,6 +556,10 @@
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">{{ booking.room_name }}</div>
                     <div class="text-sm text-gray-500">{{ booking.room_location }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{ booking.requester_name || booking.user_name || '-' }}</div>
+                    <div class="text-sm text-gray-500">@{{ booking.username || '-' }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span :style="getBookingStatusStyle(booking.status)"

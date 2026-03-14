@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   // Only use placeholders for WHERE conditions
   const params = [startDateStr, endDateStr]
 
-  // Get public booking list (without user names for privacy)
+  // Get public booking list and include requester identity fields for display.
   // Note: Fetch all matching records, then limit in JavaScript for safety
   const bookings = await allQuery(`
     SELECT
@@ -27,6 +27,9 @@ export default defineEventHandler(async (event) => {
       r.name as room_name,
       r.location as room_location,
       b.event_name,
+      b.requester_name,
+      u.username,
+      u.full_name as user_name,
       DATE(b.start_time) as event_date,
       TIME(b.start_time) as start_time,
       TIME(b.end_time) as end_time,
@@ -34,6 +37,7 @@ export default defineEventHandler(async (event) => {
       b.created_at
     FROM bookings b
     JOIN rooms r ON b.room_id = r.id
+    JOIN users u ON b.user_id = u.id
     WHERE b.deleted_at IS NULL
     AND b.status IN ('APPROVED', 'PENDING', 'REJECTED', 'CANCELLED')
     AND DATE(b.start_time) BETWEEN ? AND ?
@@ -62,6 +66,9 @@ export default defineEventHandler(async (event) => {
       room_name: booking.room_name,
       room_location: booking.room_location,
       event_name: booking.event_name,
+      requester_name: booking.requester_name,
+      username: booking.username,
+      user_name: booking.user_name,
       event_date: eventDateStr,
       start_time: booking.start_time,
       end_time: booking.end_time,
