@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
       b.end_time,
       b.status,
       b.event_name,
+      b.requester_name,
       u.full_name as user_name
     FROM bookings b
     JOIN users u ON b.user_id = u.id
@@ -60,7 +61,7 @@ export default defineEventHandler(async (event) => {
 
       if (activeBooking) {
         status = 'Sedang Digunakan'
-        statusDetails = `${activeBooking.event_name} (${activeBooking.user_name})`
+        statusDetails = `${activeBooking.event_name} (${activeBooking.requester_name || activeBooking.user_name})`
       } else {
         // Check for upcoming bookings today
         const upcomingBooking = roomBookings.find((booking: any) => {
@@ -72,13 +73,13 @@ export default defineEventHandler(async (event) => {
           const startTime = new Date(upcomingBooking.start_time)
           const endTime = new Date(upcomingBooking.end_time)
           status = 'Sudah Dipesan'
-          statusDetails = `${upcomingBooking.event_name} pada ${startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} (${upcomingBooking.user_name})`
+          statusDetails = `${upcomingBooking.event_name} pada ${startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} (${upcomingBooking.requester_name || upcomingBooking.user_name})`
         } else {
           // Check for pending bookings
           const pendingBooking = roomBookings.find((booking: any) => booking.status === 'PENDING')
           if (pendingBooking) {
             status = 'Menunggu Persetujuan'
-            statusDetails = `${pendingBooking.event_name} (${pendingBooking.user_name})`
+            statusDetails = `${pendingBooking.event_name} (${pendingBooking.requester_name || pendingBooking.user_name})`
           }
         }
       }

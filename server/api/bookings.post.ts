@@ -15,11 +15,11 @@ export default defineEventHandler(async (event) => {
     const userId = decoded.userId
 
     const body = await readBody(event)
-    const { room_id, event_name, start_time, end_time } = body
+    const { room_id, event_name, requester_name, start_time, end_time } = body
 
-    console.log('[CREATE BOOKING] Request:', { userId, room_id, event_name, start_time, end_time })
+    console.log('[CREATE BOOKING] Request:', { userId, room_id, event_name, requester_name, start_time, end_time })
 
-    if (!room_id || !event_name || !start_time || !end_time) {
+    if (!room_id || !event_name || !requester_name || !start_time || !end_time) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Semua field diperlukan'
@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check user permissions for the room
-    const user = await getQuery('SELECT user_category, role_id FROM users WHERE id = ?', [userId]) as any
+    const user = await getQuery('SELECT full_name, role, user_category, role_id FROM users WHERE id = ?', [userId]) as any
 
     console.log('[CREATE BOOKING] User details:', {
       id: userId,
@@ -211,10 +211,12 @@ export default defineEventHandler(async (event) => {
     const status = room.requires_approval ? 'PENDING' : 'APPROVED'
 
     // Insert booking
+    const normalizedRequesterName = String(requester_name || '').trim() || String(user.full_name || '').trim()
+
     const result = await runQuery(`
-      INSERT INTO bookings (room_id, user_id, event_name, start_time, end_time, status)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `, [room_id, userId, event_name, mysqlStart, mysqlEnd, status]) as any
+      INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [room_id, userId, event_name, normalizedRequesterName, mysqlStart, mysqlEnd, status]) as any
 
     console.log('[CREATE BOOKING] Success:', { insertId: result.insertId, status })
 

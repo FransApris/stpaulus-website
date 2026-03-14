@@ -255,6 +255,14 @@
                 </div>
 
                 <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Pemesan / Atas Nama *</label>
+                  <input v-model="bookingForm.requester_name" type="text"
+                    placeholder="Contoh: Ketua Lingkungan Petrus 1"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                    required />
+                </div>
+
+                <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Acara *</label>
                   <input v-model="bookingForm.event_date" type="date" :min="getTodayDate()"
                     class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
@@ -391,6 +399,13 @@
                     <div class="flex items-center text-gray-600 text-sm">
                       <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M5.121 17.804A9 9 0 1118.88 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span><strong>Pemesan:</strong> {{ booking.requester_name || booking.user_name || '-' }}</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 text-sm">
+                      <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
                       <span>{{ booking.room_name }}</span>
@@ -493,6 +508,11 @@
                 <div>
                   <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Nama Acara</label>
                   <p class="text-lg font-bold text-gray-800 mt-1">{{ selectedBookingDetail.event_name }}</p>
+                </div>
+
+                <div>
+                  <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Pemesan</label>
+                  <p class="text-gray-800 mt-1">{{ selectedBookingDetail.requester_name || selectedBookingDetail.user_name || '-' }}</p>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -668,6 +688,9 @@
                       <div class="font-bold text-base text-gray-900 mb-2 break-words">
                         {{ booking.event_name }}
                       </div>
+                      <div class="text-sm text-gray-700 mb-2 break-words">
+                        <strong>Pemesan:</strong> {{ booking.requester_name || booking.user_name || '-' }}
+                      </div>
                       <div class="text-sm text-gray-600 flex items-center mb-3">
                         <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -830,6 +853,7 @@ const loginForm = ref({
 
 const bookingForm = ref({
   event_name: '',
+  requester_name: '',
   event_date: '',
   start_time: '',
   end_time: ''
@@ -1261,6 +1285,9 @@ const loadRoomAvailability = async () => {
 
 const selectRoom = (room) => {
   selectedRoom.value = room
+  if (!bookingForm.value.requester_name) {
+    bookingForm.value.requester_name = String(user.value?.full_name || '').trim()
+  }
 }
 
 const createBooking = async () => {
@@ -1294,6 +1321,7 @@ const createBooking = async () => {
     console.log('[CREATE BOOKING] Token exists:', !!token)
     console.log('[CREATE BOOKING] Request:', {
       event_name: bookingForm.value.event_name,
+      requester_name: bookingForm.value.requester_name,
       start_time: startDateTime.toISOString(),
       end_time: endDateTime.toISOString(),
       room_id: selectedRoom.value.id
@@ -1304,6 +1332,7 @@ const createBooking = async () => {
       headers: { Authorization: `Bearer ${token}` },
       body: {
         event_name: bookingForm.value.event_name,
+        requester_name: bookingForm.value.requester_name,
         start_time: startDateTime.toISOString(),
         end_time: endDateTime.toISOString(),
         room_id: selectedRoom.value.id
@@ -1317,7 +1346,7 @@ const createBooking = async () => {
     // Close modal and reset form after showing success message
     setTimeout(() => {
       selectedRoom.value = null
-      bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
+      bookingForm.value = { event_name: '', requester_name: '', event_date: '', start_time: '', end_time: '' }
       bookingMessage.value = ''
     }, 2500)
 
@@ -1330,7 +1359,7 @@ const createBooking = async () => {
 
 const closeBookingModal = () => {
   selectedRoom.value = null
-  bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
+  bookingForm.value = { event_name: '', requester_name: '', event_date: '', start_time: '', end_time: '' }
   bookingMessage.value = ''
   bookingError.value = ''
 }
