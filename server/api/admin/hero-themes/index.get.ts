@@ -1,6 +1,21 @@
 import { allQuery } from '../../../database/db'
 import { requirePermission } from '../../../utils/auth'
 
+const normalizeImagePath = (imagePath: string | null) => {
+  if (!imagePath) {
+    return imagePath
+  }
+
+  const cleaned = imagePath.trim().replace(/\\/g, '/')
+  if (!cleaned) {
+    return null
+  }
+  if (/^https?:\/\//i.test(cleaned) || cleaned.startsWith('//')) {
+    return cleaned
+  }
+  return cleaned.startsWith('/') ? cleaned : `/${cleaned}`
+}
+
 export default defineEventHandler(async (event) => {
   // Check permissions using RBAC
   requirePermission('manage_hero_themes')(event)
@@ -13,6 +28,9 @@ export default defineEventHandler(async (event) => {
 
   return {
     success: true,
-    data: themes
+    data: (themes || []).map((theme: any) => ({
+      ...theme,
+      image_path: normalizeImagePath(theme.image_path)
+    }))
   }
 })

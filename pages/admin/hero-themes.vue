@@ -61,10 +61,11 @@
               <td class="px-4 py-2">
                 <div class="relative group">
                   <img 
-                    :src="theme.image_path" 
+                    :src="resolveThemeImage(theme.image_path)"
                     :alt="theme.name"
                     class="w-24 h-16 object-cover rounded shadow-sm cursor-pointer hover:shadow-md transition-shadow"
                     @click="openPreviewModal(theme)"
+                    @error="handleImageError"
                   />
                   <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded transition-all flex items-center justify-center">
                     <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,6 +82,11 @@
               </td>
               <td class="px-4 py-2">
                 <div class="flex space-x-2">
+                  <button @click="openEditModal(theme)" title="Edit" class="text-indigo-600 hover:text-indigo-800 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2M4 20h4l10-10a2.828 2.828 0 00-4-4L4 16v4z" />
+                    </svg>
+                  </button>
                   <button v-if="!theme.is_active" @click="activateTheme(theme.id)" title="Aktifkan" class="text-green-600 hover:text-green-800 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -129,6 +135,40 @@
       </div>
     </div>
 
+    <!-- Edit Modal -->
+    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold mb-4">Edit Tema Hero</h3>
+        <form @submit.prevent="updateTheme" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Tema</label>
+            <input v-model="editTheme.name" type="text" placeholder="Nama tema" class="w-full border border-gray-300 rounded-md px-3 py-2" required />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Gambar Saat Ini</label>
+            <img
+              :src="resolveThemeImage(editTheme.currentImage)"
+              alt="Preview tema saat ini"
+              class="w-full h-36 object-cover rounded border border-gray-200"
+              @error="handleImageError"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Ganti Gambar (Opsional)</label>
+            <input type="file" @change="handleEditFileChange" accept="image/*" class="w-full border border-gray-300 rounded-md px-3 py-2" />
+          </div>
+          <div class="flex justify-end space-x-3">
+            <button type="button" @click="closeEditModal" class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50">
+              Batal
+            </button>
+            <button type="submit" :disabled="loading" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50">
+              {{ loading ? 'Menyimpan...' : 'Simpan Perubahan' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Preview Modal -->
     <div v-if="showPreviewModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" @click="showPreviewModal = false">
       <div class="relative max-w-6xl w-full" @click.stop>
@@ -151,9 +191,10 @@
           </div>
           <div class="relative">
             <img 
-              :src="previewTheme?.image_path" 
+              :src="resolveThemeImage(previewTheme?.image_path)"
               :alt="previewTheme?.name"
               class="w-full h-auto max-h-[70vh] object-contain"
+              @error="handleImageError"
             />
           </div>
           <div class="p-4 bg-gray-50 border-t flex justify-between items-center">
@@ -161,6 +202,12 @@
               <p>Dibuat: {{ formatDate(previewTheme?.created_at) }}</p>
             </div>
             <div class="space-x-2">
+              <button
+                @click="openEditModal(previewTheme); showPreviewModal = false"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              >
+                Edit
+              </button>
               <button 
                 v-if="!previewTheme?.is_active"
                 @click="activateTheme(previewTheme?.id); showPreviewModal = false"
@@ -203,10 +250,13 @@ definePageMeta({
 const themes = ref([])
 const loading = ref(true)
 const showCreateModal = ref(false)
+const showEditModal = ref(false)
 const showPreviewModal = ref(false)
 const previewTheme = ref(null)
 const newTheme = ref({ name: '', image: null })
+const editTheme = ref({ id: null, name: '', image: null, currentImage: '' })
 const toast = ref({ show: false, message: '', type: 'success' })
+const fallbackThemeImage = '/images/gereja-stpaulus-hero.jpg'
 
 // Toast notification function
 const showToast = (message, type = 'success') => {
@@ -240,6 +290,39 @@ const handleFileChange = (event) => {
   newTheme.value.image = event.target.files[0]
 }
 
+const handleEditFileChange = (event) => {
+  editTheme.value.image = event.target.files[0] || null
+}
+
+const normalizeThemeImagePath = (imagePath) => {
+  if (!imagePath || typeof imagePath !== 'string') {
+    return ''
+  }
+
+  const cleaned = imagePath.trim().replace(/\\/g, '/')
+  if (!cleaned) {
+    return ''
+  }
+
+  if (/^https?:\/\//i.test(cleaned) || cleaned.startsWith('//')) {
+    return cleaned
+  }
+
+  return cleaned.startsWith('/') ? cleaned : `/${cleaned}`
+}
+
+const resolveThemeImage = (imagePath) => {
+  const normalized = normalizeThemeImagePath(imagePath)
+  return normalized || fallbackThemeImage
+}
+
+const handleImageError = (event) => {
+  const target = event?.target
+  if (target && target.src !== fallbackThemeImage) {
+    target.src = fallbackThemeImage
+  }
+}
+
 const createTheme = async () => {
   loading.value = true
   try {
@@ -262,6 +345,56 @@ const createTheme = async () => {
   } catch (error) {
     console.error('Error creating theme:', error)
     showToast('Gagal menambahkan tema', 'error')
+  } finally {
+    loading.value = false
+  }
+}
+
+const openEditModal = (theme) => {
+  if (!theme) return
+
+  editTheme.value = {
+    id: theme.id,
+    name: theme.name,
+    image: null,
+    currentImage: theme.image_path || ''
+  }
+  showEditModal.value = true
+}
+
+const closeEditModal = () => {
+  showEditModal.value = false
+  editTheme.value = { id: null, name: '', image: null, currentImage: '' }
+}
+
+const updateTheme = async () => {
+  if (!editTheme.value.id) {
+    showToast('Tema tidak valid', 'error')
+    return
+  }
+
+  loading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('name', editTheme.value.name)
+    if (editTheme.value.image) {
+      formData.append('image', editTheme.value.image)
+    }
+
+    await $fetch(`/api/admin/hero-themes/${editTheme.value.id}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+      },
+      body: formData
+    })
+
+    showToast('Tema berhasil diperbarui')
+    closeEditModal()
+    await fetchThemes()
+  } catch (error) {
+    console.error('Error updating theme:', error)
+    showToast('Gagal memperbarui tema', 'error')
   } finally {
     loading.value = false
   }

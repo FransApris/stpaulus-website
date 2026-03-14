@@ -3,6 +3,22 @@ import { requirePermission } from '../../../utils/auth'
 import { promises as fs } from 'fs'
 import path from 'path'
 
+const normalizeImagePath = (imagePath: string) => {
+  const cleaned = imagePath.trim().replace(/\\/g, '/')
+  if (!cleaned) {
+    return ''
+  }
+  if (/^https?:\/\//i.test(cleaned) || cleaned.startsWith('//')) {
+    return cleaned
+  }
+  return cleaned.startsWith('/') ? cleaned : `/${cleaned}`
+}
+
+const toPublicFilePath = (imagePath: string) => {
+  const relativePath = imagePath.replace(/^\/+/, '').replace(/\\/g, '/')
+  return path.join(process.cwd(), 'public', ...relativePath.split('/'))
+}
+
 export default defineEventHandler(async (event) => {
   // Check permissions using RBAC
   requirePermission('manage_hero_themes')(event)
@@ -48,12 +64,15 @@ export default defineEventHandler(async (event) => {
 
     // Delete image file
     if (theme.image_path) {
-      const imagePath = path.join(process.cwd(), 'public', theme.image_path)
-      try {
-        await fs.unlink(imagePath)
-      } catch (fileError) {
-        console.warn('Could not delete image file:', fileError)
-        // Don't fail the request if file deletion fails
+      const normalizedPath = normalizeImagePath(theme.image_path)
+      if (normalizedPath.startsWith('/uploads/hero-themes/') || normalizedPath.startsWith('/images/themes/')) {
+        const imagePath = toPublicFilePath(normalizedPath)
+        try {
+          await fs.unlink(imagePath)
+        } catch (fileError) {
+          console.warn('Could not delete image file:', fileError)
+          // Don't fail the request if file deletion fails
+        }
       }
     }
 

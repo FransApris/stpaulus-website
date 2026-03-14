@@ -2,6 +2,18 @@ import { runQuery } from '../../../database/db'
 import { requirePermission } from '../../../utils/auth'
 import { promises as fs } from 'fs'
 import * as path from 'path'
+import { getUploadsPath } from '../../../utils/paths'
+
+const normalizeImagePath = (imagePath: string) => {
+  const cleaned = imagePath.trim().replace(/\\/g, '/')
+  if (!cleaned) {
+    return ''
+  }
+  if (/^https?:\/\//i.test(cleaned) || cleaned.startsWith('//')) {
+    return cleaned
+  }
+  return cleaned.startsWith('/') ? cleaned : `/${cleaned}`
+}
 
 export default defineEventHandler(async (event) => {
   // Check permissions using RBAC
@@ -56,7 +68,7 @@ export default defineEventHandler(async (event) => {
   // Generate unique filename
   const extension = path.extname(imageFile.filename || 'image.jpg')
   const filename = `hero-theme-${Date.now()}-${Math.random().toString(36).substring(2)}${extension}`
-  const uploadDir = path.join(process.cwd(), 'public', 'images', 'themes')
+  const uploadDir = getUploadsPath('hero-themes')
 
   // Ensure upload directory exists
   try {
@@ -70,7 +82,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const filePath = path.join(uploadDir, filename)
-  const imagePath = `/images/themes/${filename}`
+  const imagePath = normalizeImagePath(`/uploads/hero-themes/${filename}`)
 
   try {
     // Save file
