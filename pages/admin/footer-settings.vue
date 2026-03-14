@@ -250,7 +250,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from '#imports'
 import AdminLayout from '~/layouts/admin.vue'
 
 // Reactive data

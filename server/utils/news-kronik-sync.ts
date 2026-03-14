@@ -94,7 +94,7 @@ export async function syncNewsToKronik(
 
     // Create new kronik entry
     // Get author_id from news author name (if exists)
-    let authorId = null
+    let authorId: number | null = null
     if (data.author) {
       const user = await getOne(
         'SELECT id FROM users WHERE full_name = ? OR username = ? LIMIT 1',

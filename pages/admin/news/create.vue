@@ -250,7 +250,7 @@
               Konten Berita <span class="text-red-500">*</span>
             </label>
             <ClientOnly>
-              <CKEditorWrapper 
+              <LazyCKEditorWrapper 
                 v-model="form.content" 
                 placeholder="Tulis narasi berita di sini, atau klik tombol 'Generate Narasi dengan AI' di atas..."
               />
@@ -403,7 +403,7 @@ const galleryInput = ref<HTMLInputElement>()
 
 // Computed
 const willSyncToKronik = computed(() => {
-  return categories.value.some(c => 
+  return categories.value.some((c: any) => 
     form.value.category_ids.includes(c.id) && c.sync_to_kronik
   )
 })
@@ -509,7 +509,7 @@ const uploadGalleryImages = async () => {
   const token = localStorage.getItem('auth_token')
   const formData = new FormData()
 
-  galleryFiles.value.forEach(file => {
+  galleryFiles.value.forEach((file: File) => {
     formData.append('files', file)
   })
 

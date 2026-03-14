@@ -82,7 +82,7 @@
             </div>
 
             <div v-else class="space-y-4">
-                <div v-for="entry in entries" :key="entry.id"
+                <div v-for="entry in paginatedEntries" :key="entry.id"
                     class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-6">
                     <div class="flex items-start gap-4">
                         <!-- Thumbnail -->
@@ -146,6 +146,43 @@
                         </div>
                     </div>
                 </div>
+
+                <div v-if="entries.length > pageLimit" class="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p class="text-sm text-gray-600">
+                        Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
+                        {{ Math.min(currentPage * pageLimit, entries.length) }}
+                        dari {{ entries.length }} kronik
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <button
+                            @click="goToPage(currentPage - 1)"
+                            :disabled="currentPage === 1"
+                            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        >
+                            Sebelumnya
+                        </button>
+                        <button
+                            v-for="page in visiblePages"
+                            :key="page"
+                            @click="goToPage(page)"
+                            :class="[
+                                'px-3 py-1.5 rounded-lg border text-sm',
+                                currentPage === page
+                                    ? 'bg-paulus-blue text-white border-paulus-blue'
+                                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                            ]"
+                        >
+                            {{ page }}
+                        </button>
+                        <button
+                            @click="goToPage(currentPage + 1)"
+                            :disabled="currentPage >= totalPages"
+                            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        >
+                            Berikutnya
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -160,6 +197,8 @@ const user = ref(null)
 const entries = ref([])
 const categories = ref([])
 const loading = ref(true)
+const currentPage = ref(1)
+const pageLimit = 10
 
 const filters = reactive({
     status: '',
@@ -174,6 +213,33 @@ const userCategory = computed(() => {
     if (!user.value) return ''
     return user.value.unit_name || user.value.user_category || 'Anda'
 })
+
+const totalPages = computed(() => {
+    const pages = Math.ceil(entries.value.length / pageLimit)
+    return pages > 0 ? pages : 1
+})
+
+const paginatedEntries = computed(() => {
+    const start = (currentPage.value - 1) * pageLimit
+    return entries.value.slice(start, start + pageLimit)
+})
+
+const visiblePages = computed(() => {
+    const pages = []
+    const start = Math.max(1, currentPage.value - 2)
+    const end = Math.min(totalPages.value, start + 4)
+
+    for (let page = start; page <= end; page++) {
+        pages.push(page)
+    }
+
+    return pages
+})
+
+const goToPage = (page) => {
+    if (page < 1 || page > totalPages.value) return
+    currentPage.value = page
+}
 
 const clearSuccess = () => {
     successMessage.value = ''
@@ -273,8 +339,15 @@ const formatDate = (dateString) => {
 
 // Watch filters
 watch(filters, () => {
+    currentPage.value = 1
     fetchEntries()
 }, { deep: true })
+
+watch(totalPages, (pages) => {
+    if (currentPage.value > pages) {
+        currentPage.value = pages
+    }
+})
 
 // Check for success message from query params
 const checkSuccessMessage = () => {

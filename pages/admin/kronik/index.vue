@@ -75,7 +75,7 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-          <tr v-for="entry in entries" :key="entry.id" class="hover:bg-gray-50">
+          <tr v-for="entry in paginatedEntries" :key="entry.id" class="hover:bg-gray-50">
             <td class="px-6 py-4 max-w-xs truncate">{{ entry.what_title }}</td>
             <td class="px-6 py-4">{{ entry.category_name }}</td>
             <td class="px-6 py-4">{{ entry.section_name || '-' }}</td>
@@ -127,6 +127,43 @@
       <div v-if="!entries || entries.length === 0" class="text-center py-12">
         <p class="text-gray-500">Belum ada kronik</p>
       </div>
+
+      <div v-if="entries.length > pageLimit" class="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <p class="text-sm text-gray-600">
+          Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
+          {{ Math.min(currentPage * pageLimit, entries.length) }}
+          dari {{ entries.length }} kronik
+        </p>
+        <div class="flex items-center gap-2">
+          <button
+            @click="goToPage(currentPage - 1)"
+            :disabled="currentPage === 1"
+            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            Sebelumnya
+          </button>
+          <button
+            v-for="page in visiblePages"
+            :key="page"
+            @click="goToPage(page)"
+            :class="[
+              'px-3 py-1.5 rounded-lg border text-sm',
+              currentPage === page
+                ? 'bg-[#c58229] text-white border-[#c58229]'
+                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+            ]"
+          >
+            {{ page }}
+          </button>
+          <button
+            @click="goToPage(currentPage + 1)"
+            :disabled="currentPage >= totalPages"
+            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+          >
+            Berikutnya
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -150,6 +187,45 @@ const { data: entriesData, refresh: loadEntries } = await useFetch('/api/admin/k
   query: filters
 })
 const entries = computed(() => entriesData.value?.data?.entries || [])
+const currentPage = ref(1)
+const pageLimit = 10
+
+const totalPages = computed(() => {
+  const pages = Math.ceil(entries.value.length / pageLimit)
+  return pages > 0 ? pages : 1
+})
+
+const paginatedEntries = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return entries.value.slice(start, start + pageLimit)
+})
+
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, start + 4)
+
+  for (let page = start; page <= end; page++) {
+    pages.push(page)
+  }
+
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
+
+watch(filters, () => {
+  currentPage.value = 1
+}, { deep: true })
+
+watch(totalPages, (pages) => {
+  if (currentPage.value > pages) {
+    currentPage.value = pages
+  }
+})
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('id-ID', {

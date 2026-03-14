@@ -1,5 +1,3 @@
-import { useDebounceFn } from '@vueuse/core'
-
 export interface SearchResult {
   type: 'article' | 'news' | 'agenda' | 'document'
   id: number
@@ -30,6 +28,7 @@ export interface SearchResponse {
 
 export const useSearch = () => {
   const route = useRoute() // ✅ FASE 2: Get current route for page number
+  let debounceTimeout: ReturnType<typeof setTimeout> | null = null
   
   const searchQuery = ref('')
   const searchResults = ref<SearchResult[]>([])
@@ -46,8 +45,7 @@ export const useSearch = () => {
     sort?: string
   }
 
-  // Debounced search function
-  const debouncedSearch = useDebounceFn(async (query: string, page: number = 1, filters?: SearchFilters) => {
+  const runSearch = async (query: string, page: number = 1, filters?: SearchFilters) => {
     if (!query.trim() || query.trim().length < 2) {
       searchResults.value = []
       searchMetadata.value = null
@@ -108,7 +106,19 @@ export const useSearch = () => {
     } finally {
       isSearching.value = false
     }
-  }, 300)
+  }
+
+  // Debounced search function
+  const debouncedSearch = (query: string, page: number = 1, filters?: SearchFilters) => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout)
+    }
+
+    debounceTimeout = setTimeout(() => {
+      debounceTimeout = null
+      void runSearch(query, page, filters)
+    }, 300)
+  }
 
   // ✅ FASE 2: Watch both search query AND page number changes
   watch([searchQuery, () => route.query.page], ([newQuery, newPage]) => {
@@ -130,6 +140,10 @@ export const useSearch = () => {
 
   // Cleanup on unmount
   onUnmounted(() => {
+    if (debounceTimeout) {
+      clearTimeout(debounceTimeout)
+    }
+
     if (abortController.value) {
       abortController.value.abort()
     }

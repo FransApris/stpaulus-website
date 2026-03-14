@@ -104,7 +104,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from '#imports'
 
 // State
 const isVisible = ref(false)

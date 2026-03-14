@@ -418,12 +418,12 @@ const form = reactive({
 })
 
 // Watch category_id changes to filter sections
-watch(() => form.category_id, async (newCategoryId) => {
+watch(() => form.category_id, async (newCategoryId: string | number) => {
     const oldSectionId = form.section_id
     await fetchSections(newCategoryId)
 
     // Only reset section if the old section is not in the new sections list
-    const stillValid = sections.value.some(s => s.id === oldSectionId)
+    const stillValid = sections.value.some((s: Section) => s.id === oldSectionId)
     if (!stillValid) {
         form.section_id = ''
     }

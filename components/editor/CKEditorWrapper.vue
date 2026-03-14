@@ -29,7 +29,12 @@
 </template>
 
 <script setup>
-import { ref, shallowRef, watch, onMounted } from 'vue'
+import { ref, shallowRef, watch, onMounted } from '#imports'
+
+const CKEDITOR_VERSION = '43.3.1'
+const CKEDITOR_CDN_URL = `https://cdn.ckeditor.com/ckeditor5/${CKEDITOR_VERSION}/classic/ckeditor.js`
+
+let ckeditorScriptPromise = null
 
 const props = defineProps({
   modelValue: {
@@ -56,6 +61,53 @@ const loading = ref(true)
 const loadError = ref(false)
 const content = ref(props.modelValue)
 
+const loadClassicEditorFromCdn = async () => {
+  if (typeof window === 'undefined') {
+    return null
+  }
+
+  if (window.ClassicEditor) {
+    return window.ClassicEditor
+  }
+
+  if (!ckeditorScriptPromise) {
+    ckeditorScriptPromise = new Promise((resolve, reject) => {
+      const existingScript = document.querySelector(`script[src="${CKEDITOR_CDN_URL}"]`)
+
+      const handleLoad = () => {
+        if (window.ClassicEditor) {
+          resolve(window.ClassicEditor)
+          return
+        }
+
+        reject(new Error('ClassicEditor global was not found after loading CKEditor CDN script.'))
+      }
+
+      const handleError = () => {
+        reject(new Error('Failed to load CKEditor CDN script.'))
+      }
+
+      if (existingScript) {
+        existingScript.addEventListener('load', handleLoad, { once: true })
+        existingScript.addEventListener('error', handleError, { once: true })
+        return
+      }
+
+      const script = document.createElement('script')
+      script.src = CKEDITOR_CDN_URL
+      script.async = true
+      script.onload = handleLoad
+      script.onerror = handleError
+      document.head.appendChild(script)
+    }).catch((error) => {
+      ckeditorScriptPromise = null
+      throw error
+    })
+  }
+
+  return ckeditorScriptPromise
+}
+
 onMounted(async () => {
   if (process.client) {
     try {
@@ -65,9 +117,8 @@ onMounted(async () => {
       const { Ckeditor } = await import('@ckeditor/ckeditor5-vue')
       CKEditorComponent.value = Ckeditor
       
-      // Import ClassicEditor build
-      const ClassicEditor = await import('@ckeditor/ckeditor5-build-classic')
-      editor.value = ClassicEditor.default
+      // Load the classic build at runtime so admin-only editor code stays out of the main client bundle.
+      editor.value = await loadClassicEditorFromCdn()
       
       loading.value = false
       isEditorReady.value = true

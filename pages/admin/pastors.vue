@@ -460,7 +460,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch } from '#imports'
 
 definePageMeta({
     layout: 'admin',

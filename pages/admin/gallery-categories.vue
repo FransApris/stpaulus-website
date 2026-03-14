@@ -201,7 +201,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted } from '#imports'
 
 // Reactive data
 const categories = useState('admin-gallery-categories', () => [])

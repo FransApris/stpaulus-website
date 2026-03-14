@@ -37,7 +37,7 @@
         <div v-else-if="albums && albums.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           
           <a 
-            v-for="album in albums" 
+            v-for="album in paginatedAlbums" 
             :key="album.id" 
             :href="album.share_url"
             target="_blank"
@@ -92,6 +92,30 @@
           </a>
 
         </div>
+        <div v-if="albums && albums.length > pageLimit" class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <p class="text-sm text-gray-600">
+            Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-{{ Math.min(currentPage * pageLimit, albums.length) }} dari {{ albums.length }} album
+          </p>
+          <div class="flex items-center gap-2">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Sebelumnya
+            </button>
+            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+              :class="[
+                'px-3 py-1.5 rounded-lg border text-sm',
+                currentPage === page
+                  ? 'bg-[#882f1d] text-white border-[#882f1d]'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              ]">
+              {{ page }}
+            </button>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages"
+              class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Berikutnya
+            </button>
+          </div>
+        </div>
         <div v-else class="text-center text-gray-500 py-12">
           <p class="text-xl mb-2">Belum ada album yang tersedia.</p>
           <p class="text-sm">Album akan muncul di sini setelah admin menambahkannya.</p>
@@ -101,6 +125,9 @@
 </template>
 
 <script setup>
+const currentPage = ref(1)
+const pageLimit = 9
+
 // Mengambil data shared albums dari API
 const { data: albums, pending, error } = await useAsyncData('shared-albums', 
   async () => {
@@ -116,6 +143,35 @@ const { data: albums, pending, error } = await useAsyncData('shared-albums',
     default: () => []
   }
 );
+
+const totalPages = computed(() => {
+  const total = albums.value?.length || 0
+  const pages = Math.ceil(total / pageLimit)
+  return pages > 0 ? pages : 1
+})
+
+const paginatedAlbums = computed(() => {
+  const list = albums.value || []
+  const start = (currentPage.value - 1) * pageLimit
+  return list.slice(start, start + pageLimit)
+})
+
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, start + 4)
+
+  for (let page = start; page <= end; page++) {
+    pages.push(page)
+  }
+
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 // Fungsi untuk format tanggal
 const formatDate = (dateString) => {

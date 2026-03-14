@@ -101,6 +101,10 @@ const { data: posts, pending, error, refresh } = await useAsyncData('posts',
     }
   },
   {
+    default: () => [],
+    transform: (data) => data || []
+  }
+);
 
 const totalPages = computed(() => Math.max(1, Math.ceil((posts.value?.length || 0) / pageLimit)))
 const paginatedPosts = computed(() => {
@@ -126,10 +130,6 @@ watch(totalPages, (pageCount) => {
     currentPage.value = pageCount
   }
 })
-    default: () => [],
-    transform: (data) => data || []
-  }
-);
 
 // Pull to refresh setup
 const contentRef = ref(null)

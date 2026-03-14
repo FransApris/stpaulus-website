@@ -63,7 +63,7 @@
               Konten Halaman
             </label>
           <ClientOnly>
-            <CKEditorWrapper v-model="pageForm.content" placeholder="Tulis konten halaman di sini..." />
+            <LazyCKEditorWrapper v-model="pageForm.content" placeholder="Tulis konten halaman di sini..." />
             <template #fallback>
               <div class="border border-gray-300 rounded-md shadow-sm p-3 min-h-[300px] bg-gray-50 flex items-center justify-center">
                 <div class="text-center">
@@ -117,7 +117,7 @@ definePageMeta({
   layout: 'admin'
 })
 
-import { watch } from 'vue'
+import { watch } from '#imports'
 
 // Components are auto-imported by Nuxt, no need for defineAsyncComponent
 // Just wrap them in <ClientOnly> in the template

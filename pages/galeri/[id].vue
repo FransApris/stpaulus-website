@@ -82,7 +82,32 @@
         
         <!-- Photos Grid -->
         <div v-else-if="album.photos && album.photos.length > 0">
-          <PhotoGrid :photos="album.photos" />
+          <PhotoGrid :photos="paginatedPhotos" />
+
+          <div v-if="album.photos.length > pageLimit" class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p class="text-sm text-gray-600">
+              Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-{{ Math.min(currentPage * pageLimit, album.photos.length) }} dari {{ album.photos.length }} foto
+            </p>
+            <div class="flex items-center gap-2">
+              <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+                class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                Sebelumnya
+              </button>
+              <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+                :class="[
+                  'px-3 py-1.5 rounded-lg border text-sm',
+                  currentPage === page
+                    ? 'bg-[#882f1d] text-white border-[#882f1d]'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                ]">
+                {{ page }}
+              </button>
+              <button @click="goToPage(currentPage + 1)" :disabled="currentPage >= totalPages"
+                class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                Berikutnya
+              </button>
+            </div>
+          </div>
         </div>
         
         <!-- Empty State -->
@@ -101,6 +126,8 @@
 <script setup>
 // Dynamic import for PhotoGrid component (only loaded when needed)
 const PhotoGrid = defineAsyncComponent(() => import('~/components/PhotoGrid.vue'))
+const currentPage = ref(1)
+const pageLimit = 20
 
 const route = useRoute();
 const albumId = route.params.id;
@@ -121,6 +148,35 @@ const { data: album, pending, error } = await useAsyncData(
     transform: (data) => data || null
   }
 );
+
+const totalPages = computed(() => {
+  const total = album.value?.photos?.length || 0
+  const pages = Math.ceil(total / pageLimit)
+  return pages > 0 ? pages : 1
+})
+
+const paginatedPhotos = computed(() => {
+  const photos = album.value?.photos || []
+  const start = (currentPage.value - 1) * pageLimit
+  return photos.slice(start, start + pageLimit)
+})
+
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, start + 4)
+
+  for (let page = start; page <= end; page++) {
+    pages.push(page)
+  }
+
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 // Format date helper
 const formatDate = (dateString) => {

@@ -91,7 +91,7 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="member in displayedMembers" :key="member.id" class="hover:bg-gray-50">
+                    <tr v-for="member in paginatedMembers" :key="member.id" class="hover:bg-gray-50">
                         <td class="px-6 py-4">
                             <div class="text-sm font-medium text-gray-900">{{ member.name }}</div>
                             <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold">Ex Officio
@@ -163,6 +163,43 @@
                     </svg>
                     Tambah Anggota Pertama
                 </button>
+            </div>
+
+            <div v-if="displayedMembers.length > pageLimit" class="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p class="text-sm text-gray-600">
+                    Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
+                    {{ Math.min(currentPage * pageLimit, displayedMembers.length) }}
+                    dari {{ displayedMembers.length }} anggota
+                </p>
+                <div class="flex items-center gap-2">
+                    <button
+                        @click="goToPage(currentPage - 1)"
+                        :disabled="currentPage === 1"
+                        class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    >
+                        Sebelumnya
+                    </button>
+                    <button
+                        v-for="page in visiblePages"
+                        :key="page"
+                        @click="goToPage(page)"
+                        :class="[
+                            'px-3 py-1.5 rounded-lg border text-sm',
+                            currentPage === page
+                                ? 'bg-[#882f1d] text-white border-[#882f1d]'
+                                : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        ]"
+                    >
+                        {{ page }}
+                    </button>
+                    <button
+                        @click="goToPage(currentPage + 1)"
+                        :disabled="currentPage >= totalPages"
+                        class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                    >
+                        Berikutnya
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -312,7 +349,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from '#imports'
 
 definePageMeta({
     layout: 'admin',
@@ -328,6 +365,8 @@ const modalMode = ref<'create' | 'edit'>('create')
 const saving = ref(false)
 const showDeleteConfirm = ref(false)
 const memberToDelete = ref<any>(null)
+const currentPage = ref(1)
+const pageLimit = 10
 
 // Filters
 const filters = ref({
@@ -395,6 +434,33 @@ const filteredMembers = computed(() => {
 
 // Computed - displayed members for template
 const displayedMembers = computed(() => filteredMembers.value)
+
+const totalPages = computed(() => {
+    const pages = Math.ceil(displayedMembers.value.length / pageLimit)
+    return pages > 0 ? pages : 1
+})
+
+const paginatedMembers = computed(() => {
+    const start = (currentPage.value - 1) * pageLimit
+    return displayedMembers.value.slice(start, start + pageLimit)
+})
+
+const visiblePages = computed(() => {
+    const pages: number[] = []
+    const start = Math.max(1, currentPage.value - 2)
+    const end = Math.min(totalPages.value, start + 4)
+
+    for (let page = start; page <= end; page++) {
+        pages.push(page)
+    }
+
+    return pages
+})
+
+const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages.value) return
+    currentPage.value = page
+}
 
 // Methods
 const fetchMembers = async () => {
@@ -540,5 +606,23 @@ const formatDate = (dateString: string) => {
 // Lifecycle
 onMounted(() => {
     fetchMembers()
+})
+
+watch(
+    () => [
+        filters.value.search,
+        filters.value.position_type,
+        filters.value.is_active,
+        filters.value.sort
+    ],
+    () => {
+        currentPage.value = 1
+    }
+)
+
+watch(totalPages, (pages: number) => {
+    if (currentPage.value > pages) {
+        currentPage.value = pages
+    }
 })
 </script>

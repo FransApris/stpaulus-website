@@ -154,7 +154,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, onUnmounted } from '#imports'
 
 const props = defineProps({
   mapId: {

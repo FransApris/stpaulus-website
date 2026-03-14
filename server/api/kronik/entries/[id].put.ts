@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
         const body = await readBody(event)
 
         // Validate required fields with detailed error
-        const missingFields = []
+        const missingFields: string[] = []
         if (!body.category_id) missingFields.push('category_id')
         if (!body.what_title) missingFields.push('what_title')
         if (!body.when_date) missingFields.push('when_date')

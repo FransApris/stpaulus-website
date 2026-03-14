@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted } from 'vue'
+import { ref, nextTick, onMounted, onUnmounted } from '#imports'
 
 const isOpen = ref(false)
 const messages = ref([])

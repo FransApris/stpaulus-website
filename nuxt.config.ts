@@ -138,10 +138,15 @@ export default defineNuxtConfig({
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: ['vue', 'vue-router'],
-            ui: ['@vueuse/core', 'tw-elements']
-            // Removed editor chunk - let Vite handle it automatically for client-only components
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('@ckeditor')) return 'vendor-ckeditor'
+              if (id.includes('xlsx')) return 'vendor-xlsx'
+              if (id.includes('@google/generative-ai') || id.includes('groq-sdk')) return 'vendor-ai'
+              if (id.includes('@vueuse')) return 'vendor-vueuse'
+              if (id.includes('tw-elements')) return 'vendor-ui'
+              if (id.includes('vue-router') || id.includes('vue/dist') || id.includes('/vue/')) return 'vendor-vue'
+            }
           }
         }
       }

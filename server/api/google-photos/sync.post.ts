@@ -94,7 +94,7 @@ export default defineEventHandler(async (event) => {
                 const thumbnailUrl = service.getThumbnailUrl(photo.baseUrl, 400)
                 const fullUrl = service.getFullUrl(photo.baseUrl)
 
-                let localThumbnailPath = null
+                let localThumbnailPath: string | null = null
 
                 // Download thumbnail ke server lokal (optional)
                 if (downloadThumbnails) {

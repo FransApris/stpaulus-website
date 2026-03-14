@@ -201,7 +201,7 @@ export class GooglePhotosService {
         height?: number
         crop?: boolean
     }): string {
-        const params = []
+        const params: string[] = []
 
         if (options?.width) params.push(`w${options.width}`)
         if (options?.height) params.push(`h${options.height}`)

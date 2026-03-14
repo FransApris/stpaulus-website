@@ -136,7 +136,7 @@
                     Pengurus Inti
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="member in groupedMembers.pengurus_inti" :key="member.id"
+                    <div v-for="member in getPaginatedItems('pengurus_inti', groupedMembers.pengurus_inti)" :key="member.id"
                         class="bg-white rounded-lg shadow-sm p-6 border-t-4 border-[#882f1d] hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
@@ -148,6 +148,14 @@
                                 Ex Officio
                             </span>
                         </div>
+                    </div>
+                </div>
+                <div v-if="groupedMembers.pengurus_inti.length > pageLimit" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p class="text-sm text-gray-600">Menampilkan {{ getRangeStart(getSectionPage('pengurus_inti'), groupedMembers.pengurus_inti.length) }}-{{ getRangeEnd(getSectionPage('pengurus_inti'), groupedMembers.pengurus_inti.length) }} dari {{ groupedMembers.pengurus_inti.length }} anggota</p>
+                    <div class="flex items-center gap-2">
+                        <button @click="goToPage('pengurus_inti', getSectionPage('pengurus_inti') - 1, groupedMembers.pengurus_inti.length)" :disabled="getSectionPage('pengurus_inti') === 1" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Sebelumnya</button>
+                        <button v-for="page in getVisiblePages('pengurus_inti', groupedMembers.pengurus_inti.length)" :key="`pengurus-inti-${page}`" @click="goToPage('pengurus_inti', page, groupedMembers.pengurus_inti.length)" :class="['px-3 py-1.5 rounded-lg border text-sm', getSectionPage('pengurus_inti') === page ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'border-gray-300 text-gray-700 hover:bg-gray-50']">{{ page }}</button>
+                        <button @click="goToPage('pengurus_inti', getSectionPage('pengurus_inti') + 1, groupedMembers.pengurus_inti.length)" :disabled="getSectionPage('pengurus_inti') >= getTotalPages(groupedMembers.pengurus_inti.length)" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Berikutnya</button>
                     </div>
                 </div>
             </section>
@@ -176,11 +184,19 @@
                         :key="seksiName" class="bg-gray-50 rounded-lg p-6">
                         <h3 class="text-lg font-bold text-gray-800 mb-4">{{ seksiName }}</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div v-for="member in seksiMembers" :key="member.id"
+                            <div v-for="member in getPaginatedSeksiMembers(bidang, String(seksiName), seksiMembers as any[])" :key="member.id"
                                 class="bg-white rounded-lg shadow-sm p-4 border-l-4"
                                 :class="getBidangBorderColor(bidang)">
                                 <p class="font-semibold text-gray-900">{{ member.name }}</p>
                                 <p v-if="member.sub_seksi_name" class="text-xs text-gray-500 mt-1">{{ member.sub_seksi_name }}</p>
+                            </div>
+                        </div>
+                        <div v-if="(seksiMembers as any[]).length > pageLimit" class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <p class="text-sm text-gray-600">Menampilkan {{ getRangeStart(getSeksiPage(bidang, String(seksiName)), (seksiMembers as any[]).length) }}-{{ getRangeEnd(getSeksiPage(bidang, String(seksiName)), (seksiMembers as any[]).length) }} dari {{ (seksiMembers as any[]).length }} anggota</p>
+                            <div class="flex items-center gap-2">
+                                <button @click="goToSeksiPage(bidang, String(seksiName), getSeksiPage(bidang, String(seksiName)) - 1, (seksiMembers as any[]).length)" :disabled="getSeksiPage(bidang, String(seksiName)) === 1" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Sebelumnya</button>
+                                <button v-for="page in getVisibleSeksiPages(bidang, String(seksiName), (seksiMembers as any[]).length)" :key="`${bidang}-${String(seksiName)}-${page}`" @click="goToSeksiPage(bidang, String(seksiName), page, (seksiMembers as any[]).length)" :class="['px-3 py-1.5 rounded-lg border text-sm', getSeksiPage(bidang, String(seksiName)) === page ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'border-gray-300 text-gray-700 hover:bg-gray-50']">{{ page }}</button>
+                                <button @click="goToSeksiPage(bidang, String(seksiName), getSeksiPage(bidang, String(seksiName)) + 1, (seksiMembers as any[]).length)" :disabled="getSeksiPage(bidang, String(seksiName)) >= getTotalPages((seksiMembers as any[]).length)" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Berikutnya</button>
                             </div>
                         </div>
                     </div>
@@ -194,25 +210,33 @@
                     Ketua Wilayah & Lingkungan
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <div v-for="(members, wilayahName) in wilayahGroups" :key="wilayahName"
+                    <div v-for="group in paginatedWilayahGroups" :key="group.name"
                         class="bg-white rounded-lg shadow-sm p-6 border-t-4 border-indigo-600">
-                        <h3 class="text-lg font-bold text-indigo-900 mb-4">Wilayah {{ wilayahName }}</h3>
+                        <h3 class="text-lg font-bold text-indigo-900 mb-4">Wilayah {{ group.name }}</h3>
                         <div class="space-y-4">
                             <!-- Ketua Wilayah -->
-                            <div v-for="member in members.filter((m: any) => m.position_category === 'ketua_wilayah')" :key="member.id" 
+                            <div v-for="member in group.members.filter((m: any) => m.position_category === 'ketua_wilayah')" :key="member.id" 
                                 class="border-l-4 border-l-indigo-600 pl-3 pb-3 border-b border-b-gray-200">
                                 <p class="font-bold text-indigo-900 text-sm">{{ member.name }}</p>
                                 <p class="text-xs text-indigo-600 font-semibold">Ketua Wilayah</p>
                             </div>
                             <!-- Ketua Lingkungan -->
                             <div class="space-y-2">
-                                <div v-for="member in members.filter((m: any) => m.position_category === 'ketua_lingkungan')" :key="member.id" 
+                                <div v-for="member in group.members.filter((m: any) => m.position_category === 'ketua_lingkungan')" :key="member.id" 
                                     class="border-l-2 border-gray-300 pl-3">
                                     <p class="font-semibold text-gray-900 text-sm">{{ member.name }}</p>
                                     <p class="text-xs text-gray-500">{{ member.position }}</p>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div v-if="wilayahGroupCards.length > pageLimit" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p class="text-sm text-gray-600">Menampilkan {{ getRangeStart(getSectionPage('wilayah'), wilayahGroupCards.length) }}-{{ getRangeEnd(getSectionPage('wilayah'), wilayahGroupCards.length) }} dari {{ wilayahGroupCards.length }} wilayah</p>
+                    <div class="flex items-center gap-2">
+                        <button @click="goToPage('wilayah', getSectionPage('wilayah') - 1, wilayahGroupCards.length)" :disabled="getSectionPage('wilayah') === 1" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Sebelumnya</button>
+                        <button v-for="page in getVisiblePages('wilayah', wilayahGroupCards.length)" :key="`wilayah-${page}`" @click="goToPage('wilayah', page, wilayahGroupCards.length)" :class="['px-3 py-1.5 rounded-lg border text-sm', getSectionPage('wilayah') === page ? 'bg-indigo-600 text-white border-indigo-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50']">{{ page }}</button>
+                        <button @click="goToPage('wilayah', getSectionPage('wilayah') + 1, wilayahGroupCards.length)" :disabled="getSectionPage('wilayah') >= getTotalPages(wilayahGroupCards.length)" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Berikutnya</button>
                     </div>
                 </div>
             </section>
@@ -222,7 +246,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from '#imports'
 
 // SEO
 useHead({
@@ -239,6 +263,11 @@ useHead({
 const members = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
+const pageLimit = 8
+type DppSectionKey = 'pengurus_inti' | 'wilayah'
+const pengurusIntiPage = ref(1)
+const wilayahPage = ref(1)
+const seksiPages = ref<Record<string, number>>({})
 
 // Fetch Data
 const fetchMembers = async () => {
@@ -262,22 +291,22 @@ const fetchMembers = async () => {
 // Computed - Grouped Members
 const groupedMembers = computed(() => {
     return {
-        pengurus_inti: members.value.filter(m => m.position_category === 'pengurus_inti'),
-        bidang_pembinaan: members.value.filter(m => m.position_category === 'bidang_pembinaan'),
-        bidang_sumber: members.value.filter(m => m.position_category === 'bidang_sumber'),
-        bidang_kerasulan_khusus: members.value.filter(m => m.position_category === 'bidang_kerasulan_khusus'),
-        bidang_kerasulan_umum: members.value.filter(m => m.position_category === 'bidang_kerasulan_umum')
+        pengurus_inti: members.value.filter((m: any) => m.position_category === 'pengurus_inti'),
+        bidang_pembinaan: members.value.filter((m: any) => m.position_category === 'bidang_pembinaan'),
+        bidang_sumber: members.value.filter((m: any) => m.position_category === 'bidang_sumber'),
+        bidang_kerasulan_khusus: members.value.filter((m: any) => m.position_category === 'bidang_kerasulan_khusus'),
+        bidang_kerasulan_umum: members.value.filter((m: any) => m.position_category === 'bidang_kerasulan_umum')
     }
 })
 
 // Computed - Wilayah Groups
 const wilayahGroups = computed(() => {
     const groups: any = {}
-    const wilayahMembers = members.value.filter(m => 
+    const wilayahMembers = members.value.filter((m: any) => 
         m.position_category === 'ketua_wilayah' || m.position_category === 'ketua_lingkungan'
     )
     
-    wilayahMembers.forEach(m => {
+    wilayahMembers.forEach((m: any) => {
         if (m.wilayah_name) {
             if (!groups[m.wilayah_name]) {
                 groups[m.wilayah_name] = []
@@ -305,10 +334,22 @@ const wilayahGroups = computed(() => {
     return groups
 })
 
+const wilayahGroupCards = computed(() => {
+    return Object.entries(wilayahGroups.value).map(([name, groupMembers]) => ({
+        name,
+        members: groupMembers as any[]
+    }))
+})
+
+const paginatedWilayahGroups = computed(() => {
+    const start = (getSectionPage('wilayah') - 1) * pageLimit
+    return wilayahGroupCards.value.slice(start, start + pageLimit)
+})
+
 // Computed - Statistics
 const statistics = computed(() => {
     const total = members.value.length
-    const pengurusInti = members.value.filter(m => m.position_category === 'pengurus_inti').length
+    const pengurusInti = members.value.filter((m: any) => m.position_category === 'pengurus_inti').length
     const totalWilayah = Object.keys(wilayahGroups.value).length
 
     return { total, pengurusInti, totalWilayah }
@@ -341,6 +382,85 @@ const decreeInfo = computed(() => {
 
     return { number, date, period, periodLabel }
 })
+
+const getTotalPages = (totalItems: number) => {
+    const pages = Math.ceil(totalItems / pageLimit)
+    return pages > 0 ? pages : 1
+}
+
+const getPaginatedItems = (sectionKey: DppSectionKey, items: any[]) => {
+    const currentPage = getSectionPage(sectionKey)
+    const start = (currentPage - 1) * pageLimit
+    return items.slice(start, start + pageLimit)
+}
+
+const getSectionPage = (sectionKey: DppSectionKey) => {
+    return sectionKey === 'pengurus_inti' ? pengurusIntiPage.value : wilayahPage.value
+}
+
+const getVisiblePages = (sectionKey: DppSectionKey, totalItems: number) => {
+    const pages: number[] = []
+    const totalPages = getTotalPages(totalItems)
+    const currentPage = getSectionPage(sectionKey)
+    const start = Math.max(1, currentPage - 2)
+    const end = Math.min(totalPages, start + 4)
+
+    for (let page = start; page <= end; page++) {
+        pages.push(page)
+    }
+
+    return pages
+}
+
+const goToPage = (sectionKey: DppSectionKey, page: number, totalItems: number) => {
+    const totalPages = getTotalPages(totalItems)
+    if (page < 1 || page > totalPages) return
+    if (sectionKey === 'pengurus_inti') {
+        pengurusIntiPage.value = page
+    } else {
+        wilayahPage.value = page
+    }
+}
+
+const getSeksiPageKey = (bidang: string, seksiName: string) => `${bidang}::${seksiName}`
+
+const getSeksiPage = (bidang: string, seksiName: string) => {
+    return seksiPages.value[getSeksiPageKey(bidang, seksiName)] || 1
+}
+
+const getPaginatedSeksiMembers = (bidang: string, seksiName: string, items: any[]) => {
+    const currentPage = getSeksiPage(bidang, seksiName)
+    const start = (currentPage - 1) * pageLimit
+    return items.slice(start, start + pageLimit)
+}
+
+const getVisibleSeksiPages = (bidang: string, seksiName: string, totalItems: number) => {
+    const pages: number[] = []
+    const totalPages = getTotalPages(totalItems)
+    const currentPage = getSeksiPage(bidang, seksiName)
+    const start = Math.max(1, currentPage - 2)
+    const end = Math.min(totalPages, start + 4)
+
+    for (let page = start; page <= end; page++) {
+        pages.push(page)
+    }
+
+    return pages
+}
+
+const goToSeksiPage = (bidang: string, seksiName: string, page: number, totalItems: number) => {
+    const totalPages = getTotalPages(totalItems)
+    if (page < 1 || page > totalPages) return
+    seksiPages.value[getSeksiPageKey(bidang, seksiName)] = page
+}
+
+const getRangeStart = (currentPage: number, totalItems: number) => {
+    return Math.min((currentPage - 1) * pageLimit + 1, totalItems)
+}
+
+const getRangeEnd = (currentPage: number, totalItems: number) => {
+    return Math.min(currentPage * pageLimit, totalItems)
+}
 
 // Methods
 const getMembersByBidang = (bidangName: string) => {

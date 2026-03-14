@@ -6,7 +6,7 @@
         <p class="text-gray-600 mb-8">Testing page (no authentication required)</p>
 
         <!-- Google Photos Manager Component -->
-        <GooglePhotosManager />
+        <LazyGooglePhotosManager />
 
         <!-- Instructions -->
         <div class="mt-12 bg-blue-50 border-l-4 border-blue-400 p-6">

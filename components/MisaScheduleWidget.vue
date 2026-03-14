@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from '#imports'
 
 const isVisible = ref(true)
 const loading = ref(true)

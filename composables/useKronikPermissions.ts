@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { computed } from '#imports'
 
 // Composable for checking user permissions
 export const usePermissions = () => {

@@ -763,7 +763,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from '#imports'
 
 const dppMembers = ref([])  // DPP members from admin/dpp
 const wilayahList = ref([]) // Wilayah master data

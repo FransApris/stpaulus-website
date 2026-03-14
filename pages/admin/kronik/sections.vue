@@ -104,7 +104,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="section in filteredSections" :key="section.id" class="hover:bg-gray-50">
+            <tr v-for="section in paginatedSections" :key="section.id" class="hover:bg-gray-50">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900">{{ section.name }}</div>
                 <div v-if="section.description" class="text-sm text-gray-500 truncate max-w-xs">
@@ -155,6 +155,43 @@
             </tr>
           </tbody>
         </table>
+
+        <div v-if="filteredSections.length > pageLimit" class="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <p class="text-sm text-gray-600">
+            Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
+            {{ Math.min(currentPage * pageLimit, filteredSections.length) }}
+            dari {{ filteredSections.length }} section
+          </p>
+          <div class="flex items-center gap-2">
+            <button
+              @click="goToPage(currentPage - 1)"
+              :disabled="currentPage === 1"
+              class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Sebelumnya
+            </button>
+            <button
+              v-for="page in visiblePages"
+              :key="page"
+              @click="goToPage(page)"
+              :class="[
+                'px-3 py-1.5 rounded-lg border text-sm',
+                currentPage === page
+                  ? 'bg-[#c58229] text-white border-[#c58229]'
+                  : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+              ]"
+            >
+              {{ page }}
+            </button>
+            <button
+              @click="goToPage(currentPage + 1)"
+              :disabled="currentPage >= totalPages"
+              class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            >
+              Berikutnya
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -332,7 +369,7 @@ interface SectionForm {
 const { user } = useAuth()
 
 // Check permissions - wait for user data to be available
-watch(user, (newUser) => {
+watch(user, (newUser: any) => {
   if (newUser && !['super_admin', 'admin_paroki'].includes(newUser.role)) {
     navigateTo('/admin/dashboard')
   }
@@ -345,6 +382,8 @@ const showModal = ref(false)
 const showDeleteConfirm = ref(false)
 const editingSection = ref<Section | null>(null)
 const sectionToDelete = ref<Section | null>(null)
+const currentPage = ref(1)
+const pageLimit = 10
 
 // Filters
 const selectedCategory = ref('')
@@ -391,6 +430,43 @@ const filteredSections = computed(() => {
   }
 
   return filtered
+})
+
+const totalPages = computed(() => {
+  const pages = Math.ceil(filteredSections.value.length / pageLimit)
+  return pages > 0 ? pages : 1
+})
+
+const paginatedSections = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return filteredSections.value.slice(start, start + pageLimit)
+})
+
+const visiblePages = computed(() => {
+  const pages: number[] = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, start + 4)
+
+  for (let page = start; page <= end; page++) {
+    pages.push(page)
+  }
+
+  return pages
+})
+
+const goToPage = (page: number) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
+
+watch([selectedCategory, searchQuery, statusFilter], () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, (pages: number) => {
+  if (currentPage.value > pages) {
+    currentPage.value = pages
+  }
 })
 
 // Methods

@@ -128,7 +128,7 @@
 </template>
 
 <script setup>
-import { defineComponent, h } from 'vue'
+import { defineComponent, h } from '#imports'
 
 definePageMeta({
   layout: 'admin'

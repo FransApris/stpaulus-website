@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed } from '#imports'
 
 interface Photo {
   id: number
@@ -166,7 +166,7 @@ async function loadPhotos() {
 
 function openLightbox(photo: Photo) {
   lightboxPhoto.value = photo
-  currentPhotoIndex.value = photos.value.findIndex(p => p.id === photo.id)
+  currentPhotoIndex.value = photos.value.findIndex((p: Photo) => p.id === photo.id)
   
   // Prevent body scroll
   document.body.style.overflow = 'hidden'

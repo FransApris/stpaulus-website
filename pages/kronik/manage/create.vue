@@ -388,7 +388,7 @@ const form = reactive({
 })
 
 // Watch category_id changes to filter sections
-watch(() => form.category_id, async (newCategoryId) => {
+watch(() => form.category_id, async (newCategoryId: string | number) => {
     form.section_id = '' // Reset section when category changes
     await fetchSections(newCategoryId)
 })

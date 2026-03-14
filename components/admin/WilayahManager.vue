@@ -308,7 +308,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from '#imports'
 
 const wilayahList = ref([])
 const loading = ref(false)

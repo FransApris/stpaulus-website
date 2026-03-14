@@ -136,7 +136,7 @@
                     Ketua
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="member in groupedMembers.ketua" :key="member.id"
+                    <div v-for="member in getPaginatedMembers('ketua', groupedMembers.ketua)" :key="member.id"
                         class="bg-white rounded-lg shadow-sm p-6 border-t-4 border-[#882f1d] hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
@@ -150,6 +150,14 @@
                         </div>
                     </div>
                 </div>
+                <div v-if="groupedMembers.ketua.length > pageLimit" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p class="text-sm text-gray-600">Menampilkan {{ getRangeStart(getPage('ketua'), groupedMembers.ketua.length) }}-{{ getRangeEnd(getPage('ketua'), groupedMembers.ketua.length) }} dari {{ groupedMembers.ketua.length }} anggota</p>
+                    <div class="flex items-center gap-2">
+                        <button @click="goToPage('ketua', getPage('ketua') - 1, groupedMembers.ketua.length)" :disabled="getPage('ketua') === 1" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Sebelumnya</button>
+                        <button v-for="page in getVisiblePages('ketua', groupedMembers.ketua.length)" :key="`ketua-${page}`" @click="goToPage('ketua', page, groupedMembers.ketua.length)" :class="['px-3 py-1.5 rounded-lg border text-sm', getPage('ketua') === page ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'border-gray-300 text-gray-700 hover:bg-gray-50']">{{ page }}</button>
+                        <button @click="goToPage('ketua', getPage('ketua') + 1, groupedMembers.ketua.length)" :disabled="getPage('ketua') >= getTotalPages(groupedMembers.ketua.length)" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Berikutnya</button>
+                    </div>
+                </div>
             </section>
 
             <!-- Wakil Ketua Section -->
@@ -159,7 +167,7 @@
                     Wakil Ketua
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="member in groupedMembers.wakil_ketua" :key="member.id"
+                    <div v-for="member in getPaginatedMembers('wakil_ketua', groupedMembers.wakil_ketua)" :key="member.id"
                         class="bg-white rounded-lg shadow-sm p-6 border-t-4 border-purple-600 hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
@@ -173,6 +181,14 @@
                         </div>
                     </div>
                 </div>
+                <div v-if="groupedMembers.wakil_ketua.length > pageLimit" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p class="text-sm text-gray-600">Menampilkan {{ getRangeStart(getPage('wakil_ketua'), groupedMembers.wakil_ketua.length) }}-{{ getRangeEnd(getPage('wakil_ketua'), groupedMembers.wakil_ketua.length) }} dari {{ groupedMembers.wakil_ketua.length }} anggota</p>
+                    <div class="flex items-center gap-2">
+                        <button @click="goToPage('wakil_ketua', getPage('wakil_ketua') - 1, groupedMembers.wakil_ketua.length)" :disabled="getPage('wakil_ketua') === 1" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Sebelumnya</button>
+                        <button v-for="page in getVisiblePages('wakil_ketua', groupedMembers.wakil_ketua.length)" :key="`wakil-${page}`" @click="goToPage('wakil_ketua', page, groupedMembers.wakil_ketua.length)" :class="['px-3 py-1.5 rounded-lg border text-sm', getPage('wakil_ketua') === page ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50']">{{ page }}</button>
+                        <button @click="goToPage('wakil_ketua', getPage('wakil_ketua') + 1, groupedMembers.wakil_ketua.length)" :disabled="getPage('wakil_ketua') >= getTotalPages(groupedMembers.wakil_ketua.length)" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Berikutnya</button>
+                    </div>
+                </div>
             </section>
 
             <!-- Sekretaris Section -->
@@ -182,7 +198,7 @@
                     Sekretaris
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="member in groupedMembers.sekretaris" :key="member.id"
+                    <div v-for="member in getPaginatedMembers('sekretaris', groupedMembers.sekretaris)" :key="member.id"
                         class="bg-white rounded-lg shadow-sm p-6 border-t-4 border-blue-600 hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
@@ -195,6 +211,14 @@
                         </div>
                     </div>
                 </div>
+                <div v-if="groupedMembers.sekretaris.length > pageLimit" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p class="text-sm text-gray-600">Menampilkan {{ getRangeStart(getPage('sekretaris'), groupedMembers.sekretaris.length) }}-{{ getRangeEnd(getPage('sekretaris'), groupedMembers.sekretaris.length) }} dari {{ groupedMembers.sekretaris.length }} anggota</p>
+                    <div class="flex items-center gap-2">
+                        <button @click="goToPage('sekretaris', getPage('sekretaris') - 1, groupedMembers.sekretaris.length)" :disabled="getPage('sekretaris') === 1" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Sebelumnya</button>
+                        <button v-for="page in getVisiblePages('sekretaris', groupedMembers.sekretaris.length)" :key="`sekretaris-${page}`" @click="goToPage('sekretaris', page, groupedMembers.sekretaris.length)" :class="['px-3 py-1.5 rounded-lg border text-sm', getPage('sekretaris') === page ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50']">{{ page }}</button>
+                        <button @click="goToPage('sekretaris', getPage('sekretaris') + 1, groupedMembers.sekretaris.length)" :disabled="getPage('sekretaris') >= getTotalPages(groupedMembers.sekretaris.length)" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Berikutnya</button>
+                    </div>
+                </div>
             </section>
 
             <!-- Bendahara Section -->
@@ -204,7 +228,7 @@
                     Bendahara
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div v-for="member in groupedMembers.bendahara" :key="member.id"
+                    <div v-for="member in getPaginatedMembers('bendahara', groupedMembers.bendahara)" :key="member.id"
                         class="bg-white rounded-lg shadow-sm p-6 border-t-4 border-green-600 hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
@@ -217,6 +241,14 @@
                         </div>
                     </div>
                 </div>
+                <div v-if="groupedMembers.bendahara.length > pageLimit" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p class="text-sm text-gray-600">Menampilkan {{ getRangeStart(getPage('bendahara'), groupedMembers.bendahara.length) }}-{{ getRangeEnd(getPage('bendahara'), groupedMembers.bendahara.length) }} dari {{ groupedMembers.bendahara.length }} anggota</p>
+                    <div class="flex items-center gap-2">
+                        <button @click="goToPage('bendahara', getPage('bendahara') - 1, groupedMembers.bendahara.length)" :disabled="getPage('bendahara') === 1" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Sebelumnya</button>
+                        <button v-for="page in getVisiblePages('bendahara', groupedMembers.bendahara.length)" :key="`bendahara-${page}`" @click="goToPage('bendahara', page, groupedMembers.bendahara.length)" :class="['px-3 py-1.5 rounded-lg border text-sm', getPage('bendahara') === page ? 'bg-green-600 text-white border-green-600' : 'border-gray-300 text-gray-700 hover:bg-gray-50']">{{ page }}</button>
+                        <button @click="goToPage('bendahara', getPage('bendahara') + 1, groupedMembers.bendahara.length)" :disabled="getPage('bendahara') >= getTotalPages(groupedMembers.bendahara.length)" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Berikutnya</button>
+                    </div>
+                </div>
             </section>
 
             <!-- Anggota Section -->
@@ -226,7 +258,7 @@
                     Anggota
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <div v-for="member in groupedMembers.anggota" :key="member.id"
+                    <div v-for="member in getPaginatedMembers('anggota', groupedMembers.anggota)" :key="member.id"
                         class="bg-white rounded-lg shadow-sm p-6 border-t-4 border-gray-400 hover:shadow-md transition-shadow">
                         <div class="flex items-start justify-between mb-3">
                             <div class="flex-1">
@@ -234,6 +266,14 @@
                                 <p class="text-sm text-gray-600">{{ member.position }}</p>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div v-if="groupedMembers.anggota.length > pageLimit" class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p class="text-sm text-gray-600">Menampilkan {{ getRangeStart(getPage('anggota'), groupedMembers.anggota.length) }}-{{ getRangeEnd(getPage('anggota'), groupedMembers.anggota.length) }} dari {{ groupedMembers.anggota.length }} anggota</p>
+                    <div class="flex items-center gap-2">
+                        <button @click="goToPage('anggota', getPage('anggota') - 1, groupedMembers.anggota.length)" :disabled="getPage('anggota') === 1" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Sebelumnya</button>
+                        <button v-for="page in getVisiblePages('anggota', groupedMembers.anggota.length)" :key="`anggota-${page}`" @click="goToPage('anggota', page, groupedMembers.anggota.length)" :class="['px-3 py-1.5 rounded-lg border text-sm', getPage('anggota') === page ? 'bg-gray-700 text-white border-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50']">{{ page }}</button>
+                        <button @click="goToPage('anggota', getPage('anggota') + 1, groupedMembers.anggota.length)" :disabled="getPage('anggota') >= getTotalPages(groupedMembers.anggota.length)" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Berikutnya</button>
                     </div>
                 </div>
             </section>
@@ -253,7 +293,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from '#imports'
 
 // SEO
 useHead({
@@ -270,6 +310,16 @@ useHead({
 const members = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
+const pageLimit = 8
+type BgkpSectionKey = 'ketua' | 'wakil_ketua' | 'sekretaris' | 'bendahara' | 'anggota'
+
+const sectionPages = ref<Record<BgkpSectionKey, number>>({
+    ketua: 1,
+    wakil_ketua: 1,
+    sekretaris: 1,
+    bendahara: 1,
+    anggota: 1
+})
 
 // Fetch Data
 const fetchMembers = async () => {
@@ -293,21 +343,21 @@ const fetchMembers = async () => {
 // Computed - Grouped Members
 const groupedMembers = computed(() => {
     return {
-        ketua: members.value.filter(m => m.position_type === 'ketua'),
-        wakil_ketua: members.value.filter(m => m.position_type === 'wakil_ketua'),
-        sekretaris: members.value.filter(m => m.position_type === 'sekretaris'),
-        bendahara: members.value.filter(m => m.position_type === 'bendahara'),
-        anggota: members.value.filter(m => m.position_type === 'anggota')
+        ketua: members.value.filter((m: any) => m.position_type === 'ketua'),
+        wakil_ketua: members.value.filter((m: any) => m.position_type === 'wakil_ketua'),
+        sekretaris: members.value.filter((m: any) => m.position_type === 'sekretaris'),
+        bendahara: members.value.filter((m: any) => m.position_type === 'bendahara'),
+        anggota: members.value.filter((m: any) => m.position_type === 'anggota')
     }
 })
 
 // Computed - Statistics
 const statistics = computed(() => {
     const total = members.value.length
-    const core = members.value.filter(m =>
+    const core = members.value.filter((m: any) =>
         ['ketua', 'wakil_ketua', 'sekretaris', 'bendahara'].includes(m.position_type)
     ).length
-    const exOfficio = members.value.filter(m => m.is_ex_officio).length
+    const exOfficio = members.value.filter((m: any) => m.is_ex_officio).length
 
     return { total, core, exOfficio }
 })
@@ -339,6 +389,49 @@ const decreeInfo = computed(() => {
 
     return { number, date, period, periodLabel }
 })
+
+const getTotalPages = (totalItems: number) => {
+    const pages = Math.ceil(totalItems / pageLimit)
+    return pages > 0 ? pages : 1
+}
+
+const getPaginatedMembers = (sectionKey: BgkpSectionKey, items: any[]) => {
+    const currentPage = sectionPages.value[sectionKey] || 1
+    const start = (currentPage - 1) * pageLimit
+    return items.slice(start, start + pageLimit)
+}
+
+const getPage = (sectionKey: BgkpSectionKey) => {
+    return sectionPages.value[sectionKey] || 1
+}
+
+const getVisiblePages = (sectionKey: BgkpSectionKey, totalItems: number) => {
+    const pages: number[] = []
+    const totalPages = getTotalPages(totalItems)
+    const currentPage = sectionPages.value[sectionKey] || 1
+    const start = Math.max(1, currentPage - 2)
+    const end = Math.min(totalPages, start + 4)
+
+    for (let page = start; page <= end; page++) {
+        pages.push(page)
+    }
+
+    return pages
+}
+
+const goToPage = (sectionKey: BgkpSectionKey, page: number, totalItems: number) => {
+    const totalPages = getTotalPages(totalItems)
+    if (page < 1 || page > totalPages) return
+    sectionPages.value[sectionKey] = page
+}
+
+const getRangeStart = (currentPage: number, totalItems: number) => {
+    return Math.min((currentPage - 1) * pageLimit + 1, totalItems)
+}
+
+const getRangeEnd = (currentPage: number, totalItems: number) => {
+    return Math.min(currentPage * pageLimit, totalItems)
+}
 
 // Lifecycle
 onMounted(() => {
