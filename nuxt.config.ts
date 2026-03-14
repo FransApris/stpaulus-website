@@ -104,8 +104,8 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css' }
       ]
     },
-    // Page transition for smooth scroll to top
-    pageTransition: { name: 'page', mode: 'out-in' }
+    // Keep previous page visible while the next page resolves auth/data.
+    pageTransition: { name: 'page', mode: 'in-out' }
   },
 
   // Router configuration

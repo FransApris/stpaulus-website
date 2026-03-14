@@ -66,7 +66,7 @@
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div
-            v-for="doc in filteredDocuments"
+            v-for="doc in paginatedDocuments"
             :key="doc.id"
             class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden"
           >
@@ -132,6 +132,21 @@
             </div>
           </div>
         </div>
+        <div v-if="totalPages > 1" class="mt-8 flex items-center justify-center gap-2">
+          <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+            class="rounded border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+            Sebelumnya
+          </button>
+          <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+            class="rounded border px-3 py-2 text-sm"
+            :class="page === currentPage ? 'border-[#882f1d] bg-[#882f1d] text-white' : 'hover:bg-gray-50'">
+            {{ page }}
+          </button>
+          <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+            class="rounded border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+            Berikutnya
+          </button>
+        </div>
 
         <!-- Back Button -->
         <BackButton position="bottom" />
@@ -146,10 +161,12 @@ definePageMeta({
 })
 
 // Reactive data
-const categories = ref([])
-const documents = ref([])
+const categories = useState('public-document-categories', () => [])
+const documents = useState('public-documents', () => [])
 const loading = ref(false)
 const selectedCategory = ref('')
+const currentPage = useState('public-documents-page', () => 1)
+const pageLimit = 10
 
 // Computed filtered documents
 const filteredDocuments = computed(() => {
@@ -158,6 +175,24 @@ const filteredDocuments = computed(() => {
   }
   return documents.value.filter(doc => doc.category_id === selectedCategory.value)
 })
+
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredDocuments.value.length / pageLimit)))
+const paginatedDocuments = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return filteredDocuments.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 // Fetch categories
 const fetchCategories = async () => {
@@ -171,7 +206,10 @@ const fetchCategories = async () => {
 
 // Fetch documents
 const fetchDocuments = async () => {
-  loading.value = true
+  const hasCache = documents.value.length > 0
+  if (!hasCache) {
+    loading.value = true
+  }
   try {
     const response = await $fetch('/api/documents', { server: false })
     documents.value = response
@@ -274,6 +312,16 @@ const formatDate = (dateString) => {
 // Initialize
 onMounted(async () => {
   await Promise.all([fetchCategories(), fetchDocuments()])
+})
+
+watch(selectedCategory, () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
 })
 </script>
 

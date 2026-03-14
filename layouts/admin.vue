@@ -493,7 +493,7 @@
 <script setup>
 
 // User state
-const user = ref(null)
+const user = useState('admin-layout-user', () => null)
 
 // Group toggle states
 const openGroups = reactive({
@@ -505,7 +505,7 @@ const openGroups = reactive({
   footer: false
 })
 
-// Fetch user data on mount
+// Persist decoded admin identity across navigations to avoid menu flashes
 onMounted(async () => {
   try {
     // Only check for admin token - users should NOT be here
@@ -516,50 +516,20 @@ onMounted(async () => {
       return
     }
 
-    // Decode token to get user data
-    const decoded = JSON.parse(atob(token.split('.')[1]))
-    user.value = {
-      id: decoded.userId,
-      role_name: decoded.role,
-      role_display_name: decoded.role === 'super_admin' ? 'Super Admin' :
-        decoded.role === 'admin_komsos' ? 'Admin Komsos' :
-          decoded.role === 'admin_sekretariat' ? 'Admin Sekretariat' : decoded.role,
-      permissions: [] // Will be populated by middleware if needed
+    if (!user.value) {
+      const decoded = JSON.parse(atob(token.split('.')[1]))
+      user.value = {
+        id: decoded.userId,
+        role_name: decoded.role,
+        role_display_name: decoded.role === 'super_admin' ? 'Super Admin' :
+          decoded.role === 'admin_komsos' ? 'Admin Komsos' :
+            decoded.role === 'admin_sekretariat' ? 'Admin Sekretariat' : decoded.role,
+        permissions: []
+      }
     }
   } catch (error) {
     // If failed to decode token, redirect to login
     navigateTo('/admin/login')
-  }
-})
-
-// Optimized cleanup on unmount to prevent DOM crashes and state residue
-onUnmounted(() => {
-  try {
-    // Only clear reactive states if component is still mounted
-    if (process.client && !getCurrentInstance()?.isUnmounted) {
-      // Clear user state
-      user.value = null
-
-      // Clear all reactive group states
-      Object.keys(openGroups).forEach(key => {
-        openGroups[key] = false
-      })
-    }
-
-    // Clear any global event listeners that might have been attached
-    // (Add specific cleanup for any global listeners if they exist)
-
-    // Clear any timers or intervals if they exist
-    // (Add cleanup for any timers if they exist)
-
-    // Clear any cached DOM references
-    // (Add cleanup for any cached DOM elements if they exist)
-
-    // Note: Removed excessive logging to prevent console spam
-    // console.log('Admin layout cleanup completed successfully')
-  } catch (error) {
-    console.warn('Error during admin layout cleanup:', error)
-    // Continue with navigation even if cleanup fails
   }
 })
 

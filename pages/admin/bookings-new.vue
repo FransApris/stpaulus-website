@@ -78,7 +78,7 @@
               Belum ada pemesanan.
             </div>
             <div v-else class="space-y-4">
-              <div v-for="booking in bookings" :key="booking.id" class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow">
+              <div v-for="booking in paginatedBookings" :key="booking.id" class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start">
                   <div class="flex-1">
                     <h3 class="font-semibold text-lg text-gray-800">{{ booking.event_name }}</h3>
@@ -131,6 +131,24 @@
                   </div>
                 </div>
               </div>
+              <div v-if="bookingTotalPages > 1" class="flex items-center justify-between border-t pt-4">
+                <p class="text-sm text-gray-600">Halaman {{ bookingPage }} dari {{ bookingTotalPages }}</p>
+                <div class="flex items-center gap-2">
+                  <button @click="goToBookingPage(bookingPage - 1)" :disabled="bookingPage === 1"
+                    class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+                    Sebelumnya
+                  </button>
+                  <button v-for="page in bookingVisiblePages" :key="page" @click="goToBookingPage(page)"
+                    class="rounded border px-3 py-1 text-sm"
+                    :class="page === bookingPage ? 'border-blue-600 bg-blue-600 text-white' : 'hover:bg-gray-50'">
+                    {{ page }}
+                  </button>
+                  <button @click="goToBookingPage(bookingPage + 1)" :disabled="bookingPage === bookingTotalPages"
+                    class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+                    Berikutnya
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -160,7 +178,7 @@
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="log in auditLogs" :key="log.id" class="hover:bg-gray-50">
+                  <tr v-for="log in paginatedAuditLogs" :key="log.id" class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {{ formatDateTime(log.created_at) }}
                     </td>
@@ -182,6 +200,24 @@
                 </tbody>
               </table>
             </div>
+            <div v-if="auditTotalPages > 1" class="flex items-center justify-between border-t pt-4">
+              <p class="text-sm text-gray-600">Halaman {{ auditPage }} dari {{ auditTotalPages }}</p>
+              <div class="flex items-center gap-2">
+                <button @click="goToAuditPage(auditPage - 1)" :disabled="auditPage === 1"
+                  class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+                  Sebelumnya
+                </button>
+                <button v-for="page in auditVisiblePages" :key="page" @click="goToAuditPage(page)"
+                  class="rounded border px-3 py-1 text-sm"
+                  :class="page === auditPage ? 'border-blue-600 bg-blue-600 text-white' : 'hover:bg-gray-50'">
+                  {{ page }}
+                </button>
+                <button @click="goToAuditPage(auditPage + 1)" :disabled="auditPage === auditTotalPages"
+                  class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+                  Berikutnya
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -199,7 +235,7 @@
               Tidak ada pemesanan yang dihapus.
             </div>
             <div v-else class="space-y-4">
-              <div v-for="booking in deletedBookings" :key="booking.id" class="border border-red-200 bg-red-50 p-4 rounded-lg">
+              <div v-for="booking in paginatedDeletedBookings" :key="booking.id" class="border border-red-200 bg-red-50 p-4 rounded-lg">
                 <div class="flex justify-between items-start">
                   <div class="flex-1">
                     <h3 class="font-semibold text-lg text-gray-800">{{ booking.event_name }}</h3>
@@ -218,6 +254,24 @@
                       🗑️ Hapus Permanen
                     </button>
                   </div>
+                </div>
+              </div>
+              <div v-if="deletedTotalPages > 1" class="flex items-center justify-between border-t pt-4">
+                <p class="text-sm text-gray-600">Halaman {{ deletedPage }} dari {{ deletedTotalPages }}</p>
+                <div class="flex items-center gap-2">
+                  <button @click="goToDeletedPage(deletedPage - 1)" :disabled="deletedPage === 1"
+                    class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+                    Sebelumnya
+                  </button>
+                  <button v-for="page in deletedVisiblePages" :key="page" @click="goToDeletedPage(page)"
+                    class="rounded border px-3 py-1 text-sm"
+                    :class="page === deletedPage ? 'border-blue-600 bg-blue-600 text-white' : 'hover:bg-gray-50'">
+                    {{ page }}
+                  </button>
+                  <button @click="goToDeletedPage(deletedPage + 1)" :disabled="deletedPage === deletedTotalPages"
+                    class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+                    Berikutnya
+                  </button>
                 </div>
               </div>
             </div>
@@ -376,17 +430,22 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: 'auth'
 })
 
 // State
 const activeTab = ref('list')
-const bookings = ref([])
-const auditLogs = ref([])
-const deletedBookings = ref([])
+const bookings = useState('admin-bookings', () => [])
+const auditLogs = useState('admin-bookings-audit-logs', () => [])
+const deletedBookings = useState('admin-deleted-bookings', () => [])
 const bookingHistory = ref([])
 const filterStatus = ref('PENDING')
 const loading = ref(false)
+const bookingPage = useState('admin-bookings-page', () => 1)
+const auditPage = useState('admin-bookings-audit-page', () => 1)
+const deletedPage = useState('admin-bookings-deleted-page', () => 1)
+const pageLimit = 10
 
 // Modals
 const showRejectModal = ref(false)
@@ -400,14 +459,14 @@ const cancellationReason = ref('')
 const selectedBooking = ref(null)
 
 // Stats
-const stats = ref({
+const stats = useState('admin-bookings-stats', () => ({
   pending: 0,
   approved: 0,
   rejected: 0,
   cancelled: 0,
   total: 0,
   deleted: 0
-})
+}))
 
 // Toast Notification
 const toast = ref({
@@ -430,6 +489,49 @@ const tabs = computed(() => [
   { id: 'deleted', label: 'Soft Delete', icon: '🗑️', count: deletedBookings.value.length },
   { id: 'stats', label: 'Statistik', icon: '📊' }
 ])
+
+const bookingTotalPages = computed(() => Math.max(1, Math.ceil(bookings.value.length / pageLimit)))
+const auditTotalPages = computed(() => Math.max(1, Math.ceil(auditLogs.value.length / pageLimit)))
+const deletedTotalPages = computed(() => Math.max(1, Math.ceil(deletedBookings.value.length / pageLimit)))
+const paginatedBookings = computed(() => {
+  const start = (bookingPage.value - 1) * pageLimit
+  return bookings.value.slice(start, start + pageLimit)
+})
+const paginatedAuditLogs = computed(() => {
+  const start = (auditPage.value - 1) * pageLimit
+  return auditLogs.value.slice(start, start + pageLimit)
+})
+const paginatedDeletedBookings = computed(() => {
+  const start = (deletedPage.value - 1) * pageLimit
+  return deletedBookings.value.slice(start, start + pageLimit)
+})
+
+const buildVisiblePages = (currentPage, totalPages) => {
+  const pages = []
+  const start = Math.max(1, currentPage - 2)
+  const end = Math.min(totalPages, currentPage + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+}
+
+const bookingVisiblePages = computed(() => buildVisiblePages(bookingPage.value, bookingTotalPages.value))
+const auditVisiblePages = computed(() => buildVisiblePages(auditPage.value, auditTotalPages.value))
+const deletedVisiblePages = computed(() => buildVisiblePages(deletedPage.value, deletedTotalPages.value))
+
+const goToBookingPage = (page) => {
+  if (page < 1 || page > bookingTotalPages.value) return
+  bookingPage.value = page
+}
+
+const goToAuditPage = (page) => {
+  if (page < 1 || page > auditTotalPages.value) return
+  auditPage.value = page
+}
+
+const goToDeletedPage = (page) => {
+  if (page < 1 || page > deletedTotalPages.value) return
+  deletedPage.value = page
+}
 
 // Load Data Functions
 const loadBookings = async () => {
@@ -914,6 +1016,16 @@ watch(activeTab, (newTab) => {
 onMounted(() => {
   loadBookings()
   loadStats()
+})
+
+watch(filterStatus, () => {
+  bookingPage.value = 1
+})
+
+watch([bookingTotalPages, auditTotalPages, deletedTotalPages], ([bookingPages, auditPages, deletedPages]) => {
+  if (bookingPage.value > bookingPages) bookingPage.value = bookingPages
+  if (auditPage.value > auditPages) auditPage.value = auditPages
+  if (deletedPage.value > deletedPages) deletedPage.value = deletedPages
 })
 </script>
 

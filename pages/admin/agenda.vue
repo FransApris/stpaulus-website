@@ -224,7 +224,7 @@
                   <th scope="col" class="relative w-12 px-6 sm:w-16 sm:px-8">
                     <input
                       type="checkbox"
-                      :checked="selectedAgendas.length === agendas.length && agendas.length > 0"
+                      :checked="allVisibleSelected"
                       @change="toggleSelectAll"
                       class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-[#882f1d] focus:ring-[#882f1d] sm:left-6"
                     />
@@ -240,7 +240,7 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-for="agenda in agendas" :key="agenda.id" :class="[selectedAgendas.includes(agenda.id) ? 'bg-blue-50' : 'hover:bg-gray-50']">
+                <tr v-for="agenda in paginatedAgendas" :key="agenda.id" :class="[selectedAgendas.includes(agenda.id) ? 'bg-blue-50' : 'hover:bg-gray-50']">
                   <td class="relative w-12 px-6 sm:w-16 sm:px-8">
                     <input
                       type="checkbox"
@@ -302,6 +302,24 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
+            <p class="text-sm text-gray-600">Menampilkan {{ paginatedAgendas.length }} dari {{ totalItems }} agenda</p>
+            <div class="flex items-center gap-2">
+              <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+                class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+                Sebelumnya
+              </button>
+              <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+                class="rounded border px-3 py-1 text-sm"
+                :class="page === currentPage ? 'border-[#882f1d] bg-[#882f1d] text-white' : 'hover:bg-gray-50'">
+                {{ page }}
+              </button>
+              <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+                class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+                Berikutnya
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -587,11 +605,12 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: 'auth'
 })
 
-const agendas = ref([])
-const categories = ref([])
+const agendas = useState('admin-agendas', () => [])
+const categories = useState('admin-agenda-categories', () => [])
 const loading = ref(false)
 const saving = ref(false)
 const deleting = ref(null)
@@ -608,6 +627,29 @@ const showPreview = ref(false)
 const previewAgenda = ref(null)
 
 const selectedAgendas = ref([])
+const currentPage = useState('admin-agenda-page', () => 1)
+const pageLimit = 10
+const totalItems = computed(() => agendas.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const paginatedAgendas = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return agendas.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+const allVisibleSelected = computed(() => {
+  return paginatedAgendas.value.length > 0 && paginatedAgendas.value.every(agenda => selectedAgendas.value.includes(agenda.id))
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 const stats = computed(() => {
   const now = new Date()
@@ -883,10 +925,11 @@ const toggleSelect = (id) => {
 }
 
 const toggleSelectAll = () => {
-  if (selectedAgendas.value.length === agendas.value.length) {
-    selectedAgendas.value = []
+  const visibleIds = paginatedAgendas.value.map(agenda => agenda.id)
+  if (visibleIds.every(id => selectedAgendas.value.includes(id))) {
+    selectedAgendas.value = selectedAgendas.value.filter(id => !visibleIds.includes(id))
   } else {
-    selectedAgendas.value = agendas.value.map(a => a.id)
+    selectedAgendas.value = Array.from(new Set([...selectedAgendas.value, ...visibleIds]))
   }
 }
 
@@ -1037,6 +1080,15 @@ onMounted(async () => {
   }
 
   await Promise.all([fetchCategories(), fetchAgendas()])
+})
+watch(filters, () => {
+  currentPage.value = 1
+}, { deep: true })
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
 })
 </script>
 

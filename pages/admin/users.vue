@@ -113,7 +113,7 @@
             <h2 class="text-lg font-semibold">Daftar Pengguna</h2>
             <div class="flex items-center gap-4">
               <div class="text-xs text-gray-500">
-                Total: {{ users.length }} pengguna
+                Total: {{ totalItems }} pengguna
               </div>
               <div class="text-sm text-gray-600">
                 <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded mr-2">
@@ -188,7 +188,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="user in sortedUsers" :key="user.id" class="border-t hover:bg-gray-50 transition-colors">
+                <tr v-for="user in paginatedUsers" :key="user.id" class="border-t hover:bg-gray-50 transition-colors">
                   <td class="px-4 py-2">{{ user.username }}</td>
                   <td class="px-4 py-2">{{ user.full_name }}</td>
                   <td class="px-4 py-2">{{ user.email }}</td>
@@ -224,6 +224,24 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+          <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t pt-4">
+            <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
+            <div class="flex items-center gap-2">
+              <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+                class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                Sebelumnya
+              </button>
+              <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+                class="px-3 py-1 rounded border text-sm"
+                :class="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'">
+                {{ page }}
+              </button>
+              <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+                class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                Berikutnya
+              </button>
+            </div>
           </div>
         </div>
 
@@ -335,11 +353,12 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: 'auth'
 })
 
-const users = ref([])
-const userCategories = ref([])
+const users = useState('admin-users', () => [])
+const userCategories = useState('admin-users-categories', () => [])
 const newUser = ref({
   username: '',
   email: '',
@@ -387,7 +406,11 @@ const editMessage = ref('')
 const editError = ref('')
 
 // Current user info
-const currentUser = ref(null)
+const currentUser = useState('admin-users-current-user', () => null)
+
+// Pagination state
+const currentPage = useState('admin-users-page', () => 1)
+const pageLimit = 10
 
 // Check if current user is super admin
 const isSuperAdmin = computed(() => {
@@ -425,6 +448,25 @@ const sortedUsers = computed(() => {
   
   return sorted
 })
+
+const totalItems = computed(() => sortedUsers.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const paginatedUsers = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return sortedUsers.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 // Sort function
 const sortBy = (field) => {
@@ -474,7 +516,7 @@ const loadUsers = async () => {
   try {
     const response = await $fetch('/api/admin/users', {
       headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -492,6 +534,16 @@ onMounted(async () => {
   await loadCurrentUser()
   await loadUserCategories()
   await loadUsers()
+})
+
+watch([sortField, sortOrder], () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
 })
 
 const createUser = async () => {

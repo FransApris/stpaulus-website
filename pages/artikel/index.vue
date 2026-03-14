@@ -54,7 +54,7 @@
           class="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           <article
-            v-for="article in articles"
+            v-for="article in paginatedArticles"
             :key="article.id"
             class="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 touch-manipulation"
           >
@@ -62,7 +62,7 @@
             <div class="w-full h-48 bg-gray-200 overflow-hidden relative">
               <img 
                 v-if="article.image && article.image !== '/images/default-article.jpg'"
-                :src="`${article.image}?v=${Date.now()}`"
+                :src="article.image"
                 :alt="article.title" 
                 class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                 @error="(e) => { console.error('Image failed to load:', article.image); e.target.style.display = 'none'; e.target.parentElement.classList.add('show-gradient'); }"
@@ -111,6 +111,21 @@
               </NuxtLink>
             </div>
           </article>
+        </div>
+        <div v-if="totalPages > 1" class="mt-8 flex items-center justify-center gap-2">
+          <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+            class="rounded border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+            Sebelumnya
+          </button>
+          <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+            class="rounded border px-3 py-2 text-sm"
+            :class="page === currentPage ? 'border-[#882f1d] bg-[#882f1d] text-white' : 'hover:bg-gray-50'">
+            {{ page }}
+          </button>
+          <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+            class="rounded border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+            Berikutnya
+          </button>
         </div>
 
         <!-- State Kosong -->
@@ -171,13 +186,14 @@
 </template>
 
 <script setup>
-// Fetch articles data from API with cache busting
-const timestamp = Date.now()
+const currentPage = useState('public-articles-page', () => 1)
+const pageLimit = 10
+
 const { data: articles, pending, error, refresh: refreshArticles } = await useAsyncData(
   'articles', 
   async () => {
     try {
-      return await $fetch(`/api/artikel?_=${timestamp}`)
+      return await $fetch('/api/artikel')
     } catch (err) {
       console.error('Failed to fetch articles:', err)
       return []
@@ -208,6 +224,31 @@ const { data: categories, refresh: refreshCategories } = await useAsyncData(
 
 // Use articles as recent articles (same data)
 const recentArticles = articles;
+
+const totalPages = computed(() => Math.max(1, Math.ceil((articles.value?.length || 0) / pageLimit)))
+const paginatedArticles = computed(() => {
+  const list = articles.value || []
+  const start = (currentPage.value - 1) * pageLimit
+  return list.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
+})
 
 // Pull to refresh setup - initialize as ref first
 const contentRef = ref(null)
