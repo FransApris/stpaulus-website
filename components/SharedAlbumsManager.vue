@@ -224,7 +224,7 @@ interface Album {
   updated_at: string;
 }
 
-const albums = ref<Album[]>([]);
+const albums = useState<Album[]>('admin-shared-albums', () => []);
 const showAddForm = ref(false);
 const editingAlbum = ref<Album | null>(null);
 const loading = ref(false);
@@ -258,8 +258,10 @@ const sortedAlbums = computed(() => {
 
 // Fetch albums
 const fetchAlbums = async () => {
+  // Show loading spinner only if there is no cached data yet
+  const hasCache = albums.value.length > 0;
   try {
-    loading.value = true;
+    if (!hasCache) loading.value = true;
     const response = await $fetch<{ success: boolean; data: Album[] }>('/api/admin/shared-albums');
     if (response.success) {
       albums.value = response.data;

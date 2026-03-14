@@ -220,7 +220,7 @@ definePageMeta({
   layout: 'admin'
 })
 
-const categories = ref([])
+const categories = useState('admin-document-categories', () => [])
 const loading = ref(false)
 const showModal = ref(false)
 const isEditing = ref(false)
@@ -237,7 +237,8 @@ const form = ref({
 
 // Fetch categories
 const fetchCategories = async () => {
-  loading.value = true
+  const hasCache = categories.value.length > 0
+  if (!hasCache) loading.value = true
   try {
     const token = localStorage.getItem('admin_access_token')
     
@@ -246,9 +247,7 @@ const fetchCategories = async () => {
       return
     }
 
-    // Add cache busting timestamp
-    const timestamp = new Date().getTime()
-    const response = await $fetch(`/api/admin/document-categories?_=${timestamp}`, {
+    const response = await $fetch('/api/admin/document-categories', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -263,7 +262,7 @@ const fetchCategories = async () => {
       localStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
-    } else {
+    } else if (!hasCache) {
       alert('Gagal memuat kategori')
     }
   } finally {

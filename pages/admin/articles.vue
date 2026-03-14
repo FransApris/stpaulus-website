@@ -15,7 +15,7 @@
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Daftar Artikel</h3>
           <div class="text-sm text-gray-500">
-            {{ articles.length }} artikel ditemukan
+            {{ totalItems }} artikel ditemukan
           </div>
         </div>
 
@@ -74,6 +74,30 @@
             </div>
           </div>
         </div>
+
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="flex items-center justify-between border-t border-gray-200 pt-4 mt-4">
+          <div class="text-sm text-gray-500">
+            Halaman {{ currentPage }} dari {{ totalPages }}
+            ({{ (currentPage - 1) * pageLimit + 1 }}–{{ Math.min(currentPage * pageLimit, totalItems) }} dari {{ totalItems }})
+          </div>
+          <div class="flex items-center space-x-1">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+              ‹
+            </button>
+            <button v-for="p in visiblePages" :key="p" @click="goToPage(p)"
+              :class="p === currentPage ? 'bg-red-800 text-white border-red-800' : 'hover:bg-gray-100 border-gray-300'"
+              class="px-3 py-1 rounded border text-sm min-w-[36px]">
+              {{ p }}
+            </button>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+              ›
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -195,7 +219,7 @@ import { watch, nextTick } from 'vue'
 // Components are auto-imported by Nuxt, no need for defineAsyncComponent
 // Just wrap them in <ClientOnly> in the template
 
-const articles = ref([])
+const articles = useState('admin-articles', () => [])
 const loading = ref(false)
 const showAddModal = ref(false)
 const editingArticle = ref(null)
@@ -204,6 +228,26 @@ const filterStatus = ref('')
 const searchQuery = ref('')
 const selectedArticles = ref([])
 const imageError = ref(false)
+
+// Pagination state
+const currentPage = useState('admin-articles-page', () => 1)
+const totalItems = useState('admin-articles-total', () => 0)
+const totalPages = useState('admin-articles-total-pages', () => 1)
+const pageLimit = 20
+
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+  fetchArticles()
+}
 
 const articleForm = ref({
   title: '',
@@ -243,20 +287,23 @@ const handleLogout = () => {
 
 // Fetch articles
 const fetchArticles = async () => {
-  loading.value = true
+  // Show loading spinner only if there is no cached data yet
+  const hasCache = articles.value.length > 0
+  if (!hasCache) loading.value = true
   try {
-    // Add cache busting timestamp
-    const timestamp = new Date().getTime()
-    const params = filterStatus.value ? `?status=${filterStatus.value}&_=${timestamp}` : `?_=${timestamp}`
-    const response = await $fetch(`/api/admin/articles${params}`, {
+    const params = new URLSearchParams({ page: String(currentPage.value), limit: String(pageLimit) })
+    if (filterStatus.value) params.set('status', filterStatus.value)
+    const response = await $fetch(`/api/admin/articles?${params}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
-    articles.value = response
+    articles.value = response.data
+    totalItems.value = response.total
+    totalPages.value = response.totalPages
   } catch (error) {
     console.error('Failed to fetch articles:', error)
-    alert('Gagal memuat artikel')
+    if (!hasCache) alert('Gagal memuat artikel')
   } finally {
     loading.value = false
   }
@@ -510,6 +557,7 @@ let searchTimeout = null
 const debouncedSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
+    currentPage.value = 1
     fetchArticles()
   }, 500)
 }
@@ -580,5 +628,11 @@ onMounted(async () => {
   }
 
   await Promise.all([fetchArticles(), fetchCategories()])
+})
+
+// Reset to page 1 when status filter changes
+watch(filterStatus, () => {
+  currentPage.value = 1
+  fetchArticles()
 })
 </script>

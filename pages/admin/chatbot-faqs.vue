@@ -119,8 +119,8 @@ definePageMeta({
 
 const { makeRequest } = useAdminApi()
 
-const faqs = ref([])
-const categories = ref([])
+const faqs = useState('admin-chatbot-faqs', () => [])
+const categories = useState('admin-chatbot-faq-categories-list', () => [])
 const faqForm = ref({
   question: '',
   answer: '',
@@ -136,11 +136,10 @@ const error = ref('')
 
 // Load FAQs and Categories
 const loadFaqs = async () => {
+  const hasCache = faqs.value.length > 0
   try {
-    loadingFaqs.value = true
-    // Add cache busting parameter to force fresh data
-    const timestamp = new Date().getTime()
-    faqs.value = await makeRequest(`/api/admin/chatbot-faqs?_t=${timestamp}`)
+    if (!hasCache) loadingFaqs.value = true
+    faqs.value = await makeRequest('/api/admin/chatbot-faqs')
   } catch (err) {
     console.error('Failed to load FAQs', err)
   } finally {

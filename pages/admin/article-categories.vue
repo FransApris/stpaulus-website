@@ -134,8 +134,8 @@ definePageMeta({
   layout: 'admin'
 })
 
-const categories = ref([])
-const allCategories = ref([])
+const categories = useState('admin-article-categories', () => [])
+const allCategories = useState('admin-article-all-categories', () => [])
 const loading = ref(false)
 const showModal = ref(false)
 const isEditing = ref(false)
@@ -223,11 +223,11 @@ const CategoryTreeItem = defineComponent({
 
 // Fetch categories
 const fetchCategories = async () => {
-  loading.value = true
+  // Show loading spinner only if there is no cached data yet
+  const hasCache = categories.value.length > 0
+  if (!hasCache) loading.value = true
   try {
-    // Add cache busting timestamp
-    const timestamp = new Date().getTime()
-    const response = await $fetch(`/api/admin/article-categories?_=${timestamp}`, {
+    const response = await $fetch('/api/admin/article-categories', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
@@ -248,7 +248,7 @@ const fetchCategories = async () => {
     allCategories.value = flattenCategories(response)
   } catch (error) {
     console.error('Failed to fetch categories:', error)
-    alert('Gagal memuat kategori')
+    if (!hasCache) alert('Gagal memuat kategori')
   } finally {
     loading.value = false
   }

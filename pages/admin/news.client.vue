@@ -115,6 +115,30 @@
                 </div>
               </div>
             </div>
+
+            <!-- Pagination -->
+            <div v-if="totalPages > 1" class="flex items-center justify-between border-t border-gray-200 pt-4 mt-4">
+              <div class="text-sm text-gray-500">
+                Halaman {{ currentPage }} dari {{ totalPages }}
+                ({{ (currentPage - 1) * pageLimit + 1 }}–{{ Math.min(currentPage * pageLimit, totalItems) }} dari {{ totalItems }})
+              </div>
+              <div class="flex items-center space-x-1">
+                <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+                  class="px-3 py-1 rounded border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+                  ‹
+                </button>
+                <button v-for="p in visiblePages" :key="p" @click="goToPage(p)"
+                  :class="p === currentPage ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'hover:bg-gray-100 border-gray-300'"
+                  class="px-3 py-1 rounded border text-sm min-w-[36px]">
+                  {{ p }}
+                </button>
+                <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+                  class="px-3 py-1 rounded border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+                  ›
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -394,7 +418,7 @@ import { watch } from 'vue'
 // Components are auto-imported by Nuxt, no need for defineAsyncComponent
 // Just wrap them in <ClientOnly> in the template
 
-const news = ref([])
+const news = useState('admin-news', () => [])
 const loading = ref(false)
 const showAddModal = ref(false)
 const editingNews = ref(null)
@@ -402,6 +426,26 @@ const saving = ref(false)
 const filterStatus = ref('')
 const imageError = ref(false)
 const galleryInput = ref(null)
+
+// Pagination state
+const currentPage = useState('admin-news-page', () => 1)
+const totalItems = useState('admin-news-total', () => 0)
+const totalPages = useState('admin-news-total-pages', () => 1)
+const pageLimit = 20
+
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+  fetchNews()
+}
 
 const newsForm = ref({
   title: '',
@@ -450,21 +494,22 @@ const handleLogout = () => {
 
 // Fetch news
 const fetchNews = async () => {
-  loading.value = true
+  const hasCache = news.value.length > 0
+  if (!hasCache) loading.value = true
   try {
-    const params = filterStatus.value ? `?status=${filterStatus.value}` : ''
-    const timestamp = `${params ? '&' : '?'}_=${Date.now()}`
-    const response = await $fetch(`/api/admin/news${params}${timestamp}`, {
+    const params = new URLSearchParams({ page: String(currentPage.value), limit: String(pageLimit) })
+    if (filterStatus.value) params.set('status', filterStatus.value)
+    const response = await $fetch(`/api/admin/news?${params}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
-    
-    console.log('[fetchNews] Response:', response)
-    news.value = response
+    news.value = response.data
+    totalItems.value = response.total
+    totalPages.value = response.totalPages
   } catch (error) {
     console.error('Failed to fetch news:', error)
-    alert('Gagal memuat berita')
+    if (!hasCache) alert('Gagal memuat berita')
   } finally {
     loading.value = false
   }
@@ -798,5 +843,11 @@ onMounted(async () => {
   }
 
   await Promise.all([fetchNews(), fetchCategories()])
+})
+
+// Reset to page 1 when status filter changes
+watch(filterStatus, () => {
+  currentPage.value = 1
+  fetchNews()
 })
 </script>

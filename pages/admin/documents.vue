@@ -76,7 +76,7 @@
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="document in documents" :key="document.id" class="hover:bg-gray-50">
+          <tr v-for="document in paginatedDocuments" :key="document.id" class="hover:bg-gray-50">
             <td class="px-6 py-4">
               <div>
                 <div class="text-sm font-medium text-gray-900">{{ document.title }}</div>
@@ -174,6 +174,29 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- Pagination -->
+      <div v-if="totalPages > 1" class="flex items-center justify-between border-t border-gray-200 px-6 py-4">
+        <div class="text-sm text-gray-500">
+          Halaman {{ currentPage }} dari {{ totalPages }}
+          ({{ (currentPage - 1) * pageLimit + 1 }}–{{ Math.min(currentPage * pageLimit, totalItems) }} dari {{ totalItems }})
+        </div>
+        <div class="flex items-center space-x-1">
+          <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+            class="px-3 py-1 rounded border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+            ‹
+          </button>
+          <button v-for="p in visiblePages" :key="p" @click="goToPage(p)"
+            :class="p === currentPage ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'hover:bg-gray-100 border-gray-300'"
+            class="px-3 py-1 rounded border text-sm min-w-[36px]">
+            {{ p }}
+          </button>
+          <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+            class="px-3 py-1 rounded border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+            ›
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Modal -->
@@ -274,8 +297,8 @@ definePageMeta({
   layout: 'admin'
 })
 
-const documents = ref([])
-const categories = ref([])
+const documents = useState('admin-documents', () => [])
+const categories = useState('admin-document-categories-docs', () => [])
 const loading = ref(false)
 const showModal = ref(false)
 const isEditing = ref(false)
@@ -284,6 +307,27 @@ const editingId = ref(null)
 const selectedCategory = ref('')
 const fileInput = ref(null)
 const expandedDescriptions = ref(new Set()) // Track expanded descriptions
+
+// Pagination state (client-side)
+const currentPage = ref(1)
+const pageLimit = 20
+const totalItems = computed(() => documents.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(documents.value.length / pageLimit)))
+const paginatedDocuments = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return documents.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let i = start; i <= end; i++) pages.push(i)
+  return pages
+})
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 const form = ref({
   title: '',
@@ -344,7 +388,8 @@ const fetchCategories = async () => {
 
 // Fetch documents
 const fetchDocuments = async () => {
-  loading.value = true
+  const hasCache = documents.value.length > 0
+  if (!hasCache) loading.value = true
   try {
     const token = localStorage.getItem('admin_access_token')
     
@@ -353,12 +398,8 @@ const fetchDocuments = async () => {
       return
     }
 
-    // Add cache busting timestamp to force fresh data
-    const timestamp = Date.now()
-    const categoryParam = selectedCategory.value ? `category_id=${selectedCategory.value}&` : ''
-    const params = categoryParam ? `?${categoryParam}_t=${timestamp}` : `?_t=${timestamp}`
-    
-    const response = await $fetch(`/api/admin/documents${params}`, {
+    const categoryParam = selectedCategory.value ? `?category_id=${selectedCategory.value}` : ''
+    const response = await $fetch(`/api/admin/documents${categoryParam}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -373,7 +414,7 @@ const fetchDocuments = async () => {
       localStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
-    } else {
+    } else if (!hasCache) {
       alert('Gagal memuat dokumen')
     }
   } finally {
@@ -630,5 +671,10 @@ onMounted(async () => {
   }
 
   await Promise.all([fetchCategories(), fetchDocuments()])
+})
+
+// Reset to page 1 when category filter changes
+watch(selectedCategory, () => {
+  currentPage.value = 1
 })
 </script>

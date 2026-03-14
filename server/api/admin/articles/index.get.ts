@@ -15,8 +15,27 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const query = getQuery(event)
+  const page = Math.max(1, parseInt(query.page as string) || 1)
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit as string) || 20))
+  const offset = (page - 1) * limit
+  const allowedStatuses = ['published', 'draft', 'archived']
+  const status = allowedStatuses.includes(query.status as string) ? query.status as string : ''
+
   try {
-    // Fetch all articles with categories (including drafts)
+    const whereClause = status ? 'WHERE a.status = ?' : ''
+    const countParams = status ? [status] : []
+
+    // Get total count
+    const countResult = await allQuery(
+      `SELECT COUNT(DISTINCT a.id) as total FROM articles a ${whereClause}`,
+      countParams
+    )
+    const total = (countResult[0] as any).total as number
+    const totalPages = Math.ceil(total / limit)
+
+    // Fetch paginated articles with categories
+    const dataParams = status ? [status, limit, offset] : [limit, offset]
     const sql = `
       SELECT
         a.*,
@@ -26,11 +45,13 @@ export default defineEventHandler(async (event) => {
       FROM articles a
       LEFT JOIN article_category_relations acr ON a.id = acr.article_id
       LEFT JOIN article_categories ac ON acr.category_id = ac.id
+      ${whereClause}
       GROUP BY a.id
       ORDER BY a.created_at DESC
-    `;
+      LIMIT ? OFFSET ?
+    `
 
-    const articlesList = await allQuery(sql);
+    const articlesList = await allQuery(sql, dataParams);
 
     // Process categories for each article item
     const processedArticles = articlesList.map((article: any) => {
@@ -67,7 +88,7 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-    return processedArticles;
+    return { data: processedArticles, total, page, limit, totalPages };
   } catch (error) {
     console.error('Error fetching admin articles:', error);
     throw createError({

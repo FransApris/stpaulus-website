@@ -129,7 +129,7 @@
   // ========================================
   "extensions.autoUpdate": false,
   "extensions.autoCheckUpdates": false,
-  "workbench.enableExperiments": false,
+  "workbench.enableExperiments": true,
   "npm.fetchOnlinePackageInfo": false,
   // Prevent crash from large files
   "files.maxMemoryForLargeFilesMB": 4096,

@@ -1,6 +1,6 @@
 // Simple cache to avoid fetching user data on every navigation
 let userDataCache: { data: any; timestamp: number; token: string } | null = null
-const CACHE_DURATION = 5000 // 5 seconds
+const CACHE_DURATION = 300000 // 5 minutes
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
   if (process.client) {
