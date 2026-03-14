@@ -35,7 +35,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(announcement, index) in announcements" :key="announcement.id" :class="[
+                            <tr v-for="(announcement, index) in paginatedAnnouncements" :key="announcement.id" :class="[
                                 'border-b border-gray-100 hover:bg-amber-50 transition-colors duration-200',
                                 index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
                             ]">
@@ -91,7 +91,7 @@
 
                 <!-- Mobile Cards -->
                 <div class="md:hidden divide-y divide-gray-200">
-                    <div v-for="announcement in announcements" :key="announcement.id"
+                    <div v-for="announcement in paginatedAnnouncements" :key="announcement.id"
                         class="p-4 hover:bg-amber-50 transition-colors duration-200">
                         <!-- Thumbnail -->
                         <div v-if="announcement.thumbnail" class="mb-3 rounded-lg overflow-hidden">
@@ -133,6 +133,49 @@
                             class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#882f1d] hover:bg-[#6d2517] text-white text-sm font-medium rounded-lg transition-colors duration-200">
                             Lihat Detail
                         </button>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div v-if="totalPages > 1" class="px-4 py-4 md:px-6 border-t border-gray-200 bg-gray-50">
+                    <div class="flex items-center justify-between gap-3 flex-wrap">
+                        <p class="text-sm text-gray-600">
+                            Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
+                            {{ Math.min(currentPage * pageLimit, announcements.length) }}
+                            dari {{ announcements.length }} pengumuman
+                        </p>
+
+                        <div class="flex items-center gap-1 md:gap-2">
+                            <button
+                                @click="goToPage(currentPage - 1)"
+                                :disabled="currentPage === 1"
+                                class="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                            >
+                                Sebelumnya
+                            </button>
+
+                            <button
+                                v-for="page in visiblePages"
+                                :key="page"
+                                @click="goToPage(page)"
+                                :class="[
+                                    'px-3 py-2 rounded-md text-sm font-medium border transition-colors',
+                                    page === currentPage
+                                        ? 'bg-[#882f1d] text-white border-[#882f1d]'
+                                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
+                                ]"
+                            >
+                                {{ page }}
+                            </button>
+
+                            <button
+                                @click="goToPage(currentPage + 1)"
+                                :disabled="currentPage === totalPages"
+                                class="px-3 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
+                            >
+                                Berikutnya
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -238,10 +281,12 @@
 
 <script setup>
 const selectedAnnouncement = ref(null)
+const currentPage = ref(1)
+const pageLimit = 5
 
 // Fetch announcements with proper error handling
 const { data, pending, error } = useFetch('/api/church-announcements', {
-    query: { limit: 10, upcoming: 'true' },
+    query: { limit: 100, upcoming: 'true' },
     lazy: true,
     server: false,
     default: () => ({ data: [], count: 0 }),
@@ -254,6 +299,43 @@ const announcements = computed(() => {
         return []
     }
     return data.value?.data || []
+})
+
+const totalPages = computed(() => {
+    const pages = Math.ceil(announcements.value.length / pageLimit)
+    return pages > 0 ? pages : 1
+})
+
+const paginatedAnnouncements = computed(() => {
+    const start = (currentPage.value - 1) * pageLimit
+    return announcements.value.slice(start, start + pageLimit)
+})
+
+const visiblePages = computed(() => {
+    const pages = []
+    const start = Math.max(1, currentPage.value - 2)
+    const end = Math.min(totalPages.value, start + 4)
+
+    for (let page = start; page <= end; page++) {
+        pages.push(page)
+    }
+
+    return pages
+})
+
+const goToPage = (page) => {
+    if (page < 1 || page > totalPages.value) return
+    currentPage.value = page
+}
+
+watch(announcements, () => {
+    currentPage.value = 1
+})
+
+watch(totalPages, (pages) => {
+    if (currentPage.value > pages) {
+        currentPage.value = pages
+    }
 })
 
 // Format date: "1 Februari 2026"
