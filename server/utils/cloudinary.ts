@@ -69,6 +69,46 @@ export const uploadToCloudinary = (buffer: Buffer, folder: string = 'uploads', f
 }
 
 /**
+ * Upload a document/PDF/file to Cloudinary as a raw resource (no image transformations).
+ * @param buffer - File buffer
+ * @param folder - Cloudinary folder (e.g., 'documents')
+ * @param filename - Original filename
+ * @returns Cloudinary secure URL
+ */
+export const uploadDocumentToCloudinary = (buffer: Buffer, folder: string = 'documents', filename?: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        if (!isCloudinaryEnabled()) {
+            reject(new Error('Cloudinary is not configured'))
+            return
+        }
+
+        const uploadStream = cloudinary.uploader.upload_stream(
+            {
+                folder: `stpaulus/${folder}`,
+                resource_type: 'raw',
+                use_filename: true,
+                unique_filename: true,
+                overwrite: false,
+                public_id: filename ? `${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, '_')}` : undefined
+            },
+            (error, result) => {
+                if (error) {
+                    console.error('[Cloudinary] Document upload error:', error)
+                    reject(error)
+                } else if (result) {
+                    console.log('[Cloudinary] Document upload success:', result.secure_url)
+                    resolve(result.secure_url)
+                } else {
+                    reject(new Error('Upload failed - no result'))
+                }
+            }
+        )
+
+        uploadStream.end(buffer)
+    })
+}
+
+/**
  * Delete image from Cloudinary
  * @param publicId - Cloudinary public ID
  */

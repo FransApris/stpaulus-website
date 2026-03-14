@@ -3,6 +3,7 @@ import { requireAuth } from '../../../utils/auth'
 import { createSlug } from '../../../utils/slug'
 import fs from 'fs'
 import path from 'path'
+import { isCloudinaryEnabled, uploadDocumentToCloudinary } from '../../../utils/cloudinary'
 
 export default defineEventHandler(async (event) => {
   // Only super_admin and admin_sekretariat can create documents
@@ -67,27 +68,38 @@ export default defineEventHandler(async (event) => {
   // Generate unique filename
   const fileExt = path.extname(file.filename || 'file')
   const filename = `${Date.now()}-${Math.random().toString(36).substring(2)}${fileExt}`
-  // Use UPLOAD_BASE_PATH env var if set (e.g. Railway Volume mount at /app/public/uploads).
-  // Falls back to <cwd>/public/uploads for local dev and default Railway setup.
-  const uploadBase = process.env.UPLOAD_BASE_PATH || path.join(process.cwd(), 'public', 'uploads')
-  const uploadDir = path.join(uploadBase, 'documents')
 
-  // Ensure upload directory exists
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true })
-  }
-
-  const filePath = path.join(uploadDir, filename)
+  let storedFilePath: string
 
   try {
-    // Save file
-    fs.writeFileSync(filePath, file.data)
+    if (isCloudinaryEnabled()) {
+      // Upload to Cloudinary — persistent, CDN-delivered, no Railway Volume needed
+      console.log('[Document Upload] Uploading to Cloudinary...')
+      const cloudinaryUrl = await uploadDocumentToCloudinary(
+        Buffer.from(file.data),
+        'documents',
+        file.filename || filename
+      )
+      storedFilePath = cloudinaryUrl
+      console.log('[Document Upload] Cloudinary success:', cloudinaryUrl)
+    } else {
+      // Fallback: save to local disk
+      console.log('[Document Upload] Cloudinary not configured, saving to local storage...')
+      const uploadBase = process.env.UPLOAD_BASE_PATH || path.join(process.cwd(), 'public', 'uploads')
+      const uploadDir = path.join(uploadBase, 'documents')
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true })
+      }
+      const filePath = path.join(uploadDir, filename)
+      fs.writeFileSync(filePath, file.data)
+      storedFilePath = `/uploads/documents/${filename}`
+    }
 
     // Save to database
     const result = await runQuery(`
       INSERT INTO documents (title, description, category_id, filename, original_filename, file_path, file_size, mime_type, uploaded_by)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `, [title.trim(), description || null, categoryId, filename, file.filename || 'unknown', `/uploads/documents/${filename}`, file.data.length, file.type, user.userId])
+    `, [title.trim(), description || null, categoryId, filename, file.filename || 'unknown', storedFilePath, file.data.length, file.type, user.userId])
 
     return {
       id: result.insertId,
@@ -103,10 +115,6 @@ export default defineEventHandler(async (event) => {
     }
   } catch (error) {
     console.error('Upload error details:', error)
-    // Clean up file if database insert failed
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath)
-    }
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to upload document'
