@@ -1,6 +1,77 @@
 import { allQuery } from '~/server/database/db'
 import { verifyToken } from '~/server/utils/auth'
 
+type BookingQueryFeatures = {
+    hasRequesterName: boolean
+    hasRejectionReason: boolean
+    hasCancellationReason: boolean
+    hasUserPhone: boolean
+}
+
+const buildBookingsQuery = (canManageAllBookings: boolean, features: BookingQueryFeatures) => {
+    const requesterNameSelect = features.hasRequesterName ? 'b.requester_name' : 'NULL as requester_name'
+    const rejectionReasonSelect = features.hasRejectionReason ? 'b.rejection_reason' : 'NULL as rejection_reason'
+    const cancellationReasonSelect = features.hasCancellationReason ? 'b.cancellation_reason' : 'NULL as cancellation_reason'
+    const userPhoneSelect = features.hasUserPhone ? 'u.contact_phone as user_phone' : 'NULL as user_phone'
+
+    let sql = `
+      SELECT 
+        b.id,
+        b.room_id,
+        b.user_id,
+        b.event_name,
+        ${requesterNameSelect},
+        b.start_time,
+        b.end_time,
+        b.status,
+        ${rejectionReasonSelect},
+        ${cancellationReasonSelect},
+        b.created_at,
+        b.updated_at,
+        r.name as room_name,
+        r.location as room_location,
+        u.full_name as user_name,
+        u.email as user_email,
+        ${userPhoneSelect}
+      FROM bookings b
+      LEFT JOIN rooms r ON b.room_id = r.id
+      LEFT JOIN users u ON b.user_id = u.id
+      WHERE b.deleted_at IS NULL
+    `
+
+    const params: any[] = []
+
+    if (!canManageAllBookings) {
+        sql += ' AND b.user_id = ?'
+    }
+
+    sql += ' ORDER BY b.start_time DESC'
+
+    return { sql, params }
+}
+
+const getMissingColumnFeature = (error: any): keyof BookingQueryFeatures | null => {
+    const message = String(error?.message || '')
+    if (!message.includes('Unknown column')) {
+        return null
+    }
+
+    if (message.includes('requester_name')) {
+        return 'hasRequesterName'
+    }
+    if (message.includes('rejection_reason')) {
+        return 'hasRejectionReason'
+    }
+    if (message.includes('cancellation_reason')) {
+        return 'hasCancellationReason'
+    }
+    if (message.includes('contact_phone')) {
+        return 'hasUserPhone'
+    }
+
+    return null
+}
+
 export default defineEventHandler(async (event) => {
     try {
         // Get and verify token
@@ -62,54 +133,49 @@ export default defineEventHandler(async (event) => {
         const permissions = userPermissions.map((p: any) => p.name)
         console.log('[User Bookings API] User permissions:', permissions)
 
-        // Build query based on permissions
-        let sql = `
-      SELECT 
-        b.id,
-        b.room_id,
-        b.user_id,
-        b.event_name,
-        b.requester_name,
-        b.start_time,
-        b.end_time,
-        b.status,
-        b.rejection_reason,
-        b.cancellation_reason,
-        b.created_at,
-        b.updated_at,
-        r.name as room_name,
-        r.location as room_location,
-        u.full_name as user_name,
-        u.email as user_email,
-        u.contact_phone as user_phone
-      FROM bookings b
-      LEFT JOIN rooms r ON b.room_id = r.id
-      LEFT JOIN users u ON b.user_id = u.id
-      WHERE b.deleted_at IS NULL
-    `
-
-        const params: any[] = []
-
         // Regular users only see their own bookings
         // Admins with 'manage_bookings' permission see all bookings
         const canManageAllBookings = permissions.includes('manage_bookings') ||
             permissions.includes('view_bookings') ||
             user.role === 'super_admin'
 
+        const params: any[] = []
         if (!canManageAllBookings) {
-            sql += ' AND b.user_id = ?'
             params.push(userId)
             console.log('[User Bookings API] Filtering by user_id:', userId)
         } else {
             console.log('[User Bookings API] User has admin access - showing all bookings')
         }
 
-        sql += ' ORDER BY b.start_time DESC'
+        const features: BookingQueryFeatures = {
+            hasRequesterName: true,
+            hasRejectionReason: true,
+            hasCancellationReason: true,
+            hasUserPhone: true
+        }
 
-        console.log('[User Bookings API] Executing SQL:', sql)
-        console.log('[User Bookings API] With params:', params)
+        let bookings: any[] = []
 
-        const bookings = await allQuery(sql, params)
+        while (true) {
+            const { sql } = buildBookingsQuery(canManageAllBookings, features)
+
+            console.log('[User Bookings API] Executing SQL:', sql)
+            console.log('[User Bookings API] With params:', params)
+
+            try {
+                bookings = await allQuery(sql, params)
+                break
+            } catch (queryError: any) {
+                const missingFeature = getMissingColumnFeature(queryError)
+
+                if (!missingFeature || !features[missingFeature]) {
+                    throw queryError
+                }
+
+                features[missingFeature] = false
+                console.warn(`[User Bookings API] Missing legacy column detected, retrying without ${missingFeature}`)
+            }
+        }
 
         console.log('[User Bookings API] Found', bookings.length, 'bookings')
 
