@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Delete image file
+    // Delete image file (only for local storage; Cloudinary URLs are left to expire/be managed in Cloudinary dashboard)
     if (theme.image_path) {
       const normalizedPath = normalizeImagePath(theme.image_path)
       if (normalizedPath.startsWith('/uploads/hero-themes/') || normalizedPath.startsWith('/images/themes/')) {
@@ -74,6 +74,8 @@ export default defineEventHandler(async (event) => {
           // Don't fail the request if file deletion fails
         }
       }
+      // Note: Cloudinary-hosted images (starting with https://) are not deleted here.
+      // Manage them from the Cloudinary dashboard if needed.
     }
 
     return {

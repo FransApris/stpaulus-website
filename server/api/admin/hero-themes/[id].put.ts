@@ -3,6 +3,7 @@ import { requirePermission } from '../../../utils/auth'
 import { promises as fs } from 'fs'
 import * as path from 'path'
 import { getUploadsPath } from '../../../utils/paths'
+import { isCloudinaryEnabled, uploadToCloudinary } from '../../../utils/cloudinary'
 
 const normalizeImagePath = (imagePath: string) => {
   const cleaned = imagePath.trim().replace(/\\/g, '/')
@@ -109,13 +110,25 @@ export default defineEventHandler(async (event) => {
   if (imageFile) {
     const extension = path.extname(imageFile.filename || 'image.jpg')
     const filename = `hero-theme-${Date.now()}-${Math.random().toString(36).substring(2)}${extension}`
-    const uploadDir = getUploadsPath('hero-themes')
-    uploadedFilePath = path.join(uploadDir, filename)
-    nextImagePath = normalizeImagePath(`/uploads/hero-themes/${filename}`)
 
     try {
-      await fs.mkdir(uploadDir, { recursive: true })
-      await fs.writeFile(uploadedFilePath, imageFile.data)
+      if (isCloudinaryEnabled()) {
+        console.log('[Hero Theme Update] Uploading to Cloudinary...')
+        const cloudinaryUrl = await uploadToCloudinary(
+          Buffer.from(imageFile.data),
+          'hero-themes',
+          imageFile.filename || filename
+        )
+        nextImagePath = cloudinaryUrl
+        console.log('[Hero Theme Update] Cloudinary success:', cloudinaryUrl)
+      } else {
+        console.log('[Hero Theme Update] Cloudinary not configured, saving to local storage...')
+        const uploadDir = getUploadsPath('hero-themes')
+        uploadedFilePath = path.join(uploadDir, filename)
+        nextImagePath = normalizeImagePath(`/uploads/hero-themes/${filename}`)
+        await fs.mkdir(uploadDir, { recursive: true })
+        await fs.writeFile(uploadedFilePath, imageFile.data)
+      }
     } catch (error) {
       console.error('Error saving new theme image:', error)
       throw createError({
@@ -140,7 +153,7 @@ export default defineEventHandler(async (event) => {
       `, [name, id])
     }
 
-    // Cleanup old local image only when replacement succeeded.
+    // Cleanup old local image only when replacement succeeded (skip for Cloudinary URLs).
     if (imageFile && existingTheme.image_path && existingTheme.image_path !== nextImagePath) {
       const oldPath = normalizeImagePath(existingTheme.image_path)
       if (oldPath.startsWith('/uploads/hero-themes/') || oldPath.startsWith('/images/themes/')) {

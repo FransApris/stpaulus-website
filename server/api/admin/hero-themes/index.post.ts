@@ -3,6 +3,7 @@ import { requirePermission } from '../../../utils/auth'
 import { promises as fs } from 'fs'
 import * as path from 'path'
 import { getUploadsPath } from '../../../utils/paths'
+import { isCloudinaryEnabled, uploadToCloudinary } from '../../../utils/cloudinary'
 
 const normalizeImagePath = (imagePath: string) => {
   const cleaned = imagePath.trim().replace(/\\/g, '/')
@@ -68,25 +69,28 @@ export default defineEventHandler(async (event) => {
   // Generate unique filename
   const extension = path.extname(imageFile.filename || 'image.jpg')
   const filename = `hero-theme-${Date.now()}-${Math.random().toString(36).substring(2)}${extension}`
-  const uploadDir = getUploadsPath('hero-themes')
 
-  // Ensure upload directory exists
-  try {
-    await fs.mkdir(uploadDir, { recursive: true })
-  } catch (error) {
-    console.error('Error creating upload directory:', error)
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Failed to create upload directory'
-    })
-  }
-
-  const filePath = path.join(uploadDir, filename)
-  const imagePath = normalizeImagePath(`/uploads/hero-themes/${filename}`)
+  let imagePath: string
+  let localFilePath: string | null = null
 
   try {
-    // Save file
-    await fs.writeFile(filePath, imageFile.data)
+    if (isCloudinaryEnabled()) {
+      console.log('[Hero Theme Create] Uploading to Cloudinary...')
+      const cloudinaryUrl = await uploadToCloudinary(
+        Buffer.from(imageFile.data),
+        'hero-themes',
+        imageFile.filename || filename
+      )
+      imagePath = cloudinaryUrl
+      console.log('[Hero Theme Create] Cloudinary success:', cloudinaryUrl)
+    } else {
+      console.log('[Hero Theme Create] Cloudinary not configured, saving to local storage...')
+      const uploadDir = getUploadsPath('hero-themes')
+      await fs.mkdir(uploadDir, { recursive: true })
+      localFilePath = path.join(uploadDir, filename)
+      await fs.writeFile(localFilePath, imageFile.data)
+      imagePath = normalizeImagePath(`/uploads/hero-themes/${filename}`)
+    }
 
     // Insert theme into database
     const result = await runQuery(`
@@ -107,11 +111,13 @@ export default defineEventHandler(async (event) => {
   } catch (error) {
     console.error('Error creating theme:', error)
 
-    // Clean up uploaded file if database insert failed
-    try {
-      await fs.unlink(filePath)
-    } catch (cleanupError) {
-      console.error('Error cleaning up file:', cleanupError)
+    // Clean up uploaded local file if database insert failed
+    if (localFilePath) {
+      try {
+        await fs.unlink(localFilePath)
+      } catch (cleanupError) {
+        console.error('Error cleaning up file:', cleanupError)
+      }
     }
 
     // Check for specific database errors (MySQL duplicate entry)
