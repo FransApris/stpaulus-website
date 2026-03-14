@@ -37,14 +37,14 @@ export default defineEventHandler(async (event) => {
         }
 
         const tokenData = tokenRows[0]
-        
+
         if (!tokenData) {
             throw createError({
                 statusCode: 401,
                 statusMessage: 'Invalid token data'
             })
         }
-        
+
         const service = createGooglePhotosService({
             accessToken: tokenData.access_token,
             refreshToken: tokenData.refresh_token,

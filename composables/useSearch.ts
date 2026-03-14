@@ -29,7 +29,7 @@ export interface SearchResponse {
 export const useSearch = () => {
   const route = useRoute() // ✅ FASE 2: Get current route for page number
   let debounceTimeout: ReturnType<typeof setTimeout> | null = null
-  
+
   const searchQuery = ref('')
   const searchResults = ref<SearchResult[]>([])
   const searchMetadata = ref<Omit<SearchResponse, 'results'> | null>(null) // ✅ FASE 2: Store pagination metadata
@@ -66,11 +66,11 @@ export const useSearch = () => {
       searchError.value = null
 
       // ✅ FASE 3: Build query with filters
-      const queryParams: any = { 
+      const queryParams: any = {
         q: query.trim(),
         page: String(page)
       }
-      
+
       if (filters?.type) queryParams.type = filters.type
       if (filters?.dateFrom) queryParams.dateFrom = filters.dateFrom
       if (filters?.dateTo) queryParams.dateTo = filters.dateTo
@@ -83,7 +83,7 @@ export const useSearch = () => {
       })
 
       searchResults.value = response.results
-      
+
       // ✅ FASE 2: Store pagination metadata
       searchMetadata.value = {
         query: response.query,

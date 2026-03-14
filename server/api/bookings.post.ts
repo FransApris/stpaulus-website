@@ -58,7 +58,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check user permissions for the room
-    const user = await getQuery('SELECT user_category, role, role_id FROM users WHERE id = ?', [userId]) as any
+    const user = await getQuery('SELECT user_category, role_id FROM users WHERE id = ?', [userId]) as any
 
     console.log('[CREATE BOOKING] User details:', {
       id: userId,
@@ -72,7 +72,7 @@ export default defineEventHandler(async (event) => {
     const isAdmin = user.role === 'super_admin' ||
       user.role === 'admin_komsos' ||
       user.role === 'admin_sekretariat' ||
-      user.role_id !== null
+      ((user.role_id || 0) > 0)
 
     if (isAdmin) {
       throw createError({
@@ -105,30 +105,51 @@ export default defineEventHandler(async (event) => {
       console.log('[CREATE BOOKING] Parsed allowed categories:', allowedCategories)
       console.log('[CREATE BOOKING] User category:', user.user_category)
 
-      // Normalize category names for comparison
+      // Normalize + alias category names so code-style and display-style values match.
       const normalizeCategory = (cat: string): string => {
-        return cat.toLowerCase().trim()
-          .replace(/\s+/g, ' ')  // normalize spaces
-          .replace(/pastoral\s*/i, '')  // remove "pastoral" variations
-          .replace(/dewan\s+paroki/i, 'dewanparoki')  // normalize "dewan paroki"
+        return String(cat || '')
+          .toLowerCase()
+          .trim()
+          .replace(/[_-]+/g, ' ')
+          .replace(/\s+/g, ' ')
       }
 
-      // Case-insensitive + partial matching for category access
-      const userCategoryNormalized = normalizeCategory(user.user_category)
-      const allowedCategoriesNormalized = allowedCategories.map((c: string) => normalizeCategory(c))
-      
-      // Check exact match first, then partial match
-      const hasExactMatch = allowedCategoriesNormalized.includes(userCategoryNormalized)
+      const categoryAliasMap: Record<string, string[]> = {
+        wilayah: ['wilayah', 'region'],
+        lingkungan: ['lingkungan'],
+        kategorial: ['kategorial', 'categorical group', 'categorical_group'],
+        komunitas: ['komunitas', 'community'],
+        seksi: ['seksi', 'section'],
+        dewan: ['dewan pastoral paroki', 'dewan paroki pastoral', 'dewan paroki', 'dpp', 'parish council', 'parish_council']
+      }
+
+      const canonicalizeCategory = (raw: string): string => {
+        const normalized = normalizeCategory(raw)
+        for (const [canonical, aliases] of Object.entries(categoryAliasMap)) {
+          if (aliases.some((alias) => normalized.includes(alias))) {
+            return canonical
+          }
+        }
+        return normalized
+      }
+
+      const userCategoryRaw = String(user.user_category || '')
+      const userCategoryCanonical = canonicalizeCategory(userCategoryRaw)
+      const allowedCanonical = allowedCategories.map((c: string) => canonicalizeCategory(String(c)))
+
+      // Keep partial fallback for uncommon labels not yet in alias map.
+      const hasExactMatch = allowedCanonical.includes(userCategoryCanonical)
+      const userNormalized = normalizeCategory(userCategoryRaw)
       const hasPartialMatch = allowedCategories.some((allowedCat: string) => {
-        const allowed = allowedCat.toLowerCase().trim()
-        const userCat = user.user_category.toLowerCase().trim()
-        // Check if either string contains the other (for cases like "Dewan Paroki" vs "Dewan Pastoral Paroki")
-        return allowed.includes(userCat) || userCat.includes(allowed)
+        const allowed = normalizeCategory(String(allowedCat))
+        return allowed.includes(userNormalized) || userNormalized.includes(allowed)
       })
-      
+
       const hasAccess = hasExactMatch || hasPartialMatch
 
       console.log('[CREATE BOOKING] Category match:', {
+        userCategoryCanonical,
+        allowedCanonical,
         exactMatch: hasExactMatch,
         partialMatch: hasPartialMatch,
         hasAccess

@@ -1,5 +1,6 @@
 import { getQuery as getOne, runQuery } from '~/server/database/db'
 import { requireAuth } from '~/server/utils/auth'
+import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 import { readBody } from 'h3'
 
 export default defineEventHandler(async (event) => {
@@ -7,27 +8,8 @@ export default defineEventHandler(async (event) => {
         // Verify user authentication using JWT
         const decoded = requireAuth(event)
 
-        // Get user details
-        const user = await getOne(
-            'SELECT id, user_category FROM users WHERE id = ?',
-            [decoded.userId]
-        )
-
-        if (!user) {
-            throw createError({
-                statusCode: 401,
-                message: 'Invalid user'
-            })
-        }
-
-        // Check if user has kronik access
-        const validCategories = ['PARISH_COUNCIL', 'CATEGORICAL_GROUP', 'REGION', 'COMMUNITY', 'LINGKUNGAN']
-        if (!validCategories.includes(user.user_category)) {
-            throw createError({
-                statusCode: 403,
-                message: 'You do not have permission to create kronik entries'
-            })
-        }
+        // User-only guard: admin CMS accounts cannot use kronik user endpoints.
+        const user = await requireKronikUserAccess(decoded.userId)
 
         const body = await readBody(event)
 

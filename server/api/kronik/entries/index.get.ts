@@ -1,6 +1,7 @@
 import { allQuery, getQuery as getOne } from '~/server/database/db'
 import { getQuery } from 'h3'
 import { requireAuth } from '~/server/utils/auth'
+import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 
 export default defineEventHandler(async (event) => {
     const queryParams = getQuery(event)
@@ -38,29 +39,8 @@ export default defineEventHandler(async (event) => {
         if (authorOnly) {
             // Verify JWT token
             const decoded = requireAuth(event)
-            userId = decoded.userId
-
-            // Get user category to verify kronik access
-            const user = await getOne(
-                'SELECT id, user_category FROM users WHERE id = ?',
-                [userId]
-            )
-
-            if (!user) {
-                throw createError({
-                    statusCode: 401,
-                    message: 'Invalid user'
-                })
-            }
-
-            // Check if user has kronik access
-            const validCategories = ['PARISH_COUNCIL', 'CATEGORICAL_GROUP', 'REGION', 'COMMUNITY', 'LINGKUNGAN']
-            if (!validCategories.includes(user.user_category)) {
-                throw createError({
-                    statusCode: 403,
-                    message: 'You do not have permission to access kronik entries'
-                })
-            }
+            const user = await requireKronikUserAccess(decoded.userId)
+            userId = user.id
 
             console.log('[KRONIK API] User authenticated:', userId, 'category:', user.user_category)
         }

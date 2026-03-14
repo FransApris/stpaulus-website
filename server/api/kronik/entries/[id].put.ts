@@ -1,5 +1,6 @@
 import { getQuery as getOne, runQuery } from '~/server/database/db'
 import { requireAuth } from '~/server/utils/auth'
+import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 import { getRouterParam } from 'h3'
 
 export default defineEventHandler(async (event) => {
@@ -16,27 +17,7 @@ export default defineEventHandler(async (event) => {
         // Verify user authentication using JWT
         const decoded = requireAuth(event)
 
-        // Get user details
-        const user = await getOne(
-            'SELECT id, user_category FROM users WHERE id = ?',
-            [decoded.userId]
-        )
-
-        if (!user) {
-            throw createError({
-                statusCode: 401,
-                message: 'Invalid user'
-            })
-        }
-
-        // Check if user has kronik access
-        const validCategories = ['PARISH_COUNCIL', 'CATEGORICAL_GROUP', 'REGION', 'COMMUNITY', 'LINGKUNGAN']
-        if (!validCategories.includes(user.user_category)) {
-            throw createError({
-                statusCode: 403,
-                message: 'You do not have permission to update kronik entries'
-            })
-        }
+        const user = await requireKronikUserAccess(decoded.userId)
 
         // Get the entry to verify ownership
         const entry = await getOne(

@@ -1,7 +1,12 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { requireAuth } from '~/server/utils/auth'
+import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 
 export default defineEventHandler(async (event) => {
     try {
+        const decoded = requireAuth(event)
+        await requireKronikUserAccess(decoded.userId)
+
         const body = await readBody(event)
         const { what, when, where, who, why, how } = body
 

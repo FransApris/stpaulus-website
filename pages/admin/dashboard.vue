@@ -531,7 +531,7 @@ const canViewBookings = computed(() => auth.hasPermission('view_bookings') || au
 // Show booking list only for superadmin and admin_sekretariat (not admin_komsos)
 const canViewBookingList = computed(() => {
   const role = auth.user.value?.role || ''
-  return (role === 'superadmin' || role === 'admin_sekretariat') &&
+  return (role === 'super_admin' || role === 'admin_sekretariat') &&
          (auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings'))
 })
 
@@ -560,8 +560,8 @@ const getRoleBadgeClass = (role) => {
 
 const combinedContent = computed(() => {
   const allContent = [
-    ...articles.value.map(article => ({ ...article, type: 'article' })),
-    ...news.value.map(newsItem => ({ ...newsItem, type: 'news' }))
+    ...(Array.isArray(articles.value) ? articles.value : []).map(article => ({ ...article, type: 'article' })),
+    ...(Array.isArray(news.value) ? news.value : []).map(newsItem => ({ ...newsItem, type: 'news' }))
   ]
   return allContent.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 })
@@ -700,8 +700,8 @@ const fetchContent = async () => {
       })
     ])
 
-    articles.value = articlesResponse
-    news.value = newsResponse
+    articles.value = Array.isArray(articlesResponse) ? articlesResponse : (articlesResponse?.data ?? [])
+    news.value = Array.isArray(newsResponse) ? newsResponse : (newsResponse?.data ?? [])
   } catch (error) {
     if (error.statusCode === 401) {
       auth.logout()
