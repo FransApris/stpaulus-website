@@ -67,8 +67,11 @@ export default defineEventHandler(async (event) => {
   // Generate unique filename
   const fileExt = path.extname(file.filename || 'file')
   const filename = `${Date.now()}-${Math.random().toString(36).substring(2)}${fileExt}`
-  const uploadDir = path.join(process.cwd(), 'public/uploads/documents')
-  
+  // Use UPLOAD_BASE_PATH env var if set (e.g. Railway Volume mount at /app/public/uploads).
+  // Falls back to <cwd>/public/uploads for local dev and default Railway setup.
+  const uploadBase = process.env.UPLOAD_BASE_PATH || path.join(process.cwd(), 'public', 'uploads')
+  const uploadDir = path.join(uploadBase, 'documents')
+
   // Ensure upload directory exists
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true })
