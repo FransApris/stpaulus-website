@@ -19,30 +19,68 @@ export default defineEventHandler(async (event) => {
   // Only use placeholders for WHERE conditions
   const params = [startDateStr, endDateStr]
 
+  const runPublicBookingsQuery = async () => {
+    try {
+      return await allQuery(`
+        SELECT
+          b.id,
+          r.name as room_name,
+          r.location as room_location,
+          b.event_name,
+          b.requester_name,
+          u.username,
+          u.full_name as user_name,
+          DATE(b.start_time) as event_date,
+          TIME(b.start_time) as start_time,
+          TIME(b.end_time) as end_time,
+          b.status,
+          b.created_at
+        FROM bookings b
+        LEFT JOIN rooms r ON b.room_id = r.id
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE b.deleted_at IS NULL
+        AND b.status IN ('APPROVED', 'PENDING', 'REJECTED', 'CANCELLED')
+        AND DATE(b.start_time) BETWEEN ? AND ?
+        ORDER BY b.start_time ASC
+      `, params)
+    } catch (error: any) {
+      const message = String(error?.message || '')
+      const isMissingRequesterName = message.includes('Unknown column') && message.includes('requester_name')
+
+      if (!isMissingRequesterName) {
+        throw error
+      }
+
+      console.warn('[Public Bookings API] requester_name column missing, using legacy fallback query')
+
+      return await allQuery(`
+        SELECT
+          b.id,
+          r.name as room_name,
+          r.location as room_location,
+          b.event_name,
+          NULL as requester_name,
+          u.username,
+          u.full_name as user_name,
+          DATE(b.start_time) as event_date,
+          TIME(b.start_time) as start_time,
+          TIME(b.end_time) as end_time,
+          b.status,
+          b.created_at
+        FROM bookings b
+        LEFT JOIN rooms r ON b.room_id = r.id
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE b.deleted_at IS NULL
+        AND b.status IN ('APPROVED', 'PENDING', 'REJECTED', 'CANCELLED')
+        AND DATE(b.start_time) BETWEEN ? AND ?
+        ORDER BY b.start_time ASC
+      `, params)
+    }
+  }
+
   // Get public booking list and include requester identity fields for display.
-  // Note: Fetch all matching records, then limit in JavaScript for safety
-  const bookings = await allQuery(`
-    SELECT
-      b.id,
-      r.name as room_name,
-      r.location as room_location,
-      b.event_name,
-      b.requester_name,
-      u.username,
-      u.full_name as user_name,
-      DATE(b.start_time) as event_date,
-      TIME(b.start_time) as start_time,
-      TIME(b.end_time) as end_time,
-      b.status,
-      b.created_at
-    FROM bookings b
-    JOIN rooms r ON b.room_id = r.id
-    JOIN users u ON b.user_id = u.id
-    WHERE b.deleted_at IS NULL
-    AND b.status IN ('APPROVED', 'PENDING', 'REJECTED', 'CANCELLED')
-    AND DATE(b.start_time) BETWEEN ? AND ?
-    ORDER BY b.start_time ASC
-  `, params)
+  // Falls back cleanly if production schema is behind.
+  const bookings = await runPublicBookingsQuery()
 
   // Apply limit in JavaScript to avoid SQL injection
   const limitedBookings = bookings.slice(0, limit)
