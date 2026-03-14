@@ -16,22 +16,53 @@ export default defineEventHandler(async (event) => {
     ORDER BY name ASC
   `)
 
+  const getBookingsForDate = async () => {
+    try {
+      return await allQuery(`
+        SELECT
+          b.room_id,
+          b.start_time,
+          b.end_time,
+          b.status,
+          b.event_name,
+          b.requester_name,
+          u.full_name as user_name
+        FROM bookings b
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE b.status IN ('APPROVED', 'PENDING')
+        AND date(b.start_time) = ?
+        ORDER BY b.start_time ASC
+      `, [dateStr])
+    } catch (error: any) {
+      const message = String(error?.message || '')
+      const isMissingRequesterName = message.includes('Unknown column') && message.includes('requester_name')
+
+      if (!isMissingRequesterName) {
+        throw error
+      }
+
+      console.warn('[Rooms Availability API] requester_name column missing, using legacy fallback query')
+
+      return await allQuery(`
+        SELECT
+          b.room_id,
+          b.start_time,
+          b.end_time,
+          b.status,
+          b.event_name,
+          NULL as requester_name,
+          u.full_name as user_name
+        FROM bookings b
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE b.status IN ('APPROVED', 'PENDING')
+        AND date(b.start_time) = ?
+        ORDER BY b.start_time ASC
+      `, [dateStr])
+    }
+  }
+
   // Get bookings for the target date
-  const bookings = await allQuery(`
-    SELECT
-      b.room_id,
-      b.start_time,
-      b.end_time,
-      b.status,
-      b.event_name,
-      b.requester_name,
-      u.full_name as user_name
-    FROM bookings b
-    JOIN users u ON b.user_id = u.id
-    WHERE b.status IN ('APPROVED', 'PENDING')
-    AND date(b.start_time) = ?
-    ORDER BY b.start_time ASC
-  `, [dateStr])
+  const bookings = await getBookingsForDate()
 
   // Group bookings by room
   const bookingsByRoom: Record<number, any[]> = {}

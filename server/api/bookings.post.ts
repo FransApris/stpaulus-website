@@ -2,6 +2,11 @@ import { runQuery, getQuery } from '../database/db'
 import { requireAuth } from '../utils/auth'
 import { getHeader } from 'h3'
 
+const isMissingColumnError = (error: any, columnName: string) => {
+  const message = String(error?.message || '')
+  return message.includes('Unknown column') && message.includes(columnName)
+}
+
 export default defineEventHandler(async (event) => {
   try {
     console.log('[CREATE BOOKING] Starting...')
@@ -213,10 +218,25 @@ export default defineEventHandler(async (event) => {
     // Insert booking
     const normalizedRequesterName = String(requester_name || '').trim() || String(user.full_name || '').trim()
 
-    const result = await runQuery(`
-      INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [room_id, userId, event_name, normalizedRequesterName, mysqlStart, mysqlEnd, status]) as any
+    let result: any
+
+    try {
+      result = await runQuery(`
+        INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `, [room_id, userId, event_name, normalizedRequesterName, mysqlStart, mysqlEnd, status]) as any
+    } catch (insertError: any) {
+      if (!isMissingColumnError(insertError, 'requester_name')) {
+        throw insertError
+      }
+
+      console.warn('[CREATE BOOKING] requester_name column missing, retrying legacy insert')
+
+      result = await runQuery(`
+        INSERT INTO bookings (room_id, user_id, event_name, start_time, end_time, status)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [room_id, userId, event_name, mysqlStart, mysqlEnd, status]) as any
+    }
 
     console.log('[CREATE BOOKING] Success:', { insertId: result.insertId, status })
 
