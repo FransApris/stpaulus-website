@@ -221,11 +221,25 @@ const fetchDocuments = async () => {
 }
 
 // View document
+const getDownloadErrorMessage = async (response, fallback) => {
+  try {
+    const data = await response.json()
+    if (data?.statusMessage) return data.statusMessage
+    if (data?.message) return data.message
+  } catch {
+    // Ignore parse error and use fallback message.
+  }
+  return fallback
+}
+
 const viewDocument = async (doc) => {
   if (process.client) {
     try {
       const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) throw new Error('Failed to fetch document')
+      if (!response.ok) {
+        const message = await getDownloadErrorMessage(response, 'Gagal membuka dokumen')
+        throw new Error(message)
+      }
 
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
@@ -235,7 +249,7 @@ const viewDocument = async (doc) => {
       setTimeout(() => URL.revokeObjectURL(url), 100)
     } catch (error) {
       console.error('Failed to view document:', error)
-      alert('Gagal membuka dokumen')
+      alert(error instanceof Error ? error.message : 'Gagal membuka dokumen')
     }
   }
 }
@@ -245,7 +259,10 @@ const printDocument = async (doc) => {
   if (process.client) {
     try {
       const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) throw new Error('Failed to fetch document')
+      if (!response.ok) {
+        const message = await getDownloadErrorMessage(response, 'Gagal mencetak dokumen')
+        throw new Error(message)
+      }
 
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
@@ -260,7 +277,7 @@ const printDocument = async (doc) => {
       }
     } catch (error) {
       console.error('Failed to print document:', error)
-      alert('Gagal mencetak dokumen')
+      alert(error instanceof Error ? error.message : 'Gagal mencetak dokumen')
     }
   }
 }
@@ -270,7 +287,10 @@ const downloadDocument = async (doc) => {
   if (process.client) {
     try {
       const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) throw new Error('Failed to fetch document')
+      if (!response.ok) {
+        const message = await getDownloadErrorMessage(response, 'Gagal mengunduh dokumen')
+        throw new Error(message)
+      }
 
       const blob = await response.blob()
       const url = URL.createObjectURL(blob)
@@ -287,7 +307,7 @@ const downloadDocument = async (doc) => {
       URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Failed to download document:', error)
-      alert('Gagal mengunduh dokumen')
+      alert(error instanceof Error ? error.message : 'Gagal mengunduh dokumen')
     }
   }
 }
