@@ -9,6 +9,12 @@ const KRONIK_USER_CATEGORIES = new Set([
     'komunitas',
     'seksi',
     'dewan pastoral paroki',
+    // Legacy/English codes for backward compatibility
+    'parish_council',
+    'categorical_group',
+    'region',
+    'community',
+    'admin'
 ])
 
 type KronikUser = {

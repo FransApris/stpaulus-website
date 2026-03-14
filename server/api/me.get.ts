@@ -20,8 +20,21 @@ export default defineEventHandler(async (event) => {
 
   const permissions = await getUserPermissions(user)
 
+  const categoryMap: Record<string, string> = {
+    PARISH_COUNCIL: 'Dewan Pastoral Paroki',
+    CATEGORICAL_GROUP: 'Kategorial',
+    REGION: 'Wilayah',
+    COMMUNITY: 'Komunitas',
+    LINGKUNGAN: 'Lingkungan',
+    ADMIN: 'Admin'
+  }
+
+  const rawCategory = String(user.user_category || '').trim()
+  const normalizedCategory = categoryMap[rawCategory.toUpperCase()] || rawCategory
+
   return {
     ...user,
+    user_category: normalizedCategory,
     permissions
   }
 })

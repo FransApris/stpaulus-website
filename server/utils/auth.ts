@@ -114,7 +114,11 @@ export const requireAuth = (event: any) => {
 
 // User authentication functions
 export const authenticateUser = async (username: string, password: string): Promise<AuthResult | null> => {
-  const user = await getQuery('SELECT * FROM users WHERE username = ?', [username]) as User | undefined
+  const normalizedLogin = String(username || '').trim()
+  const user = await getQuery(
+    'SELECT * FROM users WHERE LOWER(username) = LOWER(?) OR LOWER(email) = LOWER(?) LIMIT 1',
+    [normalizedLogin, normalizedLogin]
+  ) as User | undefined
 
   if (!user) {
     return null

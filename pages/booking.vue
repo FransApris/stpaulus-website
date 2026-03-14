@@ -94,7 +94,7 @@
                   </span>
                   <div>
                     <p class="text-xs text-gray-400 leading-none">Kategori</p>
-                    <p class="text-sm font-medium text-gray-800 mt-0.5">{{ user?.user_category || '—' }}</p>
+                    <p class="text-sm font-medium text-gray-800 mt-0.5">{{ displayUserCategory }}</p>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
@@ -853,6 +853,24 @@ const emptyStateMessage = computed(() =>
     ? 'Semua pemesanan Anda akan muncul di sini'
     : 'Pilih ruangan di atas untuk membuat pemesanan pertama Anda'
 )
+
+const mapUserCategoryLabel = (value) => {
+  const raw = String(value || '').trim()
+  if (!raw) return '—'
+
+  const categoryMap = {
+    PARISH_COUNCIL: 'Dewan Pastoral Paroki',
+    CATEGORICAL_GROUP: 'Kategorial',
+    REGION: 'Wilayah',
+    COMMUNITY: 'Komunitas',
+    LINGKUNGAN: 'Lingkungan',
+    ADMIN: 'Admin'
+  }
+
+  return categoryMap[raw.toUpperCase()] || raw
+}
+
+const displayUserCategory = computed(() => mapUserCategoryLabel(user.value?.user_category))
 
 // Toggle room bookings visibility (mobile cards)
 const toggleRoomBookings = (roomId) => {

@@ -11,7 +11,7 @@ export const usePermissions = () => {
     if (!user.value) return false
 
     // Super Admin has all permissions
-    if (user.value.role === 'super-admin') return true
+    if (user.value.role === 'super_admin') return true
 
     // Check if user has the permission in permissions array
     return permissions.value?.some((p: string) => p === permissionSlug) || false
@@ -24,7 +24,7 @@ export const usePermissions = () => {
     if (!user.value) return false
 
     // Super Admin & Admin Paroki have full access
-    if (['super-admin', 'admin-paroki'].includes(user.value.role)) {
+    if (['super_admin', 'admin_komsos', 'admin_sekretariat'].includes(user.value.role)) {
       return true
     }
 
@@ -39,7 +39,7 @@ export const usePermissions = () => {
     if (!user.value) return false
 
     // Super Admin & Admin Paroki can edit all
-    if (['super-admin', 'admin-paroki'].includes(user.value.role)) {
+    if (['super_admin', 'admin_komsos', 'admin_sekretariat'].includes(user.value.role)) {
       return true
     }
 
@@ -60,8 +60,9 @@ export const usePermissions = () => {
 
     // Only Admin and Ketua can publish
     const publishRoles = [
-      'super-admin',
-      'admin-paroki',
+      'super_admin',
+      'admin_komsos',
+      'admin_sekretariat',
       'ketua-dpp',
       'ketua-bgkp',
       'ketua-wilayah',
@@ -82,7 +83,7 @@ export const usePermissions = () => {
     if (!user.value) return false
 
     // Super Admin & Admin Paroki can delete all
-    if (['super-admin', 'admin-paroki'].includes(user.value.role)) {
+    if (['super_admin', 'admin_komsos', 'admin_sekretariat'].includes(user.value.role)) {
       return true
     }
 
@@ -106,7 +107,7 @@ export const usePermissions = () => {
     if (!user.value) return []
 
     // Super Admin & Admin Paroki see all
-    if (['super-admin', 'admin-paroki'].includes(user.value.role)) {
+    if (['super_admin', 'admin_komsos', 'admin_sekretariat'].includes(user.value.role)) {
       return categories
     }
 
@@ -138,7 +139,7 @@ export const usePermissions = () => {
    */
   const isAdmin = computed(() => {
     if (!user.value) return false
-    return ['super-admin', 'admin-paroki'].includes(user.value.role)
+    return ['super_admin', 'admin_komsos', 'admin_sekretariat'].includes(user.value.role)
   })
 
   /**

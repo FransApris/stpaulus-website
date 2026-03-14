@@ -361,6 +361,7 @@ interface User {
     username: string
     full_name?: string
     user_category: string
+    role?: string
     unit_name?: string
     organization_type?: string
     organization_id?: number
@@ -475,7 +476,9 @@ const fetchSections = async (categoryId: number | string | null = null) => {
         let availableSections = response.data || []
 
         // Filter sections based on user's organization_id (if not admin)
-        if (user.value && user.value.organization_id && !['super-admin', 'admin-paroki'].includes(user.value.user_category)) {
+        const role = String(user.value?.role || '').toLowerCase()
+        const isAdminRole = ['super_admin', 'admin_komsos', 'admin_sekretariat'].includes(role)
+        if (user.value && user.value.organization_id && !isAdminRole) {
             // Non-admin users can only see their own section
             availableSections = availableSections.filter((s: Section) => s.id === user.value?.organization_id)
         }
@@ -738,7 +741,19 @@ const handleSubmit = async (status = 'pending') => {
 
 // Check if category dropdown should be disabled (prevent changing to wrong category)
 const isCategoryDisabled = computed(() => {
-    return !!user.value && ['PARISH_COUNCIL', 'CATEGORICAL_GROUP', 'REGION', 'COMMUNITY', 'LINGKUNGAN'].includes(user.value.user_category)
+    if (!user.value) return false
+    const normalized = String(user.value.user_category || '').toUpperCase()
+    return [
+        'PARISH_COUNCIL',
+        'CATEGORICAL_GROUP',
+        'REGION',
+        'COMMUNITY',
+        'LINGKUNGAN',
+        'DEWAN PASTORAL PAROKI',
+        'KATEGORIAL',
+        'WILAYAH',
+        'KOMUNITAS'
+    ].includes(normalized)
 })
 
 // AI Generate Narasi Functions

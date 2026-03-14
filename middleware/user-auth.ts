@@ -4,6 +4,24 @@
 let userDataCache: { data: any; timestamp: number; token: string } | null = null
 const CACHE_DURATION = 5000 // 5 seconds
 
+const KRONIK_VALID_CATEGORIES = [
+    // Legacy values
+    'parish_council',
+    'categorical_group',
+    'region',
+    'community',
+    // Current Indonesian values
+    'dewan pastoral paroki',
+    'kategorial',
+    'wilayah',
+    'lingkungan',
+    'komunitas',
+    // Organization/unit aliases
+    'dpp',
+    'bgkp',
+    'seksi'
+]
+
 export default defineNuxtRouteMiddleware(async (to, from) => {
     if (process.client) {
         const authToken = localStorage.getItem('auth_token')
@@ -49,10 +67,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
             // Check if user has valid category for kronik access
             const category = (userData.user_category || '').toLowerCase()
-            const validCategories = ['parish_council', 'categorical_group', 'region', 'community',
-                'dpp', 'bgkp', 'wilayah', 'lingkungan']
-
-            const hasKronikAccess = validCategories.some((cat: string) => category.includes(cat))
+            const hasKronikAccess = KRONIK_VALID_CATEGORIES.some((cat: string) => category.includes(cat))
 
             // If accessing kronik routes, check access
             if (to.path.startsWith('/user/kronik') && !hasKronikAccess) {

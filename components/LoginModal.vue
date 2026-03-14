@@ -233,12 +233,24 @@ const userRoles = computed(() => {
   const roleStr = (user.value.role || '').toLowerCase()
   const category = (user.value.user_category || '').toLowerCase()
   const unitName = (user.value.unit_name || '').toLowerCase()
+  const validCategories = [
+    'parish_council',
+    'categorical_group',
+    'region',
+    'community',
+    'dewan pastoral paroki',
+    'kategorial',
+    'wilayah',
+    'lingkungan',
+    'komunitas',
+    'dpp',
+    'bgkp',
+    'seksi'
+  ]
 
   // User biasa (bukan admin)
   if (roleStr === 'user' || !isAdmin.value) {
     // Check if has valid organizational category
-    const validCategories = ['parish_council', 'categorical_group', 'region', 'community',
-      'dpp', 'bgkp', 'wilayah', 'lingkungan']
     const hasValidCategory = validCategories.some(cat => category.includes(cat))
 
     if (hasValidCategory || unitName) {
@@ -265,10 +277,22 @@ const canAccessKronik = computed(() => {
   // User biasa dengan kategori tertentu bisa akses kronik
   const category = (user.value.user_category || '').toLowerCase()
   const unitName = (user.value.unit_name || '').toLowerCase()
+  const validCategories = [
+    'parish_council',
+    'categorical_group',
+    'region',
+    'community',
+    'dewan pastoral paroki',
+    'kategorial',
+    'wilayah',
+    'lingkungan',
+    'komunitas',
+    'dpp',
+    'bgkp',
+    'seksi'
+  ]
 
   // 1. Cek kategori valid (DPP, BGKP, Wilayah, Lingkungan)
-  const validCategories = ['parish_council', 'categorical_group', 'region', 'community',
-    'dpp', 'bgkp', 'wilayah', 'lingkungan']
   const hasCategoryAccess = validCategories.some(cat => category.includes(cat))
 
   // 2. Cek unit_name jika ada
