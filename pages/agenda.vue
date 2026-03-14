@@ -104,7 +104,7 @@
       <!-- Agenda List -->
       <div v-else-if="agendas.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div
-          v-for="(agenda, index) in agendas"
+          v-for="(agenda, index) in paginatedAgendas"
           :key="agenda.id"
           @click="navigateTo(`/agenda/${agenda.id}`)"
           class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 cursor-pointer p-6 relative"
@@ -112,7 +112,7 @@
           <div
             class="absolute top-0 left-0 h-full w-2 flex flex-col items-center justify-center bg-[#882f1d] z-10"
           >
-            <span class="text-white font-bold text-sm">{{ index + 1 }}</span>
+            <span class="text-white font-bold text-sm">{{ (currentPage - 1) * pageLimit + index + 1 }}</span>
           </div>
 
           <div class="ml-4 pl-4">
@@ -160,6 +160,21 @@
           </div>
         </div>
       </div>
+      <div v-if="totalPages > 1" class="mt-8 flex items-center justify-center gap-2">
+        <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+          class="rounded border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+          Sebelumnya
+        </button>
+        <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+          class="rounded border px-3 py-2 text-sm"
+          :class="page === currentPage ? 'border-[#882f1d] bg-[#882f1d] text-white' : 'hover:bg-gray-50'">
+          {{ page }}
+        </button>
+        <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+          class="rounded border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
+          Berikutnya
+        </button>
+      </div>
 
       <!-- Empty State -->
       <div v-else class="text-center py-12">
@@ -178,15 +193,35 @@ definePageMeta({
   title: 'Agenda Paroki - St. Paulus'
 })
 
-const agendas = ref([])
-const categories = ref([])
+const agendas = useState('public-agendas', () => [])
+const categories = useState('public-agenda-categories', () => [])
 const loading = ref(false)
+const currentPage = useState('public-agenda-page', () => 1)
+const pageLimit = 10
 
 const filters = ref({
   category: '',
   month: '',
   year: ''
 })
+
+const totalPages = computed(() => Math.max(1, Math.ceil(agendas.value.length / pageLimit)))
+const paginatedAgendas = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return agendas.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 const fetchCategories = async () => {
   try {
@@ -198,16 +233,15 @@ const fetchCategories = async () => {
 }
 
 const fetchAgendas = async () => {
-  loading.value = true
+  const hasCache = agendas.value.length > 0
+  if (!hasCache) {
+    loading.value = true
+  }
   try {
     const params = new URLSearchParams()
     if (filters.value.category) params.append('category', filters.value.category)
     if (filters.value.month) params.append('month', filters.value.month)
     if (filters.value.year) params.append('year', filters.value.year)
-    
-    // Add cache busting timestamp
-    const timestamp = Date.now()
-    params.append('_', timestamp.toString())
 
     const response = await $fetch(`/api/agenda?${params}`)
     agendas.value = response
@@ -217,6 +251,16 @@ const fetchAgendas = async () => {
     loading.value = false
   }
 }
+
+watch(filters, () => {
+  currentPage.value = 1
+}, { deep: true })
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
+})
 
 // Helper functions
 const formatDate = (dateString) => {

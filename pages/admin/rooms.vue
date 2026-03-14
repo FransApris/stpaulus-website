@@ -58,7 +58,7 @@
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-semibold">Daftar Ruangan</h2>
         <div class="text-sm text-gray-600">
-          Total: <span class="font-semibold">{{ rooms.length }}</span> ruangan
+          Total: <span class="font-semibold">{{ totalItems }}</span> ruangan
         </div>
       </div>
       <div v-if="rooms.length === 0" class="text-gray-500">Belum ada ruangan.</div>
@@ -110,7 +110,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="room in sortedRooms" :key="room.id" class="border-t hover:bg-gray-50 transition-colors">
+            <tr v-for="room in paginatedRooms" :key="room.id" class="border-t hover:bg-gray-50 transition-colors">
               <td class="px-4 py-2">{{ room.name }}</td>
               <td class="px-4 py-2">{{ room.capacity }}</td>
               <td class="px-4 py-2">{{ room.location }}</td>
@@ -146,6 +146,24 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t pt-4">
+          <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
+          <div class="flex items-center gap-2">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Sebelumnya
+            </button>
+            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+              class="px-3 py-1 rounded border text-sm"
+              :class="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'">
+              {{ page }}
+            </button>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Berikutnya
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -215,10 +233,11 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: 'auth'
 })
 
-const rooms = ref([])
+const rooms = useState('admin-rooms', () => [])
 const newRoom = ref({
   name: '',
   capacity: '',
@@ -239,6 +258,8 @@ const selectAllEdit = ref(false)
 // Sorting state
 const sortField = ref('name')
 const sortOrder = ref('asc')
+const currentPage = useState('admin-rooms-page', () => 1)
+const pageLimit = 10
 
 // Edit modal
 const showEditModal = ref(false)
@@ -331,6 +352,25 @@ const sortedRooms = computed(() => {
   return sorted
 })
 
+const totalItems = computed(() => sortedRooms.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const paginatedRooms = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return sortedRooms.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
+
 // Sort function
 const sortBy = (field) => {
   if (sortField.value === field) {
@@ -358,6 +398,16 @@ const loadRooms = async () => {
 
 onMounted(() => {
   loadRooms()
+})
+
+watch([sortField, sortOrder], () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
 })
 
 const createRoom = async () => {
@@ -390,7 +440,7 @@ const createRoom = async () => {
     const result = await $fetch('/api/admin/rooms', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
       },
       body: {
         ...roomData,

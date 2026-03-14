@@ -81,7 +81,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="faq in faqs" :key="faq.id" class="border-t">
+            <tr v-for="faq in paginatedFaqs" :key="faq.id" class="border-t">
               <td class="px-4 py-2 max-w-xs truncate" :title="faq.question">{{ faq.question }}</td>
               <td class="px-4 py-2">{{ getCategoryName(faq.category) || '-' }}</td>
               <td class="px-4 py-2">
@@ -106,6 +106,24 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t pt-4">
+          <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
+          <div class="flex items-center gap-2">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Sebelumnya
+            </button>
+            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+              class="px-3 py-1 rounded border text-sm"
+              :class="page === currentPage ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'hover:bg-gray-50'">
+              {{ page }}
+            </button>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Berikutnya
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -133,6 +151,26 @@ const loading = ref(false)
 const loadingFaqs = ref(false)
 const message = ref('')
 const error = ref('')
+const currentPage = useState('admin-chatbot-faqs-page', () => 1)
+const pageLimit = 10
+
+const totalPages = computed(() => Math.max(1, Math.ceil(faqs.value.length / pageLimit)))
+const paginatedFaqs = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return faqs.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 // Load FAQs and Categories
 const loadFaqs = async () => {
@@ -146,6 +184,12 @@ const loadFaqs = async () => {
     loadingFaqs.value = false
   }
 }
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
+})
 
 const loadCategories = async () => {
   try {

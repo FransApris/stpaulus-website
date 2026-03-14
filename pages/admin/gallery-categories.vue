@@ -19,7 +19,7 @@
     <!-- Categories Table -->
     <div class="bg-white shadow overflow-hidden sm:rounded-md">
       <ul role="list" class="divide-y divide-gray-200">
-        <li v-for="category in categories" :key="category.id" class="px-6 py-4">
+        <li v-for="category in paginatedCategories" :key="category.id" class="px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <div
@@ -61,6 +61,24 @@
           </div>
         </li>
       </ul>
+      <div v-if="totalPages > 1" class="px-6 py-4 border-t flex items-center justify-between">
+        <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }} • {{ totalItems }} kategori</p>
+        <div class="flex items-center gap-2">
+          <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+            class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+            Sebelumnya
+          </button>
+          <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+            class="px-3 py-1 rounded border text-sm"
+            :class="page === currentPage ? 'bg-red-700 text-white border-red-700' : 'hover:bg-gray-50'">
+            {{ page }}
+          </button>
+          <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+            class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+            Berikutnya
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Add/Edit Category Modal -->
@@ -179,18 +197,40 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: 'auth'
 })
 
 import { ref, onMounted } from 'vue'
 
 // Reactive data
-const categories = ref([])
+const categories = useState('admin-gallery-categories', () => [])
 const showAddCategoryModal = ref(false)
 const editingCategory = ref(null)
 const showDeleteModal = ref(false)
 const deletingCategory = ref(null)
 const loading = ref(false)
+const currentPage = useState('admin-gallery-categories-page', () => 1)
+const pageLimit = 10
+
+const totalItems = computed(() => categories.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const paginatedCategories = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return categories.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 const categoryForm = ref({
   nama_kategori: '',
@@ -205,7 +245,7 @@ const fetchCategories = async () => {
   try {
     const response = await $fetch('/api/admin/gallery-categories', {
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
     categories.value = response.categories
@@ -236,7 +276,7 @@ const saveCategory = async () => {
     const result = await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: formData
@@ -296,7 +336,7 @@ const confirmDelete = async () => {
     await $fetch(`/api/admin/gallery-categories/${deletedId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -335,12 +375,18 @@ const closeDeleteModal = () => {
 
 // Check authentication and fetch data on mount
 onMounted(async () => {
-  const token = sessionStorage.getItem('admin_access_token')
+  const token = localStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return
   }
 
   await fetchCategories()
+})
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
 })
 </script>

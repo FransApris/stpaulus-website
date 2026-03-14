@@ -86,7 +86,7 @@
 
       <div v-else>
         <div class="px-6 py-3 bg-gray-50 border-b">
-          <span class="text-sm text-gray-600">Total: <span class="font-semibold">{{ categories.length }}</span> kategori</span>
+            <span class="text-sm text-gray-600">Total: <span class="font-semibold">{{ totalItems }}</span> kategori</span>
         </div>
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
@@ -118,7 +118,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="category in sortedCategories" :key="category.id" class="hover:bg-gray-50 transition-colors">
+            <tr v-for="category in paginatedCategories" :key="category.id" class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 w-4 h-4 rounded mr-3" :style="{ backgroundColor: category.color }"></div>
@@ -175,6 +175,24 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="totalPages > 1" class="px-6 py-4 border-t flex items-center justify-between">
+          <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
+          <div class="flex items-center gap-2">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Sebelumnya
+            </button>
+            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+              class="px-3 py-1 rounded border text-sm"
+              :class="page === currentPage ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'hover:bg-gray-50'">
+              {{ page }}
+            </button>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Berikutnya
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -397,10 +415,11 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: 'auth'
 })
 
-const categories = ref([])
+const categories = useState('admin-agenda-categories', () => [])
 const loading = ref(false)
 const showModal = ref(false)
 const isEditing = ref(false)
@@ -432,6 +451,8 @@ const toast = ref({
 // Sorting state
 const sortField = ref('name')
 const sortOrder = ref('asc')
+const currentPage = useState('admin-agenda-categories-page', () => 1)
+const pageLimit = 10
 
 // Color presets
 const colorPresets = [
@@ -480,6 +501,25 @@ const sortedCategories = computed(() => {
   return sorted
 })
 
+const totalItems = computed(() => sortedCategories.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const paginatedCategories = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return sortedCategories.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
+
 // Sort function
 const sortBy = (field) => {
   if (sortField.value === field) {
@@ -491,6 +531,10 @@ const sortBy = (field) => {
     sortOrder.value = 'asc'
   }
 }
+
+watch([sortField, sortOrder], () => {
+  currentPage.value = 1
+})
 
 // Fetch categories
 let searchTimeout = null
@@ -713,6 +757,16 @@ const clearSearch = () => {
   searchQuery.value = ''
   fetchCategories()
 }
+
+watch(searchQuery, () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
+})
 
 // Preview functions
 const openPreview = (category) => {

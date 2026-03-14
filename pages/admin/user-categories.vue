@@ -21,6 +21,7 @@
       <h2 class="text-lg font-semibold mb-4">Daftar Kategori Pengguna</h2>
       <div v-if="categories.length === 0" class="text-gray-500">Belum ada kategori pengguna.</div>
       <div v-else class="overflow-x-auto">
+        <div class="mb-3 text-sm text-gray-600">Total: {{ totalItems }} kategori</div>
         <table class="min-w-full table-auto">
           <thead>
             <tr class="bg-gray-50">
@@ -33,7 +34,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="category in categories" :key="category.id" class="border-t">
+            <tr v-for="category in paginatedCategories" :key="category.id" class="border-t">
               <td class="px-4 py-2">{{ category.name }}</td>
               <td class="px-4 py-2">{{ category.display_name }}</td>
               <td class="px-4 py-2">{{ category.description }}</td>
@@ -58,6 +59,24 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t pt-4">
+          <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
+          <div class="flex items-center gap-2">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Sebelumnya
+            </button>
+            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+              class="px-3 py-1 rounded border text-sm"
+              :class="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'">
+              {{ page }}
+            </button>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Berikutnya
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -92,10 +111,11 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: 'auth'
 })
 
-const categories = ref([])
+const categories = useState('admin-user-categories', () => [])
 const newCategory = ref({
   name: '',
   display_name: '',
@@ -120,13 +140,34 @@ const editingCategory = ref({
 const editLoading = ref(false)
 const editMessage = ref('')
 const editError = ref('')
+const currentPage = useState('admin-user-categories-page', () => 1)
+const pageLimit = 10
+
+const totalItems = computed(() => categories.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const paginatedCategories = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return categories.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 // Load categories
 const loadCategories = async () => {
   try {
     categories.value = await $fetch('/api/admin/user-categories', {
       headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
   } catch (err) {
@@ -136,6 +177,12 @@ const loadCategories = async () => {
 
 onMounted(async () => {
   await loadCategories()
+})
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
 })
 
 const createCategory = async () => {
@@ -200,7 +247,7 @@ const deleteCategory = async (category) => {
     await $fetch(`/api/admin/user-categories/${category.id}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -232,7 +279,7 @@ const updateCategory = async () => {
     const result = await $fetch(`/api/admin/user-categories/${categoryId}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
       },
       body: categoryData
     })

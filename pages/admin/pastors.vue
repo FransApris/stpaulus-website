@@ -100,7 +100,7 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="pastor in pastors" :key="pastor.id" class="hover:bg-gray-50">
+                    <tr v-for="pastor in paginatedPastors" :key="pastor.id" class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <img :src="pastor.photo_url || '/images/default-pastor.svg'" :alt="pastor.name"
                                 class="w-12 h-12 rounded-full object-cover" />
@@ -164,6 +164,25 @@
                     </tr>
                 </tbody>
             </table>
+
+            <div v-if="totalPages > 1" class="px-6 py-4 border-t flex items-center justify-between">
+                <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }} • {{ totalItems }} romo</p>
+                <div class="flex items-center gap-2">
+                    <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+                        class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                        Sebelumnya
+                    </button>
+                    <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+                        class="px-3 py-1 rounded border text-sm"
+                        :class="page === currentPage ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'hover:bg-gray-50'">
+                        {{ page }}
+                    </button>
+                    <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+                        class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                        Berikutnya
+                    </button>
+                </div>
+            </div>
 
             <!-- Empty State -->
             <div v-if="pastors.length === 0" class="text-center py-12">
@@ -453,6 +472,27 @@ const pastors = ref([])
 const loading = ref(false)
 const error = ref(null)
 const saving = ref(false)
+const currentPage = useState('admin-pastors-page', () => 1)
+const pageLimit = 10
+
+const totalItems = computed(() => pastors.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const paginatedPastors = computed(() => {
+    const start = (currentPage.value - 1) * pageLimit
+    return pastors.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+    const pages = []
+    const start = Math.max(1, currentPage.value - 2)
+    const end = Math.min(totalPages.value, currentPage.value + 2)
+    for (let page = start; page <= end; page++) pages.push(page)
+    return pages
+})
+
+const goToPage = (page) => {
+    if (page < 1 || page > totalPages.value) return
+    currentPage.value = page
+}
 
 // Modal State
 const showModal = ref(false)
@@ -538,8 +578,15 @@ const fetchPastors = async () => {
 
 // Watch filters for changes
 watch(filters, () => {
+    currentPage.value = 1
     fetchPastors()
 }, { deep: true })
+
+watch(totalPages, (pageCount) => {
+    if (currentPage.value > pageCount) {
+        currentPage.value = pageCount
+    }
+})
 
 // Handle Photo Upload
 const handlePhotoUpload = async (event) => {

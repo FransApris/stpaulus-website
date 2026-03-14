@@ -109,7 +109,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="category in categories" :key="category.id" class="border-t">
+            <tr v-for="category in paginatedCategories" :key="category.id" class="border-t">
               <td class="px-4 py-2 font-medium">{{ category.name }}</td>
               <td class="px-4 py-2 text-gray-600">{{ category.slug }}</td>
               <td class="px-4 py-2">
@@ -145,6 +145,24 @@
             </tr>
           </tbody>
         </table>
+        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t pt-4">
+          <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
+          <div class="flex items-center gap-2">
+            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Sebelumnya
+            </button>
+            <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
+              class="px-3 py-1 rounded border text-sm"
+              :class="page === currentPage ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'hover:bg-gray-50'">
+              {{ page }}
+            </button>
+            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
+              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+              Berikutnya
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -152,12 +170,13 @@
 
 <script setup>
 definePageMeta({
-  layout: 'admin'
+  layout: 'admin',
+  middleware: 'auth'
 })
 
 const { makeRequest } = useAdminApi()
 
-const categories = ref([])
+const categories = useState('admin-chatbot-faq-categories', () => [])
 const categoryForm = ref({
   name: '',
   slug: '',
@@ -170,6 +189,26 @@ const editingCategory = ref(null)
 const loading = ref(false)
 const message = ref('')
 const error = ref('')
+const currentPage = useState('admin-chatbot-faq-categories-page', () => 1)
+const pageLimit = 10
+
+const totalPages = computed(() => Math.max(1, Math.ceil(categories.value.length / pageLimit)))
+const paginatedCategories = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return categories.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let page = start; page <= end; page++) pages.push(page)
+  return pages
+})
+
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+}
 
 // Load categories
 const loadCategories = async () => {
@@ -182,6 +221,12 @@ const loadCategories = async () => {
 
 onMounted(() => {
   loadCategories()
+})
+
+watch(totalPages, (pageCount) => {
+  if (currentPage.value > pageCount) {
+    currentPage.value = pageCount
+  }
 })
 
 // Auto-generate slug from name
