@@ -94,12 +94,13 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900">Tautan Media Sosial</h3>
                 <button
                   @click="addSocialLink"
-                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  title="Tambah Tautan Media Sosial"
+                  aria-label="Tambah Tautan Media Sosial"
+                  class="inline-flex items-center justify-center w-10 h-10 border border-transparent rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <svg class="-ml-0.5 mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                   </svg>
-                  Tambah Tautan
                 </button>
               </div>
 
@@ -143,9 +144,21 @@
                       />
                     </div>
                   </div>
-                  <div class="flex items-center">
+                  <div class="flex items-center space-x-2">
+                    <button
+                      @click="editSocialLink(index)"
+                      title="Edit Tautan Media Sosial"
+                      aria-label="Edit Tautan Media Sosial"
+                      class="text-blue-600 hover:text-blue-900"
+                    >
+                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M17.414 2.586a2 2 0 010 2.828l-8.79 8.79a1 1 0 01-.39.242l-3 1a1 1 0 01-1.265-1.265l1-3a1 1 0 01.242-.39l8.79-8.79a2 2 0 012.828 0zM15 4l1 1" />
+                      </svg>
+                    </button>
                     <button
                       @click="removeSocialLink(index)"
+                      title="Hapus Tautan Media Sosial"
+                      aria-label="Hapus Tautan Media Sosial"
                       class="text-red-600 hover:text-red-900"
                     >
                       <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
@@ -165,12 +178,13 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900">Tautan Footer</h3>
                 <button
                   @click="addFooterLink"
-                  class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  title="Tambah Tautan Footer"
+                  aria-label="Tambah Tautan Footer"
+                  class="inline-flex items-center justify-center w-10 h-10 border border-transparent rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <svg class="-ml-0.5 mr-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                   </svg>
-                  Tambah Tautan
                 </button>
               </div>
 
@@ -217,10 +231,24 @@
                     </div>
                     <div class="flex items-end space-x-2">
                       <button
-                        @click="removeFooterLink(index)"
-                        class="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        @click="editFooterLink(index)"
+                        title="Edit Tautan Footer"
+                        aria-label="Edit Tautan Footer"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
-                        Hapus
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M17.414 2.586a2 2 0 010 2.828l-8.79 8.79a1 1 0 01-.39.242l-3 1a1 1 0 01-1.265-1.265l1-3a1 1 0 01.242-.39l8.79-8.79a2 2 0 012.828 0zM15 4l1 1" />
+                        </svg>
+                      </button>
+                      <button
+                        @click="removeFooterLink(index)"
+                        title="Hapus Tautan Footer"
+                        aria-label="Hapus Tautan Footer"
+                        class="inline-flex items-center justify-center w-8 h-8 rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
                       </button>
                     </div>
                   </div>
@@ -320,6 +348,16 @@ const removeSocialLink = (index: number) => {
   })
 }
 
+// Edit social link (focus first field)
+const editSocialLink = (index: number) => {
+  if (!process.client) return
+  const input = document.getElementById(`platform_name_${index}`) as HTMLInputElement | null
+  if (input) {
+    input.focus()
+    input.select()
+  }
+}
+
 // Add footer link
 const addFooterLink = () => {
   formData.value.footer_links.push({
@@ -337,6 +375,16 @@ const removeFooterLink = (index: number) => {
   formData.value.footer_links.forEach((link, i) => {
     link.display_order = i + 1
   })
+}
+
+// Edit footer link (focus first field)
+const editFooterLink = (index: number) => {
+  if (!process.client) return
+  const input = document.getElementById(`title_${index}`) as HTMLInputElement | null
+  if (input) {
+    input.focus()
+    input.select()
+  }
 }
 
 // Save settings
