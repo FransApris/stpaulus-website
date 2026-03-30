@@ -23,9 +23,9 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Delete related records first
-    await runQuery('DELETE FROM kronik_views WHERE entry_id = ?', [id])
-    await runQuery('DELETE FROM kronik_comments WHERE entry_id = ?', [id])
+    // Delete related records first (FK uses kronik_id)
+    await runQuery('DELETE FROM kronik_views WHERE kronik_id = ?', [id])
+    await runQuery('DELETE FROM kronik_comments WHERE kronik_id = ?', [id])
 
     // Delete the entry
     await runQuery('DELETE FROM kronik_entries WHERE id = ?', [id])

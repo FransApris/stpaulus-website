@@ -1,5 +1,6 @@
 // Admin API: Delete kronik section
 import { runQuery, getQuery as getOne } from '~/server/database/db'
+import { getRouterParam } from 'h3'
 
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')

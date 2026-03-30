@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    if (existingEntry.category_id !== category_id) {
+    if (Number(existingEntry.category_id) !== Number(category_id)) {
       throw createError({
         statusCode: 403,
         message: 'Kategori tidak dapat diubah. Kategori dipilih otomatis berdasarkan profil pembuat.'

@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
         s.*,
         c.name as category_name,
         c.slug as category_slug,
-        COUNT(DISTINCT e.id) as total_entries
+        COUNT(DISTINCT e.id) as entries_count
       FROM kronik_sections s
       INNER JOIN kronik_categories c ON s.category_id = c.id
       LEFT JOIN kronik_entries e ON s.id = e.section_id
