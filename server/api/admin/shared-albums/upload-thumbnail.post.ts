@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     // Parse multipart form data
     const form = await readMultipartFormData(event)
     console.log('[Thumbnail Upload] Form data parsed:', form?.length || 0, 'items')
-    
+
     if (!form || form.length === 0) {
       console.error('[Thumbnail Upload] No files found in form')
       throw createError({
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
     // Setup upload directory
     const uploadDir = join(process.cwd(), 'public', 'uploads', 'thumbnails')
     console.log('[Thumbnail Upload] Upload directory:', uploadDir)
-    
+
     if (!existsSync(uploadDir)) {
       console.log('[Thumbnail Upload] Creating directory...')
       await mkdir(uploadDir, { recursive: true })
@@ -46,14 +46,14 @@ export default defineEventHandler(async (event) => {
 
     // Process the file
     const file = form[0] // Get first file
-    
+
     if (!file) {
       throw createError({
         statusCode: 400,
         message: 'No file found'
       })
     }
-    
+
     if (!file.type || !file.type.startsWith('image/')) {
       console.error('[Thumbnail Upload] Invalid file type:', file.type)
       throw createError({

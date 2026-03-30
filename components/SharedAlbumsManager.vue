@@ -11,35 +11,22 @@
     <div v-if="showAddForm || editingAlbum" class="modal-overlay">
       <div class="modal-content">
         <h3>{{ editingAlbum ? 'Edit Album' : 'Tambah Album Baru' }}</h3>
-        
+
         <form @submit.prevent="saveAlbum">
           <div class="form-group">
             <label>Judul Album *</label>
-            <input 
-              v-model="formData.title" 
-              type="text" 
-              placeholder="Contoh: Kegiatan Natal 2026"
-              required
-            />
+            <input v-model="formData.title" type="text" placeholder="Contoh: Kegiatan Natal 2026" required />
           </div>
 
           <div class="form-group">
             <label>Deskripsi</label>
-            <textarea 
-              v-model="formData.description" 
-              placeholder="Deskripsi singkat tentang album ini"
-              rows="3"
-            ></textarea>
+            <textarea v-model="formData.description" placeholder="Deskripsi singkat tentang album ini"
+              rows="3"></textarea>
           </div>
 
           <div class="form-group">
             <label>Share URL Google Photos *</label>
-            <input 
-              v-model="formData.share_url" 
-              type="url" 
-              placeholder="https://photos.app.goo.gl/..."
-              required
-            />
+            <input v-model="formData.share_url" type="url" placeholder="https://photos.app.goo.gl/..." required />
             <small class="help-text">
               📋 Cara mendapatkan share URL:<br>
               1. Buka album di Google Photos<br>
@@ -51,56 +38,33 @@
 
           <div class="form-group">
             <label>Thumbnail (Gambar Sampul Album) *</label>
-            
+
             <!-- File Upload Option -->
             <div class="upload-section">
-              <input 
-                ref="fileInput"
-                type="file" 
-                accept="image/*"
-                @change="handleFileUpload"
-                class="file-input"
-              />
-              <button 
-                type="button" 
-                @click="fileInput?.click()" 
-                class="btn-upload"
-                :disabled="uploadingThumbnail"
-              >
+              <input ref="fileInput" type="file" accept="image/*" @change="handleFileUpload" class="file-input" />
+              <button type="button" @click="fileInput?.click()" class="btn-upload" :disabled="uploadingThumbnail">
                 {{ uploadingThumbnail ? '📤 Uploading...' : '📁 Pilih Gambar dari Komputer' }}
               </button>
             </div>
-            
+
             <!-- OR Divider -->
             <div class="divider">
               <span>ATAU</span>
             </div>
-            
+
             <!-- Manual URL Input -->
-            <input 
-              v-model="formData.thumbnail_url" 
-              type="text" 
-              placeholder="Paste URL gambar atau akan otomatis terisi setelah upload"
-              :disabled="uploadingThumbnail"
-            />
-            
+            <input v-model="formData.thumbnail_url" type="text"
+              placeholder="Paste URL gambar atau akan otomatis terisi setelah upload" :disabled="uploadingThumbnail" />
+
             <!-- Thumbnail Preview -->
             <div v-if="formData.thumbnail_url && !uploadingThumbnail" class="thumbnail-preview">
-              <img 
-                :src="formData.thumbnail_url" 
-                alt="Preview"
-                @error="thumbnailError = true"
-              />
-              <button 
-                type="button" 
-                @click="formData.thumbnail_url = ''; thumbnailError = false" 
-                class="remove-thumbnail"
-                title="Hapus thumbnail"
-              >
+              <img :src="formData.thumbnail_url" alt="Preview" @error="thumbnailError = true" />
+              <button type="button" @click="formData.thumbnail_url = ''; thumbnailError = false"
+                class="remove-thumbnail" title="Hapus thumbnail">
                 ✕
               </button>
             </div>
-            
+
             <small class="help-text">
               💡 <strong>Recommended:</strong> Upload gambar dari komputer untuk hasil terbaik<br>
               ⚠️ <strong>Perhatian:</strong> Google Photos URL mungkin di-block oleh browser (CORS policy)<br>
@@ -110,11 +74,7 @@
 
           <div class="form-group">
             <label>Urutan Tampilan</label>
-            <input 
-              v-model.number="formData.display_order" 
-              type="number" 
-              min="0"
-            />
+            <input v-model.number="formData.display_order" type="number" min="0" />
             <small class="help-text">Album dengan angka lebih kecil akan tampil lebih dulu</small>
           </div>
 
@@ -150,40 +110,33 @@
       <div v-for="album in sortedAlbums" :key="album.id" class="album-card">
         <div class="album-preview">
           <!-- Thumbnail Preview -->
-          <img 
-            v-if="album.thumbnail_url" 
-            :src="album.thumbnail_url" 
-            :alt="album.title"
-            class="album-thumbnail"
-            @error="handleImageError"
-          />
+          <img v-if="album.thumbnail_url" :src="album.thumbnail_url" :alt="album.title" class="album-thumbnail"
+            @error="handleImageError" />
           <div v-else class="no-thumbnail">
             <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+              <path fill-rule="evenodd"
+                d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                clip-rule="evenodd" />
             </svg>
             <p class="text">Tidak ada thumbnail</p>
             <p class="hint">Upload thumbnail untuk preview yang lebih menarik</p>
           </div>
           <div v-if="!album.is_active" class="inactive-badge">Tidak Aktif</div>
           <!-- Google Photos Badge -->
-          <a 
-            :href="album.share_url" 
-            target="_blank"
-            class="google-photos-badge"
-            title="Buka di Google Photos"
-          >
+          <a :href="album.share_url" target="_blank" class="google-photos-badge" title="Buka di Google Photos">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 .5a11.5 11.5 0 0 1 11.5 11.5A11.5 11.5 0 0 1 12 23.5 11.5 11.5 0 0 1 .5 12 11.5 11.5 0 0 1 12 .5zm3.5 4.5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/>
+              <path
+                d="M12 .5a11.5 11.5 0 0 1 11.5 11.5A11.5 11.5 0 0 1 12 23.5 11.5 11.5 0 0 1 .5 12 11.5 11.5 0 0 1 12 .5zm3.5 4.5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" />
             </svg>
             <span>Google Photos</span>
           </a>
         </div>
-        
+
         <div class="album-info">
           <h3>{{ album.title }}</h3>
           <p v-if="album.description" class="description">{{ album.description }}</p>
           <small class="metadata">
-            Urutan: {{ album.display_order }} | 
+            Urutan: {{ album.display_order }} |
             Dibuat: {{ formatDate(album.created_at) }}
           </small>
         </div>
@@ -192,7 +145,8 @@
           <button @click="editAlbum(album)" class="btn-edit" title="Edit">
             ✏️
           </button>
-          <button @click="toggleActive(album)" class="btn-toggle" :title="album.is_active ? 'Sembunyikan' : 'Tampilkan'">
+          <button @click="toggleActive(album)" class="btn-toggle"
+            :title="album.is_active ? 'Sembunyikan' : 'Tampilkan'">
             {{ album.is_active ? '👁️' : '👁️‍🗨️' }}
           </button>
           <button @click="deleteAlbum(album)" class="btn-delete" title="Hapus">
@@ -275,7 +229,7 @@ const fetchAlbums = async () => {
 const saveAlbum = async () => {
   try {
     loading.value = true;
-    
+
     if (editingAlbum.value) {
       // Update
       const response = await $fetch(`/api/admin/shared-albums/${editingAlbum.value.id}`, {
@@ -291,7 +245,7 @@ const saveAlbum = async () => {
       });
       showToast('Album berhasil ditambahkan!', 'success');
     }
-    
+
     closeForm();
     await fetchAlbums();
   } catch (error: any) {
@@ -333,7 +287,7 @@ const deleteAlbum = async (album: Album) => {
   if (!confirm(`Yakin ingin menghapus album "${album.title}"?`)) {
     return;
   }
-  
+
   try {
     await $fetch(`/api/admin/shared-albums/${album.id}`, {
       method: 'DELETE'
@@ -364,36 +318,36 @@ const closeForm = () => {
 const handleFileUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   const file = target.files?.[0];
-  
+
   if (!file) return;
-  
+
   // Validate file type
   if (!file.type.startsWith('image/')) {
     showToast('File harus berupa gambar (JPG, PNG, dll)', 'error');
     return;
   }
-  
+
   // Validate file size (max 5MB)
   const maxSize = 5 * 1024 * 1024; // 5MB
   if (file.size > maxSize) {
     showToast('Ukuran file maksimal 5MB', 'error');
     return;
   }
-  
+
   try {
     uploadingThumbnail.value = true;
     thumbnailError.value = false;
-    
+
     // Create FormData
     const formDataUpload = new FormData();
     formDataUpload.append('file', file);
-    
+
     // Upload to server
     const response = await $fetch<{ success: boolean; url: string }>('/api/admin/shared-albums/upload-thumbnail', {
       method: 'POST',
       body: formDataUpload
     });
-    
+
     if (response.success && response.url) {
       formData.value.thumbnail_url = response.url;
       showToast('Thumbnail berhasil diupload!', 'success');
@@ -419,10 +373,10 @@ const showToast = (message: string, type: 'success' | 'error' = 'success') => {
 // Format date
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('id-ID', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
+  return date.toLocaleDateString('id-ID', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
   });
 };
 
@@ -778,13 +732,13 @@ onMounted(() => {
   gap: 6px;
   text-decoration: none;
   transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .google-photos-badge:hover {
   background: rgba(255, 255, 255, 1);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .album-info {
@@ -888,6 +842,7 @@ onMounted(() => {
     transform: translateX(400px);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
@@ -899,17 +854,17 @@ onMounted(() => {
   .albums-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .header {
     flex-direction: column;
     gap: 15px;
     align-items: stretch;
   }
-  
+
   .header h2 {
     text-align: center;
   }
-  
+
   .album-actions {
     flex-direction: column;
   }

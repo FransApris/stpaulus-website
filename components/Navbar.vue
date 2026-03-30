@@ -34,10 +34,8 @@
           <!-- Dropdown Items using Teleport -->
           <Teleport to="body">
             <transition name="dropdown">
-              <div v-if="activeDropdown === link.title"
-                @mouseenter="showDropdown(link.title)"
-                @mouseleave="hideDropdown(link.title)"
-                :style="getDropdownStyle(link.title)"
+              <div v-if="activeDropdown === link.title" @mouseenter="showDropdown(link.title)"
+                @mouseleave="hideDropdown(link.title)" :style="getDropdownStyle(link.title)"
                 class="fixed w-72 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
                 style="z-index: 999999 !important;">
 
@@ -56,11 +54,10 @@
                 <!-- Menu Items -->
                 <div class="py-2">
                   <template v-for="(item, index) in link.items" :key="item.path">
-                    <NuxtLink :to="item.path" @click="closeDropdown" 
-                      :class="[
-                        'flex items-start gap-3 px-4 py-3 text-gray-700 hover:bg-[#882f1d] hover:text-white transition-all duration-300 hover:pl-5 group',
-                        route.path === item.path ? 'bg-[#882f1d]/10 text-[#882f1d] font-semibold border-l-4 border-[#882f1d]' : ''
-                      ]">
+                    <NuxtLink :to="item.path" @click="closeDropdown" :class="[
+                      'flex items-start gap-3 px-4 py-3 text-gray-700 hover:bg-[#882f1d] hover:text-white transition-all duration-300 hover:pl-5 group',
+                      route.path === item.path ? 'bg-[#882f1d]/10 text-[#882f1d] font-semibold border-l-4 border-[#882f1d]' : ''
+                    ]">
                       <!-- SVG Icon with scale animation on hover -->
                       <svg class="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform duration-300"
                         :class="route.path === item.path ? 'text-[#882f1d]' : 'text-gray-400 group-hover:text-white'"
@@ -111,7 +108,7 @@
     </div>
 
     <!-- Search Icon untuk layar Medium & Large -->
-    <button @click="$emit('openSearch')" 
+    <button @click="$emit('openSearch')"
       class="hidden md:flex xl:hidden items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg text-white transition-all duration-300 flex-shrink-0"
       type="button">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,131 +118,127 @@
     </button>
 
     <ClientOnly>
-    <!-- User Menu (Desktop) - When Logged In -->
-    <div v-if="isLoggedIn" class="relative" data-user-menu>
-      <button ref="userButtonRef" @click="toggleUserDropdown" 
-        :class="[
+      <!-- User Menu (Desktop) - When Logged In -->
+      <div v-if="isLoggedIn" class="relative" data-user-menu>
+        <button ref="userButtonRef" @click="toggleUserDropdown" :class="[
           'flex items-center gap-1.5 px-2 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg text-white transition-all duration-300',
           scrolled ? 'text-sm' : 'text-base'
-        ]" 
-        type="button"
-        :title="`${user?.full_name || user?.username || 'User'} - ${getUserRole}`">
-        <!-- Avatar -->
-        <div
-          :class="[
+        ]" type="button" :title="`${user?.full_name || user?.username || 'User'} - ${getUserRole}`">
+          <!-- Avatar -->
+          <div :class="[
             'bg-gradient-to-br from-paulus-blue to-blue-700 rounded-full flex items-center justify-center text-white font-bold',
             scrolled ? 'w-7 h-7 text-xs' : 'w-8 h-8 text-sm'
           ]">
-          {{ getUserInitials }}
-        </div>
-        <!-- Dropdown Icon -->
-        <svg :class="[
-          'transition-transform duration-300',
-          scrolled ? 'w-3 h-3' : 'w-4 h-4',
-          { 'rotate-180': showUserDropdown }
-        ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-        </svg>
-      </button>
+            {{ getUserInitials }}
+          </div>
+          <!-- Dropdown Icon -->
+          <svg :class="[
+            'transition-transform duration-300',
+            scrolled ? 'w-3 h-3' : 'w-4 h-4',
+            { 'rotate-180': showUserDropdown }
+          ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
 
-      <!-- User Dropdown Menu -->
-      <Teleport to="body">
-        <transition name="dropdown">
-          <div v-if="showUserDropdown" :style="userDropdownPosition"
-            class="fixed w-72 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
-            style="z-index: 999999 !important;">
-            <!-- User Info Header -->
-            <div class="px-4 py-4 bg-gradient-to-br from-paulus-blue to-blue-700 text-white">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg backdrop-blur-sm">
-                  {{ getUserInitials }}
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div class="font-bold truncate">{{ user?.full_name || user?.username }}</div>
-                  <div class="text-xs opacity-90 truncate">{{ user?.unit_name || user?.user_category || 'Umat Paroki'
-                    }}
+        <!-- User Dropdown Menu -->
+        <Teleport to="body">
+          <transition name="dropdown">
+            <div v-if="showUserDropdown" :style="userDropdownPosition"
+              class="fixed w-72 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
+              style="z-index: 999999 !important;">
+              <!-- User Info Header -->
+              <div class="px-4 py-4 bg-gradient-to-br from-paulus-blue to-blue-700 text-white">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg backdrop-blur-sm">
+                    {{ getUserInitials }}
                   </div>
-                  <div class="mt-1">
-                    <span
-                      class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                      {{ getUserRole }}
-                    </span>
+                  <div class="flex-1 min-w-0">
+                    <div class="font-bold truncate">{{ user?.full_name || user?.username }}</div>
+                    <div class="text-xs opacity-90 truncate">{{ user?.unit_name || user?.user_category || 'Umat Paroki'
+                      }}
+                    </div>
+                    <div class="mt-1">
+                      <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
+                        {{ getUserRole }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Quick Access Menu -->
-            <div class="py-2">
-              <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="showUserDropdown = false"
-                class="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors group">
-                <div
-                  class="w-10 h-10 bg-blue-100 group-hover:bg-paulus-blue rounded-lg flex items-center justify-center transition-colors">
-                  <svg class="w-5 h-5 text-paulus-blue group-hover:text-white transition-colors" fill="none"
+              <!-- Quick Access Menu -->
+              <div class="py-2">
+                <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="showUserDropdown = false"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors group">
+                  <div
+                    class="w-10 h-10 bg-blue-100 group-hover:bg-paulus-blue rounded-lg flex items-center justify-center transition-colors">
+                    <svg class="w-5 h-5 text-paulus-blue group-hover:text-white transition-colors" fill="none"
+                      stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <div class="font-semibold text-gray-800 text-sm">Kelola Kronik</div>
+                    <div class="text-xs text-gray-600">Isi & kelola kronik paroki</div>
+                  </div>
+                  <svg class="w-5 h-5 text-gray-400 group-hover:text-paulus-blue transition-colors" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
-                </div>
-                <div class="flex-1">
-                  <div class="font-semibold text-gray-800 text-sm">Kelola Kronik</div>
-                  <div class="text-xs text-gray-600">Isi & kelola kronik paroki</div>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 group-hover:text-paulus-blue transition-colors" fill="none"
-                  stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </NuxtLink>
+                </NuxtLink>
 
-              <NuxtLink to="/booking" @click="showUserDropdown = false"
-                class="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors group">
-                <div
-                  class="w-10 h-10 bg-green-100 group-hover:bg-green-600 rounded-lg flex items-center justify-center transition-colors">
-                  <svg class="w-5 h-5 text-green-600 group-hover:text-white transition-colors" fill="none"
+                <NuxtLink to="/booking" @click="showUserDropdown = false"
+                  class="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors group">
+                  <div
+                    class="w-10 h-10 bg-green-100 group-hover:bg-green-600 rounded-lg flex items-center justify-center transition-colors">
+                    <svg class="w-5 h-5 text-green-600 group-hover:text-white transition-colors" fill="none"
+                      stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <div class="font-semibold text-gray-800 text-sm">Pemesanan Ruang</div>
+                    <div class="text-xs text-gray-600">Booking ruang paroki</div>
+                  </div>
+                  <svg class="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors" fill="none"
                     stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
-                </div>
-                <div class="flex-1">
-                  <div class="font-semibold text-gray-800 text-sm">Pemesanan Ruang</div>
-                  <div class="text-xs text-gray-600">Booking ruang paroki</div>
-                </div>
-                <svg class="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors" fill="none"
-                  stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </NuxtLink>
-            </div>
+                </NuxtLink>
+              </div>
 
-            <!-- Logout -->
-            <div class="border-t border-gray-200 p-2">
-              <button @click="handleLogout"
-                class="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                <span class="font-medium">Logout</span>
-              </button>
+              <!-- Logout -->
+              <div class="border-t border-gray-200 p-2">
+                <button @click="handleLogout"
+                  class="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span class="font-medium">Logout</span>
+                </button>
               </div>
             </div>
           </transition>
         </Teleport>
       </div>
 
-    <!-- Login Button (Desktop) - When Not Logged In -->
-    <button v-else @click="showLoginModal = true" :class="[
-      'flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg text-white font-medium transition-all duration-300 flex-shrink-0',
-      scrolled ? 'text-xs' : 'text-sm'
-    ]" type="button">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-      <span>Login</span>
-    </button>
+      <!-- Login Button (Desktop) - When Not Logged In -->
+      <button v-else @click="showLoginModal = true" :class="[
+        'flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg text-white font-medium transition-all duration-300 flex-shrink-0',
+        scrolled ? 'text-xs' : 'text-sm'
+      ]" type="button">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        <span>Login</span>
+      </button>
     </ClientOnly>
 
     <!-- Search Suggestions Dropdown -->
@@ -331,9 +324,8 @@
       <!-- User Avatar/Logout (Mobile) - When Logged In -->
       <button v-if="isLoggedIn" @click="handleLogout"
         class="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-all duration-300 min-h-[44px] border border-red-500/40"
-        :aria-label="`Logout ${user?.full_name || user?.username || 'User'}`" 
-        :title="`Logout ${user?.full_name || user?.username || 'User'}`"
-        type="button">
+        :aria-label="`Logout ${user?.full_name || user?.username || 'User'}`"
+        :title="`Logout ${user?.full_name || user?.username || 'User'}`" type="button">
         <div
           class="w-7 h-7 bg-gradient-to-br from-paulus-blue to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-xs">
           {{ getUserInitials }}
@@ -382,22 +374,24 @@
       <div v-show="isMobileMenuOpen" ref="mobileMenu"
         class="md:hidden absolute top-full left-0 right-0 bg-white border-2 border-[#882f1d] rounded-lg shadow-xl py-4 z-[99999] mt-2 max-h-[80vh] overflow-y-auto"
         style="z-index: 99999 !important;" @click.stop>
-        
+
         <!-- User Info Section (Mobile) - When Logged In -->
         <div v-if="isLoggedIn" class="px-4 pb-4 mb-4 border-b border-gray-200">
           <div class="flex items-center gap-3 p-3 bg-gradient-to-br from-paulus-blue to-blue-700 rounded-lg text-white">
-            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg">
+            <div
+              class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg">
               {{ getUserInitials }}
             </div>
             <div class="flex-1 min-w-0">
               <div class="font-bold truncate text-base">{{ user?.full_name || user?.username }}</div>
-              <div class="text-sm opacity-90 truncate">{{ user?.unit_name || user?.user_category || 'Umat Paroki' }}</div>
+              <div class="text-sm opacity-90 truncate">{{ user?.unit_name || user?.user_category || 'Umat Paroki' }}
+              </div>
               <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 mt-1">
                 {{ getUserRole }}
               </span>
             </div>
           </div>
-          
+
           <!-- Quick Access (Mobile) -->
           <div class="mt-3 space-y-2">
             <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="closeMobileMenu"
@@ -408,7 +402,7 @@
               </svg>
               <span class="font-medium text-gray-800">Kelola Kronik</span>
             </NuxtLink>
-            
+
             <NuxtLink to="/booking" @click="closeMobileMenu"
               class="flex items-center gap-2 px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-base">
               <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -419,7 +413,7 @@
             </NuxtLink>
           </div>
         </div>
-        
+
         <!-- Navigation Links -->
         <ul class="flex flex-col space-y-2 px-4">
           <li v-for="link in navLinks" :key="link.path || link.title">
@@ -430,13 +424,14 @@
                   class="flex items-center justify-between w-full px-3 py-3 rounded-lg transition-all duration-200 text-[#882f1d] hover:text-white hover:bg-[#882f1d] font-medium text-base focus:outline-none">
                   <div class="flex items-center gap-3 flex-1 min-w-0">
                     <!-- Icon -->
-                    <svg v-if="link.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" 
+                    <svg v-if="link.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor"
                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                       <path :d="iconPaths[link.icon]" />
                     </svg>
                     <div class="flex-1 min-w-0 text-left">
                       <div>{{ link.title }}</div>
-                      <div v-if="link.description" class="text-xs text-gray-500 mt-0.5 font-normal">{{ link.description }}</div>
+                      <div v-if="link.description" class="text-xs text-gray-500 mt-0.5 font-normal">{{ link.description
+                        }}</div>
                     </div>
                   </div>
                   <svg class="w-4 h-4 transition-transform duration-200"
@@ -451,7 +446,8 @@
                       <NuxtLink :to="item.path" @click="closeMobileMenuAndDropdown"
                         class="flex items-start gap-3 py-3 px-3 rounded-lg transition-all duration-200 hover:bg-gray-50 group">
                         <!-- Icon -->
-                        <svg class="w-6 h-6 flex-shrink-0 text-[#882f1d] group-hover:text-[#c58229] transition-colors mt-0.5"
+                        <svg
+                          class="w-6 h-6 flex-shrink-0 text-[#882f1d] group-hover:text-[#c58229] transition-colors mt-0.5"
                           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                           stroke-linejoin="round" viewBox="0 0 24 24">
                           <path :d="iconPaths[item.icon]" />
@@ -477,13 +473,15 @@
                 @keydown.space.prevent="closeMobileMenu"
                 :class="`flex items-center gap-3 py-3 px-3 rounded-lg transition-all duration-200 font-medium text-base focus:outline-none ${route.path === link.path ? 'text-white bg-[#882f1d]' : 'text-[#882f1d] hover:text-white hover:bg-[#882f1d]'}`">
                 <!-- Icon -->
-                <svg v-if="link.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" 
-                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <svg v-if="link.icon" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                   <path :d="iconPaths[link.icon]" />
                 </svg>
                 <div class="flex-1 min-w-0">
                   <div>{{ link.title }}</div>
-                  <div v-if="link.description" :class="`text-xs mt-0.5 font-normal ${route.path === link.path ? 'text-white/80' : 'text-gray-500'}`">{{ link.description }}</div>
+                  <div v-if="link.description"
+                    :class="`text-xs mt-0.5 font-normal ${route.path === link.path ? 'text-white/80' : 'text-gray-500'}`">
+                    {{ link.description }}</div>
                 </div>
               </NuxtLink>
             </template>
@@ -732,7 +730,7 @@ const toggleDropdown = (title) => {
 const showDropdown = (title) => {
   // Don't reopen dropdown if we're navigating
   if (isNavigating.value) return
-  
+
   if (dropdownTimeout.value) {
     clearTimeout(dropdownTimeout.value)
   }
@@ -743,7 +741,7 @@ const showDropdown = (title) => {
 const hideDropdown = (title) => {
   // Don't interfere if we're navigating
   if (isNavigating.value) return
-  
+
   dropdownTimeout.value = setTimeout(() => {
     if (activeDropdown.value === title && !isNavigating.value) {
       activeDropdown.value = null
@@ -754,14 +752,14 @@ const hideDropdown = (title) => {
 const closeDropdown = () => {
   // Set navigating flag and force close immediately
   isNavigating.value = true
-  
+
   // Clear any pending timeout to ensure immediate close
   if (dropdownTimeout.value) {
     clearTimeout(dropdownTimeout.value)
     dropdownTimeout.value = null
   }
   activeDropdown.value = null
-  
+
   // Reset navigating flag after a short delay
   setTimeout(() => {
     isNavigating.value = false

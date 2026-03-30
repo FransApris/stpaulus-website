@@ -129,14 +129,14 @@ export default defineEventHandler(async (event) => {
             [...whereParams, limit, offset]
         )
 
-            const normalizedEntries = entries.map((entry: any) => ({
-                ...entry,
-                featured_image: normalizeImagePath(entry.featured_image)
-            }))
+        const normalizedEntries = entries.map((entry: any) => ({
+            ...entry,
+            featured_image: normalizeImagePath(entry.featured_image)
+        }))
 
         return {
             success: true,
-                data: normalizedEntries,
+            data: normalizedEntries,
             pagination: {
                 page,
                 limit,

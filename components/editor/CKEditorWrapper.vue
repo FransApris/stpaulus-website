@@ -5,26 +5,17 @@
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-800 mx-auto"></div>
       <p class="mt-2 text-sm text-gray-500">Memuat CKEditor...</p>
     </div>
-    
+
     <!-- Error fallback - simple textarea -->
     <div v-else-if="loadError" class="error-fallback">
       <p class="text-sm text-red-600 mb-2">⚠️ CKEditor gagal dimuat. Menggunakan editor sederhana.</p>
-      <textarea
-        v-model="content"
-        :placeholder="placeholder"
-        class="w-full min-h-[300px] p-3 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500"
-      />
+      <textarea v-model="content" :placeholder="placeholder"
+        class="w-full min-h-[300px] p-3 border border-gray-300 rounded-md focus:ring-red-500 focus:border-red-500" />
     </div>
-    
+
     <!-- CKEditor component -->
-    <component
-      v-else-if="isEditorReady && CKEditorComponent"
-      :is="CKEditorComponent"
-      v-model="content"
-      :editor="editor"
-      :config="editorConfig"
-      @ready="onReady"
-    />
+    <component v-else-if="isEditorReady && CKEditorComponent" :is="CKEditorComponent" v-model="content" :editor="editor"
+      :config="editorConfig" @ready="onReady" />
   </div>
 </template>
 
@@ -65,14 +56,14 @@ onMounted(async () => {
   if (process.client) {
     try {
       loading.value = true
-      
+
       // Import CKEditor Vue component (exported as 'Ckeditor')
       const { Ckeditor } = await import('@ckeditor/ckeditor5-vue')
       CKEditorComponent.value = Ckeditor
 
       // Use local build only to avoid runtime dependency on external CDN.
       editor.value = await loadClassicEditorLocalBuild()
-      
+
       loading.value = false
       isEditorReady.value = true
     } catch (error) {
@@ -165,7 +156,7 @@ watch(content, (newValue) => {
 
 const onReady = (editorInstance) => {
   console.log('CKEditor is ready', editorInstance)
-  
+
   // Setup upload adapter
   if (editorInstance.plugins.has('FileRepository')) {
     editorInstance.plugins.get('FileRepository').createUploadAdapter = (loader) => {
@@ -204,7 +195,7 @@ const onReady = (editorInstance) => {
       }
     }
   }
-  
+
   emit('ready', editorInstance)
 }
 </script>
@@ -247,7 +238,7 @@ const onReady = (editorInstance) => {
 }
 
 /* Editor content area */
-.ck.ck-editor__main > .ck-editor__editable {
+.ck.ck-editor__main>.ck-editor__editable {
   min-height: 300px;
   max-height: 600px;
   background: white;
@@ -261,7 +252,7 @@ const onReady = (editorInstance) => {
 }
 
 /* Focus state - St. Paulus red theme */
-.ck.ck-editor__main > .ck-editor__editable:focus {
+.ck.ck-editor__main>.ck-editor__editable:focus {
   border-color: #dc2626 !important;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1) !important;
   outline: none;

@@ -163,12 +163,12 @@ export default defineEventHandler(async (event) => {
       stack: error.stack,
       statusCode: error.statusCode
     })
-    
+
     // If it's already a createError, rethrow it
     if (error.statusCode) {
       throw error
     }
-    
+
     // Otherwise, create a generic error
     throw createError({
       statusCode: 500,

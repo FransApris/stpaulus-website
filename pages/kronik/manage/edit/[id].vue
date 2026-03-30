@@ -53,7 +53,7 @@
                                 {{ !form.category_id ? 'Pilih kategori terlebih dahulu' :
                                     loadingSections ? 'Memuat bagian...' :
                                         sections.length === 0 ? 'Tidak ada bagian tersedia' :
-                                'Pilih Bagian' }}
+                                            'Pilih Bagian' }}
                             </option>
                             <option v-for="section in sections" :key="section.id" :value="section.id">
                                 {{ section.name }}
@@ -102,7 +102,8 @@
                                         :disabled="uploadingFeatured"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-paulus-blue focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-paulus-blue file:text-white hover:file:bg-blue-800 disabled:opacity-50" />
                                     <p class="text-xs text-gray-500 mt-1">
-                                        {{ uploadingFeatured ? 'Mengunggah...' : 'Upload 1 foto utama untuk ditampilkan sebagai thumbnail' }}
+                                        {{ uploadingFeatured ? 'Mengunggah...' : 'Upload 1 foto utama untuk ditampilkan
+                                        sebagai thumbnail' }}
                                     </p>
                                     <!-- Preview Featured Image -->
                                     <div v-if="form.featured_image" class="mt-2 relative inline-block">
@@ -122,9 +123,9 @@
                                         :disabled="uploadingGallery || (form.gallery && form.gallery.length >= 5)"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-paulus-blue focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 disabled:opacity-50" />
                                     <p class="text-xs text-gray-500 mt-1">
-                                        {{ uploadingGallery ? 'Mengunggah...' : 
-                                           form.gallery && form.gallery.length >= 5 ? 'Maksimal 5 foto' :
-                                           `Upload beberapa foto (${form.gallery?.length || 0}/5)` }}
+                                        {{ uploadingGallery ? 'Mengunggah...' :
+                                            form.gallery && form.gallery.length >= 5 ? 'Maksimal 5 foto' :
+                                                `Upload beberapa foto (${form.gallery?.length || 0}/5)` }}
                                     </p>
                                     <!-- Preview Gallery -->
                                     <div v-if="form.gallery && form.gallery.length > 0"
@@ -240,31 +241,40 @@
                     <div class="flex items-start justify-between mb-4">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                                <svg class="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                <svg class="w-6 h-6 mr-2 text-purple-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                 </svg>
                                 Generate Narasi dengan AI
                             </h3>
                             <p class="text-sm text-gray-600">
-                                Buat narasi kronik otomatis berdasarkan data 5W1H yang sudah diisi. Minimal isi What, When, dan Where terlebih dahulu.
+                                Buat narasi kronik otomatis berdasarkan data 5W1H yang sudah diisi. Minimal isi What,
+                                When, dan Where terlebih dahulu.
                             </p>
                         </div>
                     </div>
-                    
-                    <button type="button" @click="generateNarasi" 
+
+                    <button type="button" @click="generateNarasi"
                         :disabled="isGenerating || !form.what_title || !form.when_date || !form.where_location"
                         class="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                        <svg v-if="isGenerating" class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg v-if="isGenerating" class="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                         <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                         </svg>
                         {{ isGenerating ? 'Membuat Narasi...' : 'Generate Narasi AI' }}
                     </button>
 
-                    <p v-if="!form.what_title || !form.when_date || !form.where_location" class="text-xs text-amber-600 mt-2">
+                    <p v-if="!form.what_title || !form.when_date || !form.where_location"
+                        class="text-xs text-amber-600 mt-2">
                         ⚠️ Minimal isi What (Judul), When (Tanggal), dan Where (Lokasi) untuk menggunakan fitur ini
                     </p>
                 </div>
@@ -283,20 +293,23 @@
             </form>
 
             <!-- Modal Preview Narasi -->
-            <div v-if="showNarasiModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div v-if="showNarasiModal"
+                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div class="bg-white rounded-lg max-w-3xl w-full max-h-[80vh] overflow-hidden shadow-2xl">
                     <!-- Modal Header -->
                     <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
                         <div class="flex items-center justify-between">
                             <h3 class="text-xl font-bold flex items-center">
                                 <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                 </svg>
                                 Narasi yang Dihasilkan AI
                             </h3>
                             <button @click="closeNarasiModal" class="text-white hover:text-gray-200 transition-colors">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </button>
                         </div>
@@ -319,14 +332,18 @@
                         <button @click="generateNarasi"
                             class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors font-medium">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
                             </svg>
                             Regenerate
                         </button>
                         <button @click="copyNarasiToForm"
                             class="flex-1 px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors font-medium">
                             <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z">
+                                </path>
                             </svg>
                             Salin ke Form
                         </button>
@@ -580,7 +597,7 @@ const fetchEntry = async () => {
         form.why_purpose = entry.why_purpose || ''
         form.how_process = entry.how_process || ''
         form.status = entry.status || 'pending'
-        
+
         // Load photos
         form.featured_image = resolveKronikImagePath(entry.featured_image) || ''
         form.gallery = normalizeGalleryValue(entry.gallery)
@@ -760,8 +777,8 @@ const handleSubmit = async (status = 'pending') => {
         } as any)
 
         // Navigate with success message
-        const message = status === 'draft' 
-            ? 'Kronik berhasil disimpan sebagai draft' 
+        const message = status === 'draft'
+            ? 'Kronik berhasil disimpan sebagai draft'
             : 'Kronik berhasil diupdate'
         navigateTo(`/kronik/manage?success=${encodeURIComponent(message)}`)
     } catch (error: any) {

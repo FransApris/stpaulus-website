@@ -48,10 +48,10 @@ export default defineEventHandler(async (event) => {
 
         // Get password (Railway uses MYSQL_ROOT_PASSWORD)
         const getPassword = (): string => {
-            return process.env.MYSQL_PASSWORD || 
-                   process.env.MYSQLPASSWORD || 
-                   process.env.MYSQL_ROOT_PASSWORD || 
-                   ''
+            return process.env.MYSQL_PASSWORD ||
+                process.env.MYSQLPASSWORD ||
+                process.env.MYSQL_ROOT_PASSWORD ||
+                ''
         }
 
         // Create database connection

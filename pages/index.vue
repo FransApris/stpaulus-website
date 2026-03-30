@@ -672,6 +672,10 @@ useHead({
   ],
   link: [
     {
+      rel: 'canonical',
+      href: 'https://stpaulusjuanda.org/'
+    },
+    {
       rel: 'preconnect',
       href: 'https://www.google.com',
       crossorigin: 'anonymous'

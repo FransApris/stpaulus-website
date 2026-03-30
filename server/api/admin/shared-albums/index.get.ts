@@ -26,23 +26,23 @@ const normalizeThumbnailUrl = (url?: string | null): string | null => {
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const activeOnly = query.active === 'true';
-  
+
   let connection;
   try {
     connection = await getConnection();
-    
+
     let sql = 'SELECT * FROM google_shared_albums';
     if (activeOnly) {
       sql += ' WHERE is_active = TRUE';
     }
     sql += ' ORDER BY display_order ASC, created_at DESC';
-    
+
     const [albums] = await connection.query(sql);
     const normalizedAlbums = (albums as any[]).map((album) => ({
       ...album,
       thumbnail_url: normalizeThumbnailUrl(album.thumbnail_url)
     }));
-    
+
     return {
       success: true,
       data: normalizedAlbums

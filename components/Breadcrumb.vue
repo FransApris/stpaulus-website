@@ -45,13 +45,17 @@ const props = defineProps({
   parentPath: { type: String, default: '' }
 })
 
+const route = useRoute()
+const siteUrl = 'https://stpaulusjuanda.org'
+const currentPath = props.path || route.path
+
 // Optional: JSON-LD for SEO (Breadcrumb Schema)
 const itemListElement = [
   {
     '@type': 'ListItem',
     position: 1,
-    name: 'Beranda',
-    item: 'https://yourdomain.com/'
+    name: 'Paroki St. Paulus Juanda',
+    item: `${siteUrl}/`
   }
 ];
 
@@ -60,20 +64,20 @@ if (props.parentTitle) {
     '@type': 'ListItem',
     position: 2,
     name: props.parentTitle,
-    item: `https://yourdomain.com${props.parentPath}`
+    item: `${siteUrl}${props.parentPath}`
   });
   itemListElement.push({
     '@type': 'ListItem',
     position: 3,
     name: props.title,
-    item: `https://yourdomain.com${props.path || useRoute().path}`
+    item: `${siteUrl}${currentPath}`
   });
 } else {
   itemListElement.push({
     '@type': 'ListItem',
     position: 2,
     name: props.title,
-    item: `https://yourdomain.com${props.path || useRoute().path}`
+    item: `${siteUrl}${currentPath}`
   });
 }
 
