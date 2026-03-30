@@ -230,6 +230,11 @@ const submitAction = ref('draft')
 const uploadingFeatured = ref(false)
 const uploadingGallery = ref(false)
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('admin_access_token') || localStorage.getItem('auth_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 const form = reactive({
   category_id: '',
   section_id: '',
@@ -269,6 +274,7 @@ const handleFeaturedImageUpload = async (event) => {
 
     const response = await $fetch('/api/kronik/upload', {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData
     })
 
@@ -308,6 +314,7 @@ const handleGalleryUpload = async (event) => {
 
     const response = await $fetch('/api/kronik/upload', {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData
     })
 
@@ -340,7 +347,7 @@ const handleSubmit = async () => {
       body: {
         ...form,
         status: submitAction.value,
-        gallery: form.gallery.length > 0 ? JSON.stringify(form.gallery) : null
+        gallery: form.gallery.length > 0 ? form.gallery : null
       }
     })
 

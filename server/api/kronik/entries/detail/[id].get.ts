@@ -1,6 +1,24 @@
 // Public API: Get kronik entry detail
 import { getQuery as getOne, runQuery } from '~/server/database/db'
 
+const parseJsonMaybeNested = (value: any) => {
+  if (!value) return []
+  let parsed: any = value
+
+  for (let i = 0; i < 2; i++) {
+    if (typeof parsed !== 'string') break
+    const text = parsed.trim()
+    if (!text) return []
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      break
+    }
+  }
+
+  return Array.isArray(parsed) ? parsed : []
+}
+
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 
@@ -48,22 +66,9 @@ export default defineEventHandler(async (event) => {
       VALUES (?, ?, ?)
     `, [id, headers['x-forwarded-for'] || 'unknown', headers['user-agent'] || 'unknown'])
 
-    // Parse JSON fields
-    if (entry.gallery) {
-      try {
-        entry.gallery = JSON.parse(entry.gallery)
-      } catch (e) {
-        entry.gallery = []
-      }
-    }
-
-    if (entry.documents) {
-      try {
-        entry.documents = JSON.parse(entry.documents)
-      } catch (e) {
-        entry.documents = []
-      }
-    }
+    // Parse JSON fields (supports legacy double-encoded rows)
+    entry.gallery = parseJsonMaybeNested(entry.gallery)
+    entry.documents = parseJsonMaybeNested(entry.documents)
 
     return {
       success: true,

@@ -268,6 +268,11 @@ const uploadingFeatured = ref(false)
 const uploadingGallery = ref(false)
 const entry = ref(null)
 
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('admin_access_token') || localStorage.getItem('auth_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 const form = reactive({
   category_id: '',
   section_id: '',
@@ -317,12 +322,7 @@ const fetchEntry = async () => {
       form.why_purpose = response.data.why_purpose || ''
       form.how_process = response.data.how_process || ''
       form.featured_image = response.data.featured_image || ''
-      // Parse gallery from JSON string to array
-      try {
-        form.gallery = response.data.gallery ? JSON.parse(response.data.gallery) : []
-      } catch {
-        form.gallery = []
-      }
+      form.gallery = Array.isArray(response.data.gallery) ? response.data.gallery : []
       form.status = response.data.status || 'pending'
     }
   } catch (error) {
@@ -372,6 +372,7 @@ const handleFeaturedImageUpload = async (event) => {
 
     const response = await $fetch('/api/kronik/upload', {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData
     })
 
@@ -411,6 +412,7 @@ const handleGalleryUpload = async (event) => {
 
     const response = await $fetch('/api/kronik/upload', {
       method: 'POST',
+      headers: getAuthHeaders(),
       body: formData
     })
 
@@ -445,7 +447,7 @@ const handleSubmit = async () => {
       method: 'PUT',
       body: {
         ...form,
-        gallery: form.gallery.length > 0 ? JSON.stringify(form.gallery) : null
+        gallery: form.gallery.length > 0 ? form.gallery : null
       }
     })
 

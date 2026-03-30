@@ -32,6 +32,10 @@ export default defineEventHandler(async (event) => {
       status
     } = body
 
+    const normalizedGallery = Array.isArray(gallery)
+      ? JSON.stringify(gallery)
+      : (typeof gallery === 'string' && gallery.trim() ? gallery : null)
+
     // Validate required fields
     if (!category_id || !what_title || !what_description || !when_date) {
       throw createError({
@@ -87,7 +91,7 @@ export default defineEventHandler(async (event) => {
         why_purpose || null,
         how_process || null,
         featured_image || null,
-        gallery || null,
+        normalizedGallery,
         status || 'pending',
         id
       ]

@@ -2,6 +2,24 @@
 import { getQuery as getOne } from '~/server/database/db'
 import { getRouterParam } from 'h3'
 
+const parseJsonMaybeNested = (value: any) => {
+  if (!value) return []
+  let parsed: any = value
+
+  for (let i = 0; i < 2; i++) {
+    if (typeof parsed !== 'string') break
+    const text = parsed.trim()
+    if (!text) return []
+    try {
+      parsed = JSON.parse(text)
+    } catch {
+      break
+    }
+  }
+
+  return Array.isArray(parsed) ? parsed : []
+}
+
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 
@@ -35,6 +53,9 @@ export default defineEventHandler(async (event) => {
         message: 'Entry not found'
       })
     }
+
+    entry.gallery = parseJsonMaybeNested(entry.gallery)
+    entry.documents = parseJsonMaybeNested(entry.documents)
 
     return {
       success: true,

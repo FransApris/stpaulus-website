@@ -17,9 +17,13 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Prepare gallery and documents as JSON
-    const gallery = body.gallery ? JSON.stringify(body.gallery) : null
-    const documents = body.documents ? JSON.stringify(body.documents) : null
+    // Normalize JSON fields and avoid double-encoding
+    const gallery = Array.isArray(body.gallery)
+      ? JSON.stringify(body.gallery)
+      : (typeof body.gallery === 'string' && body.gallery.trim() ? body.gallery : null)
+    const documents = Array.isArray(body.documents)
+      ? JSON.stringify(body.documents)
+      : (typeof body.documents === 'string' && body.documents.trim() ? body.documents : null)
 
     const result = await runQuery(`
       INSERT INTO kronik_entries (

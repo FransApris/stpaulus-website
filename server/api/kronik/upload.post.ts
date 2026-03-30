@@ -5,6 +5,8 @@ import { readMultipartFormData } from 'h3'
 import { requireAuth } from '~/server/utils/auth'
 import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 
+const ADMIN_ROLES = new Set(['super_admin', 'admin_komsos', 'admin_sekretariat'])
+
 /**
  * Upload kronik images
  * POST /api/kronik/upload
@@ -18,7 +20,13 @@ export default defineEventHandler(async (event) => {
 
     // Verify authentication using JWT
     const decoded = requireAuth(event)
-    await requireKronikUserAccess(decoded.userId)
+
+    // Allow both kronik users and CMS admin roles to upload images
+    const role = String(decoded.role || '').toLowerCase()
+    if (!ADMIN_ROLES.has(role)) {
+      await requireKronikUserAccess(decoded.userId)
+    }
+
     console.log('[Kronik Upload] User authenticated:', decoded.userId, decoded.username)
 
     // Parse multipart form data
