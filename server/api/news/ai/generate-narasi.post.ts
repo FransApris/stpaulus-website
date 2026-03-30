@@ -1,5 +1,22 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
+function resolveGeminiApiKey(): string {
+    const config = useRuntimeConfig()
+    const candidates = [
+        config.geminiApiKey,
+        process.env.NUXT_GEMINI_API_KEY,
+        process.env.GEMINI_API_KEY
+    ]
+
+    for (const candidate of candidates) {
+        if (typeof candidate === 'string' && candidate.trim().length > 0) {
+            return candidate.trim()
+        }
+    }
+
+    return ''
+}
+
 export default defineEventHandler(async (event) => {
     console.log('[News AI Generate] Starting AI generation...')
 
@@ -25,13 +42,15 @@ export default defineEventHandler(async (event) => {
         }
 
         // Initialize Gemini AI
-        const config = useRuntimeConfig()
-        const apiKey = config.geminiApiKey
+        const apiKey = resolveGeminiApiKey()
 
         if (!apiKey) {
             throw createError({
                 statusCode: 500,
-                message: 'API Key Gemini belum dikonfigurasi'
+                statusMessage: 'API Key Gemini belum dikonfigurasi',
+                data: {
+                    message: 'API Key Gemini belum dikonfigurasi. Set NUXT_GEMINI_API_KEY atau GEMINI_API_KEY di environment.'
+                }
             })
         }
 
@@ -92,7 +111,10 @@ Narasi:
 
         throw createError({
             statusCode: error.statusCode || 500,
-            message: error.message || 'Gagal generate narasi dengan AI'
+            statusMessage: error.statusMessage || error.message || 'Gagal generate narasi dengan AI',
+            data: {
+                message: error?.data?.message || error.message || 'Gagal generate narasi dengan AI'
+            }
         })
     }
 })

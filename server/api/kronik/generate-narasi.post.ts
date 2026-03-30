@@ -2,6 +2,23 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { requireAuth } from '~/server/utils/auth'
 import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 
+function resolveGeminiApiKey(): string {
+    const config = useRuntimeConfig()
+    const candidates = [
+        config.geminiApiKey,
+        process.env.NUXT_GEMINI_API_KEY,
+        process.env.GEMINI_API_KEY
+    ]
+
+    for (const candidate of candidates) {
+        if (typeof candidate === 'string' && candidate.trim().length > 0) {
+            return candidate.trim()
+        }
+    }
+
+    return ''
+}
+
 export default defineEventHandler(async (event) => {
     try {
         const decoded = requireAuth(event)
@@ -19,13 +36,15 @@ export default defineEventHandler(async (event) => {
         }
 
         // Ambil API key dari config
-        const config = useRuntimeConfig()
-        const apiKey = config.geminiApiKey
+        const apiKey = resolveGeminiApiKey()
 
         if (!apiKey) {
             throw createError({
                 statusCode: 500,
-                message: 'API Key Gemini belum dikonfigurasi. Silakan tambahkan GEMINI_API_KEY di file .env'
+                statusMessage: 'API Key Gemini belum dikonfigurasi',
+                data: {
+                    message: 'API Key Gemini belum dikonfigurasi. Set NUXT_GEMINI_API_KEY atau GEMINI_API_KEY di environment.'
+                }
             })
         }
 
@@ -88,14 +107,20 @@ Narasi:
         if (error.statusCode === 429) {
             throw createError({
                 statusCode: 429,
-                message: 'Terlalu banyak permintaan ke AI. Silakan coba lagi dalam beberapa saat.'
+                statusMessage: 'Terlalu banyak permintaan ke AI. Silakan coba lagi dalam beberapa saat.',
+                data: {
+                    message: 'Terlalu banyak permintaan ke AI. Silakan coba lagi dalam beberapa saat.'
+                }
             })
         }
 
         if (error.message?.includes('API_KEY') || error.message?.includes('API key')) {
             throw createError({
                 statusCode: 500,
-                message: 'Konfigurasi API Key Gemini tidak valid. Periksa GEMINI_API_KEY di .env'
+                statusMessage: 'Konfigurasi API Key Gemini tidak valid',
+                data: {
+                    message: 'Konfigurasi API Key Gemini tidak valid. Periksa NUXT_GEMINI_API_KEY atau GEMINI_API_KEY.'
+                }
             })
         }
 
@@ -105,7 +130,10 @@ Narasi:
 
         throw createError({
             statusCode: 500,
-            message: error.message || 'Gagal generate narasi dengan AI. Silakan coba lagi.'
+            statusMessage: error.statusMessage || error.message || 'Gagal generate narasi dengan AI. Silakan coba lagi.',
+            data: {
+                message: error?.data?.message || error.message || 'Gagal generate narasi dengan AI. Silakan coba lagi.'
+            }
         })
     }
 })
