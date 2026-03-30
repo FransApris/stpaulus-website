@@ -1,5 +1,5 @@
 import { runQuery, getQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   // Check authentication

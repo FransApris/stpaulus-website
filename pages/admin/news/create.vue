@@ -419,15 +419,33 @@ const getContentLength = () => {
 // Fetch categories
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('admin_access_token')
     const response = await $fetch('/api/admin/article-categories', {
       headers: {
         Authorization: `Bearer ${token}`
       }
     })
-    categories.value = (response as any).categories || []
+
+    // Endpoint returns hierarchical array; flatten for checkbox list
+    const flattenCategories = (cats: any[]): any[] => {
+      let result: any[] = []
+      cats.forEach((cat: any) => {
+        result.push({
+          id: cat.id,
+          name: cat.name,
+          sync_to_kronik: !!cat.sync_to_kronik
+        })
+        if (Array.isArray(cat.children) && cat.children.length > 0) {
+          result = result.concat(flattenCategories(cat.children))
+        }
+      })
+      return result
+    }
+
+    categories.value = flattenCategories((response as any[]) || [])
   } catch (error) {
     console.error('Failed to fetch categories:', error)
+    errorMessage.value = 'Gagal memuat kategori berita'
   }
 })
 
@@ -465,7 +483,7 @@ const generateNarasi = async () => {
   errorMessage.value = ''
 
   try {
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('admin_access_token')
     
     const response = await $fetch('/api/news/ai/generate-narasi', {
       method: 'POST',
@@ -506,7 +524,7 @@ const generateNarasi = async () => {
 const uploadGalleryImages = async () => {
   if (galleryFiles.value.length === 0) return []
 
-  const token = localStorage.getItem('auth_token')
+  const token = localStorage.getItem('admin_access_token')
   const formData = new FormData()
 
   galleryFiles.value.forEach((file: File) => {
@@ -552,7 +570,7 @@ const handleSubmit = async () => {
       form.value.gallery_images = uploadedGallery
     }
 
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('admin_access_token')
 
     await $fetch('/api/admin/news', {
       method: 'POST',

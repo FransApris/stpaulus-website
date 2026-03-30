@@ -16,7 +16,15 @@ interface Category {
 export default defineEventHandler(async (event) => {
   // Check authentication and permissions
   requireAuth(event)
-  requirePermission('manage_article_categories')(event)
+  const authContext = event.context.auth
+  if (!authContext || !authContext.permissions?.some((perm: string) =>
+    ['manage_article_categories', 'manage_articles', 'manage_news'].includes(perm)
+  )) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden: Insufficient permissions'
+    })
+  }
 
   try {
     const categories = await allQuery(`
