@@ -73,8 +73,8 @@ export default defineEventHandler(async (event) => {
 
         console.log('[Kronik Upload] File saved:', filePath)
 
-        // Add to uploaded files list (relative path for database)
-        uploadedFiles.push(`/uploads/kronik/${filename}`)
+        // Return API media URL so files stay accessible in production runtime/volume.
+        uploadedFiles.push(`/api/kronik/media/${encodeURIComponent(filename)}`)
       }
     }
 

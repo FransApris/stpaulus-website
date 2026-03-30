@@ -2,24 +2,22 @@ import { getQuery as getOne } from '~/server/database/db'
 import { requireAuth } from '~/server/utils/auth'
 import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 import { getRouterParam } from 'h3'
-import { existsSync } from 'fs'
-import { join } from 'path'
 
 const normalizeImagePath = (value: unknown): string | null => {
     const text = String(value || '').trim()
     if (!text) return null
     if (text.startsWith('http://') || text.startsWith('https://')) return text
+    if (text.startsWith('/api/kronik/media/')) return text
+    if (text.startsWith('/uploads/kronik/')) {
+        const filename = text.split('/').pop()
+        return filename ? `/api/kronik/media/${encodeURIComponent(filename)}` : null
+    }
     if (text.startsWith('/')) return text
-    return `/uploads/kronik/${text}`
+    return `/api/kronik/media/${encodeURIComponent(text)}`
 }
 
 const ensureImagePathExists = (value: unknown): string | null => {
-    const normalized = normalizeImagePath(value)
-    if (!normalized) return null
-    if (!normalized.startsWith('/uploads/')) return normalized
-
-    const fullPath = join(process.cwd(), 'public', normalized.replace(/^\//, ''))
-    return existsSync(fullPath) ? normalized : null
+    return normalizeImagePath(value)
 }
 
 const parseJsonMaybeNested = (value: any) => {

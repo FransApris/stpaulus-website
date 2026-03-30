@@ -392,8 +392,13 @@ const resolveKronikImagePath = (value: unknown): string => {
     const text = String(value || '').trim()
     if (!text) return ''
     if (text.startsWith('http://') || text.startsWith('https://')) return text
+    if (text.startsWith('/api/kronik/media/')) return text
+    if (text.startsWith('/uploads/kronik/')) {
+        const filename = text.split('/').pop()
+        return filename ? `/api/kronik/media/${encodeURIComponent(filename)}` : ''
+    }
     if (text.startsWith('/')) return text
-    return `/uploads/kronik/${text}`
+    return `/api/kronik/media/${encodeURIComponent(text)}`
 }
 
 // Watch category_id changes to filter sections

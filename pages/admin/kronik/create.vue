@@ -256,8 +256,13 @@ const resolveKronikImagePath = (value) => {
   const text = String(value || '').trim()
   if (!text) return ''
   if (text.startsWith('http://') || text.startsWith('https://')) return text
+  if (text.startsWith('/api/kronik/media/')) return text
+  if (text.startsWith('/uploads/kronik/')) {
+    const filename = text.split('/').pop()
+    return filename ? `/api/kronik/media/${encodeURIComponent(filename)}` : ''
+  }
   if (text.startsWith('/')) return text
-  return `/uploads/kronik/${text}`
+  return `/api/kronik/media/${encodeURIComponent(text)}`
 }
 
 const { data: categoriesData } = await useFetch('/api/admin/kronik/categories')
