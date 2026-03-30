@@ -1,9 +1,19 @@
 import { runQuery, getQuery } from '../../../database/db'
-import { requireAuth, requirePermission } from '../../../utils/auth'
+import { requireAuth } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
-  // Check permissions using RBAC (middleware already set auth context)
-  requirePermission('manage_chatbot_faqs')(event)
+  requireAuth(event)
+  const authContext = event.context.auth
+  const hasAccess = authContext?.permissions?.some((perm: string) =>
+    ['manage_chatbot_faqs', 'manage_chatbot'].includes(perm)
+  )
+
+  if (!hasAccess) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden: Insufficient permissions'
+    })
+  }
 
   const id = getRouterParam(event, 'id')
 

@@ -1,9 +1,20 @@
 import { runQuery } from '../../../database/db'
-import { requireAuth, requirePermission } from '../../../utils/auth'
+import { getRouterParam } from 'h3'
+import { requireAuth } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
-  // Check permissions using RBAC (middleware already set auth context)
-  requirePermission('manage_chatbot_faqs')(event)
+  requireAuth(event)
+  const authContext = event.context.auth
+  const hasAccess = authContext?.permissions?.some((perm: string) =>
+    ['manage_chatbot_faqs', 'manage_chatbot'].includes(perm)
+  )
+
+  if (!hasAccess) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden: Insufficient permissions'
+    })
+  }
 
   const id = getRouterParam(event, 'id')
   const body = await readBody(event)
@@ -17,7 +28,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    runQuery(`
+    await runQuery(`
       UPDATE chatbot_faq_categories
       SET name = ?, slug = ?, description = ?, color = ?, display_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
@@ -33,7 +44,7 @@ export default defineEventHandler(async (event) => {
       is_active: !!is_active
     }
   } catch (error: any) {
-    if (error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+    if (error.code === 'ER_DUP_ENTRY' || error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
       throw createError({
         statusCode: 409,
         statusMessage: 'Category with this name or slug already exists'
