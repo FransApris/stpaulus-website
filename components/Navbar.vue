@@ -120,6 +120,7 @@
       </svg>
     </button>
 
+    <ClientOnly>
     <!-- User Menu (Desktop) - When Logged In -->
     <div v-if="isLoggedIn" class="relative" data-user-menu>
       <button ref="userButtonRef" @click="toggleUserDropdown" 
@@ -245,6 +246,7 @@
       </svg>
       <span>Login</span>
     </button>
+    </ClientOnly>
 
     <!-- Search Suggestions Dropdown -->
     <Teleport to="body">

@@ -934,7 +934,8 @@ const formatDate = (dateString) => {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'Asia/Jakarta'
   })
 }
 

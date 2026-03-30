@@ -3,6 +3,14 @@ import { getQuery } from 'h3'
 import { requireAuth } from '~/server/utils/auth'
 import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 
+const normalizeImagePath = (value: unknown): string | null => {
+    const text = String(value || '').trim()
+    if (!text) return null
+    if (text.startsWith('http://') || text.startsWith('https://')) return text
+    if (text.startsWith('/')) return text
+    return `/uploads/kronik/${text}`
+}
+
 export default defineEventHandler(async (event) => {
     const queryParams = getQuery(event)
     const authorOnly = queryParams.author_only === 'true'
@@ -89,6 +97,7 @@ export default defineEventHandler(async (event) => {
         ke.id,
         ke.what_title,
         ke.what_description,
+                ke.featured_image,
         ke.when_date,
         ke.when_duration,
         ke.where_location,
@@ -115,9 +124,14 @@ export default defineEventHandler(async (event) => {
             [...whereParams, limit, offset]
         )
 
+            const normalizedEntries = entries.map((entry: any) => ({
+                ...entry,
+                featured_image: normalizeImagePath(entry.featured_image)
+            }))
+
         return {
             success: true,
-            data: entries,
+                data: normalizedEntries,
             pagination: {
                 page,
                 limit,

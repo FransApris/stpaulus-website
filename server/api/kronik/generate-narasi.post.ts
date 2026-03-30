@@ -21,16 +21,38 @@ function resolveGeminiApiKey(): string {
     return ''
 }
 
+function buildFallbackNarasi(data: {
+    what: string
+    when?: string
+    where?: string
+    who?: string
+    why?: string
+    how?: string
+}): string {
+    const whenText = data.when || 'waktu yang telah ditentukan'
+    const whereText = data.where || 'lingkungan paroki'
+    const whoText = data.who || 'umat paroki'
+    const whyText = data.why || 'menguatkan iman dan kebersamaan umat'
+    const howText = data.how || 'rangkaian kegiatan pastoral yang terarah dan tertib'
+
+    return [
+        `${data.what} dilaksanakan pada ${whenText} di ${whereText} dengan melibatkan ${whoText}. Kegiatan ini menjadi bagian dari pelayanan paroki yang terus diupayakan secara berkelanjutan.`,
+        `Pelaksanaan kegiatan berlangsung melalui ${howText}. Umat mengikuti setiap rangkaian acara dengan semangat, sehingga suasana kebersamaan, doa, dan pelayanan dapat tumbuh dengan baik.`,
+        `Kegiatan ini bertujuan untuk ${whyText}. Melalui momen ini, paroki berharap nilai-nilai iman, solidaritas, serta semangat melayani semakin nyata dalam kehidupan menggereja sehari-hari.`,
+        `Ke depan, kegiatan serupa diharapkan terus dikembangkan agar semakin banyak umat dapat terlibat aktif, mengalami pendalaman rohani, dan mengambil bagian dalam karya pelayanan Gereja.`
+    ].join('\n\n')
+}
+
 export default defineEventHandler(async (event) => {
+    const body = await readBody(event)
+    const { what, when, where, who, why, how } = body || {}
+
     try {
         const decoded = requireAuth(event)
         const role = String(decoded.role || '').toLowerCase()
         if (!ADMIN_ROLES.has(role)) {
             await requireKronikUserAccess(decoded.userId)
         }
-
-        const body = await readBody(event)
-        const { what, when, where, who, why, how } = body
 
         // Validasi input
         if (!what || !when || !where) {
@@ -44,13 +66,12 @@ export default defineEventHandler(async (event) => {
         const apiKey = resolveGeminiApiKey()
 
         if (!apiKey) {
-            throw createError({
-                statusCode: 500,
-                statusMessage: 'API Key Gemini belum dikonfigurasi',
-                data: {
-                    message: 'API Key Gemini belum dikonfigurasi. Set NUXT_GEMINI_API_KEY atau GEMINI_API_KEY di environment.'
-                }
-            })
+            return {
+                success: true,
+                narasi: buildFallbackNarasi({ what, when, where, who, why, how }),
+                fallback: true,
+                message: 'Narasi dibuat dengan mode fallback karena API key Gemini belum dikonfigurasi.'
+            }
         }
 
         console.log('[Generate Narasi] Starting AI generation...')
@@ -98,7 +119,7 @@ Narasi:
             success: true,
             narasi: narasi.trim(),
             metadata: {
-                model: 'gemini-1.5-flash',
+                model: 'gemini-2.5-flash',
                 timestamp: new Date().toISOString(),
                 inputLength: JSON.stringify(body).length,
                 outputLength: narasi.length
@@ -137,12 +158,18 @@ Narasi:
             throw error
         }
 
-        throw createError({
-            statusCode: 500,
-            statusMessage: error.statusMessage || error.message || 'Gagal generate narasi dengan AI. Silakan coba lagi.',
-            data: {
-                message: error?.data?.message || error.message || 'Gagal generate narasi dengan AI. Silakan coba lagi.'
-            }
-        })
+        return {
+            success: true,
+            narasi: buildFallbackNarasi({
+                what: String(what || '').trim() || 'Kegiatan Paroki',
+                when,
+                where,
+                who,
+                why,
+                how
+            }),
+            fallback: true,
+            message: error?.data?.message || error.message || 'Gemini tidak tersedia saat ini, narasi fallback digunakan.'
+        }
     }
 })
