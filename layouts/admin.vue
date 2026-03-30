@@ -528,7 +528,7 @@ onMounted(async () => {
           Authorization: `Bearer ${token}`
         },
         cache: 'no-cache'
-      }) as any
+      })
 
       if (me?.role) {
         resolvedRole = me.role
