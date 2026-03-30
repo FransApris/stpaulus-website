@@ -4,16 +4,7 @@ import { requireAuth, requirePermission } from '../../../utils/auth'
 export default defineEventHandler(async (event) => {
   // Check authentication and permissions
   requireAuth(event)
-  // Allow read access for content management permissions
-  const authContext = event.context.auth
-  if (!authContext || !authContext.permissions || !Array.isArray(authContext.permissions) || !authContext.permissions.some((perm: string) =>
-    ['manage_articles', 'manage_news', 'manage_gallery', 'manage_agenda', 'manage_users', 'manage_rooms', 'manage_bookings'].includes(perm)
-  )) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Forbidden: Insufficient permissions'
-    })
-  }
+  requirePermission('manage_articles')(event)
 
   const query = getQuery(event)
   const page = Math.max(1, parseInt(query.page as string) || 1)
@@ -38,7 +29,16 @@ export default defineEventHandler(async (event) => {
     const dataParams = status ? [status, limit, offset] : [limit, offset]
     const sql = `
       SELECT
-        a.*,
+        a.id,
+        a.title,
+        a.slug,
+        a.excerpt,
+        a.author,
+        a.image,
+        a.status,
+        a.published_at,
+        a.created_at,
+        a.updated_at,
         GROUP_CONCAT(ac.name) as category_names,
         GROUP_CONCAT(ac.id) as category_ids,
         GROUP_CONCAT(ac.slug) as category_slugs

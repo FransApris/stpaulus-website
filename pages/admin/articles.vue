@@ -228,6 +228,7 @@ const filterStatus = ref('')
 const searchQuery = ref('')
 const selectedArticles = ref([])
 const imageError = ref(false)
+const loadingArticleDetail = ref(false)
 
 // Pagination state
 const currentPage = useState('admin-articles-page', () => 1)
@@ -414,29 +415,36 @@ const saveArticle = async () => {
 
 // Edit article
 const editArticle = async (article) => {
-  editingArticle.value = article
-  imageError.value = false
-  
-  // Set form data first
-  articleForm.value = {
-    title: article.title,
-    slug: article.slug,
-    excerpt: article.excerpt || '',
-    content: article.content,
-    author: article.author || '',
-    image: article.image || '',
-    status: article.status,
-    category_ids: article.categories ? article.categories.map(cat => cat.id) : []
-  }
+  loadingArticleDetail.value = true
+  try {
+    const detail = await $fetch(`/api/admin/articles/${article.id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+      }
+    })
 
-  console.log('[Articles] Editing article with image:', article.image)
-  console.log('[Articles] Form image value:', articleForm.value.image)
-  
-  // Wait for next tick to ensure reactive updates
-  await nextTick()
-  
-  // Then show modal
-  showAddModal.value = true
+    editingArticle.value = detail
+    imageError.value = false
+
+    articleForm.value = {
+      title: detail.title,
+      slug: detail.slug,
+      excerpt: detail.excerpt || '',
+      content: detail.content || '',
+      author: detail.author || '',
+      image: detail.image || '',
+      status: detail.status,
+      category_ids: detail.categories ? detail.categories.map(cat => cat.id) : []
+    }
+
+    await nextTick()
+    showAddModal.value = true
+  } catch (error) {
+    console.error('Failed to fetch article detail:', error)
+    alert('Gagal memuat detail artikel')
+  } finally {
+    loadingArticleDetail.value = false
+  }
 }
 
 // Toggle publish status

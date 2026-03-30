@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
     // Get article with categories
     const articleQuery = `
-      SELECT a.*, GROUP_CONCAT(ac.name) as category_names, GROUP_CONCAT(ac.slug) as category_slugs
+      SELECT a.*, GROUP_CONCAT(ac.id) as category_ids, GROUP_CONCAT(ac.name) as category_names, GROUP_CONCAT(ac.slug) as category_slugs
       FROM articles a
       LEFT JOIN article_category_relations acr ON a.id = acr.article_id
       LEFT JOIN article_categories ac ON acr.category_id = ac.id
@@ -36,10 +36,12 @@ export default defineEventHandler(async (event) => {
     // Format categories
     const categories = []
     if (article.category_names) {
+      const ids = article.category_ids.split(',')
       const names = article.category_names.split(',')
       const slugs = article.category_slugs.split(',')
       for (let i = 0; i < names.length; i++) {
         categories.push({
+          id: parseInt(ids[i]),
           name: names[i],
           slug: slugs[i]
         })

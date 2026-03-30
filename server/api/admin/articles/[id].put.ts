@@ -26,16 +26,8 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const { title, slug, excerpt, content, author, status, category_ids, image } = body
 
-    // Validation
-    if (!title || !content) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'Title and content are required'
-      })
-    }
-
     // Check if article exists
-    const existingArticle = await getDbQuery('SELECT id FROM articles WHERE id = ?', [id])
+    const existingArticle = await getDbQuery('SELECT * FROM articles WHERE id = ?', [id]) as any
     if (!existingArticle) {
       throw createError({
         statusCode: 404,
@@ -43,8 +35,23 @@ export default defineEventHandler(async (event) => {
       })
     }
 
+    const finalTitle = title ?? existingArticle.title
+    const finalContent = content ?? existingArticle.content
+    const finalExcerpt = excerpt ?? existingArticle.excerpt ?? ''
+    const finalAuthor = author ?? existingArticle.author ?? ''
+    const finalStatus = status ?? existingArticle.status ?? 'draft'
+    const finalImage = image ?? existingArticle.image ?? null
+
+    // Validation (supports partial updates by falling back to existing values)
+    if (!finalTitle || !finalContent) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Title and content are required'
+      })
+    }
+
     // Generate slug if not provided
-    const finalSlug = slug || createSlug(title)
+    const finalSlug = slug || createSlug(finalTitle)
 
     // Check if slug already exists (excluding current article)
     const slugCheck = await getDbQuery('SELECT id FROM articles WHERE slug = ? AND id != ?', [finalSlug, id])
@@ -70,7 +77,7 @@ export default defineEventHandler(async (event) => {
 
     // Update published_at based on status
     let publishedAt = null
-    if (status === 'published') {
+    if (finalStatus === 'published') {
       // Check current status
       const currentArticle = await getDbQuery('SELECT status, published_at FROM articles WHERE id = ?', [id]) as { status: string, published_at: string | null } | undefined
       if (currentArticle && currentArticle.status !== 'published') {
@@ -85,7 +92,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    console.log('[Article Update] Update data:', { id, title, status, publishedAt })
+    console.log('[Article Update] Update data:', { id, title: finalTitle, status: finalStatus, publishedAt })
     console.log('[Article Update] Image value type:', typeof image)
     console.log('[Article Update] Image value length:', image ? image.length : 0)
     console.log('[Article Update] Image value preview:', image ? image.substring(0, 100) + '...' : 'null')
@@ -95,7 +102,7 @@ export default defineEventHandler(async (event) => {
     try {
       result = await runQuery(
         `UPDATE articles SET title = ?, slug = ?, content = ?, excerpt = ?, author = ?, status = ?, image = ?, published_at = ?, updated_at = NOW() WHERE id = ?`,
-        [title, finalSlug, content, excerpt || '', author || '', status || 'draft', image || null, publishedAt, id]
+        [finalTitle, finalSlug, finalContent, finalExcerpt, finalAuthor, finalStatus, finalImage, publishedAt, id]
       )
       console.log('[Article Update] Query result:', result)
     } catch (queryError: any) {
@@ -120,15 +127,17 @@ export default defineEventHandler(async (event) => {
 
     // Update category relations
     // First, remove existing relations
-    await runQuery('DELETE FROM article_category_relations WHERE article_id = ?', [id])
+    if (category_ids !== undefined) {
+      await runQuery('DELETE FROM article_category_relations WHERE article_id = ?', [id])
 
-    // Then, insert new relations if provided
-    if (category_ids && Array.isArray(category_ids) && category_ids.length > 0) {
-      for (const categoryId of category_ids) {
-        await runQuery(
-          'INSERT INTO article_category_relations (article_id, category_id) VALUES (?, ?)',
-          [id, categoryId]
-        )
+      // Then, insert new relations if provided
+      if (Array.isArray(category_ids) && category_ids.length > 0) {
+        for (const categoryId of category_ids) {
+          await runQuery(
+            'INSERT INTO article_category_relations (article_id, category_id) VALUES (?, ?)',
+            [id, categoryId]
+          )
+        }
       }
     }
 
@@ -137,12 +146,12 @@ export default defineEventHandler(async (event) => {
     // Return complete article data for optimistic update
     return {
       id: parseInt(id),
-      title,
+      title: finalTitle,
       slug: finalSlug,
-      content,
-      excerpt: excerpt || '',
-      author: author || '',
-      status: status || 'draft',
+      content: finalContent,
+      excerpt: finalExcerpt,
+      author: finalAuthor,
+      status: finalStatus,
       published_at: publishedAt,
       updated_at: new Date().toISOString(),
       message: 'Article updated successfully'
