@@ -107,7 +107,7 @@
               <div class="relative overflow-hidden h-48">
                 <img :src="album.thumbnail_url || '/images/default-gallery.jpg'" :alt="album.title"
                   class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  crossorigin="anonymous" referrerpolicy="no-referrer">
+                  @error="handleAlbumImageError">
                 <!-- Google Photos Badge -->
                 <div
                   class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1">
@@ -932,6 +932,14 @@ const formatDate = (dateString) => {
     month: 'long',
     day: 'numeric'
   })
+}
+
+const handleAlbumImageError = (event) => {
+  const img = event?.target
+  if (!img || typeof img.src !== 'string') return
+
+  if (img.src.includes('/images/default-gallery.jpg')) return
+  img.src = '/images/default-gallery.jpg'
 }
 
 const formatFileSize = (bytes) => {

@@ -155,8 +155,6 @@
             :src="album.thumbnail_url" 
             :alt="album.title"
             class="album-thumbnail"
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
             @error="handleImageError"
           />
           <div v-else class="no-thumbnail">
@@ -432,8 +430,13 @@ const formatDate = (dateString: string) => {
 const handleImageError = (event: Event) => {
   const img = event.target as HTMLImageElement;
   console.warn('Failed to load image:', img.src);
-  // Hide broken image, fallback will show
-  img.style.display = 'none';
+
+  if (img.src.includes('/images/default-gallery.jpg')) {
+    img.style.display = 'none';
+    return;
+  }
+
+  img.src = '/images/default-gallery.jpg';
 };
 
 // Fetch albums on mount

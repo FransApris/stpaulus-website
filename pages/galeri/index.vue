@@ -51,8 +51,7 @@
                 :src="album.thumbnail_url" 
                 :alt="album.title" 
                 class="w-full h-full object-cover"
-                crossorigin="anonymous"
-                referrerpolicy="no-referrer"
+                @error="handleAlbumImageError"
               />
               <div v-else class="text-center text-white p-6">
                 <svg class="w-20 h-20 mx-auto mb-4 opacity-80" fill="currentColor" viewBox="0 0 20 20">
@@ -182,6 +181,14 @@ const formatDate = (dateString) => {
     month: 'long',
     year: 'numeric'
   })
+}
+
+const handleAlbumImageError = (event) => {
+  const img = event?.target
+  if (!img || typeof img.src !== 'string') return
+
+  if (img.src.includes('/images/default-gallery.jpg')) return
+  img.src = '/images/default-gallery.jpg'
 }
 </script>
 

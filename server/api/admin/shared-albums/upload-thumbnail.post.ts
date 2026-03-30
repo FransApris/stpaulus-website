@@ -2,6 +2,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 import { readMultipartFormData } from 'h3'
+import { uploadToCloudinary, isCloudinaryEnabled } from '../../../utils/cloudinary'
 
 /**
  * Upload thumbnail for shared albums
@@ -69,6 +70,21 @@ export default defineEventHandler(async (event) => {
 
     console.log('[Thumbnail Upload] Saving file:', filename)
 
+    // Prefer Cloudinary for stable, CDN-backed URL on production.
+    if (isCloudinaryEnabled()) {
+      try {
+        const cloudUrl = await uploadToCloudinary(file.data, 'gallery-thumbnails', filename)
+        return {
+          success: true,
+          url: cloudUrl,
+          filename,
+          storage: 'cloudinary'
+        }
+      } catch (cloudError) {
+        console.error('[Thumbnail Upload] Cloudinary failed, falling back to local:', cloudError)
+      }
+    }
+
     // Save file
     const filePath = join(uploadDir, filename)
     await writeFile(filePath, file.data)
@@ -79,7 +95,8 @@ export default defineEventHandler(async (event) => {
     return {
       success: true,
       url: `/uploads/thumbnails/${filename}`,
-      filename: filename
+      filename: filename,
+      storage: 'local'
     }
   } catch (error: any) {
     console.error('[Thumbnail Upload] Error:', error)

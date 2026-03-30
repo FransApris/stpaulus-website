@@ -1,5 +1,27 @@
 // GET /api/shared-albums - List all shared albums
 import { getConnection } from '~/server/database/db';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+const normalizeThumbnailUrl = (url?: string | null): string | null => {
+  if (!url) return null;
+
+  let normalized = url.trim();
+  if (!normalized) return null;
+
+  if (normalized.startsWith('http://')) {
+    normalized = `https://${normalized.slice(7)}`;
+  }
+
+  if (normalized.startsWith('/uploads/')) {
+    const localPath = join(process.cwd(), 'public', normalized.replace(/^\//, ''));
+    if (!existsSync(localPath)) {
+      return null;
+    }
+  }
+
+  return normalized;
+};
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
@@ -16,10 +38,14 @@ export default defineEventHandler(async (event) => {
     sql += ' ORDER BY display_order ASC, created_at DESC';
     
     const [albums] = await connection.query(sql);
+    const normalizedAlbums = (albums as any[]).map((album) => ({
+      ...album,
+      thumbnail_url: normalizeThumbnailUrl(album.thumbnail_url)
+    }));
     
     return {
       success: true,
-      data: albums
+      data: normalizedAlbums
     };
   } catch (error: any) {
     console.error('Error fetching shared albums:', error);
