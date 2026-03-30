@@ -1,4 +1,4 @@
-import { runQuery, getQuery } from '../database/db'
+import { runQuery, getQuery, getConnection } from '../database/db'
 import { requireAuth } from '../utils/auth'
 import { getHeader } from 'h3'
 
@@ -178,71 +178,98 @@ export default defineEventHandler(async (event) => {
       // Room has no restrictions, allow booking
     }
 
-    // Check for booking conflicts - check both APPROVED and PENDING bookings
-    const conflictResult = await runQuery(`
-      SELECT 
-        b.id,
-        b.event_name,
-        DATE_FORMAT(b.start_time, '%H:%i') as start_time_formatted,
-        DATE_FORMAT(b.end_time, '%H:%i') as end_time_formatted,
-        b.status,
-        u.full_name
-      FROM bookings b
-      JOIN users u ON b.user_id = u.id
-      WHERE b.room_id = ? 
-      AND b.status IN ('APPROVED', 'PENDING')
-      AND NOT (b.end_time <= ? OR b.start_time >= ?)
-    `, [room_id, mysqlStart, mysqlEnd]) as any
-
-    // runQuery returns rows directly (already unwrapped)
-    const conflicts = conflictResult
-
-    console.log('[CREATE BOOKING] Conflict check result:', conflicts)
-
-    if (conflicts && conflicts.length > 0) {
-      const conflictInfo = conflicts[0]
-      console.log('[CREATE BOOKING] Conflict found:', conflictInfo)
-
-      const statusText = conflictInfo.status === 'PENDING' ? 'sedang menunggu persetujuan' : 'sudah disetujui'
-      throw createError({
-        statusCode: 409,
-        statusMessage: `Ruangan sudah dipesan oleh ${conflictInfo.full_name} dari pukul ${conflictInfo.start_time_formatted} - ${conflictInfo.end_time_formatted} (${statusText}). Silakan pilih waktu lain.`
-      })
-    }
-
-    console.log('[CREATE BOOKING] No conflicts found, proceeding with booking...')
-
-    // Determine status based on room settings
-    const status = room.requires_approval ? 'PENDING' : 'APPROVED'
-
-    // Insert booking
-    const normalizedRequesterName = String(requester_name || '').trim() || String(user.full_name || '').trim()
-
-    let result: any
+    // Serialize booking creation per room to prevent race-condition double booking.
+    const lockName = `booking_room_${room_id}`
+    const connection = await getConnection()
+    let lockAcquired = false
 
     try {
-      result = await runQuery(`
-        INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [room_id, userId, event_name, normalizedRequesterName, mysqlStart, mysqlEnd, status]) as any
-    } catch (insertError: any) {
-      if (!isMissingColumnError(insertError, 'requester_name')) {
-        throw insertError
+      const [lockRows] = await connection.query('SELECT GET_LOCK(?, 10) AS locked', [lockName]) as any
+      const lockStatus = lockRows?.[0]?.locked
+
+      if (lockStatus !== 1) {
+        throw createError({
+          statusCode: 409,
+          statusMessage: 'Sistem sedang memproses pemesanan ruangan ini. Silakan coba lagi.'
+        })
       }
 
-      console.warn('[CREATE BOOKING] requester_name column missing, retrying legacy insert')
+      lockAcquired = true
 
-      result = await runQuery(`
-        INSERT INTO bookings (room_id, user_id, event_name, start_time, end_time, status)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `, [room_id, userId, event_name, mysqlStart, mysqlEnd, status]) as any
-    }
+      const [conflicts] = await connection.query(`
+        SELECT 
+          b.id,
+          b.event_name,
+          DATE_FORMAT(b.start_time, '%H:%i') as start_time_formatted,
+          DATE_FORMAT(b.end_time, '%H:%i') as end_time_formatted,
+          b.status,
+          u.full_name
+        FROM bookings b
+        JOIN users u ON b.user_id = u.id
+        WHERE b.room_id = ? 
+        AND b.status IN ('APPROVED', 'PENDING')
+        AND NOT (b.end_time <= ? OR b.start_time >= ?)
+      `, [room_id, mysqlStart, mysqlEnd]) as any
 
-    console.log('[CREATE BOOKING] Success:', { insertId: result.insertId, status })
+      console.log('[CREATE BOOKING] Conflict check result:', conflicts)
 
-    return {
-      id: result.insertId,
-      message: status === 'APPROVED' ? 'Pemesanan berhasil' : 'Pemesanan menunggu persetujuan admin'
+      if (conflicts && conflicts.length > 0) {
+        const conflictInfo = conflicts[0]
+        console.log('[CREATE BOOKING] Conflict found:', conflictInfo)
+
+        const statusText = conflictInfo.status === 'PENDING' ? 'sedang menunggu persetujuan' : 'sudah disetujui'
+        throw createError({
+          statusCode: 409,
+          statusMessage: `Ruangan sudah dipesan oleh ${conflictInfo.full_name} dari pukul ${conflictInfo.start_time_formatted} - ${conflictInfo.end_time_formatted} (${statusText}). Silakan pilih waktu lain.`
+        })
+      }
+
+      console.log('[CREATE BOOKING] No conflicts found, proceeding with booking...')
+
+      // Determine status based on room settings
+      const status = room.requires_approval ? 'PENDING' : 'APPROVED'
+
+      // Insert booking
+      const normalizedRequesterName = String(requester_name || '').trim() || String(user.full_name || '').trim()
+
+      let result: any
+
+      try {
+        const [insertResult] = await connection.query(`
+          INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `, [room_id, userId, event_name, normalizedRequesterName, mysqlStart, mysqlEnd, status]) as any
+        result = insertResult
+      } catch (insertError: any) {
+        if (!isMissingColumnError(insertError, 'requester_name')) {
+          throw insertError
+        }
+
+        console.warn('[CREATE BOOKING] requester_name column missing, retrying legacy insert')
+
+        const [legacyInsertResult] = await connection.query(`
+          INSERT INTO bookings (room_id, user_id, event_name, start_time, end_time, status)
+          VALUES (?, ?, ?, ?, ?, ?)
+        `, [room_id, userId, event_name, mysqlStart, mysqlEnd, status]) as any
+        result = legacyInsertResult
+      }
+
+      console.log('[CREATE BOOKING] Success:', { insertId: result.insertId, status })
+
+      return {
+        id: result.insertId,
+        message: status === 'APPROVED' ? 'Pemesanan berhasil' : 'Pemesanan menunggu persetujuan admin'
+      }
+    } finally {
+      if (lockAcquired) {
+        try {
+          await connection.query('SELECT RELEASE_LOCK(?)', [lockName])
+        } catch (releaseError) {
+          console.warn('[CREATE BOOKING] Failed to release DB lock:', releaseError)
+        }
+      }
+
+      connection.release()
     }
   } catch (error: any) {
     console.error('[CREATE BOOKING] Error:', error)
