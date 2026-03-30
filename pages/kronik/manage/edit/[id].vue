@@ -106,7 +106,7 @@
                                     </p>
                                     <!-- Preview Featured Image -->
                                     <div v-if="form.featured_image" class="mt-2 relative inline-block">
-                                        <img :src="form.featured_image" alt="Preview"
+                                        <img :src="resolveKronikImagePath(form.featured_image)" alt="Preview"
                                             class="h-24 w-auto rounded-lg border border-gray-200" />
                                         <button type="button" @click="removeFeaturedImage"
                                             class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
@@ -131,7 +131,7 @@
                                         class="mt-2 flex flex-wrap gap-2">
                                         <div v-for="(img, idx) in form.gallery" :key="idx"
                                             class="relative inline-block">
-                                            <img :src="img" alt="Gallery"
+                                            <img :src="resolveKronikImagePath(img)" alt="Gallery"
                                                 class="h-20 w-20 object-cover rounded-lg border border-gray-200" />
                                             <button type="button" @click="removeGalleryImage(idx)"
                                                 class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
@@ -418,6 +418,35 @@ const form = reactive({
     status: 'pending'
 })
 
+const resolveKronikImagePath = (value: unknown): string => {
+    const text = String(value || '').trim()
+    if (!text) return ''
+    if (text.startsWith('http://') || text.startsWith('https://')) return text
+    if (text.startsWith('/')) return text
+    return `/uploads/kronik/${text}`
+}
+
+const normalizeGalleryValue = (value: unknown): string[] => {
+    if (!value) return []
+
+    let parsed: unknown = value
+    if (typeof parsed === 'string') {
+        const trimmed = parsed.trim()
+        if (!trimmed) return []
+        try {
+            parsed = JSON.parse(trimmed)
+        } catch {
+            parsed = [trimmed]
+        }
+    }
+
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+        .map((item) => resolveKronikImagePath(item))
+        .filter((item): item is string => Boolean(item))
+}
+
 // Watch category_id changes to filter sections
 watch(() => form.category_id, async (newCategoryId: string | number) => {
     const oldSectionId = form.section_id
@@ -548,8 +577,8 @@ const fetchEntry = async () => {
         form.status = entry.status || 'pending'
         
         // Load photos
-        form.featured_image = entry.featured_image || ''
-        form.gallery = entry.gallery ? JSON.parse(entry.gallery) : []
+        form.featured_image = resolveKronikImagePath(entry.featured_image) || ''
+        form.gallery = normalizeGalleryValue(entry.gallery)
 
         console.log('[Edit Kronik] Form populated:', {
             category_id: form.category_id,

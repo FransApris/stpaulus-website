@@ -6,7 +6,9 @@
       cta-to="/misa" :hero-image="activeTheme?.image_path || '/images/gereja-stpaulus-hero.jpg'" />
 
     <!-- Live Jadwal Misa Widget (Floating) -->
-    <MisaScheduleWidget />
+    <ClientOnly>
+      <MisaScheduleWidget />
+    </ClientOnly>
 
     <!-- Section 1: Welcome / About Teaser -->
     <section class="py-16 bg-white">

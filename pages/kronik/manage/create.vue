@@ -98,7 +98,7 @@
                                     </p>
                                     <!-- Preview Featured Image -->
                                     <div v-if="form.featured_image" class="mt-2 relative inline-block">
-                                        <img :src="form.featured_image" alt="Preview"
+                                        <img :src="resolveKronikImagePath(form.featured_image)" alt="Preview"
                                             class="h-24 w-auto rounded-lg border border-gray-200" />
                                         <button type="button" @click="removeFeaturedImage"
                                             class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
@@ -123,7 +123,7 @@
                                         class="mt-2 flex flex-wrap gap-2">
                                         <div v-for="(img, idx) in form.gallery" :key="idx"
                                             class="relative inline-block">
-                                            <img :src="img" alt="Gallery"
+                                            <img :src="resolveKronikImagePath(img)" alt="Gallery"
                                                 class="h-20 w-20 object-cover rounded-lg border border-gray-200" />
                                             <button type="button" @click="removeGalleryImage(idx)"
                                                 class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600">
@@ -387,6 +387,14 @@ const form = reactive({
     gallery: [] as string[],
     status: 'pending'
 })
+
+const resolveKronikImagePath = (value: unknown): string => {
+    const text = String(value || '').trim()
+    if (!text) return ''
+    if (text.startsWith('http://') || text.startsWith('https://')) return text
+    if (text.startsWith('/')) return text
+    return `/uploads/kronik/${text}`
+}
 
 // Watch category_id changes to filter sections
 watch(() => form.category_id, async (newCategoryId: string | number) => {
