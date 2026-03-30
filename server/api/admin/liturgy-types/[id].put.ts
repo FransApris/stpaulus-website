@@ -1,6 +1,23 @@
 import { runQuery, getQuery } from '../../../database/db'
 import { requirePermission } from '../../../utils/auth'
 
+const iconBySlug: Record<string, string> = {
+  'misa-harian': '✝️',
+  'misa-minggu': '⛪',
+  'misa-hari-raya': '🎄',
+  'sakramen-tobat': '🙏',
+  'adorasi': '🕯️',
+  'rosario': '📿',
+  'novena': '🕊️',
+  'ibadat-lainnya': '🙌'
+}
+
+const normalizeIcon = (icon: unknown, slug?: string) => {
+  const text = String(icon || '').trim()
+  const fallback = iconBySlug[String(slug || '').trim()] || '⛪'
+  return (!text || /^\?+$/.test(text)) ? fallback : text
+}
+
 export default defineEventHandler(async (event) => {
   // Check permission
   requirePermission('manage_liturgy_types')(event)
@@ -37,11 +54,13 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    const normalizedIcon = normalizeIcon(icon, uniqueSlug)
+
     await runQuery(`
       UPDATE liturgy_types
       SET name = ?, slug = ?, icon = ?, color = ?, description = ?, display_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
-    `, [name, uniqueSlug, icon || '⛪', color || '#6B7280', description || '', display_order || 0, is_active ? 1 : 0, id])
+    `, [name, uniqueSlug, normalizedIcon, color || '#6B7280', description || '', display_order || 0, is_active ? 1 : 0, id])
 
     // Fetch updated data to return
     const updatedType = await getQuery('SELECT * FROM liturgy_types WHERE id = ?', [id])

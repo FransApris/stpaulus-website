@@ -1,6 +1,29 @@
 import { allQuery } from '../../../database/db'
 import { requirePermission } from '../../../utils/auth'
 
+const iconBySlug: Record<string, string> = {
+  'misa-harian': '✝️',
+  'misa-minggu': '⛪',
+  'misa-hari-raya': '🎄',
+  'sakramen-tobat': '🙏',
+  'adorasi': '🕯️',
+  'rosario': '📿',
+  'novena': '🕊️',
+  'ibadat-lainnya': '🙌'
+}
+
+const normalizeIcon = (icon: unknown, slug?: string) => {
+  const text = String(icon || '').trim()
+  const fallback = iconBySlug[String(slug || '').trim()] || '⛪'
+
+  // Corrupted emoji commonly becomes ??? in legacy seed/import data.
+  if (!text || /^\?+$/.test(text)) {
+    return fallback
+  }
+
+  return text
+}
+
 export default defineEventHandler(async (event) => {
   try {
     // Check authentication context
@@ -33,8 +56,13 @@ export default defineEventHandler(async (event) => {
       ORDER BY display_order ASC, name ASC
     `)
 
-    console.log('[Liturgy Types GET] Fetched', liturgyTypes.length, 'liturgy types')
-    return liturgyTypes
+    const normalizedTypes = liturgyTypes.map((type: any) => ({
+      ...type,
+      icon: normalizeIcon(type.icon, type.slug)
+    }))
+
+    console.log('[Liturgy Types GET] Fetched', normalizedTypes.length, 'liturgy types')
+    return normalizedTypes
   } catch (error) {
     console.error('[Liturgy Types GET] Error:', error)
 

@@ -1,6 +1,23 @@
 import { runQuery, getQuery } from '../../../database/db'
 import { requirePermission } from '../../../utils/auth'
 
+const iconBySlug: Record<string, string> = {
+  'misa-harian': '✝️',
+  'misa-minggu': '⛪',
+  'misa-hari-raya': '🎄',
+  'sakramen-tobat': '🙏',
+  'adorasi': '🕯️',
+  'rosario': '📿',
+  'novena': '🕊️',
+  'ibadat-lainnya': '🙌'
+}
+
+const normalizeIcon = (icon: unknown, slug?: string) => {
+  const text = String(icon || '').trim()
+  const fallback = iconBySlug[String(slug || '').trim()] || '⛪'
+  return (!text || /^\?+$/.test(text)) ? fallback : text
+}
+
 export default defineEventHandler(async (event) => {
   // Check permission
   requirePermission('manage_liturgy_types')(event)
@@ -27,10 +44,12 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
+    const normalizedIcon = normalizeIcon(icon, uniqueSlug)
+
     const result = await runQuery(`
       INSERT INTO liturgy_types (name, slug, icon, color, description, display_order, is_active)
       VALUES (?, ?, ?, ?, ?, ?, 1)
-    `, [name, uniqueSlug, icon || '⛪', color || '#6B7280', description || '', display_order || 0])
+    `, [name, uniqueSlug, normalizedIcon, color || '#6B7280', description || '', display_order || 0])
 
     const insertId = (result as any).insertId
 
