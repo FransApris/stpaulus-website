@@ -17,41 +17,67 @@ function resolveGeminiApiKey(): string {
     return ''
 }
 
+function buildFallbackNarasi(data: {
+    what_title: string
+    when_date?: string
+    when_time?: string
+    where_location?: string
+    who_participants?: string
+    why_purpose?: string
+    how_process?: string
+}): string {
+    const whenText = [data.when_date, data.when_time].filter(Boolean).join(' ').trim() || 'waktu yang telah dijadwalkan'
+    const whereText = data.where_location || 'lingkungan paroki'
+    const whoText = data.who_participants || 'umat paroki'
+    const whyText = data.why_purpose || 'memperkuat iman dan kebersamaan umat'
+    const howText = data.how_process || 'rangkaian kegiatan pastoral dan liturgis yang tertib serta penuh makna'
+
+    return [
+        `${data.what_title} dilaksanakan pada ${whenText} di ${whereText} dengan melibatkan ${whoText}. Kegiatan ini menjadi bagian dari pelayanan pastoral yang terus diupayakan secara berkesinambungan oleh paroki.`,
+        `Dalam pelaksanaannya, kegiatan berlangsung melalui ${howText}. Umat mengikuti rangkaian acara dengan antusias, sehingga suasana kebersamaan, doa, dan pelayanan dapat terbangun dengan baik.`,
+        `Tujuan utama kegiatan ini adalah ${whyText}. Melalui momentum tersebut, paroki berharap nilai-nilai iman, solidaritas, dan semangat pelayanan semakin tumbuh dalam kehidupan menggereja sehari-hari.`,
+        `Ke depan, kegiatan serupa diharapkan terus dikembangkan agar semakin banyak umat dapat terlibat aktif, mengalami pendalaman rohani, serta mengambil bagian dalam karya pelayanan Gereja.`
+    ].join('\n\n')
+}
+
 export default defineEventHandler(async (event) => {
     console.log('[News AI Generate] Starting AI generation...')
 
+    const body = await readBody(event)
+    const {
+        what_title,
+        when_date,
+        when_time,
+        where_location,
+        who_participants,
+        why_purpose,
+        how_process
+    } = body || {}
+
+    const safeTitle = String(what_title || '').trim() || 'Berita Kegiatan Paroki'
+
     try {
-        // Get request body
-        const body = await readBody(event)
-        const {
-            what_title,
-            when_date,
-            when_time,
-            where_location,
-            who_participants,
-            why_purpose,
-            how_process
-        } = body
-
-        // Validate required fields
-        if (!what_title) {
-            throw createError({
-                statusCode: 400,
-                message: 'Judul berita harus diisi'
-            })
-        }
-
         // Initialize Gemini AI
         const apiKey = resolveGeminiApiKey()
 
         if (!apiKey) {
-            throw createError({
-                statusCode: 500,
-                statusMessage: 'API Key Gemini belum dikonfigurasi',
-                data: {
-                    message: 'API Key Gemini belum dikonfigurasi. Set NUXT_GEMINI_API_KEY atau GEMINI_API_KEY di environment.'
-                }
+            const narasiFallback = buildFallbackNarasi({
+                what_title: safeTitle,
+                when_date,
+                when_time,
+                where_location,
+                who_participants,
+                why_purpose,
+                how_process
             })
+
+            return {
+                success: true,
+                narasi: narasiFallback,
+                prompt: 'fallback-no-gemini-key',
+                fallback: true,
+                message: 'Narasi dibuat dengan mode fallback karena API key Gemini belum dikonfigurasi.'
+            }
         }
 
         console.log('[News AI Generate] Initializing Gemini API...')
@@ -62,7 +88,7 @@ export default defineEventHandler(async (event) => {
         const prompt = `
 Anda adalah penulis berita gereja Katolik yang profesional. Buatkan narasi berita yang informatif dan menarik berdasarkan data 5W1H berikut:
 
-📌 JUDUL: ${what_title}
+📌 JUDUL: ${safeTitle}
 📅 KAPAN: ${when_date || '-'} ${when_time || ''}
 📍 DIMANA: ${where_location || '-'}
 👥 SIAPA: ${who_participants || '-'}
@@ -109,12 +135,26 @@ Narasi:
     } catch (error: any) {
         console.error('[News AI Generate Error]', error)
 
-        throw createError({
-            statusCode: error.statusCode || 500,
-            statusMessage: error.statusMessage || error.message || 'Gagal generate narasi dengan AI',
-            data: {
-                message: error?.data?.message || error.message || 'Gagal generate narasi dengan AI'
-            }
+        if (error?.statusCode === 400) {
+            throw error
+        }
+
+        const narasiFallback = buildFallbackNarasi({
+            what_title: String(what_title || '').trim() || 'Berita Kegiatan Paroki',
+            when_date,
+            when_time,
+            where_location,
+            who_participants,
+            why_purpose,
+            how_process
         })
+
+        return {
+            success: true,
+            narasi: narasiFallback,
+            prompt: 'fallback-on-ai-error',
+            fallback: true,
+            message: error?.data?.message || error.message || 'Gemini tidak tersedia saat ini, narasi fallback digunakan.'
+        }
     }
 })

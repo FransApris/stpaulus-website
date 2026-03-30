@@ -1,5 +1,7 @@
 // Public API: Get kronik entry detail
 import { getQuery as getOne, runQuery } from '~/server/database/db'
+import { existsSync } from 'fs'
+import { join } from 'path'
 
 const normalizeImagePath = (value: unknown): string | null => {
   const text = String(value || '').trim()
@@ -7,6 +9,15 @@ const normalizeImagePath = (value: unknown): string | null => {
   if (text.startsWith('http://') || text.startsWith('https://')) return text
   if (text.startsWith('/')) return text
   return `/uploads/kronik/${text}`
+}
+
+const ensureImagePathExists = (value: unknown): string | null => {
+  const normalized = normalizeImagePath(value)
+  if (!normalized) return null
+  if (!normalized.startsWith('/uploads/')) return normalized
+
+  const fullPath = join(process.cwd(), 'public', normalized.replace(/^\//, ''))
+  return existsSync(fullPath) ? normalized : null
 }
 
 const parseJsonMaybeNested = (value: any) => {
@@ -74,10 +85,10 @@ export default defineEventHandler(async (event) => {
       VALUES (?, ?, ?)
     `, [id, headers['x-forwarded-for'] || 'unknown', headers['user-agent'] || 'unknown'])
 
-    entry.featured_image = normalizeImagePath(entry.featured_image)
+    entry.featured_image = ensureImagePathExists(entry.featured_image)
     // Parse JSON fields (supports legacy double-encoded rows)
     entry.gallery = parseJsonMaybeNested(entry.gallery)
-      .map((img: unknown) => normalizeImagePath(img))
+      .map((img: unknown) => ensureImagePathExists(img))
       .filter(Boolean)
     entry.documents = parseJsonMaybeNested(entry.documents)
 

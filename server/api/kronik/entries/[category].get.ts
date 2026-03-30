@@ -1,6 +1,8 @@
 // Public API: Get kronik entries by category
 import { allQuery, getQuery as getOne } from '~/server/database/db'
 import { getQuery } from 'h3'
+import { existsSync } from 'fs'
+import { join } from 'path'
 
 const normalizeImagePath = (value: unknown): string | null => {
   const text = String(value || '').trim()
@@ -8,6 +10,15 @@ const normalizeImagePath = (value: unknown): string | null => {
   if (text.startsWith('http://') || text.startsWith('https://')) return text
   if (text.startsWith('/')) return text
   return `/uploads/kronik/${text}`
+}
+
+const ensureImagePathExists = (value: unknown): string | null => {
+  const normalized = normalizeImagePath(value)
+  if (!normalized) return null
+  if (!normalized.startsWith('/uploads/')) return normalized
+
+  const fullPath = join(process.cwd(), 'public', normalized.replace(/^\//, ''))
+  return existsSync(fullPath) ? normalized : null
 }
 
 export default defineEventHandler(async (event) => {
@@ -68,7 +79,7 @@ export default defineEventHandler(async (event) => {
 
     const normalizedEntries = entries.map((entry: any) => ({
       ...entry,
-      featured_image: normalizeImagePath(entry.featured_image)
+      featured_image: ensureImagePathExists(entry.featured_image)
     }))
 
     // Get category info
