@@ -3,6 +3,32 @@ import { requireAuth } from '~/server/utils/auth'
 import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 import { getRouterParam } from 'h3'
 
+const normalizeImagePath = (value: unknown): string | null => {
+    const text = String(value || '').trim()
+    if (!text) return null
+    if (text.startsWith('http://') || text.startsWith('https://')) return text
+    if (text.startsWith('/')) return text
+    return `/uploads/kronik/${text}`
+}
+
+const parseJsonMaybeNested = (value: any) => {
+    if (!value) return []
+    let parsed: any = value
+
+    for (let i = 0; i < 2; i++) {
+        if (typeof parsed !== 'string') break
+        const text = parsed.trim()
+        if (!text) return []
+        try {
+            parsed = JSON.parse(text)
+        } catch {
+            break
+        }
+    }
+
+    return Array.isArray(parsed) ? parsed : []
+}
+
 export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')
 
@@ -48,6 +74,12 @@ export default defineEventHandler(async (event) => {
                 message: 'You can only view your own entries'
             })
         }
+
+        entry.featured_image = normalizeImagePath(entry.featured_image)
+        entry.gallery = parseJsonMaybeNested(entry.gallery)
+            .map((img: unknown) => normalizeImagePath(img))
+            .filter(Boolean)
+        entry.documents = parseJsonMaybeNested(entry.documents)
 
         return {
             success: true,

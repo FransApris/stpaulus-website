@@ -1,6 +1,14 @@
 // Public API: Get kronik entry detail
 import { getQuery as getOne, runQuery } from '~/server/database/db'
 
+const normalizeImagePath = (value: unknown): string | null => {
+  const text = String(value || '').trim()
+  if (!text) return null
+  if (text.startsWith('http://') || text.startsWith('https://')) return text
+  if (text.startsWith('/')) return text
+  return `/uploads/kronik/${text}`
+}
+
 const parseJsonMaybeNested = (value: any) => {
   if (!value) return []
   let parsed: any = value
@@ -66,8 +74,11 @@ export default defineEventHandler(async (event) => {
       VALUES (?, ?, ?)
     `, [id, headers['x-forwarded-for'] || 'unknown', headers['user-agent'] || 'unknown'])
 
+    entry.featured_image = normalizeImagePath(entry.featured_image)
     // Parse JSON fields (supports legacy double-encoded rows)
     entry.gallery = parseJsonMaybeNested(entry.gallery)
+      .map((img: unknown) => normalizeImagePath(img))
+      .filter(Boolean)
     entry.documents = parseJsonMaybeNested(entry.documents)
 
     return {

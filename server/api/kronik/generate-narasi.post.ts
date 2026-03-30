@@ -2,6 +2,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { requireAuth } from '~/server/utils/auth'
 import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 
+const ADMIN_ROLES = new Set(['super_admin', 'admin_komsos', 'admin_sekretariat'])
+
 function resolveGeminiApiKey(): string {
     const config = useRuntimeConfig()
     const candidates = [
@@ -22,7 +24,10 @@ function resolveGeminiApiKey(): string {
 export default defineEventHandler(async (event) => {
     try {
         const decoded = requireAuth(event)
-        await requireKronikUserAccess(decoded.userId)
+        const role = String(decoded.role || '').toLowerCase()
+        if (!ADMIN_ROLES.has(role)) {
+            await requireKronikUserAccess(decoded.userId)
+        }
 
         const body = await readBody(event)
         const { what, when, where, who, why, how } = body
@@ -125,6 +130,10 @@ Narasi:
         }
 
         if (error.statusCode === 400) {
+            throw error
+        }
+
+        if (error.statusCode === 401 || error.statusCode === 403) {
             throw error
         }
 

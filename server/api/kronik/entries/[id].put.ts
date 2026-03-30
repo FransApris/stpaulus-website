@@ -3,6 +3,37 @@ import { requireAuth } from '~/server/utils/auth'
 import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
 import { getRouterParam } from 'h3'
 
+const normalizeImagePath = (value: unknown): string | null => {
+    const text = String(value || '').trim()
+    if (!text) return null
+    if (text.startsWith('http://') || text.startsWith('https://')) return text
+    if (text.startsWith('/')) return text
+    return `/uploads/kronik/${text}`
+}
+
+const normalizeGalleryInput = (value: unknown): string | null => {
+    let list: unknown[] = []
+
+    if (Array.isArray(value)) {
+        list = value
+    } else if (typeof value === 'string' && value.trim()) {
+        try {
+            const parsed = JSON.parse(value)
+            if (Array.isArray(parsed)) {
+                list = parsed
+            }
+        } catch {
+            // Ignore invalid JSON and store as null.
+        }
+    }
+
+    const normalized = list
+        .map(item => normalizeImagePath(item))
+        .filter(Boolean)
+
+    return normalized.length > 0 ? JSON.stringify(normalized) : null
+}
+
 export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')
 
@@ -41,6 +72,8 @@ export default defineEventHandler(async (event) => {
         }
 
         const body = await readBody(event)
+        const normalizedFeaturedImage = normalizeImagePath(body.featured_image)
+        const normalizedGallery = normalizeGalleryInput(body.gallery)
 
         // Validate required fields with detailed error
         const missingFields: string[] = []
@@ -91,8 +124,8 @@ export default defineEventHandler(async (event) => {
                 body.where_address || null,
                 body.why_purpose || null,
                 body.how_process || null,
-                body.featured_image || null,
-                body.gallery || null,
+                normalizedFeaturedImage,
+                normalizedGallery,
                 body.status || 'pending',
                 id
             ]

@@ -2,6 +2,14 @@
 import { allQuery, getQuery as getOne } from '~/server/database/db'
 import { getQuery } from 'h3'
 
+const normalizeImagePath = (value: unknown): string | null => {
+  const text = String(value || '').trim()
+  if (!text) return null
+  if (text.startsWith('http://') || text.startsWith('https://')) return text
+  if (text.startsWith('/')) return text
+  return `/uploads/kronik/${text}`
+}
+
 export default defineEventHandler(async (event) => {
   const categorySlug = getRouterParam(event, 'category')
   const queryParams = getQuery(event)
@@ -58,6 +66,11 @@ export default defineEventHandler(async (event) => {
       LIMIT ? OFFSET ?
     `, [...params, limit, offset])
 
+    const normalizedEntries = entries.map((entry: any) => ({
+      ...entry,
+      featured_image: normalizeImagePath(entry.featured_image)
+    }))
+
     // Get category info
     const category = await getOne(`
       SELECT id, name, slug, description
@@ -67,7 +80,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      data: entries,
+      data: normalizedEntries,
       category: category,
       pagination: {
         page,
