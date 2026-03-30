@@ -35,6 +35,7 @@ export default defineEventHandler(async (event) => {
       FROM documents d
       LEFT JOIN document_categories dc ON d.category_id = dc.id
       WHERE d.is_featured = 1
+        AND dc.is_active = 1
       ORDER BY d.created_at DESC
       LIMIT 6
     `) as DocumentWithCategory[]

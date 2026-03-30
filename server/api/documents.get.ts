@@ -19,8 +19,8 @@ export default defineEventHandler(async (event) => {
       dc.name as category_name,
       dc.color as category_color
     FROM documents d
-    LEFT JOIN document_categories dc ON d.category_id = dc.id
-    WHERE 1=1
+    INNER JOIN document_categories dc ON d.category_id = dc.id
+    WHERE dc.is_active = 1
   `
 
   const params = []
