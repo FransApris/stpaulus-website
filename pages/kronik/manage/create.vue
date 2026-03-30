@@ -94,8 +94,8 @@
                                         :disabled="uploadingFeatured"
                                         class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-paulus-blue focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-paulus-blue file:text-white hover:file:bg-blue-800 disabled:opacity-50" />
                                     <p class="text-xs text-gray-500 mt-1">
-                                        {{ uploadingFeatured ? 'Mengunggah...' : 'Upload 1 foto utama untuk ditampilkan
-                                        sebagai thumbnail' }}
+                                        <span v-if="uploadingFeatured">Mengunggah...</span>
+                                        <span v-else>Upload 1 foto utama untuk ditampilkan sebagai thumbnail</span>
                                     </p>
                                     <!-- Preview Featured Image -->
                                     <div v-if="form.featured_image" class="mt-2 relative inline-block">
