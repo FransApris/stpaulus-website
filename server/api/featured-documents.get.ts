@@ -49,11 +49,9 @@ export default defineEventHandler(async (event) => {
       file_size: doc.file_size,
       mime_type: doc.mime_type,
       created_at: doc.created_at,
-      category: {
-        name: doc.category_name,
-        slug: doc.category_slug,
-        color: doc.category_color
-      }
+      category_name: doc.category_name,
+      category_slug: doc.category_slug,
+      category_color: doc.category_color
     }))
   } catch (error) {
     console.error('Featured documents error:', error)

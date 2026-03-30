@@ -1,5 +1,6 @@
 import { defineEventHandler, createError, getRouterParam, setHeader, sendRedirect } from 'h3'
 import type { H3Event } from 'h3'
+import { getQuery } from 'h3'
 import { allQuery } from '~/server/database/db'
 import fs from 'fs'
 import path from 'path'
@@ -21,6 +22,8 @@ function getUploadBasePath() {
 
 export default defineEventHandler(async (event: H3Event) => {
   const id = getRouterParam(event, 'id')
+  const query = getQuery(event)
+  const mode = String(query.mode || 'attachment').toLowerCase() === 'inline' ? 'inline' : 'attachment'
   if (!id) {
     throw createError({
       statusCode: 400,
@@ -45,10 +48,35 @@ export default defineEventHandler(async (event: H3Event) => {
 
   const doc = documents[0] as { file_path: string; filename: string; original_filename: string; mime_type: string }
 
-  // If the file_path is a full URL (e.g. Cloudinary), redirect to it directly
+  // If the file is hosted on cloud storage, inline can redirect directly.
+  // Attachment mode proxies bytes so browser always treats it as downloadable.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
-    console.log(`[Document Download] id=${id} → redirecting to cloud URL: ${doc.file_path}`)
-    return sendRedirect(event, doc.file_path, 302)
+    if (mode === 'inline') {
+      console.log(`[Document Download] id=${id} → redirecting to cloud URL (inline): ${doc.file_path}`)
+      return sendRedirect(event, doc.file_path, 302)
+    }
+
+    try {
+      const remoteResponse = await fetch(doc.file_path)
+      if (!remoteResponse.ok) {
+        throw new Error(`Remote fetch failed: ${remoteResponse.status}`)
+      }
+
+      const arrayBuffer = await remoteResponse.arrayBuffer()
+      const fileBuffer = Buffer.from(arrayBuffer)
+
+      setHeader(event, 'Content-Type', doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream')
+      setHeader(event, 'Content-Disposition', `attachment; filename="${doc.original_filename}"`)
+      setHeader(event, 'Content-Length', fileBuffer.length)
+
+      return fileBuffer
+    } catch (error) {
+      console.error(`[Document Download] Failed to proxy cloud file for id=${id}:`, error)
+      throw createError({
+        statusCode: 502,
+        statusMessage: 'Gagal mengambil file dokumen dari penyimpanan cloud'
+      })
+    }
   }
 
   // Build physical file path. doc.file_path is stored as /uploads/documents/<filename>
@@ -72,9 +100,9 @@ export default defineEventHandler(async (event: H3Event) => {
     // Read file
     const fileBuffer = fs.readFileSync(filePath)
 
-    // Set headers for download
+    // Set headers for preview/download mode
     setHeader(event, 'Content-Type', doc.mime_type || 'application/octet-stream')
-    setHeader(event, 'Content-Disposition', `attachment; filename="${doc.original_filename}"`)
+    setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"`)
     setHeader(event, 'Content-Length', fileBuffer.length)
 
     return fileBuffer

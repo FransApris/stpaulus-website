@@ -220,94 +220,51 @@ const fetchDocuments = async () => {
   }
 }
 
-// View document
-const getDownloadErrorMessage = async (response, fallback) => {
-  try {
-    const data = await response.json()
-    if (data?.statusMessage) return data.statusMessage
-    if (data?.message) return data.message
-  } catch {
-    // Ignore parse error and use fallback message.
+const getDocumentUrl = (docId, mode = 'attachment') => `/api/documents/${docId}/download?mode=${mode}`
+
+const viewDocument = (doc) => {
+  if (process.client) {
+    globalThis.window.open(getDocumentUrl(doc.id, 'inline'), '_blank', 'noopener,noreferrer')
   }
-  return fallback
 }
 
-const viewDocument = async (doc) => {
+const printDocument = (doc) => {
   if (process.client) {
-    try {
-      const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) {
-        const message = await getDownloadErrorMessage(response, 'Gagal membuka dokumen')
-        throw new Error(message)
-      }
+    const printUrl = getDocumentUrl(doc.id, 'inline')
+    const printWindow = globalThis.window.open(printUrl, '_blank')
 
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      globalThis.window.open(url, '_blank')
-      
-      // Cleanup after a delay to allow the new window to load
-      setTimeout(() => URL.revokeObjectURL(url), 100)
-    } catch (error) {
-      console.error('Failed to view document:', error)
-      alert(error instanceof Error ? error.message : 'Gagal membuka dokumen')
+    if (!printWindow) {
+      alert('Popup diblokir browser. Izinkan popup untuk mencetak dokumen.')
+      return
     }
-  }
-}
 
-// Print document
-const printDocument = async (doc) => {
-  if (process.client) {
     try {
-      const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) {
-        const message = await getDownloadErrorMessage(response, 'Gagal mencetak dokumen')
-        throw new Error(message)
-      }
-
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const printWindow = globalThis.window.open(url, '_blank')
-
-      if (printWindow) {
-        printWindow.onload = () => {
+      printWindow.onload = () => {
+        try {
           printWindow.print()
+        } catch {
+          // Some cross-origin viewers may block scripted print; user can print manually.
         }
-        // Cleanup after printing
-        setTimeout(() => URL.revokeObjectURL(url), 1000)
       }
     } catch (error) {
       console.error('Failed to print document:', error)
-      alert(error instanceof Error ? error.message : 'Gagal mencetak dokumen')
+      alert('Gagal mencetak dokumen')
     }
   }
 }
 
-// Download document
-const downloadDocument = async (doc) => {
+const downloadDocument = (doc) => {
   if (process.client) {
     try {
-      const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) {
-        const message = await getDownloadErrorMessage(response, 'Gagal mengunduh dokumen')
-        throw new Error(message)
-      }
-
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      
-      // Create download link
       const a = globalThis.document.createElement('a')
-      a.href = url
+      a.href = getDocumentUrl(doc.id, 'attachment')
       a.download = doc.original_filename
       globalThis.document.body.appendChild(a)
       a.click()
-      
-      // Cleanup
       globalThis.document.body.removeChild(a)
-      URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Failed to download document:', error)
-      alert(error instanceof Error ? error.message : 'Gagal mengunduh dokumen')
+      alert('Gagal mengunduh dokumen')
     }
   }
 }

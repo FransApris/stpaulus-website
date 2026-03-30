@@ -950,61 +950,30 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-const viewDocument = async (doc) => {
+const getDocumentUrl = (docId, mode = 'attachment') => `/api/documents/${docId}/download?mode=${mode}`
+
+const viewDocument = (doc) => {
   if (process.client) {
-    try {
-      const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) throw new Error('Failed to fetch document')
-
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      globalThis.window.open(url, '_blank')
-
-      // Cleanup after a delay to allow the new window to load
-      setTimeout(() => URL.revokeObjectURL(url), 100)
-    } catch (error) {
-      console.error('Failed to view document:', error)
-      alert('Gagal membuka dokumen')
-    }
+    globalThis.window.open(getDocumentUrl(doc.id, 'inline'), '_blank', 'noopener,noreferrer')
   }
 }
 
-const printDocument = async (doc) => {
+const printDocument = (doc) => {
   if (process.client) {
+    const printWindow = globalThis.window.open(getDocumentUrl(doc.id, 'inline'), '_blank')
+
+    if (!printWindow) {
+      alert('Popup diblokir browser. Izinkan popup untuk mencetak dokumen.')
+      return
+    }
+
     try {
-      const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) throw new Error('Failed to fetch document')
-
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const printWindow = globalThis.window.open(url, '_blank')
-
-      if (printWindow) {
-        // Better memory management: cleanup after print dialog closes
-        printWindow.onload = () => {
+      printWindow.onload = () => {
+        try {
           printWindow.print()
-
-          // Cleanup after print (works in most modern browsers)
-          if ('onafterprint' in printWindow) {
-            printWindow.onafterprint = () => {
-              URL.revokeObjectURL(url)
-              printWindow.close()
-            }
-          } else {
-            // Fallback: cleanup after longer delay for older browsers
-            setTimeout(() => {
-              URL.revokeObjectURL(url)
-            }, 5000)
-          }
+        } catch {
+          // Some cross-origin viewers may block scripted print; user can print manually.
         }
-
-        // Fallback: cleanup if window fails to load
-        printWindow.onerror = () => {
-          URL.revokeObjectURL(url)
-        }
-      } else {
-        // Cleanup if window.open failed
-        URL.revokeObjectURL(url)
       }
     } catch (error) {
       console.error('Failed to print document:', error)
@@ -1013,30 +982,15 @@ const printDocument = async (doc) => {
   }
 }
 
-const downloadDocument = async (doc) => {
+const downloadDocument = (doc) => {
   if (process.client) {
     try {
-      const response = await fetch(`/api/documents/${doc.id}/download`)
-      if (!response.ok) throw new Error('Failed to fetch document')
-
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-
-      // Create download link
       const a = globalThis.document.createElement('a')
-      a.href = url
+      a.href = getDocumentUrl(doc.id, 'attachment')
       a.download = doc.original_filename
       globalThis.document.body.appendChild(a)
       a.click()
-
-      // Improved cleanup: immediate cleanup after click
-      // Modern browsers start download immediately
       globalThis.document.body.removeChild(a)
-
-      // Revoke object URL after a short delay to ensure download starts
-      setTimeout(() => {
-        URL.revokeObjectURL(url)
-      }, 100)
     } catch (error) {
       console.error('Failed to download document:', error)
       alert('Gagal mengunduh dokumen')
