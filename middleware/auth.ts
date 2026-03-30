@@ -62,8 +62,8 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         '/admin/gallery-categories': ['manage_gallery_categories'],
         '/admin/agenda': ['manage_agenda'],
         '/admin/categories': ['manage_agenda_categories'],
-        '/admin/users': ['manage_users'],
-        '/admin/user-categories': ['manage_users'],
+        '/admin/users': ['manage_users', 'manage_users_komsos_sekretariat'],
+        '/admin/user-categories': ['manage_users', 'manage_users_komsos_sekretariat'],
         '/admin/rooms': ['manage_rooms'],
         '/admin/bookings': ['manage_bookings'],
         '/admin/bookings-new': ['manage_bookings'],
@@ -71,17 +71,31 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         '/admin/document-categories': ['manage_document_categories'],
         '/admin/contact-messages': ['manage_contact_messages'],
         '/admin/chatbot-faqs': ['manage_chatbot_faqs'],
-        '/admin/chatbot-faq-categories': ['manage_chatbot_faq_categories'],
-        '/admin/footer-settings': ['manage_footer_settings'],
+        '/admin/chatbot-faq-categories': ['manage_chatbot_faqs'],
+        '/admin/footer-settings': ['manage_footer'],
         '/admin/hero-themes': ['manage_hero_themes'],
         '/admin/liturgy-types': ['manage_liturgy_types'],
         '/admin/mass-schedules': ['manage_mass_schedules'],
         '/admin/regular-mass-schedules': ['manage_regular_mass_schedules'],
-        '/admin/pages': ['manage_pages']
+        '/admin/pages': ['manage_pages'],
+        '/admin/announcements': ['manage_church_announcements'],
+        '/admin/church-announcements': ['manage_church_announcements'],
+        '/admin/backup': ['manage_content'],
+        '/admin/restore': ['manage_content'],
+        '/admin/kronik': ['kronik.gereja.view', 'kronik.dpp.view', 'kronik.bgkp.view', 'kronik.wilayah.view', 'kronik.lingkungan.view'],
+        '/admin/bgkp': ['kronik.bgkp.view'],
+        '/admin/dpp': ['kronik.dpp.view'],
+        '/admin/teritorial': ['kronik.wilayah.view', 'kronik.lingkungan.view'],
+        '/admin/pastors': ['manage_mass_schedules'],
+        '/admin/parish-statistics': ['manage_users_komsos_sekretariat']
       }
 
-      // Check if the route requires specific permissions
-      const requiredPermissions = routePermissions[cleanPath] || []
+      // Check if the route requires specific permissions (supports nested routes)
+      const matchedRoute = Object.keys(routePermissions)
+        .sort((a, b) => b.length - a.length)
+        .find(route => cleanPath === route || cleanPath.startsWith(`${route}/`))
+
+      const requiredPermissions = matchedRoute ? routePermissions[matchedRoute] : []
 
       // Allow access if:
       // 1. Route requires no permissions (empty array) = anyone can access

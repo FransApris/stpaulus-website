@@ -516,16 +516,38 @@ onMounted(async () => {
       return
     }
 
-    if (!user.value) {
-      const decoded = JSON.parse(atob(token.split('.')[1]))
-      user.value = {
-        id: decoded.userId,
-        role_name: decoded.role,
-        role_display_name: decoded.role === 'super_admin' ? 'Super Admin' :
-          decoded.role === 'admin_komsos' ? 'Admin Komsos' :
-            decoded.role === 'admin_sekretariat' ? 'Admin Sekretariat' : decoded.role,
-        permissions: []
+    const decoded = JSON.parse(atob(token.split('.')[1]))
+
+    // Always refresh layout identity from token/API to avoid stale role after account switch.
+    let resolvedRole = decoded.role
+    let resolvedPermissions = []
+
+    try {
+      const me = await $fetch('/api/admin/me', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        cache: 'no-cache'
+      }) as any
+
+      if (me?.role) {
+        resolvedRole = me.role
       }
+
+      if (Array.isArray(me?.permissions)) {
+        resolvedPermissions = me.permissions
+      }
+    } catch {
+      // Keep decoded token role if /api/admin/me is temporarily unavailable.
+    }
+
+    user.value = {
+      id: decoded.userId,
+      role_name: resolvedRole,
+      role_display_name: resolvedRole === 'super_admin' ? 'Super Admin' :
+        resolvedRole === 'admin_komsos' ? 'Admin Komsos' :
+          resolvedRole === 'admin_sekretariat' ? 'Admin Sekretariat' : resolvedRole,
+      permissions: resolvedPermissions
     }
   } catch (error) {
     // If failed to decode token, redirect to login
@@ -582,7 +604,7 @@ const menuVisibility = computed(() => {
     return {
       dashboard: true,
       articles: true,
-      articleCategories: false,
+      articleCategories: hasPermission('manage_article_categories'),
       news: true,
       gallery: true,
       agenda: false,
@@ -593,7 +615,7 @@ const menuVisibility = computed(() => {
       users: false,
       rooms: false,
       bookings: false,
-      chatbotFaqCategories: true,
+      chatbotFaqCategories: hasPermission('manage_chatbot_faq_categories'),
       chatbotFaqs: true,
       heroThemes: true,
       pastors: false,
@@ -623,19 +645,18 @@ const menuVisibility = computed(() => {
       dpp: true,
       teritorial: true,
       agendaCategories: false,
-      contactMessages: true,
-      announcements: true,
-      users: true,
+      contactMessages: hasPermission('manage_contact_messages'),
+      announcements: hasPermission('manage_church_announcements'),
+      users: hasPermission('manage_users') || hasPermission('manage_users_komsos_sekretariat'),
       rooms: true,
       bookings: true,
       chatbotFaqCategories: false,
       chatbotFaqs: false,
       documentCategories: true,
       documents: true,
-      footerSettings: true,
-      parishStatistics: true,
-      announcements: true,
-      backup: true
+      footerSettings: hasPermission('manage_footer'),
+      parishStatistics: hasPermission('manage_users_komsos_sekretariat'),
+      backup: hasPermission('manage_content')
     }
   }
 

@@ -1,15 +1,10 @@
 import { runQuery, allQuery } from '../../../database/db'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Check authentication
-    const authHeader = getHeader(event, 'authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Unauthorized'
-      })
-    }
+    requireAuth(event)
+    requirePermission('manage_footer')(event)
 
     const body = await readBody(event)
     const { copyright_entity, footer_description, physical_address, social_links, footer_links } = body

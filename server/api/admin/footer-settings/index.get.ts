@@ -1,15 +1,10 @@
 import { allQuery } from '../../../database/db'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
-    // Check authentication
-    const authHeader = getHeader(event, 'authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw createError({
-        statusCode: 401,
-        statusMessage: 'Unauthorized'
-      })
-    }
+    requireAuth(event)
+    requirePermission('manage_footer')(event)
 
     // Get footer settings
     const footerSettings = await allQuery('SELECT * FROM footer_settings ORDER BY id DESC LIMIT 1')

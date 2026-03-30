@@ -1,19 +1,14 @@
 import mysql from 'mysql2/promise'
 import { readMultipartFormData } from 'h3'
+import { requireAuth, requirePermission } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
     try {
         console.log('[Database Restore] Starting restore process...')
 
-        // Verify admin authentication
-        const user = event.context.user
-        if (!user || user.role !== 'super_admin') {
-            console.log('[Database Restore] Unauthorized access attempt')
-            throw createError({
-                statusCode: 403,
-                statusMessage: 'Unauthorized: Super Admin access required'
-            })
-        }
+        // Verify authentication and permission via shared RBAC context.
+        requireAuth(event)
+        requirePermission('manage_content')(event)
 
         // Read the uploaded file
         const formData = await readMultipartFormData(event)
