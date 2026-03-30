@@ -160,7 +160,7 @@
         </p>
         <!-- Preview -->
         <div v-if="form.featured_image" class="mt-2 relative inline-block">
-          <img :src="form.featured_image" alt="Preview" class="h-32 w-auto rounded-lg border border-gray-200" />
+          <img :src="resolveKronikImagePath(form.featured_image)" alt="Preview" class="h-32 w-auto rounded-lg border border-gray-200" />
           <button
             type="button"
             @click="removeFeaturedImage"
@@ -190,7 +190,7 @@
         <!-- Preview Gallery -->
         <div v-if="form.gallery && form.gallery.length > 0" class="mt-2 flex flex-wrap gap-2">
           <div v-for="(img, idx) in form.gallery" :key="idx" class="relative inline-block">
-            <img :src="img" alt="Gallery" class="h-20 w-20 object-cover rounded-lg border border-gray-200" />
+            <img :src="resolveKronikImagePath(img)" alt="Gallery" class="h-20 w-20 object-cover rounded-lg border border-gray-200" />
             <button
               type="button"
               @click="removeGalleryImage(idx)"
@@ -290,6 +290,20 @@ const form = reactive({
   status: 'pending'
 })
 
+const resolveKronikImagePath = (value) => {
+  const text = String(value || '').trim()
+  if (!text) return ''
+  if (text.startsWith('http://') || text.startsWith('https://')) return text
+  if (text.startsWith('/')) return text
+  return `/uploads/kronik/${text}`
+}
+
+const normalizeGalleryValue = (value) => {
+  if (!value) return []
+  if (!Array.isArray(value)) return []
+  return value.map((item) => resolveKronikImagePath(item)).filter(Boolean)
+}
+
 // Fetch categories
 const { data: categoriesData } = await useFetch('/api/admin/kronik/categories')
 const categories = computed(() => categoriesData.value?.data || [])
@@ -321,8 +335,8 @@ const fetchEntry = async () => {
       form.where_address = response.data.where_address || ''
       form.why_purpose = response.data.why_purpose || ''
       form.how_process = response.data.how_process || ''
-      form.featured_image = response.data.featured_image || ''
-      form.gallery = Array.isArray(response.data.gallery) ? response.data.gallery : []
+      form.featured_image = resolveKronikImagePath(response.data.featured_image) || ''
+      form.gallery = normalizeGalleryValue(response.data.gallery)
       form.status = response.data.status || 'pending'
     }
   } catch (error) {

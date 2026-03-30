@@ -36,7 +36,9 @@
     </section>
 
     <!-- Quick Stats Section (NEW) -->
-    <QuickStatsCounter />
+    <ClientOnly>
+      <QuickStatsCounter />
+    </ClientOnly>
 
     <!-- Section 2: Teritorial Lingkungan -->
     <ClientOnly>

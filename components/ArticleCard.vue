@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from '#imports'
+import { computed, ref, watch } from '#imports'
 
 const props = defineProps({
   title: {
@@ -65,12 +65,11 @@ const props = defineProps({
   }
 })
 
-// Handle image source with fallback and cache busting
-const imageSrc = computed(() => {
-  if (!props.image) return '/images/default-article.jpg'
-  // Add cache busting parameter to force refresh
-  return props.image.includes('?') ? `${props.image}&v=${Date.now()}` : `${props.image}?v=${Date.now()}`
-})
+const imageSrc = ref(props.image || '/images/default-article.jpg')
+
+watch(() => props.image, (newImage) => {
+  imageSrc.value = newImage || '/images/default-article.jpg'
+}, { immediate: true })
 
 const handleImageError = () => {
   console.log('[ArticleCard] Image failed to load, using fallback:', props.image)
