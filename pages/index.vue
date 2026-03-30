@@ -16,7 +16,8 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Paroki St. Paulus Juanda</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jl. Juanda No. 123, Sidoarjo, Jawa Timur 61234<br/>Tel: (031) 123-4567 | Email: info@stpaulusjuanda.org</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jl. Juanda No. 123, Sidoarjo, Jawa Timur
+            61234<br />Tel: (031) 123-4567 | Email: info@stpaulusjuanda.org</p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
           <SimpleCard title="Gallery Foto"
@@ -44,7 +45,8 @@
               <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
             </div>
             <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Teritorial Lingkungan</h2>
-            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Peta wilayah teritorial Paroki St. Paulus Juanda.</p>
+            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Peta wilayah teritorial Paroki St. Paulus
+              Juanda.</p>
           </div>
           <div class="max-w-6xl mx-auto">
             <MapEmbed :height="480" :lat="-7.3917066" :lng="112.7296374" title="Teritorial Lingkungan Paroki St. Paulus"
@@ -67,7 +69,8 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Album Terbaru</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Lihat album foto terbaru dari kegiatan paroki kami.</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Lihat album foto terbaru dari kegiatan paroki
+            kami.</p>
         </div>
 
         <!-- Loading Skeleton -->
@@ -182,7 +185,8 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Berita Terbaru</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Informasi dan berita terkini dari Paroki St. Paulus Juanda.</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Informasi dan berita terkini dari Paroki St.
+            Paulus Juanda.</p>
         </div>
         <div v-if="newsPending" class="text-center text-gray-500">
           Memuat berita terbaru...
@@ -226,7 +230,8 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Dokumen Paroki</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting Gereja St. Paulus Juanda.</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting
+            Gereja St. Paulus Juanda.</p>
         </div>
         <div v-if="featuredDocumentsPending" class="text-center text-gray-500">
           Memuat dokumen unggulan...
@@ -326,7 +331,8 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Artikel & Renungan</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Baca inspirasi rohani, khotbah, dan artikel dari pastor serta komunitas paroki kami.</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Baca inspirasi rohani, khotbah, dan artikel
+            dari pastor serta komunitas paroki kami.</p>
         </div>
         <div v-if="articlesPending" class="text-center text-gray-500">
           Memuat artikel terbaru...
@@ -369,7 +375,8 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Agenda Mendatang</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jadwal kegiatan dan acara mendatang di Paroki St. Paulus Juanda.</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jadwal kegiatan dan acara mendatang di Paroki
+            St. Paulus Juanda.</p>
         </div>
         <div v-if="agendaPending" class="text-center text-gray-500">
           Memuat agenda mendatang...
@@ -445,7 +452,8 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Status Pemesanan Ruangan</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Status pemesanan ruangan di Paroki St. Paulus - Juanda.</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Status pemesanan ruangan di Paroki St. Paulus
+            - Juanda.</p>
         </div>
 
         <!-- Info Badge: Filter Active -->
@@ -642,7 +650,8 @@
 <script setup>
 // Set page title and meta
 useHead({
-  title: 'Beranda',
+  title: 'Paroki St. Paulus - Juanda, Sidoarjo',
+  titleTemplate: '%s',
   meta: [
     { name: 'description', content: 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik' },
 
