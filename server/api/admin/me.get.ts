@@ -34,6 +34,9 @@ export default defineEventHandler(async (event) => {
     
     const permissions = await getUserPermissions({ id: payload.userId, role_id: role_id })
     
+    console.log('[Admin ME] Fetched permissions for role_id:', role_id, 'count:', permissions.length)
+    console.log('[Admin ME] Permission list:', permissions)
+    
     // Return complete user data
     return {
       id: payload.userId,

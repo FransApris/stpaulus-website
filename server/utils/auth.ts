@@ -207,8 +207,11 @@ export const getUserPermissions = async (user: any): Promise<string[]> => {
       WHERE rp.role_id = ?
     `, [user.role_id]) as { name: string }[]
 
+    console.log('[Auth] getUserPermissions - role_id:', user.role_id, 'fetched count:', permissions.length)
     if (permissions && permissions.length > 0) {
-      return permissions.map(p => p.name)
+      const permNames = permissions.map(p => p.name)
+      console.log('[Auth] Permission names:', permNames)
+      return permNames
     }
   } catch (error) {
     console.log('[Auth] Error fetching role permissions from database:', error)
