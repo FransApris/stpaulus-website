@@ -153,7 +153,7 @@ const fetchPage = async () => {
   try {
     const response = await $fetch(`/api/admin/pages/${route.params.slug}`, {
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -187,7 +187,7 @@ const savePage = async () => {
     const response = await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: payload

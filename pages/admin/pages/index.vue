@@ -107,7 +107,7 @@ const fetchPages = async () => {
   try {
     const response = await $fetch('/api/admin/pages', {
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
     pages.value = response
@@ -173,7 +173,7 @@ const formatDate = (dateString) => {
 
 // Check authentication and fetch data on mount
 onMounted(async () => {
-  const token = sessionStorage.getItem('admin_access_token')
+  const token = localStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return
