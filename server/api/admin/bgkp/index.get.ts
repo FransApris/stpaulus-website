@@ -1,4 +1,5 @@
 // Admin API: Get all BGKP members (including inactive)
+import { defineEventHandler, createError } from 'h3'
 import { allQuery } from '~/server/database/db'
 import { requireAuth } from '~/server/utils/auth'
 
