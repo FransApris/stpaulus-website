@@ -1,8 +1,8 @@
 <template>
   <!-- No ClientOnly - Direct Render (SSR + Client Safe) -->
   <div v-if="props.showHero"
-    class="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0"
-    :class="className" :style="{ backgroundImage: `url(${resolvedHeroImage})` }">
+    class="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0" :class="className"
+    :style="{ backgroundImage: `url(${resolvedHeroImage})` }">
     <!-- No Hidden Img - Use CSS Bg Only (No Events) -->
 
     <!-- Absolute Center Content -->
@@ -40,7 +40,7 @@ const resolvedHeroImage = computed(() => {
   return props.heroImage || 'https://via.placeholder.com/1920x1080/4B5563/FFFFFF?text=Hero+Gereja+St.+Paulus'
 })
 
-// No onMounted/Events - Pure Static
+// No onMounted/Events - Pure Statics
 </script>
 
 <style scoped>
