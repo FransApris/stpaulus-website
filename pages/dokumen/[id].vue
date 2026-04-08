@@ -189,14 +189,14 @@ const formatFileSize = (bytes) => {
 
 // Document actions
 const viewDocument = () => {
-  if (document.value?.file_path) {
-    window.open(document.value.file_path, '_blank')
+  if (document.value?.id) {
+    window.open(`/api/documents/${document.value.id}/download?mode=inline`, '_blank')
   }
 }
 
 const printDocument = () => {
-  if (document.value?.file_path) {
-    const printWindow = window.open(document.value.file_path, '_blank')
+  if (document.value?.id) {
+    const printWindow = window.open(`/api/documents/${document.value.id}/download?mode=inline`, '_blank')
     if (printWindow) {
       printWindow.onload = () => {
         printWindow.print()
@@ -206,9 +206,9 @@ const printDocument = () => {
 }
 
 const downloadDocument = () => {
-  if (document.value?.file_path) {
+  if (document.value?.id) {
     const link = window.document.createElement('a')
-    link.href = document.value.file_path
+    link.href = `/api/documents/${document.value.id}/download?mode=attachment`
     link.download = document.value.original_filename || 'document.pdf'
     document.body.appendChild(link)
     link.click()
