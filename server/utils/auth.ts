@@ -200,6 +200,8 @@ export const getUserPermissions = async (user: any): Promise<string[]> => {
   if (!user.role_id) return []
 
   try {
+    console.log('[Auth] Starting permission fetch for role_id:', user.role_id)
+    
     const permissions = await allQuery(`
       SELECT p.name
       FROM permissions p
@@ -207,18 +209,23 @@ export const getUserPermissions = async (user: any): Promise<string[]> => {
       WHERE rp.role_id = ?
     `, [user.role_id]) as { name: string }[]
 
-    console.log('[Auth] getUserPermissions - role_id:', user.role_id, 'fetched count:', permissions.length)
+    console.log('[Auth] Raw query result type:', typeof permissions, 'isArray:', Array.isArray(permissions))
+    console.log('[Auth] Raw query result:', permissions)
+    console.log('[Auth] Raw query result count:', permissions?.length)
+
     if (permissions && permissions.length > 0) {
       const permNames = permissions.map(p => p.name)
-      console.log('[Auth] Permission names:', permNames)
+      console.log('[Auth] Mapped permission names count:', permNames.length)
+      console.log('[Auth] Mapped permission names:', permNames)
       return permNames
+    } else {
+      console.log('[Auth] Query returned empty or null result')
+      return []
     }
   } catch (error) {
     console.log('[Auth] Error fetching role permissions from database:', error)
+    return []
   }
-
-  // Fallback for other roles
-  return []
 }
 
 export const requirePermission = (permission: string) => {

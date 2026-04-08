@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
 
         try {
           permissions = await getUserPermissions(user)
+          console.log('[Auth Middleware] Permissions fetched - role:', decoded.role, 'role_id:', roleId, 'count:', permissions.length, 'perms:', permissions)
         } catch (permError) {
           console.error('[Auth Middleware] Error getting permissions:', permError)
           permissions = []
@@ -34,6 +35,12 @@ export default defineEventHandler(async (event) => {
           role: decoded.role,
           permissions
         }
+        
+        console.log('[Auth Middleware] Auth context set:', {
+          userId: decoded.userId,
+          role: decoded.role,
+          permissionsCount: permissions.length
+        })
       }
     } catch (error) {
       const statusCode = error && typeof error === 'object' && 'statusCode' in error ? (error as any).statusCode : 'unknown'
