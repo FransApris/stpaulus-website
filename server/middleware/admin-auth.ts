@@ -1,10 +1,5 @@
 import { requireAuth, getUserPermissions } from '../utils/auth'
 
-// In-memory cache for permissions per role_id (keyed by role_id number)
-// Avoids a DB round-trip on every admin API request
-const permissionsCacheTTL = 5 * 60 * 1000 // 5 minutes
-const permissionsCache = new Map<number, { permissions: string[], expiresAt: number }>()
-
 // Role name → id mapping (must match the database)
 const roleIdMap: Record<string, number> = {
   super_admin: 1,
@@ -27,22 +22,11 @@ export default defineEventHandler(async (event) => {
 
         let permissions: string[]
 
-        // Check cache first (avoid DB query on every request)
-        const cacheKey = roleId ?? decoded.role
-        const cached = permissionsCache.get(cacheKey as number)
-        if (cached && Date.now() < cached.expiresAt) {
-          permissions = cached.permissions
-        } else {
-          try {
-            permissions = await getUserPermissions(user)
-            permissionsCache.set(cacheKey as number, {
-              permissions,
-              expiresAt: Date.now() + permissionsCacheTTL
-            })
-          } catch (permError) {
-            console.error('[Auth Middleware] Error getting permissions:', permError)
-            permissions = []
-          }
+        try {
+          permissions = await getUserPermissions(user)
+        } catch (permError) {
+          console.error('[Auth Middleware] Error getting permissions:', permError)
+          permissions = []
         }
 
         event.context.auth = {
