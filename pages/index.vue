@@ -206,8 +206,10 @@
         <div v-else class="text-center py-12">
           <div class="inline-flex flex-col items-center justify-center gap-4 bg-white rounded-lg shadow-md p-8">
             <p class="text-gray-600 text-lg">Belum ada berita terbaru saat ini.</p>
-            <p class="text-gray-500 max-w-xl">Silakan cek kembali nanti atau kunjungi halaman jadwal misa untuk melihat update kegiatan terbaru.</p>
-            <NuxtLink to="/misa" class="mt-2 inline-flex items-center justify-center rounded-lg bg-[#882f1d] px-6 py-2 text-white hover:bg-[#a55e1f]">
+            <p class="text-gray-500 max-w-xl">Silakan cek kembali nanti atau kunjungi halaman jadwal misa untuk melihat
+              update kegiatan terbaru.</p>
+            <NuxtLink to="/misa"
+              class="mt-2 inline-flex items-center justify-center rounded-lg bg-[#882f1d] px-6 py-2 text-white hover:bg-[#a55e1f]">
               Ke Jadwal Misa
             </NuxtLink>
           </div>

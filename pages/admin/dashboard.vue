@@ -11,10 +11,8 @@
           <div class="px-4 py-2 rounded-full" :class="getRoleBadgeClass(userRole)">
             <span class="text-sm font-semibold">{{ getRoleName(userRole) }}</span>
           </div>
-          <button 
-            @click="handleLogout"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors"
-          >
+          <button @click="handleLogout"
+            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
             Logout
           </button>
         </div>
@@ -43,160 +41,179 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <!-- Artikel - Super Admin & Admin Komsos -->
             <div v-if="canViewContent" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Artikel</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.articles || 0 }}</dd>
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Artikel</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.articles || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Berita - Super Admin & Admin Komsos -->
-          <div v-if="canViewContent" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Berita</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.news || 0 }}</dd>
+            <!-- Berita - Super Admin & Admin Komsos -->
+            <div v-if="canViewContent" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Berita</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.news || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Album - Super Admin & Admin Komsos -->
-          <div v-if="canViewGallery" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Album</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.albums || 0 }}</dd>
+            <!-- Album - Super Admin & Admin Komsos -->
+            <div v-if="canViewGallery" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Album</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.albums || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Foto - Super Admin & Admin Komsos -->
-          <div v-if="canViewGallery" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Foto</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.photos || 0 }}</dd>
+            <!-- Foto - Super Admin & Admin Komsos -->
+            <div v-if="canViewGallery" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Foto</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.photos || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Agenda - Super Admin & Admin Sekretariat -->
-          <div v-if="canViewAgenda" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Agenda</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.agenda || 0 }}</dd>
+            <!-- Agenda - Super Admin & Admin Sekretariat -->
+            <div v-if="canViewAgenda" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Agenda</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.agenda || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Bookings - Super Admin & Admin Sekretariat -->
-          <div v-if="canViewBookings" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Bookings</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.bookings || 0 }}</dd>
+            <!-- Bookings - Super Admin & Admin Sekretariat -->
+            <div v-if="canViewBookings" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Bookings</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.bookings || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Ruangan - Super Admin & Admin Sekretariat -->
-          <div v-if="canViewRooms" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Ruangan</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.rooms || 0 }}</dd>
+            <!-- Ruangan - Super Admin & Admin Sekretariat -->
+            <div v-if="canViewRooms" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Ruangan</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.rooms || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Dokumen - Super Admin & Admin Sekretariat -->
-          <div v-if="canViewDocuments" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Dokumen</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.documents || 0 }}</dd>
+            <!-- Dokumen - Super Admin & Admin Sekretariat -->
+            <div v-if="canViewDocuments" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Dokumen</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.documents || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Users - Super Admin Only -->
-          <div v-if="auth.isSuperAdmin.value" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Users</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.users || 0 }}</dd>
+            <!-- Users - Super Admin Only -->
+            <div v-if="auth.isSuperAdmin.value" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Users</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.users || 0 }}</dd>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Contact Messages - Super Admin & Admin Sekretariat -->
-          <div v-if="canViewContactMessages" class="bg-gray-50 p-4 rounded-lg">
-            <div class="flex items-center">
-              <div class="flex-shrink-0">
-                <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-              <div class="ml-4">
-                <dt class="text-sm font-medium text-gray-500 truncate">Pesan</dt>
-                <dd class="text-lg font-semibold text-gray-900">{{ stats.contactMessages || 0 }}</dd>
+            <!-- Contact Messages - Super Admin & Admin Sekretariat -->
+            <div v-if="canViewContactMessages" class="bg-gray-50 p-4 rounded-lg">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                  </svg>
+                </div>
+                <div class="ml-4">
+                  <dt class="text-sm font-medium text-gray-500 truncate">Pesan</dt>
+                  <dd class="text-lg font-semibold text-gray-900">{{ stats.contactMessages || 0 }}</dd>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <template #fallback>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
-            <div v-for="i in 8" :key="i" class="bg-gray-100 p-4 rounded-lg h-24"></div>
-          </div>
-        </template>
-      </ClientOnly>
+          <template #fallback>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
+              <div v-for="i in 8" :key="i" class="bg-gray-100 p-4 rounded-lg h-24"></div>
+            </div>
+          </template>
+        </ClientOnly>
       </div>
     </div>
   </div>
@@ -204,283 +221,263 @@
   <!-- Booking Status Section - Only for superadmin and admin_sekretariat -->
   <ClientOnly>
     <div v-if="canViewBookingList" class="mb-8 bg-white shadow rounded-lg">
-    <div class="px-6 py-5">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Status Pemesanan Ruangan</h3>
-        <!-- Link disabled - bookings page not yet created -->
-        <!-- <NuxtLink 
+      <div class="px-6 py-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Status Pemesanan Ruangan</h3>
+          <!-- Link disabled - bookings page not yet created -->
+          <!-- <NuxtLink 
           to="/admin/bookings" 
           class="text-sm text-[#882f1d] hover:text-[#6b2416] font-medium"
         >
           Lihat Semua →
         </NuxtLink> -->
-      </div>
-
-      <!-- Loading State -->
-      <div v-if="loadingBookings" class="text-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"></div>
-        <p class="mt-2 text-sm text-gray-500">Memuat data booking...</p>
-      </div>
-
-      <!-- Bookings Table -->
-      <div v-else-if="bookings.length > 0">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pemesan</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  #{{ booking.id }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900">{{ booking.user_name || booking.name }}</div>
-                  <div class="text-sm text-gray-500">{{ booking.user_email || booking.email }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ booking.room_name }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ formatBookingDate(booking.booking_date) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span
-                    :class="getBookingStatusClass(booking.status)"
-                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                  >
-                    {{ getBookingStatusText(booking.status) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
 
-        <!-- Booking Pagination - Always show if there are bookings -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
-          <div class="flex-1 flex justify-between sm:hidden">
-            <button
-              @click="currentBookingPage > 1 && currentBookingPage--"
-              :disabled="currentBookingPage === 1"
-              class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Sebelumnya
-            </button>
-            <button
-              @click="currentBookingPage < totalBookingPages && currentBookingPage++"
-              :disabled="currentBookingPage === totalBookingPages"
-              class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Selanjutnya
-            </button>
+        <!-- Loading State -->
+        <div v-if="loadingBookings" class="text-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"></div>
+          <p class="mt-2 text-sm text-gray-500">Memuat data booking...</p>
+        </div>
+
+        <!-- Bookings Table -->
+        <div v-else-if="bookings.length > 0">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
+                    Pemesan
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
+                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    #{{ booking.id }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">{{ booking.user_name || booking.name }}</div>
+                    <div class="text-sm text-gray-500">{{ booking.user_email || booking.email }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ booking.room_name }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ formatBookingDate(booking.booking_date) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="getBookingStatusClass(booking.status)"
+                      class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ getBookingStatusText(booking.status) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
-          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-gray-700">
-                Menampilkan
-                <span class="font-medium">{{ (currentBookingPage - 1) * bookingsPerPage + 1 }}</span>
-                sampai
-                <span class="font-medium">{{ Math.min(currentBookingPage * bookingsPerPage, bookings.length) }}</span>
-                dari
-                <span class="font-medium">{{ bookings.length }}</span>
-                pemesanan
-              </p>
+
+          <!-- Booking Pagination - Always show if there are bookings -->
+          <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <button @click="currentBookingPage > 1 && currentBookingPage--" :disabled="currentBookingPage === 1"
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                Sebelumnya
+              </button>
+              <button @click="currentBookingPage < totalBookingPages && currentBookingPage++"
+                :disabled="currentBookingPage === totalBookingPages"
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                Selanjutnya
+              </button>
             </div>
-            <div v-if="totalBookingPages > 1">
-              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <button
-                  @click="currentBookingPage > 1 && currentBookingPage--"
-                  :disabled="currentBookingPage === 1"
-                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span class="sr-only">Sebelumnya</span>
-                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                </button>
-                <button
-                  v-for="page in visibleBookingPages"
-                  :key="page"
-                  @click="currentBookingPage = page"
-                  :class="[
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Menampilkan
+                  <span class="font-medium">{{ (currentBookingPage - 1) * bookingsPerPage + 1 }}</span>
+                  sampai
+                  <span class="font-medium">{{ Math.min(currentBookingPage * bookingsPerPage, bookings.length) }}</span>
+                  dari
+                  <span class="font-medium">{{ bookings.length }}</span>
+                  pemesanan
+                </p>
+              </div>
+              <div v-if="totalBookingPages > 1">
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                  <button @click="currentBookingPage > 1 && currentBookingPage--" :disabled="currentBookingPage === 1"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="sr-only">Sebelumnya</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                  <button v-for="page in visibleBookingPages" :key="page" @click="currentBookingPage = page" :class="[
                     'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
                     currentBookingPage === page
                       ? 'z-10 bg-[#882f1d] border-[#882f1d] text-white'
                       : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
-                  ]"
-                >
-                  {{ page }}
-                </button>
-                <button
-                  @click="currentBookingPage < totalBookingPages && currentBookingPage++"
-                  :disabled="currentBookingPage === totalBookingPages"
-                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span class="sr-only">Selanjutnya</span>
-                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                  </svg>
-                </button>
-              </nav>
+                  ]">
+                    {{ page }}
+                  </button>
+                  <button @click="currentBookingPage < totalBookingPages && currentBookingPage++"
+                    :disabled="currentBookingPage === totalBookingPages"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span class="sr-only">Selanjutnya</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Empty State -->
-      <div v-else class="text-center py-8">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-        </svg>
-        <p class="mt-2 text-sm text-gray-500">Tidak ada data pemesanan</p>
+        <!-- Empty State -->
+        <div v-else class="text-center py-8">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+            </path>
+          </svg>
+          <p class="mt-2 text-sm text-gray-500">Tidak ada data pemesanan</p>
+        </div>
       </div>
     </div>
-  </div>
   </ClientOnly>
 
   <!-- Recent Content Section - Only for users with content permissions -->
   <ClientOnly>
     <div v-if="canViewContent" class="bg-white shadow rounded-lg">
-    <div class="px-6 py-5">
-      <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Konten Terbaru</h3>
+      <div class="px-6 py-5">
+        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Konten Terbaru</h3>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="text-center py-8">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"></div>
-        <p class="mt-2 text-sm text-gray-500">Memuat konten...</p>
-      </div>
+        <!-- Loading State -->
+        <div v-if="loading" class="text-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"></div>
+          <p class="mt-2 text-sm text-gray-500">Memuat konten...</p>
+        </div>
 
-      <!-- Content Table -->
-      <div v-else-if="paginatedContent.length > 0" class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penulis</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr v-for="item in paginatedContent" :key="item.id" class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  :class="item.type === 'article' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
-                  class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                >
-                  {{ item.type === 'article' ? 'Artikel' : 'Berita' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ item.title }}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ item.author || 'Tidak diketahui' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  :class="getStatusClass(item.status)"
-                  class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                >
-                  {{ getStatusText(item.status) }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ formatDate(item.created_at) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- Content Table -->
+        <div v-else-if="paginatedContent.length > 0" class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penulis</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
+                  Dibuat
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr v-for="item in paginatedContent" :key="item.id" class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="item.type === 'article' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                    {{ item.type === 'article' ? 'Artikel' : 'Berita' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ item.title }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ item.author || 'Tidak diketahui' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="getStatusClass(item.status)"
+                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                    {{ getStatusText(item.status) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ formatDate(item.created_at) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-        <!-- Pagination -->
-        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-          <div class="flex-1 flex justify-between sm:hidden">
-            <button
-              @click="currentPage > 1 && currentPage--"
-              :disabled="currentPage === 1"
-              class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Sebelumnya
-            </button>
-            <button
-              @click="currentPage < totalPages && currentPage++"
-              :disabled="currentPage === totalPages"
-              class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Selanjutnya
-            </button>
-          </div>
-          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-gray-700">
-                Menampilkan
-                <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
-                sampai
-                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, combinedContent.length) }}</span>
-                dari
-                <span class="font-medium">{{ combinedContent.length }}</span>
-                hasil
-              </p>
+          <!-- Pagination -->
+          <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <button @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1"
+                class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                Sebelumnya
+              </button>
+              <button @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages"
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50">
+                Selanjutnya
+              </button>
             </div>
-            <div>
-              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                <button
-                  @click="currentPage > 1 && currentPage--"
-                  :disabled="currentPage === 1"
-                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  <span class="sr-only">Sebelumnya</span>
-                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                  </svg>
-                </button>
-                <button
-                  v-for="page in visiblePages"
-                  :key="page"
-                  @click="currentPage = page"
-                  :class="page === currentPage ? 'z-10 bg-[#882f1d] border-[#882f1d] text-white' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
-                  class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-                >
-                  {{ page }}
-                </button>
-                <button
-                  @click="currentPage < totalPages && currentPage++"
-                  :disabled="currentPage === totalPages"
-                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  <span class="sr-only">Selanjutnya</span>
-                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                  </svg>
-                </button>
-              </nav>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700">
+                  Menampilkan
+                  <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
+                  sampai
+                  <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, combinedContent.length) }}</span>
+                  dari
+                  <span class="font-medium">{{ combinedContent.length }}</span>
+                  hasil
+                </p>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button @click="currentPage > 1 && currentPage--" :disabled="currentPage === 1"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    <span class="sr-only">Sebelumnya</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd"
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                  <button v-for="page in visiblePages" :key="page" @click="currentPage = page"
+                    :class="page === currentPage ? 'z-10 bg-[#882f1d] border-[#882f1d] text-white' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'"
+                    class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                    {{ page }}
+                  </button>
+                  <button @click="currentPage < totalPages && currentPage++" :disabled="currentPage === totalPages"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50">
+                    <span class="sr-only">Selanjutnya</span>
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Empty State -->
-      <div v-else class="text-center py-12">
-        <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada konten</h3>
-        <p class="mt-2 text-gray-500">Mulai dengan membuat artikel atau berita pertama Anda.</p>
+        <!-- Empty State -->
+        <div v-else class="text-center py-12">
+          <svg class="mx-auto h-24 w-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900">Belum ada konten</h3>
+          <p class="mt-2 text-gray-500">Mulai dengan membuat artikel atau berita pertama Anda.</p>
+        </div>
       </div>
     </div>
-  </div>
   </ClientOnly>
 </template>
 
@@ -532,7 +529,7 @@ const canViewBookings = computed(() => auth.hasPermission('view_bookings') || au
 const canViewBookingList = computed(() => {
   const role = auth.user.value?.role || ''
   return (role === 'super_admin' || role === 'admin_sekretariat') &&
-         (auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings'))
+    (auth.hasPermission('view_bookings') || auth.hasPermission('manage_bookings'))
 })
 
 const canViewRooms = computed(() => auth.hasPermission('manage_rooms'))
@@ -684,7 +681,7 @@ const fetchContent = async () => {
   if (!canViewContent.value) {
     return // Skip fetching if user doesn't have content permissions
   }
-  
+
   loading.value = true
   try {
     const [articlesResponse, newsResponse] = await Promise.all([
@@ -719,7 +716,7 @@ const fetchBookings = async () => {
   if (!canViewBookingList.value) {
     return // Skip fetching if user is not superadmin or admin_sekretariat
   }
-  
+
   loadingBookings.value = true
   try {
     const response = await $fetch('/api/admin/bookings', {
@@ -729,14 +726,14 @@ const fetchBookings = async () => {
     })
 
     // Sort bookings: PENDING first, then by booking date descending
-    bookings.value = response
+    bookings.value = response.bookings
       .sort((a, b) => {
         // First sort by status (PENDING first)
         if (a.status === 'PENDING' && b.status !== 'PENDING') return -1
         if (a.status !== 'PENDING' && b.status === 'PENDING') return 1
-        
+
         // Then by booking date (newest first)
-        return new Date(b.booking_date) - new Date(a.booking_date)
+        return new Date(b.created_at) - new Date(a.created_at)
       })
   } catch (error) {
     if (error.statusCode === 401) {
