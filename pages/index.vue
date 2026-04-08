@@ -203,17 +203,13 @@
             :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url"
             :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" />
         </div>
-        <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <ArticleCard image="Misa Natal 2024" :show-clock="true" title="Misa Khusus Natal 2024"
-            description="Rayakan Natal bersama keluarga di gereja kami. Jadwal lengkap tersedia."
-            to="/berita/natal-2024" />
-          <!-- Card 2: Text-Only - Keep inline as it's a special placeholder -->
-          <div
-            class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow md:col-span-2 lg:col-span-1 flex items-center justify-center min-h-[200px]">
-            <div class="p-6 text-center">
-              <p class="text-gray-600 italic">Belum ada berita terbaru? Cek jadwal misa untuk update kegiatan.</p>
-              <NuxtLink to="/misa" class="mt-4 inline-block text-[#882f1d] hover:underline">Ke Jadwal Misa</NuxtLink>
-            </div>
+        <div v-else class="text-center py-12">
+          <div class="inline-flex flex-col items-center justify-center gap-4 bg-white rounded-lg shadow-md p-8">
+            <p class="text-gray-600 text-lg">Belum ada berita terbaru saat ini.</p>
+            <p class="text-gray-500 max-w-xl">Silakan cek kembali nanti atau kunjungi halaman jadwal misa untuk melihat update kegiatan terbaru.</p>
+            <NuxtLink to="/misa" class="mt-2 inline-flex items-center justify-center rounded-lg bg-[#882f1d] px-6 py-2 text-white hover:bg-[#a55e1f]">
+              Ke Jadwal Misa
+            </NuxtLink>
           </div>
         </div>
         <!-- CTA ke Full Berita -->
