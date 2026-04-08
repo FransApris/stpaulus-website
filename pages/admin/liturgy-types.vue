@@ -238,7 +238,7 @@ const fetchLiturgyTypes = async () => {
   try {
     const response = await $fetch('/api/admin/liturgy-types', {
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
     // API now returns array directly
@@ -282,7 +282,7 @@ const saveType = async () => {
     const result = await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: typeData
@@ -362,7 +362,7 @@ const deleteType = async () => {
     await $fetch(`/api/admin/liturgy-types/${deletedType.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
       }
     })
     // Success - item already removed from UI
