@@ -237,8 +237,8 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // JWT Secret for token verification - using stable hardcoded value for dev consistency
-    jwtSecret: 'stpaulus-cms-stable-jwt-secret-key-2025-dev-only',
+    // JWT Secret for token verification - read from environment first, fallback to a stable dev secret
+    jwtSecret: process.env.JWT_SECRET || 'stpaulus-cms-stable-jwt-secret-key-2025-dev-only',
 
     // Database configuration for MySQL
     database: {
