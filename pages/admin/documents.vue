@@ -31,6 +31,19 @@
         {{ migrating ? 'Memigrasikan...' : 'Migrate ke Cloud' }}
       </button>
 
+      <!-- Fix Document Permissions button -->
+      <button
+        @click="fixDocumentPermissions"
+        :disabled="fixing"
+        class="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 disabled:opacity-50 transition-colors duration-200 flex items-center"
+        title="Perbaiki dokumen lama yang tidak bisa dibuka karena tersimpan dengan akses terbatas di Cloudinary"
+      >
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+        </svg>
+        {{ fixing ? 'Memperbaiki...' : 'Perbaiki Akses Dokumen' }}
+      </button>
+
       <!-- Local docs warning badge -->
       <span v-if="localDocCount > 0" class="text-xs bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-full px-3 py-1">
         ⚠ {{ localDocCount }} dokumen belum di cloud
@@ -698,6 +711,37 @@ const toggleFeatured = async (id, isFeatured) => {
 }
 
 // Migrate local documents to Cloudinary
+const fixing = ref(false)
+
+// Fix existing documents yang berstatus 'authenticated' di Cloudinary agar bisa diakses publik
+const fixDocumentPermissions = async () => {
+  if (!confirm('Perbaiki semua dokumen yang tidak bisa dibuka? Proses ini akan mengubah setting akses di Cloudinary.')) return
+
+  fixing.value = true
+  try {
+    const token = localStorage.getItem('admin_access_token')
+    const result = await $fetch('/api/admin/fix-document-permissions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    }) as any
+
+    let msg = result.message + '\n'
+    if (result.results?.length) {
+      const fixed = result.results.filter((r: any) => r.status === 'fixed')
+      const failed = result.results.filter((r: any) => r.status === 'failed')
+      if (fixed.length) msg += `\nBerhasil: ${fixed.map((r: any) => r.filename).join(', ')}`
+      if (failed.length) msg += `\nGagal: ${failed.map((r: any) => `${r.filename} (${r.error})`).join(', ')}`
+    }
+    alert(msg)
+    await fetchDocuments()
+  } catch (error: any) {
+    const msg = error?.data?.statusMessage || error?.data?.message || error?.message || 'Gagal memperbaiki akses dokumen'
+    alert(`Error: ${msg}`)
+  } finally {
+    fixing.value = false
+  }
+}
+
 const migrateToCloud = async () => {
   if (localDocCount.value === 0) {
     alert('Semua dokumen sudah tersimpan di Cloudinary.')
