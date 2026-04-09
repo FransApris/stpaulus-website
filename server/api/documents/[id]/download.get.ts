@@ -84,15 +84,18 @@ export default defineEventHandler(async (event: H3Event) => {
     })
   }
 
-  // Get document info
+  // Get document info — no category is_active filter here so downloads work even if
+  // category was deactivated after the document appeared in the public list.
   const documents = await allQuery(`
-    SELECT d.file_path, d.filename, d.original_filename, d.mime_type, dc.is_active
+    SELECT d.file_path, d.filename, d.original_filename, d.mime_type
     FROM documents d
-    JOIN document_categories dc ON d.category_id = dc.id
-    WHERE d.id = ? AND dc.is_active = 1
+    WHERE d.id = ?
   `, [id])
 
+  console.log(`[Document Download] id=${id} query returned ${documents.length} row(s)`)
+
   if (documents.length === 0) {
+    console.warn(`[Document Download] 404 — no document with id=${id} in DB`)
     throw createError({
       statusCode: 404,
       statusMessage: 'Document not found'
