@@ -23,78 +23,97 @@ if (CLOUDINARY_CONFIGURED) {
 }
 
 /**
- * Fetch a Cloudinary-stored file, trying multiple auth strategies.
- * Logs every step so Railway logs can be used to diagnose failures.
+ * Parse a Cloudinary URL into its components.
+ * URL format: https://res.cloudinary.com/{cloud}/{resource_type}/{delivery_type}/{version?}/{public_id}
  */
-async function fetchCloudinaryFile(storedUrl: string): Promise<Response> {
+function parseCloudinaryUrl(storedUrl: string) {
+  // Use URL parser — handles edge cases like query strings
+  let pathname: string
+  try {
+    pathname = new URL(storedUrl).pathname
+  } catch {
+    return null
+  }
+  // pathname: /{cloud}/{resource_type}/{delivery_type}/{version?}/{...public_id}
+  const parts = pathname.split('/').filter(Boolean)
+  // parts[0]=cloud, parts[1]=raw/image/video, parts[2]=upload/authenticated/private, parts[3+]=version?+publicId
+  if (parts.length < 4) return null
+
+  const deliveryType = parts[2] as 'upload' | 'authenticated' | 'private'
+  const rest = parts.slice(3) // e.g. ['v1712345678', 'stpaulus', 'documents', 'myfile.pdf']
+
+  let version: number | undefined
+  let publicIdParts = rest
+  if (rest[0] && /^v\d+$/.test(rest[0])) {
+    version = parseInt(rest[0].substring(1))
+    publicIdParts = rest.slice(1)
+  }
+  const publicId = publicIdParts.join('/')
+  return { deliveryType, publicId, version }
+}
+
+/**
+ * Fetch a Cloudinary-stored file.
+ * - type=upload: fetch directly (no auth needed)
+ * - type=authenticated|private: generate a properly signed URL including the
+ *   version number (critical for Cloudinary signature verification)
+ *
+ * Returns { response, cloudinaryError } — cloudinaryError is set when all strategies fail.
+ */
+async function fetchCloudinaryFile(storedUrl: string): Promise<{ response: Response; cloudinaryError?: string }> {
   console.log(`[DocDL] storedUrl="${storedUrl}"`)
   console.log(`[DocDL] cloudinaryConfigured=${CLOUDINARY_CONFIGURED} cloud=${process.env.CLOUDINARY_CLOUD_NAME}`)
 
-  // Detect delivery type: upload | authenticated | private
-  const typeMatch = storedUrl.match(/\/(?:raw|image|video)\/(upload|authenticated|private)\//)
-  const deliveryType = typeMatch ? typeMatch[1] : 'unknown'
-  console.log(`[DocDL] deliveryType="${deliveryType}"`)
+  const parsed = parseCloudinaryUrl(storedUrl)
+  if (!parsed) {
+    console.error(`[DocDL] Cannot parse Cloudinary URL — ${storedUrl}`)
+    return { response: await fetch(storedUrl) }
+  }
 
-  // --- Strategy 1: direct fetch (always works for type=upload) ---
+  const { deliveryType, publicId, version } = parsed
+  console.log(`[DocDL] type="${deliveryType}" version=${version} publicId="${publicId}"`)
+
+  // type=upload: direct fetch, no signature needed
   if (deliveryType === 'upload') {
-    console.log(`[DocDL] strategy=direct (type=upload)`)
-    const resp = await fetch(storedUrl)
-    console.log(`[DocDL] direct fetch status=${resp.status}`)
-    if (resp.ok) return resp
-    const body = await resp.text()
-    console.error(`[DocDL] direct fetch failed body="${body.substring(0, 300)}"`)
-    // Don't throw — fall through to signing strategies below
+    console.log(`[DocDL] strategy=direct`)
+    const r = await fetch(storedUrl)
+    console.log(`[DocDL] direct status=${r.status}`)
+    if (r.ok) return { response: r }
+    const errBody = await r.text()
+    console.error(`[DocDL] direct failed body="${errBody.substring(0, 300)}"`)
+    return { response: r, cloudinaryError: `HTTP ${r.status}: ${errBody.substring(0, 200)}` }
   }
 
   if (!CLOUDINARY_CONFIGURED) {
-    console.error(`[DocDL] Cloudinary credentials missing — cannot sign URL`)
-    return fetch(storedUrl)
+    console.error(`[DocDL] Cloudinary credentials missing — cannot sign`)
+    const r = await fetch(storedUrl)
+    return { response: r, cloudinaryError: 'Cloudinary credentials not configured on server' }
   }
 
-  // Extract public_id — extension stays in public_id for raw resources
-  const publicIdMatch = storedUrl.match(/\/(?:raw|image|video)\/(?:upload|authenticated|private)\/(?:v\d+\/)?(.+)$/)
-  if (!publicIdMatch) {
-    console.error(`[DocDL] Cannot parse public_id from URL — falling back to direct`)
-    return fetch(storedUrl)
-  }
-  const publicId = publicIdMatch[1]
-  console.log(`[DocDL] publicId="${publicId}"`)
-
-  // --- Strategy 2: cloudinary.url() with sign_url:true (no expires_at) ---
+  // Build signed URL — MUST include version so signature matches
+  let signedUrl: string
   try {
-    const signed = cloudinary.url(publicId, {
+    signedUrl = cloudinary.url(publicId, {
       resource_type: 'raw',
-      type: deliveryType === 'unknown' ? 'authenticated' : deliveryType as any,
+      type: deliveryType,
       sign_url: true,
-      secure: true
+      secure: true,
+      ...(version ? { version } : {})
     })
-    console.log(`[DocDL] strategy=signed url="${signed.substring(0, 180)}"`)
-    const resp2 = await fetch(signed)
-    console.log(`[DocDL] signed fetch status=${resp2.status}`)
-    if (resp2.ok) return resp2
-    const body2 = await resp2.text()
-    console.error(`[DocDL] signed fetch failed body="${body2.substring(0, 300)}"`)
+    console.log(`[DocDL] strategy=signed url="${signedUrl.substring(0, 200)}"`)
   } catch (e: any) {
-    console.error(`[DocDL] strategy=signed threw: ${e.message}`)
+    console.error(`[DocDL] cloudinary.url() threw: ${e.message}`)
+    const r = await fetch(storedUrl)
+    return { response: r, cloudinaryError: `Failed to build signed URL: ${e.message}` }
   }
 
-  // --- Strategy 3: Basic Auth against original CDN URL ---
-  // Cloudinary CDN does not support Basic Auth, but the delivery-origin (CNAME) might
-  try {
-    const creds = Buffer.from(`${process.env.CLOUDINARY_API_KEY}:${process.env.CLOUDINARY_API_SECRET}`).toString('base64')
-    console.log(`[DocDL] strategy=basicAuth`)
-    const resp3 = await fetch(storedUrl, { headers: { Authorization: `Basic ${creds}` } })
-    console.log(`[DocDL] basicAuth status=${resp3.status}`)
-    if (resp3.ok) return resp3
-    const body3 = await resp3.text()
-    console.error(`[DocDL] basicAuth failed body="${body3.substring(0, 300)}"`)
-  } catch (e: any) {
-    console.error(`[DocDL] strategy=basicAuth threw: ${e.message}`)
-  }
+  const r2 = await fetch(signedUrl)
+  console.log(`[DocDL] signed status=${r2.status}`)
+  if (r2.ok) return { response: r2 }
 
-  // All strategies failed — return the last failed response
-  console.error(`[DocDL] All fetch strategies failed for publicId="${publicId}"`)
-  return fetch(storedUrl) // will be non-ok, caller will throw 502
+  const errBody2 = await r2.text()
+  console.error(`[DocDL] signed failed body="${errBody2.substring(0, 300)}"`)
+  return { response: r2, cloudinaryError: `Signed URL HTTP ${r2.status}: ${errBody2.substring(0, 200)}` }
 }
 
 /**
@@ -146,14 +165,21 @@ export default defineEventHandler(async (event: H3Event) => {
   // serves raw resources without proper Content-Type/Content-Disposition headers for inline viewing.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
     let remoteResponse: Response
+    let cloudinaryError: string | undefined
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 45000)
-      remoteResponse = await fetchCloudinaryFile(doc.file_path)
-      clearTimeout(timeoutId)
+      const result = await fetchCloudinaryFile(doc.file_path)
+      remoteResponse = result.response
+      cloudinaryError = result.cloudinaryError
 
       if (!remoteResponse.ok) {
-        console.error(`[Document Download] Cloud fetch ${remoteResponse.status} for id=${id} storedUrl=${doc.file_path}`)
+        console.error(`[DocDL] FINAL status=${remoteResponse.status} id=${id} cloudinaryError="${cloudinaryError}"`)
+        throw createError({
+          statusCode: 502,
+          statusMessage: cloudinaryError
+            ? `Gagal mengambil file dari cloud. ${cloudinaryError}`
+            : `Gagal mengambil file dari cloud (HTTP ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
+        })
+      }
         throw createError({
           statusCode: 502,
           statusMessage: `Gagal mengambil file dari cloud (status: ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
