@@ -95,5 +95,3 @@ export default defineEventHandler(async (event) => {
   setHeader(event, 'Content-Length', fileBuffer.length)
   return fileBuffer
 })
-
-})
