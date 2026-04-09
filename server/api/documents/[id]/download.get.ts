@@ -18,28 +18,43 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
 }
 
 /**
- * Extract the Cloudinary public_id from a stored URL.
+ * Parse a Cloudinary stored URL into parts needed for private_download_url.
  * e.g. https://res.cloudinary.com/xxx/raw/upload/v123/stpaulus/documents/file.pdf
- *      → stpaulus/documents/file.pdf
+ *   → { publicIdNoExt: 'stpaulus/documents/file', format: 'pdf' }
  */
-function extractCloudinaryPublicId(url: string): string | null {
+function parseCloudinaryUrl(url: string): { publicIdNoExt: string; format: string } | null {
   const match = url.match(/\/(?:raw|image|video)\/upload\/(?:v\d+\/)?(.+)$/)
-  return match ? match[1] : null
+  if (!match) return null
+  const full = match[1]
+  const lastDot = full.lastIndexOf('.')
+  if (lastDot < 0) return { publicIdNoExt: full, format: '' }
+  return { publicIdNoExt: full.slice(0, lastDot), format: full.slice(lastDot + 1) }
 }
 
 /**
- * Generate a signed Cloudinary URL valid for 5 minutes.
- * Falls back to the original URL if public_id cannot be extracted.
+ * Build an authenticated Cloudinary download URL using API credentials.
+ * Uses private_download_url which bypasses ALL account-level delivery restrictions
+ * (including "Restricted delivery types → Raw" in Cloudinary Security settings).
+ * Falls back to signed CDN URL, then the original URL.
  */
-function getSignedCloudinaryUrl(storedUrl: string): string {
-  const publicId = extractCloudinaryPublicId(storedUrl)
-  if (!publicId) return storedUrl
-  return cloudinary.url(publicId, {
-    resource_type: 'raw',
-    sign_url: true,
-    secure: true,
-    expires_at: Math.floor(Date.now() / 1000) + 300 // valid 5 min
-  })
+function buildCloudinaryFetchUrl(storedUrl: string): string {
+  const cfg = cloudinary.config()
+  if (!cfg.api_key || !cfg.api_secret) return storedUrl
+
+  const parsed = parseCloudinaryUrl(storedUrl)
+  if (!parsed) return storedUrl
+
+  try {
+    // private_download_url → https://api.cloudinary.com/v1_1/{cloud}/raw/download?...
+    // This is authenticated with API credentials and works even with restricted delivery types.
+    return (cloudinary.utils as any).private_download_url(parsed.publicIdNoExt, parsed.format, {
+      resource_type: 'raw',
+      type: 'upload',
+      expires_at: Math.floor(Date.now() / 1000) + 300
+    })
+  } catch {
+    return storedUrl
+  }
 }
 
 // Download endpoint for documents
@@ -91,11 +106,12 @@ export default defineEventHandler(async (event: H3Event) => {
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
     let remoteResponse: Response
     try {
-      // Use signed URL to bypass Cloudinary access restrictions (fixes 401)
-      const fetchUrl = getSignedCloudinaryUrl(doc.file_path)
-      console.log(`[Document Download] id=${id} fetching cloud url (signed=${fetchUrl !== doc.file_path})`)
+      // Use private_download_url (API-authenticated) to bypass Cloudinary delivery restrictions
+      const fetchUrl = buildCloudinaryFetchUrl(doc.file_path)
+      const isAuthenticated = fetchUrl !== doc.file_path
+      console.log(`[Document Download] id=${id} mode=${mode} authenticated=${isAuthenticated}`)
 
-      // 45-second timeout — large PDFs on Cloudinary can take time
+      // 45-second timeout — large PDFs can take time
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 45000)
 
@@ -103,14 +119,14 @@ export default defineEventHandler(async (event: H3Event) => {
       clearTimeout(timeoutId)
 
       if (!remoteResponse.ok) {
-        console.error(`[Document Download] Cloudinary returned ${remoteResponse.status} for id=${id} url=${doc.file_path}`)
+        console.error(`[Document Download] Cloud fetch ${remoteResponse.status} for id=${id}`)
         throw createError({
           statusCode: 502,
-          statusMessage: `File tidak dapat diambil dari cloud (Cloudinary status: ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
+          statusMessage: `Gagal mengambil file dari cloud (status: ${remoteResponse.status}). Silakan upload ulang dokumen, atau di Cloudinary Dashboard → Settings → Security → Restricted delivery types → pastikan Raw tidak dicentang.`
         })
       }
     } catch (err: any) {
-      if (err.statusCode) throw err // already a createError
+      if (err.statusCode) throw err
       const isTimeout = err.name === 'AbortError' || err.code === 'UND_ERR_CONNECT_TIMEOUT'
       console.error(`[Document Download] Fetch error for id=${id}:`, err.message || err)
       throw createError({
