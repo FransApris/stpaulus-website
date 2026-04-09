@@ -164,36 +164,15 @@ export default defineEventHandler(async (event: H3Event) => {
   // Direct redirect to Cloudinary raw URLs causes browser security errors because Cloudinary
   // serves raw resources without proper Content-Type/Content-Disposition headers for inline viewing.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
-    let remoteResponse: Response
-    let cloudinaryError: string | undefined
-    try {
-      const result = await fetchCloudinaryFile(doc.file_path)
-      remoteResponse = result.response
-      cloudinaryError = result.cloudinaryError
+    const { response: remoteResponse, cloudinaryError } = await fetchCloudinaryFile(doc.file_path)
 
-      if (!remoteResponse.ok) {
-        console.error(`[DocDL] FINAL status=${remoteResponse.status} id=${id} cloudinaryError="${cloudinaryError}"`)
-        throw createError({
-          statusCode: 502,
-          statusMessage: cloudinaryError
-            ? `Gagal mengambil file dari cloud. ${cloudinaryError}`
-            : `Gagal mengambil file dari cloud (HTTP ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
-        })
-      }
-        throw createError({
-          statusCode: 502,
-          statusMessage: `Gagal mengambil file dari cloud (status: ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
-        })
-      }
-    } catch (err: any) {
-      if (err.statusCode) throw err
-      const isTimeout = err.name === 'AbortError' || err.code === 'UND_ERR_CONNECT_TIMEOUT'
-      console.error(`[Document Download] Fetch error for id=${id}:`, err.message || err)
+    if (!remoteResponse.ok) {
+      console.error(`[DocDL] FINAL status=${remoteResponse.status} id=${id} err="${cloudinaryError}"`)
       throw createError({
         statusCode: 502,
-        statusMessage: isTimeout
-          ? 'Timeout saat mengambil file dari cloud. Coba lagi beberapa saat.'
-          : 'Gagal terhubung ke penyimpanan cloud. Coba lagi beberapa saat.'
+        statusMessage: cloudinaryError
+          ? `Gagal mengambil file dari cloud. ${cloudinaryError}`
+          : `Gagal mengambil file dari cloud (HTTP ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
       })
     }
 
