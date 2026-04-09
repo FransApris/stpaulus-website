@@ -720,24 +720,23 @@ const fixDocumentPermissions = async () => {
   fixing.value = true
   try {
     const token = localStorage.getItem('admin_access_token')
-    const raw = await $fetch('/api/admin/fix-document-permissions', {
+    const result = await $fetch('/api/admin/fix-document-permissions', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'Authorization': 'Bearer ' + token }
     })
-    const result = raw as any
 
     let msg = result.message + '\n'
-    if (result.results?.length) {
-      const fixed = result.results.filter((r: any) => r.status === 'fixed')
-      const failed = result.results.filter((r: any) => r.status === 'failed')
-      if (fixed.length) msg += `\nBerhasil: ${fixed.map((r: any) => r.filename).join(', ')}`
-      if (failed.length) msg += `\nGagal: ${failed.map((r: any) => `${r.filename} (${r.error})`).join(', ')}`
+    if (result.results && result.results.length) {
+      const fixed = result.results.filter(r => r.status === 'fixed')
+      const failed = result.results.filter(r => r.status === 'failed')
+      if (fixed.length) msg += '\nBerhasil: ' + fixed.map(r => r.filename).join(', ')
+      if (failed.length) msg += '\nGagal: ' + failed.map(r => r.filename + ' (' + r.error + ')').join(', ')
     }
     alert(msg)
     await fetchDocuments()
-  } catch (error: any) {
+  } catch (error) {
     const msg = error?.data?.statusMessage || error?.data?.message || error?.message || 'Gagal memperbaiki akses dokumen'
-    alert(`Error: ${msg}`)
+    alert('Error: ' + msg)
   } finally {
     fixing.value = false
   }
