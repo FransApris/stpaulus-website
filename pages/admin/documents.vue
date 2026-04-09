@@ -720,10 +720,11 @@ const fixDocumentPermissions = async () => {
   fixing.value = true
   try {
     const token = localStorage.getItem('admin_access_token')
-    const result = await $fetch('/api/admin/fix-document-permissions', {
+    const raw = await $fetch('/api/admin/fix-document-permissions', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
-    }) as any
+    })
+    const result = raw as any
 
     let msg = result.message + '\n'
     if (result.results?.length) {
