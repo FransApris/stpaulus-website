@@ -7,7 +7,6 @@ import path from 'path'
 import { Readable } from 'stream'
 import { v2 as cloudinary } from 'cloudinary'
 
-// Configure Cloudinary once at module load (safe to call multiple times)
 if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
   cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -18,42 +17,33 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
 }
 
 /**
- * Parse a Cloudinary stored URL into parts needed for private_download_url.
- * e.g. https://res.cloudinary.com/xxx/raw/upload/v123/stpaulus/documents/file.pdf
- *   → { publicIdNoExt: 'stpaulus/documents/file', format: 'pdf' }
+ * For Cloudinary raw resources, the public_id INCLUDES the file extension.
+ * e.g. URL: .../raw/upload/v123/stpaulus/documents/file.pdf
+ *      public_id: stpaulus/documents/file.pdf   ← keep extension
  */
-function parseCloudinaryUrl(url: string): { publicIdNoExt: string; format: string } | null {
+function getCloudinaryPublicId(url: string): string | null {
   const match = url.match(/\/(?:raw|image|video)\/upload\/(?:v\d+\/)?(.+)$/)
-  if (!match) return null
-  const full = match[1]
-  const lastDot = full.lastIndexOf('.')
-  if (lastDot < 0) return { publicIdNoExt: full, format: '' }
-  return { publicIdNoExt: full.slice(0, lastDot), format: full.slice(lastDot + 1) }
+  return match ? match[1] : null
 }
 
 /**
- * Build an authenticated Cloudinary download URL using API credentials.
- * Uses private_download_url which bypasses ALL account-level delivery restrictions
- * (including "Restricted delivery types → Raw" in Cloudinary Security settings).
- * Falls back to signed CDN URL, then the original URL.
+ * Generate a private (API-authenticated) download URL for Cloudinary.
+ * Works regardless of account delivery-type restrictions.
  */
-function buildCloudinaryFetchUrl(storedUrl: string): string {
+function buildPrivateDownloadUrl(storedUrl: string): string | null {
   const cfg = cloudinary.config()
-  if (!cfg.api_key || !cfg.api_secret) return storedUrl
-
-  const parsed = parseCloudinaryUrl(storedUrl)
-  if (!parsed) return storedUrl
-
+  if (!cfg.api_key || !cfg.api_secret || !cfg.cloud_name) return null
+  const publicId = getCloudinaryPublicId(storedUrl)
+  if (!publicId) return null
   try {
-    // private_download_url → https://api.cloudinary.com/v1_1/{cloud}/raw/download?...
-    // This is authenticated with API credentials and works even with restricted delivery types.
-    return (cloudinary.utils as any).private_download_url(parsed.publicIdNoExt, parsed.format, {
+    // For raw resources public_id includes extension → pass '' as format
+    return (cloudinary.utils as any).private_download_url(publicId, '', {
       resource_type: 'raw',
       type: 'upload',
       expires_at: Math.floor(Date.now() / 1000) + 300
     })
   } catch {
-    return storedUrl
+    return null
   }
 }
 
@@ -104,25 +94,48 @@ export default defineEventHandler(async (event: H3Event) => {
   // Direct redirect to Cloudinary raw URLs causes browser security errors because Cloudinary
   // serves raw resources without proper Content-Type/Content-Disposition headers for inline viewing.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
-    let remoteResponse: Response
-    try {
-      // Use private_download_url (API-authenticated) to bypass Cloudinary delivery restrictions
-      const fetchUrl = buildCloudinaryFetchUrl(doc.file_path)
-      const isAuthenticated = fetchUrl !== doc.file_path
-      console.log(`[Document Download] id=${id} mode=${mode} authenticated=${isAuthenticated}`)
-
-      // 45-second timeout — large PDFs can take time
+    // Try fetching the stored CDN URL directly first.
+    // If Cloudinary returns 401 (account has delivery-type restrictions),
+    // fall back to private_download_url (API-authenticated, always works).
+    const fetchWithFallback = async (): Promise<Response> => {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 45000)
+      try {
+        console.log(`[Document Download] id=${id} mode=${mode} trying direct URL`)
+        const res = await fetch(doc.file_path, { signal: controller.signal })
+        clearTimeout(timeoutId)
 
-      remoteResponse = await fetch(fetchUrl, { signal: controller.signal })
-      clearTimeout(timeoutId)
+        if (res.status === 401 || res.status === 403) {
+          // Resource is restricted — use authenticated private download URL
+          const privateUrl = buildPrivateDownloadUrl(doc.file_path)
+          if (!privateUrl) {
+            console.error(`[Document Download] id=${id} 401/403 but cannot build private URL`)
+            return res // will be handled as error below
+          }
+          console.log(`[Document Download] id=${id} direct fetch ${res.status} → retrying with private_download_url`)
+          const controller2 = new AbortController()
+          const timeoutId2 = setTimeout(() => controller2.abort(), 45000)
+          const res2 = await fetch(privateUrl, { signal: controller2.signal })
+          clearTimeout(timeoutId2)
+          return res2
+        }
+
+        return res
+      } catch (err) {
+        clearTimeout(timeoutId)
+        throw err
+      }
+    }
+
+    let remoteResponse: Response
+    try {
+      remoteResponse = await fetchWithFallback()
 
       if (!remoteResponse.ok) {
-        console.error(`[Document Download] Cloud fetch ${remoteResponse.status} for id=${id}`)
+        console.error(`[Document Download] Cloud fetch ${remoteResponse.status} for id=${id} url=${doc.file_path}`)
         throw createError({
           statusCode: 502,
-          statusMessage: `Gagal mengambil file dari cloud (status: ${remoteResponse.status}). Silakan upload ulang dokumen, atau di Cloudinary Dashboard → Settings → Security → Restricted delivery types → pastikan Raw tidak dicentang.`
+          statusMessage: `Gagal mengambil file dari cloud (status: ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
         })
       }
     } catch (err: any) {
