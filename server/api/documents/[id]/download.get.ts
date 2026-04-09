@@ -5,6 +5,42 @@ import { allQuery } from '~/server/database/db'
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
+import { v2 as cloudinary } from 'cloudinary'
+
+// Configure Cloudinary once at module load (safe to call multiple times)
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+  })
+}
+
+/**
+ * Extract the Cloudinary public_id from a stored URL.
+ * e.g. https://res.cloudinary.com/xxx/raw/upload/v123/stpaulus/documents/file.pdf
+ *      → stpaulus/documents/file.pdf
+ */
+function extractCloudinaryPublicId(url: string): string | null {
+  const match = url.match(/\/(?:raw|image|video)\/upload\/(?:v\d+\/)?(.+)$/)
+  return match ? match[1] : null
+}
+
+/**
+ * Generate a signed Cloudinary URL valid for 5 minutes.
+ * Falls back to the original URL if public_id cannot be extracted.
+ */
+function getSignedCloudinaryUrl(storedUrl: string): string {
+  const publicId = extractCloudinaryPublicId(storedUrl)
+  if (!publicId) return storedUrl
+  return cloudinary.url(publicId, {
+    resource_type: 'raw',
+    sign_url: true,
+    secure: true,
+    expires_at: Math.floor(Date.now() / 1000) + 300 // valid 5 min
+  })
+}
 
 // Download endpoint for documents
 
@@ -55,11 +91,15 @@ export default defineEventHandler(async (event: H3Event) => {
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
     let remoteResponse: Response
     try {
+      // Use signed URL to bypass Cloudinary access restrictions (fixes 401)
+      const fetchUrl = getSignedCloudinaryUrl(doc.file_path)
+      console.log(`[Document Download] id=${id} fetching cloud url (signed=${fetchUrl !== doc.file_path})`)
+
       // 45-second timeout — large PDFs on Cloudinary can take time
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 45000)
 
-      remoteResponse = await fetch(doc.file_path, { signal: controller.signal })
+      remoteResponse = await fetch(fetchUrl, { signal: controller.signal })
       clearTimeout(timeoutId)
 
       if (!remoteResponse.ok) {

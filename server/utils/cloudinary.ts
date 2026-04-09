@@ -86,7 +86,9 @@ export const uploadDocumentToCloudinary = (buffer: Buffer, folder: string = 'doc
             {
                 folder: `stpaulus/${folder}`,
                 resource_type: 'raw',
-                use_filename: true,
+                type: 'upload',        // Ensure public (not authenticated) delivery type
+                access_mode: 'public', // Explicitly mark resource as publicly accessible
+                use_filename: false,   // Avoid conflict: public_id already set below
                 unique_filename: true,
                 overwrite: false,
                 public_id: filename ? `${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, '_')}` : undefined
