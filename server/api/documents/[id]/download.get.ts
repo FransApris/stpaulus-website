@@ -1,9 +1,10 @@
-import { defineEventHandler, createError, getRouterParam, setHeader, sendRedirect } from 'h3'
+import { defineEventHandler, createError, getRouterParam, setHeader, sendStream } from 'h3'
 import type { H3Event } from 'h3'
 import { getQuery } from 'h3'
 import { allQuery } from '~/server/database/db'
 import fs from 'fs'
 import path from 'path'
+import { Readable } from 'stream'
 
 // Download endpoint for documents
 
@@ -48,39 +49,54 @@ export default defineEventHandler(async (event: H3Event) => {
 
   const doc = documents[0] as { file_path: string; filename: string; original_filename: string; mime_type: string }
 
-  // For cloud-hosted files: always proxy bytes through this server for BOTH inline and attachment.
+  // For cloud-hosted files: stream bytes through this server for BOTH inline and attachment.
   // Direct redirect to Cloudinary raw URLs causes browser security errors because Cloudinary
   // serves raw resources without proper Content-Type/Content-Disposition headers for inline viewing.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
+    let remoteResponse: Response
     try {
-      const remoteResponse = await fetch(doc.file_path)
+      // 45-second timeout — large PDFs on Cloudinary can take time
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 45000)
+
+      remoteResponse = await fetch(doc.file_path, { signal: controller.signal })
+      clearTimeout(timeoutId)
+
       if (!remoteResponse.ok) {
-        throw new Error(`Remote fetch failed: ${remoteResponse.status}`)
+        console.error(`[Document Download] Cloudinary returned ${remoteResponse.status} for id=${id} url=${doc.file_path}`)
+        throw createError({
+          statusCode: 502,
+          statusMessage: `File tidak dapat diambil dari cloud (Cloudinary status: ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
+        })
       }
-
-      const arrayBuffer = await remoteResponse.arrayBuffer()
-      const fileBuffer = Buffer.from(arrayBuffer)
-
-      const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
-      // Prefer stored mime_type; fall back to what Cloudinary reports
-      const contentType = doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream'
-      setHeader(event, 'Content-Type', contentType)
-      setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
-      setHeader(event, 'Content-Length', fileBuffer.length)
-      setHeader(event, 'X-Content-Type-Options', 'nosniff')
-      if (mode === 'inline') {
-        setHeader(event, 'Cache-Control', 'private, max-age=300')
-      }
-
-      console.log(`[Document Download] id=${id} cloud proxy mode=${mode} contentType=${contentType}`)
-      return fileBuffer
-    } catch (error) {
-      console.error(`[Document Download] Failed to proxy cloud file for id=${id}:`, error)
+    } catch (err: any) {
+      if (err.statusCode) throw err // already a createError
+      const isTimeout = err.name === 'AbortError' || err.code === 'UND_ERR_CONNECT_TIMEOUT'
+      console.error(`[Document Download] Fetch error for id=${id}:`, err.message || err)
       throw createError({
         statusCode: 502,
-        statusMessage: 'Gagal mengambil file dokumen dari penyimpanan cloud'
+        statusMessage: isTimeout
+          ? 'Timeout saat mengambil file dari cloud. Coba lagi beberapa saat.'
+          : 'Gagal terhubung ke penyimpanan cloud. Coba lagi beberapa saat.'
       })
     }
+
+    const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
+    const contentType = doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream'
+    const contentLength = remoteResponse.headers.get('content-length')
+
+    setHeader(event, 'Content-Type', contentType)
+    setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
+    if (contentLength) setHeader(event, 'Content-Length', contentLength)
+    setHeader(event, 'X-Content-Type-Options', 'nosniff')
+    if (mode === 'inline') {
+      setHeader(event, 'Cache-Control', 'private, max-age=300')
+    }
+
+    console.log(`[Document Download] id=${id} cloud stream mode=${mode} contentType=${contentType} size=${contentLength ?? 'unknown'}`)
+
+    // Stream response body directly — avoids buffering entire PDF in server memory
+    return sendStream(event, Readable.fromWeb(remoteResponse.body as any))
   }
 
   // Build physical file path. doc.file_path is stored as /uploads/documents/<filename>
