@@ -5,60 +5,54 @@ import { allQuery } from '~/server/database/db'
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
-import { v2 as cloudinary } from 'cloudinary'
-
-if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    secure: true
-  })
-}
+import crypto from 'crypto'
 
 /**
- * Build the correct fetch URL for a Cloudinary-stored file.
+ * Build a Cloudinary Admin API download URL.
  *
- * The Cloudinary account uses the `ml_default` preset (Signed mode), so all raw
- * uploads are stored as delivery type "authenticated" (not "upload").
- * Fetching /raw/authenticated/... without a signature returns 401.
+ * Resources stored as "authenticated" delivery type (ml_default Signed preset)
+ * return 401 on direct CDN fetch. The Admin API download endpoint accepts a
+ * HMAC-SHA256 signature in query params and works for ANY delivery type.
  *
- * This function:
- *  1. Parses the stored URL to detect delivery type (upload | authenticated | private).
- *  2. Extracts the public_id (for raw resources the extension is part of the public_id).
- *  3. Generates a signed CDN URL with the correct delivery type.
- *     A signed "authenticated" URL is accepted by Cloudinary regardless of restrictions.
+ * Endpoint: GET https://api.cloudinary.com/v1_1/{cloud}/raw/download
+ * Params: public_id, api_key, timestamp, signature
+ * Signature: SHA1("{param}={val}&...{api_secret}") — Cloudinary v1 signing
  */
-function buildSignedFetchUrl(storedUrl: string): string {
-  const cfg = cloudinary.config()
-  if (!cfg.api_key || !cfg.api_secret) return storedUrl
+function buildCloudinaryApiDownloadUrl(storedUrl: string): string | null {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+  const apiKey = process.env.CLOUDINARY_API_KEY
+  const apiSecret = process.env.CLOUDINARY_API_SECRET
 
-  // Detect delivery type from URL: upload | authenticated | private
-  const typeMatch = storedUrl.match(/\/(?:raw|image|video)\/(upload|authenticated|private)\//)
-  const deliveryType = typeMatch ? typeMatch[1] : 'upload'
+  if (!cloudName || !apiKey || !apiSecret) {
+    console.error('[Document Download] Cloudinary env vars missing — cannot build API download URL')
+    return null
+  }
 
-  // Extract public_id — for raw resources the extension stays in the public_id
+  // Extract public_id from stored URL (extension stays in public_id for raw files)
   const publicIdMatch = storedUrl.match(/\/(?:raw|image|video)\/(?:upload|authenticated|private)\/(?:v\d+\/)?(.+)$/)
-  if (!publicIdMatch) return storedUrl
+  if (!publicIdMatch) {
+    console.error(`[Document Download] Cannot parse public_id from URL: ${storedUrl}`)
+    return null
+  }
   const publicId = publicIdMatch[1]
 
-  try {
-    const signed = cloudinary.url(publicId, {
-      resource_type: 'raw',
-      type: deliveryType as 'upload' | 'authenticated' | 'private',
-      sign_url: true,
-      secure: true,
-      expires_at: Math.floor(Date.now() / 1000) + 600 // valid 10 min
-    })
-    console.log(`[Document Download] built signed URL type=${deliveryType}`)
-    return signed
-  } catch (e) {
-    console.error('[Document Download] Failed to build signed URL:', e)
-    return storedUrl
-  }
-}
+  const timestamp = Math.floor(Date.now() / 1000)
 
-// Download endpoint for documents
+  // Cloudinary signature: SHA1 of sorted params string + api_secret
+  const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`
+  const signature = crypto.createHash('sha1').update(stringToSign).digest('hex')
+
+  const params = new URLSearchParams({
+    public_id: publicId,
+    api_key: apiKey,
+    timestamp: String(timestamp),
+    signature: signature
+  })
+
+  const url = `https://api.cloudinary.com/v1_1/${cloudName}/raw/download?${params}`
+  console.log(`[Document Download] API download URL built for public_id="${publicId}"`)
+  return url
+}
 
 /**
  * Resolve the base directory for uploads.
@@ -110,9 +104,9 @@ export default defineEventHandler(async (event: H3Event) => {
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
     let remoteResponse: Response
     try {
-      // Always use a signed URL — resources uploaded via ml_default (Signed preset)
-      // are stored as "authenticated" delivery type and return 401 without a signature.
-      const fetchUrl = buildSignedFetchUrl(doc.file_path)
+      // Resources stored via ml_default (Signed preset) are "authenticated" delivery type.
+      // Use Cloudinary Admin API download endpoint — bypasses CDN delivery-type restrictions.
+      const fetchUrl = buildCloudinaryApiDownloadUrl(doc.file_path) ?? doc.file_path
 
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 45000)
