@@ -86,9 +86,10 @@ export const uploadDocumentToCloudinary = (buffer: Buffer, folder: string = 'doc
             {
                 folder: `stpaulus/${folder}`,
                 resource_type: 'raw',
-                type: 'upload',        // Ensure public (not authenticated) delivery type
-                access_mode: 'public', // Explicitly mark resource as publicly accessible
-                use_filename: false,   // Avoid conflict: public_id already set below
+                // Do NOT force type/access_mode — let the account default (ml_default preset)
+                // determine the delivery type. The download endpoint handles both
+                // 'upload' and 'authenticated' delivery types via signed URLs.
+                use_filename: false,
                 unique_filename: true,
                 overwrite: false,
                 public_id: filename ? `${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, '_')}` : undefined

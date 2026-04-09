@@ -17,33 +17,44 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
 }
 
 /**
- * For Cloudinary raw resources, the public_id INCLUDES the file extension.
- * e.g. URL: .../raw/upload/v123/stpaulus/documents/file.pdf
- *      public_id: stpaulus/documents/file.pdf   ← keep extension
+ * Build the correct fetch URL for a Cloudinary-stored file.
+ *
+ * The Cloudinary account uses the `ml_default` preset (Signed mode), so all raw
+ * uploads are stored as delivery type "authenticated" (not "upload").
+ * Fetching /raw/authenticated/... without a signature returns 401.
+ *
+ * This function:
+ *  1. Parses the stored URL to detect delivery type (upload | authenticated | private).
+ *  2. Extracts the public_id (for raw resources the extension is part of the public_id).
+ *  3. Generates a signed CDN URL with the correct delivery type.
+ *     A signed "authenticated" URL is accepted by Cloudinary regardless of restrictions.
  */
-function getCloudinaryPublicId(url: string): string | null {
-  const match = url.match(/\/(?:raw|image|video)\/upload\/(?:v\d+\/)?(.+)$/)
-  return match ? match[1] : null
-}
-
-/**
- * Generate a private (API-authenticated) download URL for Cloudinary.
- * Works regardless of account delivery-type restrictions.
- */
-function buildPrivateDownloadUrl(storedUrl: string): string | null {
+function buildSignedFetchUrl(storedUrl: string): string {
   const cfg = cloudinary.config()
-  if (!cfg.api_key || !cfg.api_secret || !cfg.cloud_name) return null
-  const publicId = getCloudinaryPublicId(storedUrl)
-  if (!publicId) return null
+  if (!cfg.api_key || !cfg.api_secret) return storedUrl
+
+  // Detect delivery type from URL: upload | authenticated | private
+  const typeMatch = storedUrl.match(/\/(?:raw|image|video)\/(upload|authenticated|private)\//)
+  const deliveryType = typeMatch ? typeMatch[1] : 'upload'
+
+  // Extract public_id — for raw resources the extension stays in the public_id
+  const publicIdMatch = storedUrl.match(/\/(?:raw|image|video)\/(?:upload|authenticated|private)\/(?:v\d+\/)?(.+)$/)
+  if (!publicIdMatch) return storedUrl
+  const publicId = publicIdMatch[1]
+
   try {
-    // For raw resources public_id includes extension → pass '' as format
-    return (cloudinary.utils as any).private_download_url(publicId, '', {
+    const signed = cloudinary.url(publicId, {
       resource_type: 'raw',
-      type: 'upload',
-      expires_at: Math.floor(Date.now() / 1000) + 300
+      type: deliveryType as 'upload' | 'authenticated' | 'private',
+      sign_url: true,
+      secure: true,
+      expires_at: Math.floor(Date.now() / 1000) + 600 // valid 10 min
     })
-  } catch {
-    return null
+    console.log(`[Document Download] built signed URL type=${deliveryType}`)
+    return signed
+  } catch (e) {
+    console.error('[Document Download] Failed to build signed URL:', e)
+    return storedUrl
   }
 }
 
@@ -94,45 +105,19 @@ export default defineEventHandler(async (event: H3Event) => {
   // Direct redirect to Cloudinary raw URLs causes browser security errors because Cloudinary
   // serves raw resources without proper Content-Type/Content-Disposition headers for inline viewing.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
-    // Try fetching the stored CDN URL directly first.
-    // If Cloudinary returns 401 (account has delivery-type restrictions),
-    // fall back to private_download_url (API-authenticated, always works).
-    const fetchWithFallback = async (): Promise<Response> => {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 45000)
-      try {
-        console.log(`[Document Download] id=${id} mode=${mode} trying direct URL`)
-        const res = await fetch(doc.file_path, { signal: controller.signal })
-        clearTimeout(timeoutId)
-
-        if (res.status === 401 || res.status === 403) {
-          // Resource is restricted — use authenticated private download URL
-          const privateUrl = buildPrivateDownloadUrl(doc.file_path)
-          if (!privateUrl) {
-            console.error(`[Document Download] id=${id} 401/403 but cannot build private URL`)
-            return res // will be handled as error below
-          }
-          console.log(`[Document Download] id=${id} direct fetch ${res.status} → retrying with private_download_url`)
-          const controller2 = new AbortController()
-          const timeoutId2 = setTimeout(() => controller2.abort(), 45000)
-          const res2 = await fetch(privateUrl, { signal: controller2.signal })
-          clearTimeout(timeoutId2)
-          return res2
-        }
-
-        return res
-      } catch (err) {
-        clearTimeout(timeoutId)
-        throw err
-      }
-    }
-
     let remoteResponse: Response
     try {
-      remoteResponse = await fetchWithFallback()
+      // Always use a signed URL — resources uploaded via ml_default (Signed preset)
+      // are stored as "authenticated" delivery type and return 401 without a signature.
+      const fetchUrl = buildSignedFetchUrl(doc.file_path)
+
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 45000)
+      remoteResponse = await fetch(fetchUrl, { signal: controller.signal })
+      clearTimeout(timeoutId)
 
       if (!remoteResponse.ok) {
-        console.error(`[Document Download] Cloud fetch ${remoteResponse.status} for id=${id} url=${doc.file_path}`)
+        console.error(`[Document Download] Cloud fetch ${remoteResponse.status} for id=${id} storedUrl=${doc.file_path}`)
         throw createError({
           statusCode: 502,
           statusMessage: `Gagal mengambil file dari cloud (status: ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
