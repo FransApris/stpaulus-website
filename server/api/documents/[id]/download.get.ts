@@ -23,57 +23,78 @@ if (CLOUDINARY_CONFIGURED) {
 }
 
 /**
- * Fetch a Cloudinary-stored file regardless of its delivery type.
- *
- * For public (type=upload) resources: fetch the stored URL directly.
- * For authenticated/private resources: use the Cloudinary SDK's
- * `private_download_url()` which generates a properly signed API download URL
- * (goes to api.cloudinary.com — not the CDN, therefore delivery restrictions don't apply).
+ * Fetch a Cloudinary-stored file, trying multiple auth strategies.
+ * Logs every step so Railway logs can be used to diagnose failures.
  */
 async function fetchCloudinaryFile(storedUrl: string): Promise<Response> {
-  // Always log the full stored URL so we can diagnose via Railway logs
-  console.log(`[Document Download] storedUrl="${storedUrl}"`)
-  console.log(`[Document Download] Cloudinary configured: ${CLOUDINARY_CONFIGURED}`)
+  console.log(`[DocDL] storedUrl="${storedUrl}"`)
+  console.log(`[DocDL] cloudinaryConfigured=${CLOUDINARY_CONFIGURED} cloud=${process.env.CLOUDINARY_CLOUD_NAME}`)
 
-  // Detect delivery type from URL (upload | authenticated | private)
+  // Detect delivery type: upload | authenticated | private
   const typeMatch = storedUrl.match(/\/(?:raw|image|video)\/(upload|authenticated|private)\//)
   const deliveryType = typeMatch ? typeMatch[1] : 'unknown'
-  console.log(`[Document Download] deliveryType="${deliveryType}"`)
+  console.log(`[DocDL] deliveryType="${deliveryType}"`)
 
-  // For public upload resources, fetch directly (no auth needed)
+  // --- Strategy 1: direct fetch (always works for type=upload) ---
   if (deliveryType === 'upload') {
-    console.log(`[Document Download] type=upload — fetching URL directly`)
-    return fetch(storedUrl)
+    console.log(`[DocDL] strategy=direct (type=upload)`)
+    const resp = await fetch(storedUrl)
+    console.log(`[DocDL] direct fetch status=${resp.status}`)
+    if (resp.ok) return resp
+    const body = await resp.text()
+    console.error(`[DocDL] direct fetch failed body="${body.substring(0, 300)}"`)
+    // Don't throw — fall through to signing strategies below
   }
 
-  // For authenticated/private, need signed URL via SDK
   if (!CLOUDINARY_CONFIGURED) {
-    console.error(`[Document Download] Cloudinary credentials missing — cannot sign URL for type="${deliveryType}"`)
-    // Fall back to direct fetch; will likely 401 but gives a meaningful error
+    console.error(`[DocDL] Cloudinary credentials missing — cannot sign URL`)
     return fetch(storedUrl)
   }
 
-  // Extract public_id — for raw resources the extension stays in the public_id
+  // Extract public_id — extension stays in public_id for raw resources
   const publicIdMatch = storedUrl.match(/\/(?:raw|image|video)\/(?:upload|authenticated|private)\/(?:v\d+\/)?(.+)$/)
   if (!publicIdMatch) {
-    console.error(`[Document Download] Cannot parse public_id from storedUrl — falling back to direct fetch`)
+    console.error(`[DocDL] Cannot parse public_id from URL — falling back to direct`)
     return fetch(storedUrl)
   }
   const publicId = publicIdMatch[1]
-  console.log(`[Document Download] public_id="${publicId}"`)
+  console.log(`[DocDL] publicId="${publicId}"`)
 
-  // Generate signed API download URL via Cloudinary SDK
-  // private_download_url goes to api.cloudinary.com/v1_1/.../download (not CDN)
-  // so it bypasses CDN delivery-type restrictions entirely
-  const signedUrl = cloudinary.utils.private_download_url(publicId, '', {
-    resource_type: 'raw',
-    type: deliveryType as 'authenticated' | 'private',
-    expires_at: Math.floor(Date.now() / 1000) + 600,
-    attachment: false
-  })
-  console.log(`[Document Download] signed URL="${signedUrl}"`)
+  // --- Strategy 2: cloudinary.url() with sign_url:true (no expires_at) ---
+  try {
+    const signed = cloudinary.url(publicId, {
+      resource_type: 'raw',
+      type: deliveryType === 'unknown' ? 'authenticated' : deliveryType as any,
+      sign_url: true,
+      secure: true
+    })
+    console.log(`[DocDL] strategy=signed url="${signed.substring(0, 180)}"`)
+    const resp2 = await fetch(signed)
+    console.log(`[DocDL] signed fetch status=${resp2.status}`)
+    if (resp2.ok) return resp2
+    const body2 = await resp2.text()
+    console.error(`[DocDL] signed fetch failed body="${body2.substring(0, 300)}"`)
+  } catch (e: any) {
+    console.error(`[DocDL] strategy=signed threw: ${e.message}`)
+  }
 
-  return fetch(signedUrl)
+  // --- Strategy 3: Basic Auth against original CDN URL ---
+  // Cloudinary CDN does not support Basic Auth, but the delivery-origin (CNAME) might
+  try {
+    const creds = Buffer.from(`${process.env.CLOUDINARY_API_KEY}:${process.env.CLOUDINARY_API_SECRET}`).toString('base64')
+    console.log(`[DocDL] strategy=basicAuth`)
+    const resp3 = await fetch(storedUrl, { headers: { Authorization: `Basic ${creds}` } })
+    console.log(`[DocDL] basicAuth status=${resp3.status}`)
+    if (resp3.ok) return resp3
+    const body3 = await resp3.text()
+    console.error(`[DocDL] basicAuth failed body="${body3.substring(0, 300)}"`)
+  } catch (e: any) {
+    console.error(`[DocDL] strategy=basicAuth threw: ${e.message}`)
+  }
+
+  // All strategies failed — return the last failed response
+  console.error(`[DocDL] All fetch strategies failed for publicId="${publicId}"`)
+  return fetch(storedUrl) // will be non-ok, caller will throw 502
 }
 
 /**
@@ -128,18 +149,8 @@ export default defineEventHandler(async (event: H3Event) => {
     try {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 45000)
-
-      const fetchPromise = fetchCloudinaryFile(doc.file_path)
-
-      // Race: fetch vs timeout
-      remoteResponse = await Promise.race([
-        fetchPromise,
-        new Promise<never>((_, reject) =>
-          timeoutId && setTimeout(() => reject(Object.assign(new Error('AbortError'), { name: 'AbortError' })), 45000)
-        )
-      ])
+      remoteResponse = await fetchCloudinaryFile(doc.file_path)
       clearTimeout(timeoutId)
-      controller.abort() // release resources
 
       if (!remoteResponse.ok) {
         console.error(`[Document Download] Cloud fetch ${remoteResponse.status} for id=${id} storedUrl=${doc.file_path}`)
