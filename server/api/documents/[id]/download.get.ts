@@ -65,9 +65,11 @@ export default defineEventHandler(async (event: H3Event) => {
       const arrayBuffer = await remoteResponse.arrayBuffer()
       const fileBuffer = Buffer.from(arrayBuffer)
 
+      const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
       setHeader(event, 'Content-Type', doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream')
-      setHeader(event, 'Content-Disposition', `attachment; filename="${doc.original_filename}"`)
+      setHeader(event, 'Content-Disposition', `attachment; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
       setHeader(event, 'Content-Length', fileBuffer.length)
+      setHeader(event, 'X-Content-Type-Options', 'nosniff')
 
       return fileBuffer
     } catch (error) {
@@ -100,10 +102,18 @@ export default defineEventHandler(async (event: H3Event) => {
     // Read file
     const fileBuffer = fs.readFileSync(filePath)
 
+    // Encode filename for RFC 5987 compliance (handles spaces and non-ASCII characters)
+    const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
+
     // Set headers for preview/download mode
     setHeader(event, 'Content-Type', doc.mime_type || 'application/octet-stream')
-    setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"`)
+    setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
     setHeader(event, 'Content-Length', fileBuffer.length)
+    // Allow browser to render inline (needed for PDF preview in new tab)
+    setHeader(event, 'X-Content-Type-Options', 'nosniff')
+    if (mode === 'inline') {
+      setHeader(event, 'Cache-Control', 'private, max-age=300')
+    }
 
     return fileBuffer
   } catch (error) {

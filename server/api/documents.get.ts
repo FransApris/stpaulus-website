@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   sql += ` ORDER BY d.created_at DESC`
 
-  const documents = allQuery(sql, params)
+  const documents = await allQuery(sql, params)
 
   return documents
 })

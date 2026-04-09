@@ -18,27 +18,53 @@ interface DocumentWithCategory {
 
 export default defineEventHandler(async (event) => {
   try {
-    const documents = await allQuery(`
-      SELECT
-        d.id,
-        d.title,
-        d.description,
-        d.filename,
-        d.original_filename,
-        d.file_path,
-        d.file_size,
-        d.mime_type,
-        d.created_at,
-        dc.name as category_name,
-        dc.slug as category_slug,
-        dc.color as category_color
-      FROM documents d
-      LEFT JOIN document_categories dc ON d.category_id = dc.id
-      WHERE d.is_featured = 1
-        AND dc.is_active = 1
-      ORDER BY d.created_at DESC
-      LIMIT 6
-    `) as DocumentWithCategory[]
+    // Try with is_featured filter first; fall back to latest documents if column doesn't exist yet
+    let documents: DocumentWithCategory[]
+    try {
+      documents = await allQuery(`
+        SELECT
+          d.id,
+          d.title,
+          d.description,
+          d.filename,
+          d.original_filename,
+          d.file_path,
+          d.file_size,
+          d.mime_type,
+          d.created_at,
+          dc.name as category_name,
+          dc.slug as category_slug,
+          dc.color as category_color
+        FROM documents d
+        LEFT JOIN document_categories dc ON d.category_id = dc.id
+        WHERE d.is_featured = 1
+          AND dc.is_active = 1
+        ORDER BY d.created_at DESC
+        LIMIT 6
+      `) as DocumentWithCategory[]
+    } catch {
+      // Fallback: column not yet migrated — return latest 6 documents
+      documents = await allQuery(`
+        SELECT
+          d.id,
+          d.title,
+          d.description,
+          d.filename,
+          d.original_filename,
+          d.file_path,
+          d.file_size,
+          d.mime_type,
+          d.created_at,
+          dc.name as category_name,
+          dc.slug as category_slug,
+          dc.color as category_color
+        FROM documents d
+        LEFT JOIN document_categories dc ON d.category_id = dc.id
+        WHERE dc.is_active = 1
+        ORDER BY d.created_at DESC
+        LIMIT 6
+      `) as DocumentWithCategory[]
+    }
 
     return documents.map((doc: DocumentWithCategory) => ({
       id: doc.id,

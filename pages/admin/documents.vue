@@ -6,8 +6,8 @@
       <p class="text-gray-600">Kelola dokumen paroki dan unggah file baru</p>
     </div>
 
-    <!-- Add Document Button -->
-    <div class="mb-6">
+    <!-- Action Buttons -->
+    <div class="mb-6 flex flex-wrap gap-3 items-center">
       <button
         @click="openModal()"
         class="bg-[#882f1d] text-white px-4 py-2 rounded-md hover:bg-[#6b2416] transition-colors duration-200 flex items-center"
@@ -17,6 +17,27 @@
         </svg>
         Tambah Dokumen
       </button>
+
+      <!-- Migrate to Cloud button -->
+      <button
+        @click="migrateToCloud"
+        :disabled="migrating"
+        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors duration-200 flex items-center"
+        title="Pindahkan semua dokumen yang masih tersimpan di server lokal ke Cloudinary agar tidak hilang saat Railway restart"
+      >
+        <svg class="w-5 h-5 mr-2" :class="{ 'animate-spin': migrating }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+        </svg>
+        {{ migrating ? 'Memigrasikan...' : 'Migrate ke Cloud' }}
+      </button>
+
+      <!-- Local docs warning badge -->
+      <span v-if="localDocCount > 0" class="text-xs bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-full px-3 py-1">
+        ⚠ {{ localDocCount }} dokumen belum di cloud
+      </span>
+      <span v-else-if="documents.length > 0" class="text-xs bg-green-100 text-green-800 border border-green-300 rounded-full px-3 py-1">
+        ✓ Semua dokumen sudah di Cloudinary
+      </span>
     </div>
 
     <!-- Filter by Category -->
@@ -124,6 +145,15 @@
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="text-sm text-gray-900">{{ document.original_filename }}</div>
               <div class="text-sm text-gray-500">{{ document.mime_type }}</div>
+              <!-- Storage indicator -->
+              <div class="mt-1">
+                <span v-if="document.file_path && (document.file_path.startsWith('https://') || document.file_path.startsWith('http://'))" class="inline-flex items-center text-xs text-green-700 bg-green-50 rounded px-1.5 py-0.5">
+                  ☁ Cloud
+                </span>
+                <span v-else class="inline-flex items-center text-xs text-yellow-700 bg-yellow-50 rounded px-1.5 py-0.5">
+                  💾 Lokal
+                </span>
+              </div>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="text-sm text-gray-900">{{ formatFileSize(document.file_size) }}</span>
@@ -300,7 +330,12 @@ definePageMeta({
 const documents = useState('admin-documents', () => [])
 const categories = useState('admin-document-categories-docs', () => [])
 const loading = ref(false)
+const migrating = ref(false)
 const showModal = ref(false)
+
+const localDocCount = computed(() =>
+  documents.value.filter(d => d.file_path && !d.file_path.startsWith('http')).length
+)
 const isEditing = ref(false)
 const saving = ref(false)
 const editingId = ref(null)
@@ -659,6 +694,31 @@ const toggleFeatured = async (id, isFeatured) => {
     alert('Gagal mengubah status featured')
     // Revert checkbox
     fetchDocuments()
+  }
+}
+
+// Migrate local documents to Cloudinary
+const migrateToCloud = async () => {
+  if (localDocCount.value === 0) {
+    alert('Semua dokumen sudah tersimpan di Cloudinary.')
+    return
+  }
+  if (!confirm(`Migrasi ${localDocCount.value} dokumen dari server lokal ke Cloudinary? Proses ini tidak bisa dibatalkan.`)) return
+
+  migrating.value = true
+  try {
+    const token = localStorage.getItem('admin_access_token')
+    const result = await $fetch('/api/admin/documents/migrate-to-cloud', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    alert(result.message)
+    await fetchDocuments()
+  } catch (error) {
+    const msg = error?.data?.message || error?.message || 'Gagal melakukan migrasi'
+    alert(`Error: ${msg}`)
+  } finally {
+    migrating.value = false
   }
 }
 
