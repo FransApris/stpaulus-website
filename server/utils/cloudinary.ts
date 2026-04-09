@@ -86,9 +86,8 @@ export const uploadDocumentToCloudinary = (buffer: Buffer, folder: string = 'doc
             {
                 folder: `stpaulus/${folder}`,
                 resource_type: 'raw',
-                // Do NOT force type/access_mode — let the account default (ml_default preset)
-                // determine the delivery type. The download endpoint handles both
-                // 'upload' and 'authenticated' delivery types via signed URLs.
+                type: 'upload',        // Explicitly set public delivery type — overrides ml_default Signed preset
+                access_mode: 'public', // Ensure CDN accessibility without signature
                 use_filename: false,
                 unique_filename: true,
                 overwrite: false,

@@ -5,53 +5,75 @@ import { allQuery } from '~/server/database/db'
 import fs from 'fs'
 import path from 'path'
 import { Readable } from 'stream'
-import crypto from 'crypto'
+import { v2 as cloudinary } from 'cloudinary'
+
+// Configure Cloudinary SDK once at module load
+const CLOUDINARY_CONFIGURED = !!(
+  process.env.CLOUDINARY_CLOUD_NAME &&
+  process.env.CLOUDINARY_API_KEY &&
+  process.env.CLOUDINARY_API_SECRET
+)
+if (CLOUDINARY_CONFIGURED) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+  })
+}
 
 /**
- * Build a Cloudinary Admin API download URL.
+ * Fetch a Cloudinary-stored file regardless of its delivery type.
  *
- * Resources stored as "authenticated" delivery type (ml_default Signed preset)
- * return 401 on direct CDN fetch. The Admin API download endpoint accepts a
- * HMAC-SHA256 signature in query params and works for ANY delivery type.
- *
- * Endpoint: GET https://api.cloudinary.com/v1_1/{cloud}/raw/download
- * Params: public_id, api_key, timestamp, signature
- * Signature: SHA1("{param}={val}&...{api_secret}") — Cloudinary v1 signing
+ * For public (type=upload) resources: fetch the stored URL directly.
+ * For authenticated/private resources: use the Cloudinary SDK's
+ * `private_download_url()` which generates a properly signed API download URL
+ * (goes to api.cloudinary.com — not the CDN, therefore delivery restrictions don't apply).
  */
-function buildCloudinaryApiDownloadUrl(storedUrl: string): string | null {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME
-  const apiKey = process.env.CLOUDINARY_API_KEY
-  const apiSecret = process.env.CLOUDINARY_API_SECRET
+async function fetchCloudinaryFile(storedUrl: string): Promise<Response> {
+  // Always log the full stored URL so we can diagnose via Railway logs
+  console.log(`[Document Download] storedUrl="${storedUrl}"`)
+  console.log(`[Document Download] Cloudinary configured: ${CLOUDINARY_CONFIGURED}`)
 
-  if (!cloudName || !apiKey || !apiSecret) {
-    console.error('[Document Download] Cloudinary env vars missing — cannot build API download URL')
-    return null
+  // Detect delivery type from URL (upload | authenticated | private)
+  const typeMatch = storedUrl.match(/\/(?:raw|image|video)\/(upload|authenticated|private)\//)
+  const deliveryType = typeMatch ? typeMatch[1] : 'unknown'
+  console.log(`[Document Download] deliveryType="${deliveryType}"`)
+
+  // For public upload resources, fetch directly (no auth needed)
+  if (deliveryType === 'upload') {
+    console.log(`[Document Download] type=upload — fetching URL directly`)
+    return fetch(storedUrl)
   }
 
-  // Extract public_id from stored URL (extension stays in public_id for raw files)
+  // For authenticated/private, need signed URL via SDK
+  if (!CLOUDINARY_CONFIGURED) {
+    console.error(`[Document Download] Cloudinary credentials missing — cannot sign URL for type="${deliveryType}"`)
+    // Fall back to direct fetch; will likely 401 but gives a meaningful error
+    return fetch(storedUrl)
+  }
+
+  // Extract public_id — for raw resources the extension stays in the public_id
   const publicIdMatch = storedUrl.match(/\/(?:raw|image|video)\/(?:upload|authenticated|private)\/(?:v\d+\/)?(.+)$/)
   if (!publicIdMatch) {
-    console.error(`[Document Download] Cannot parse public_id from URL: ${storedUrl}`)
-    return null
+    console.error(`[Document Download] Cannot parse public_id from storedUrl — falling back to direct fetch`)
+    return fetch(storedUrl)
   }
   const publicId = publicIdMatch[1]
+  console.log(`[Document Download] public_id="${publicId}"`)
 
-  const timestamp = Math.floor(Date.now() / 1000)
-
-  // Cloudinary signature: SHA1 of sorted params string + api_secret
-  const stringToSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`
-  const signature = crypto.createHash('sha1').update(stringToSign).digest('hex')
-
-  const params = new URLSearchParams({
-    public_id: publicId,
-    api_key: apiKey,
-    timestamp: String(timestamp),
-    signature: signature
+  // Generate signed API download URL via Cloudinary SDK
+  // private_download_url goes to api.cloudinary.com/v1_1/.../download (not CDN)
+  // so it bypasses CDN delivery-type restrictions entirely
+  const signedUrl = cloudinary.utils.private_download_url(publicId, '', {
+    resource_type: 'raw',
+    type: deliveryType as 'authenticated' | 'private',
+    expires_at: Math.floor(Date.now() / 1000) + 600,
+    attachment: false
   })
+  console.log(`[Document Download] signed URL="${signedUrl}"`)
 
-  const url = `https://api.cloudinary.com/v1_1/${cloudName}/raw/download?${params}`
-  console.log(`[Document Download] API download URL built for public_id="${publicId}"`)
-  return url
+  return fetch(signedUrl)
 }
 
 /**
@@ -104,14 +126,20 @@ export default defineEventHandler(async (event: H3Event) => {
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
     let remoteResponse: Response
     try {
-      // Resources stored via ml_default (Signed preset) are "authenticated" delivery type.
-      // Use Cloudinary Admin API download endpoint — bypasses CDN delivery-type restrictions.
-      const fetchUrl = buildCloudinaryApiDownloadUrl(doc.file_path) ?? doc.file_path
-
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 45000)
-      remoteResponse = await fetch(fetchUrl, { signal: controller.signal })
+
+      const fetchPromise = fetchCloudinaryFile(doc.file_path)
+
+      // Race: fetch vs timeout
+      remoteResponse = await Promise.race([
+        fetchPromise,
+        new Promise<never>((_, reject) =>
+          timeoutId && setTimeout(() => reject(Object.assign(new Error('AbortError'), { name: 'AbortError' })), 45000)
+        )
+      ])
       clearTimeout(timeoutId)
+      controller.abort() // release resources
 
       if (!remoteResponse.ok) {
         console.error(`[Document Download] Cloud fetch ${remoteResponse.status} for id=${id} storedUrl=${doc.file_path}`)
