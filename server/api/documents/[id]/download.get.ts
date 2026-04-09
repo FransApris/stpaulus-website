@@ -48,14 +48,10 @@ export default defineEventHandler(async (event: H3Event) => {
 
   const doc = documents[0] as { file_path: string; filename: string; original_filename: string; mime_type: string }
 
-  // If the file is hosted on cloud storage, inline can redirect directly.
-  // Attachment mode proxies bytes so browser always treats it as downloadable.
+  // For cloud-hosted files: always proxy bytes through this server for BOTH inline and attachment.
+  // Direct redirect to Cloudinary raw URLs causes browser security errors because Cloudinary
+  // serves raw resources without proper Content-Type/Content-Disposition headers for inline viewing.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
-    if (mode === 'inline') {
-      console.log(`[Document Download] id=${id} → redirecting to cloud URL (inline): ${doc.file_path}`)
-      return sendRedirect(event, doc.file_path, 302)
-    }
-
     try {
       const remoteResponse = await fetch(doc.file_path)
       if (!remoteResponse.ok) {
@@ -66,11 +62,17 @@ export default defineEventHandler(async (event: H3Event) => {
       const fileBuffer = Buffer.from(arrayBuffer)
 
       const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
-      setHeader(event, 'Content-Type', doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream')
-      setHeader(event, 'Content-Disposition', `attachment; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
+      // Prefer stored mime_type; fall back to what Cloudinary reports
+      const contentType = doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream'
+      setHeader(event, 'Content-Type', contentType)
+      setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
       setHeader(event, 'Content-Length', fileBuffer.length)
       setHeader(event, 'X-Content-Type-Options', 'nosniff')
+      if (mode === 'inline') {
+        setHeader(event, 'Cache-Control', 'private, max-age=300')
+      }
 
+      console.log(`[Document Download] id=${id} cloud proxy mode=${mode} contentType=${contentType}`)
       return fileBuffer
     } catch (error) {
       console.error(`[Document Download] Failed to proxy cloud file for id=${id}:`, error)
