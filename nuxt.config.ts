@@ -194,7 +194,8 @@ export default defineNuxtConfig({
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Authorization, Content-Type',
           'Access-Control-Allow-Credentials': 'true',
-          'cache-control': 'public,max-age=60'
+          // No cache for API responses — always return fresh data
+          'cache-control': 'no-store, no-cache, must-revalidate'
         }
       },
       // Admin API: NEVER cache - always return fresh data

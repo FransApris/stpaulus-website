@@ -198,10 +198,7 @@ const fetchCategories = async () => {
 
 // Fetch documents
 const fetchDocuments = async () => {
-  const hasCache = documents.value.length > 0
-  if (!hasCache) {
-    loading.value = true
-  }
+  loading.value = true
   try {
     const response = await $fetch('/api/documents', { server: false })
     documents.value = response
