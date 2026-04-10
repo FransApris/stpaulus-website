@@ -1,4 +1,4 @@
-import { defineEventHandler, createError, getRouterParam, setHeader, sendStream } from 'h3'
+import { defineEventHandler, createError, getRouterParam, setHeader, sendStream, sendRedirect } from 'h3'
 import type { H3Event } from 'h3'
 import { getQuery } from 'h3'
 import { allQuery } from '~/server/database/db'
@@ -160,11 +160,20 @@ export default defineEventHandler(async (event: H3Event) => {
 
   const doc = documents[0] as { file_path: string; filename: string; original_filename: string; mime_type: string }
 
-  // For cloud-hosted files: stream bytes through this server.
-  // Direct redirect to Cloudinary raw URLs causes cross-origin errors in browser
-  // (Unsafe attempt to load URL from chrome-error://chromewebdata frame).
-  // Inline viewing is handled on client via Google Docs Viewer instead.
+  // For cloud-hosted files
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
+    const parsed = parseCloudinaryUrl(doc.file_path)
+
+    // Untuk dokumen Cloudinary tipe 'upload' (public): redirect 302 langsung ke CDN.
+    // Client fetch() mengikuti redirect otomatis → tidak ada proxy server → tidak ada 502.
+    // Catatan: tidak menimbulkan chrome-error karena fetch() berbeda dari window.open() navigation.
+    if (parsed?.deliveryType === 'upload') {
+      console.log(`[DocDL] public Cloudinary → redirect 302 id=${id}`)
+      setHeader(event, 'Access-Control-Allow-Origin', '*')
+      return sendRedirect(event, doc.file_path, 302)
+    }
+
+    // Untuk tipe authenticated/private: proxy stream (perlu signed URL via Cloudinary SDK)
     const { response: remoteResponse, cloudinaryError } = await fetchCloudinaryFile(doc.file_path)
 
     if (!remoteResponse.ok) {
