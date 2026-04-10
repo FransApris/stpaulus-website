@@ -80,36 +80,58 @@ async function fetchCloudinaryFile(storedUrl: string): Promise<{ response: Respo
     return { response: r, cloudinaryError: `Cloudinary credentials not configured. Direct fetch HTTP ${r.status}: ${errBody.substring(0, 200)}` }
   }
 
-  // Generate signed URL dengan long_url_signature (SHA256) + expiry.
-  // long_url_signature diperlukan untuk akun dengan strict URL signing.
+  // Generate signed URL dengan expires_at + coba dua strategy (long & short signature).
+  // Akun Cloudinary dengan strict signed URLs WAJIB punya expires_at dalam signature.
+  const expiresAt = Math.floor(Date.now() / 1000) + 3600 // 1 jam
   let urlToFetch: string
   try {
+    // Strategy 1: long_url_signature (SHA-256) + expires_at
     urlToFetch = cloudinary.url(publicId, {
       resource_type: 'raw',
       type: deliveryType,
       sign_url: true,
-      long_url_signature: true,        // SHA256 signature — diperlukan untuk strict signing
+      long_url_signature: true,
+      expires_at: expiresAt,
       secure: true,
       ...(version ? { version } : {})
     })
-    console.log(`[DocDL] strategy=signed-server-fetch url="${urlToFetch.substring(0, 200)}"`)
+    console.log(`[DocDL] strategy=long-signed+expiry url="${urlToFetch.substring(0, 200)}"`)
   } catch (e: any) {
     console.error(`[DocDL] cloudinary.url() threw: ${e.message}`)
     return { response: await fetch(storedUrl), cloudinaryError: `Failed to build signed URL: ${e.message}` }
   }
 
-  const r = await fetch(urlToFetch)
-  console.log(`[DocDL] signed server-fetch status=${r.status}`)
+  let r = await fetch(urlToFetch)
+  console.log(`[DocDL] long-signed+expiry status=${r.status}`)
   if (r.ok) return { response: r }
 
-  // Jika masih gagal, coba raw URL sebagai fallback terakhir
-  console.warn(`[DocDL] signed fetch failed (${r.status}), trying raw URL as last resort`)
-  const errBody = await r.text()
-  const r2 = await fetch(storedUrl)
-  console.log(`[DocDL] raw fallback status=${r2.status}`)
-  if (r2.ok) return { response: r2 }
+  // Strategy 2: short signature (SHA-1) + expires_at
+  try {
+    urlToFetch = cloudinary.url(publicId, {
+      resource_type: 'raw',
+      type: deliveryType,
+      sign_url: true,
+      long_url_signature: false,
+      expires_at: expiresAt,
+      secure: true,
+      ...(version ? { version } : {})
+    })
+    console.log(`[DocDL] strategy=short-signed+expiry url="${urlToFetch.substring(0, 200)}"`)
+    r = await fetch(urlToFetch)
+    console.log(`[DocDL] short-signed+expiry status=${r.status}`)
+    if (r.ok) return { response: r }
+  } catch (e: any) {
+    console.warn(`[DocDL] short-signed strategy failed: ${e.message}`)
+  }
 
-  return { response: r, cloudinaryError: `Signed URL HTTP ${r.status}: ${errBody.substring(0, 200)}` }
+  // Strategy 3: raw URL (last resort)
+  console.warn(`[DocDL] all signed strategies failed, trying raw URL`)
+  const errBody = await r.text()
+  const r3 = await fetch(storedUrl)
+  console.log(`[DocDL] raw fallback status=${r3.status}`)
+  if (r3.ok) return { response: r3 }
+
+  return { response: r, cloudinaryError: `All strategies failed. Last HTTP ${r.status}: ${errBody.substring(0, 200)}` }
 }
 
 /**

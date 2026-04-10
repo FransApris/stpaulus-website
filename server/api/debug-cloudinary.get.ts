@@ -61,34 +61,42 @@ export default defineEventHandler(async (event) => {
 
         result.doc_parsed = { deliveryType, version, publicId }
 
-        // Generate signed URL
+        // Generate signed URL dengan expires_at (wajib untuk strict signed URLs)
+        const expiresAt = Math.floor(Date.now() / 1000) + 3600
         try {
-          const signedUrl = cloudinary.url(publicId, {
+          // Strategy 1: long signature + expires_at
+          const signedUrlLong = cloudinary.url(publicId, {
             resource_type: 'raw',
             type: deliveryType as any,
             sign_url: true,
             long_url_signature: true,
+            expires_at: expiresAt,
             secure: true,
             ...(version ? { version } : {})
           })
-          result.signed_url_generated = `✅ ${signedUrl.substring(0, 120)}...`
+          result.signed_url_long = `✅ ${signedUrlLong.substring(0, 150)}...`
 
-          // Coba fetch dari server
-          const fetchStart = Date.now()
-          const res = await fetch(signedUrl, { signal: AbortSignal.timeout(10000) })
-          const fetchMs = Date.now() - fetchStart
+          const r1 = await fetch(signedUrlLong, { signal: AbortSignal.timeout(10000) })
+          result.fetch_long_signed_status = r1.status
+          result.fetch_long_signed_ok = r1.ok
+          if (!r1.ok) result.fetch_long_signed_body = (await r1.text()).substring(0, 300)
 
-          result.server_fetch_status = res.status
-          result.server_fetch_ms = fetchMs
-          result.server_fetch_ok = res.ok
+          // Strategy 2: short signature + expires_at
+          const signedUrlShort = cloudinary.url(publicId, {
+            resource_type: 'raw',
+            type: deliveryType as any,
+            sign_url: true,
+            long_url_signature: false,
+            expires_at: expiresAt,
+            secure: true,
+            ...(version ? { version } : {})
+          })
+          result.signed_url_short = `✅ ${signedUrlShort.substring(0, 150)}...`
 
-          if (!res.ok) {
-            const body = await res.text()
-            result.server_fetch_error_body = body.substring(0, 500)
-          } else {
-            result.server_fetch_content_type = res.headers.get('content-type')
-            result.server_fetch_content_length = res.headers.get('content-length')
-          }
+          const r2 = await fetch(signedUrlShort, { signal: AbortSignal.timeout(10000) })
+          result.fetch_short_signed_status = r2.status
+          result.fetch_short_signed_ok = r2.ok
+          if (!r2.ok) result.fetch_short_signed_body = (await r2.text()).substring(0, 300)
         } catch (e: any) {
           result.signed_url_error = e.message
         }
