@@ -818,7 +818,7 @@ const generateNarasi = async () => {
     try {
         isGenerating.value = true
         generatedNarasi.value = ''
-        const token = localStorage.getItem('auth_token') || localStorage.getItem('admin_access_token')
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('admin_access_token')
 
         const response = await $fetch('/api/kronik/generate-narasi', {
             method: 'POST',

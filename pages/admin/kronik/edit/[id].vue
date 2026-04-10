@@ -217,7 +217,7 @@ const uploadingGallery = ref(false)
 const entry = ref(null)
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('admin_access_token') || localStorage.getItem('auth_token')
+  const token = sessionStorage.getItem('admin_access_token') || localStorage.getItem('auth_token')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
