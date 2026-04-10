@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Header -->
     <div class="mb-8">
@@ -279,7 +279,7 @@ const fetchCategories = async () => {
   const hasCache = categories.value.length > 0
   if (!hasCache) loading.value = true
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     if (!token) {
       navigateTo('/admin')
@@ -298,7 +298,7 @@ const fetchCategories = async () => {
     // Handle token errors
     if (error.statusCode === 401 || error.data?.message?.includes('token')) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
-      localStorage.removeItem('admin_access_token')
+      sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
     } else if (!hasCache) {
@@ -350,7 +350,7 @@ const closeModal = () => {
 const saveCategory = async () => {
   saving.value = true
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     if (!token) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
@@ -405,7 +405,7 @@ const saveCategory = async () => {
     // Handle token errors
     if (error.statusCode === 401 || error.data?.message?.includes('token')) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
-      localStorage.removeItem('admin_access_token')
+      sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
       return
@@ -424,7 +424,7 @@ const deleteCategory = async (id) => {
   }
 
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     if (!token) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
@@ -459,7 +459,7 @@ const deleteCategory = async (id) => {
     // Handle token errors
     if (error.statusCode === 401 || error.data?.message?.includes('token')) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
-      localStorage.removeItem('admin_access_token')
+      sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
       return
@@ -471,7 +471,7 @@ const deleteCategory = async (id) => {
 
 // Initialize
 onMounted(async () => {
-  const token = localStorage.getItem('admin_access_token')
+  const token = sessionStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-5xl mx-auto px-4">
       <!-- Header -->
@@ -363,7 +363,7 @@ const getContentLength = () => {
 // Fetch categories
 onMounted(async () => {
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     const response = await $fetch('/api/admin/article-categories', {
       headers: {
         Authorization: `Bearer ${token}`
@@ -427,7 +427,7 @@ const generateNarasi = async () => {
   errorMessage.value = ''
 
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
 
     const response = await $fetch('/api/news/ai/generate-narasi', {
       method: 'POST',
@@ -468,7 +468,7 @@ const generateNarasi = async () => {
 const uploadGalleryImages = async () => {
   if (galleryFiles.value.length === 0) return []
 
-  const token = localStorage.getItem('admin_access_token')
+  const token = sessionStorage.getItem('admin_access_token')
   const formData = new FormData()
 
   galleryFiles.value.forEach((file: File) => {
@@ -514,7 +514,7 @@ const handleSubmit = async () => {
       form.value.gallery_images = uploadedGallery
     }
 
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
 
     await $fetch('/api/admin/news', {
       method: 'POST',

@@ -1,4 +1,4 @@
-// composables/useAuth.ts
+﻿// composables/useAuth.ts
 interface User {
   id: number
   username: string
@@ -25,7 +25,7 @@ export const useAuth = () => {
         permissions.value = []
       }
 
-      const token = localStorage.getItem('admin_access_token')
+      const token = sessionStorage.getItem('admin_access_token')
 
       console.log('[useAuth] Fetching user data, token exists:', !!token)
 
@@ -81,7 +81,7 @@ export const useAuth = () => {
       // If token is invalid or expired, clear it and redirect to login
       if (error.statusCode === 401 || error.status === 401) {
         console.log('[useAuth] Token invalid/expired, clearing and redirecting to login')
-        localStorage.removeItem('admin_access_token')
+        sessionStorage.removeItem('admin_access_token')
         localStorage.removeItem('admin_refresh_token')
         user.value = null
         permissions.value = []
@@ -117,7 +117,7 @@ export const useAuth = () => {
   const isAdminSekretariat = computed(() => user.value?.role === 'admin_sekretariat')
 
   const logout = () => {
-    localStorage.removeItem('admin_access_token')
+    sessionStorage.removeItem('admin_access_token')
     localStorage.removeItem('admin_refresh_token')
     user.value = null
     permissions.value = []

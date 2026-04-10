@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -274,7 +274,7 @@ const fetchThemes = async () => {
   try {
     const response = await $fetch('/api/admin/hero-themes', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     themes.value = response.data
@@ -333,7 +333,7 @@ const createTheme = async () => {
     await $fetch('/api/admin/hero-themes', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: formData
     })
@@ -384,7 +384,7 @@ const updateTheme = async () => {
     await $fetch(`/api/admin/hero-themes/${editTheme.value.id}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: formData
     })
@@ -414,7 +414,7 @@ const activateTheme = async (themeId) => {
     await $fetch(`/api/admin/hero-themes/${themeId}/activate`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     showToast('Tema berhasil diaktifkan')
@@ -444,7 +444,7 @@ const deleteTheme = async (themeId) => {
     await $fetch(`/api/admin/hero-themes/${themeId}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     showToast('Tema berhasil dihapus')

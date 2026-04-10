@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="p-6 max-w-5xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Tambah Kronik Baru</h1>
 
@@ -169,7 +169,7 @@ const uploadingFeatured = ref(false)
 const uploadingGallery = ref(false)
 
 const getAuthHeaders = () => {
-  const token = localStorage.getItem('admin_access_token') || localStorage.getItem('auth_token')
+  const token = sessionStorage.getItem('admin_access_token') || localStorage.getItem('auth_token')
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 

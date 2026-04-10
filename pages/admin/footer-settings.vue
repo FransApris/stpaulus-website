@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-gray-50">
     <AdminLayout>
       <div class="px-4 py-6 sm:px-0">
@@ -301,7 +301,7 @@ const fetchSettings = async () => {
 
     const response = await $fetch('/api/admin/footer-settings', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     }) as {
       settings: any;
@@ -396,7 +396,7 @@ const saveSettings = async () => {
     await $fetch('/api/admin/footer-settings', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         copyright_entity: formData.value.copyright_entity,

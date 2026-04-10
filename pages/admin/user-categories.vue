@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Add Category Form -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -167,7 +167,7 @@ const loadCategories = async () => {
   try {
     categories.value = await $fetch('/api/admin/user-categories', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
   } catch (err) {
@@ -205,7 +205,7 @@ const createCategory = async () => {
     const result = await $fetch('/api/admin/user-categories', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: categoryData
     })
@@ -247,7 +247,7 @@ const deleteCategory = async (category) => {
     await $fetch(`/api/admin/user-categories/${category.id}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -279,7 +279,7 @@ const updateCategory = async () => {
     const result = await $fetch(`/api/admin/user-categories/${categoryId}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: categoryData
     })

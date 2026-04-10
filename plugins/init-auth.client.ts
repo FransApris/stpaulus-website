@@ -1,4 +1,4 @@
-// plugins/init-auth.client.ts
+﻿// plugins/init-auth.client.ts
 // Explicit import for TypeScript
 import { useAuth } from '#imports'
 
@@ -19,12 +19,12 @@ export default defineNuxtPlugin(() => {
 
   // Initialize auth state on app load if token exists (non-blocking)
   if (process.client) {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     if (token) {
       // Check if token is expired before making API call
       if (isTokenExpired(token)) {
         console.log('[Init Auth Plugin] Token expired, clearing...')
-        localStorage.removeItem('admin_access_token')
+        sessionStorage.removeItem('admin_access_token')
         localStorage.removeItem('admin_refresh_token')
       } else {
         console.log('[Init Auth Plugin] Token found, fetching user data...')

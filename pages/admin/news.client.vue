@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- Add News Button -->
   <div class="mb-6">
     <button
@@ -487,7 +487,7 @@ watch(() => newsForm.value.title, (newTitle) => {
 })
 
 const handleLogout = () => {
-  localStorage.removeItem('admin_access_token')
+  sessionStorage.removeItem('admin_access_token')
   localStorage.removeItem('admin_refresh_token')
   navigateTo('/admin/login')
 }
@@ -501,7 +501,7 @@ const fetchNews = async () => {
     if (filterStatus.value) params.set('status', filterStatus.value)
     const response = await $fetch(`/api/admin/news?${params}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     news.value = response.data
@@ -520,7 +520,7 @@ const fetchCategories = async () => {
   try {
     const response = await $fetch('/api/admin/article-categories', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -554,7 +554,7 @@ const generateNarasi = async () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         what_title: newsForm.value.title,
@@ -617,7 +617,7 @@ const uploadGalleryImages = async () => {
     const response = await $fetch('/api/news/upload-images', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: formData
     })
@@ -647,7 +647,7 @@ const saveNews = async () => {
     await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: newsForm.value
@@ -719,7 +719,7 @@ const togglePublish = async (newsItem) => {
     await $fetch(`/api/admin/news/${newsItem.id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: {
@@ -759,7 +759,7 @@ const deleteNews = async (newsItem) => {
     await $fetch(`/api/admin/news/${newsItem.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -836,7 +836,7 @@ const getStatusText = (status) => {
 
 // Check authentication and fetch data on mount
 onMounted(async () => {
-  const token = localStorage.getItem('admin_access_token')
+  const token = sessionStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

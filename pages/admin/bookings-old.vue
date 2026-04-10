@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
         <!-- Filter -->
         <div class="bg-white p-6 rounded-lg shadow">
@@ -123,7 +123,7 @@ const loadBookings = async () => {
     const params = filterStatus.value ? `?status=${filterStatus.value}` : ''
     bookings.value = await $fetch(`/api/admin/bookings${params}`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
   } catch (err) {
@@ -147,7 +147,7 @@ const approveBooking = async (booking) => {
     await $fetch(`/api/bookings/${booking.id}`, {
       method: 'PATCH',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: { status: 'APPROVED' }
     })
@@ -201,7 +201,7 @@ const confirmReject = async () => {
     await $fetch(`/api/bookings/${bookingId}`, {
       method: 'PATCH',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: { status: 'REJECTED', rejection_reason: reason }
     })
@@ -258,7 +258,7 @@ const confirmCancel = async () => {
     await $fetch(`/api/bookings/${bookingId}`, {
       method: 'PATCH',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body
     })
@@ -303,7 +303,7 @@ const deleteBooking = async () => {
     await $fetch(`/api/bookings/${bookingId}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     

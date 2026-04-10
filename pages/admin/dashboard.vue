@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <!-- Welcome Header with Role Badge -->
   <div class="mb-6 bg-white shadow rounded-lg p-6">
     <ClientOnly>
@@ -662,7 +662,7 @@ const fetchStats = async () => {
   try {
     const response = await $fetch('/api/admin/stats', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     stats.value = response
@@ -687,12 +687,12 @@ const fetchContent = async () => {
     const [articlesResponse, newsResponse] = await Promise.all([
       $fetch('/api/admin/articles', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+          'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
         }
       }),
       $fetch('/api/admin/news', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+          'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
         }
       })
     ])
@@ -721,7 +721,7 @@ const fetchBookings = async () => {
   try {
     const response = await $fetch('/api/admin/bookings', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 

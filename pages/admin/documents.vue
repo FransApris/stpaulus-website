@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Header -->
     <div class="mb-8">
@@ -399,7 +399,7 @@ const truncateDescription = (text, maxLength = 80) => {
 // Fetch categories
 const fetchCategories = async () => {
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     if (!token) {
       navigateTo('/admin')
@@ -418,7 +418,7 @@ const fetchCategories = async () => {
     // Handle token errors
     if (error.statusCode === 401 || error.data?.message?.includes('token')) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
-      localStorage.removeItem('admin_access_token')
+      sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
     }
@@ -430,7 +430,7 @@ const fetchDocuments = async () => {
   const hasCache = documents.value.length > 0
   if (!hasCache) loading.value = true
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     if (!token) {
       navigateTo('/admin')
@@ -450,7 +450,7 @@ const fetchDocuments = async () => {
     // Handle token errors
     if (error.statusCode === 401 || error.data?.message?.includes('token')) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
-      localStorage.removeItem('admin_access_token')
+      sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
     } else if (!hasCache) {
@@ -510,7 +510,7 @@ const handleFileChange = (event) => {
 const saveDocument = async () => {
   saving.value = true
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     console.log('Token from localStorage:', token ? 'EXISTS' : 'MISSING')
     
@@ -570,7 +570,7 @@ const saveDocument = async () => {
     // Handle token errors
     if (error.statusCode === 401 || error.data?.message?.includes('token')) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
-      localStorage.removeItem('admin_access_token')
+      sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
       return
@@ -589,7 +589,7 @@ const deleteDocument = async (id) => {
   }
 
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     if (!token) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
@@ -613,7 +613,7 @@ const deleteDocument = async (id) => {
     // Handle token errors
     if (error.statusCode === 401 || error.data?.message?.includes('token')) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
-      localStorage.removeItem('admin_access_token')
+      sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
       return
@@ -628,7 +628,7 @@ const downloadDocument = async (document) => {
   try {
     const response = await $fetch(`/api/admin/documents/${document.id}/download`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       responseType: 'blob'
     })
@@ -662,7 +662,7 @@ const formatDate = (dateString) => {
 // Toggle featured status
 const toggleFeatured = async (id, isFeatured) => {
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     if (!token) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
@@ -689,7 +689,7 @@ const toggleFeatured = async (id, isFeatured) => {
     // Handle token errors
     if (error.statusCode === 401 || error.data?.message?.includes('token')) {
       alert('Sesi Anda telah berakhir. Silakan login kembali.')
-      localStorage.removeItem('admin_access_token')
+      sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_user')
       navigateTo('/admin')
       return
@@ -710,7 +710,7 @@ const fixDocumentPermissions = async () => {
 
   fixing.value = true
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     const result = await $fetch('/api/admin/fix-document-permissions', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token }
@@ -742,7 +742,7 @@ const migrateToCloud = async () => {
 
   migrating.value = true
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     const result = await $fetch('/api/admin/documents/migrate-to-cloud', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` }
@@ -759,7 +759,7 @@ const migrateToCloud = async () => {
 
 // Initialize
 onMounted(async () => {
-  const token = localStorage.getItem('admin_access_token')
+  const token = sessionStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

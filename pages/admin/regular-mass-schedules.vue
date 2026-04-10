@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Header -->
     <div class="mb-8">
@@ -457,7 +457,7 @@ const fetchRegularSchedules = async () => {
   try {
     const response = await $fetch('/api/admin/regular-mass-schedules', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     regularSchedules.value = response
@@ -470,7 +470,7 @@ const fetchSpecialSchedules = async () => {
   try {
     const response = await $fetch('/api/admin/liturgy-schedules', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     specialSchedules.value = response.schedules || []
@@ -501,7 +501,7 @@ const saveRegularSchedule = async () => {
     await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: regularForm.value
@@ -528,7 +528,7 @@ const toggleRegularSchedule = async (schedule) => {
     await $fetch(`/api/admin/regular-mass-schedules/${schedule.id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: { ...schedule, is_active: !schedule.is_active }
@@ -550,7 +550,7 @@ const deleteRegularSchedule = async (schedule) => {
     await $fetch(`/api/admin/regular-mass-schedules/${schedule.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -575,7 +575,7 @@ const saveSpecialSchedule = async () => {
     await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: specialForm.value
@@ -602,7 +602,7 @@ const toggleSpecialSchedule = async (schedule) => {
     await $fetch(`/api/admin/liturgy-schedules/${schedule.id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: { ...schedule, status: schedule.status === 'active' ? 'inactive' : 'active' }
@@ -624,7 +624,7 @@ const deleteSpecialSchedule = async (schedule) => {
     await $fetch(`/api/admin/liturgy-schedules/${schedule.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 

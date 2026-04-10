@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Header -->
     <div class="mb-8">
@@ -509,7 +509,7 @@ const fetchRegularSchedules = async () => {
   try {
     const response = await $fetch('/api/admin/regular-mass-schedules', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     regularSchedules.value = response
@@ -522,7 +522,7 @@ const fetchSpecialSchedules = async () => {
   try {
     const response = await $fetch('/api/admin/liturgy-schedules', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     // Handle paginated response - extract schedules array
@@ -538,7 +538,7 @@ const fetchLiturgyTypes = async () => {
     console.log('[Mass Schedules] Fetching liturgy types...')
     const response = await $fetch('/api/admin/liturgy-types', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     console.log('[Mass Schedules] Liturgy types response:', response)
@@ -577,7 +577,7 @@ const saveRegularSchedule = async () => {
     const result = await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: formData
@@ -618,7 +618,7 @@ const toggleRegularSchedule = async (schedule) => {
     await $fetch(`/api/admin/regular-mass-schedules/${schedule.id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: { ...schedule, is_active: !schedule.is_active }
@@ -647,7 +647,7 @@ const deleteRegularSchedule = async (schedule) => {
     await $fetch(`/api/admin/regular-mass-schedules/${schedule.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -695,7 +695,7 @@ const saveSpecialSchedule = async () => {
     const result = await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: payload
@@ -747,7 +747,7 @@ const toggleSpecialSchedule = async (schedule) => {
     await $fetch(`/api/admin/liturgy-schedules/${schedule.id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: { ...schedule, status: schedule.status === 'active' ? 'inactive' : 'active' }
@@ -777,7 +777,7 @@ const deleteSpecialSchedule = async (schedule) => {
     await $fetch(`/api/admin/liturgy-schedules/${schedule.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -850,7 +850,7 @@ const fetchDevotions = async () => {
   try {
     const result = await $fetch('/api/admin/devotions', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     devotions.value = result.data || []
@@ -918,7 +918,7 @@ const saveDevotion = async () => {
     const result = await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: payload
@@ -962,7 +962,7 @@ const toggleDevotion = async (devotion) => {
     await $fetch(`/api/admin/devotions/${devotion.id}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: {
@@ -998,7 +998,7 @@ const deleteDevotion = async (devotion) => {
     await $fetch(`/api/admin/devotions/${devotion.id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 

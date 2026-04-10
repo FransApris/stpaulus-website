@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
@@ -678,7 +678,7 @@ const fetchCategories = async () => {
   try {
     const response = await $fetch('/api/admin/agenda/categories', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     categories.value = response
@@ -691,7 +691,7 @@ const fetchLiturgyTypes = async () => {
   try {
     const response = await $fetch('/api/admin/liturgy-types', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     liturgyTypes.value = response
@@ -711,7 +711,7 @@ const fetchAgendas = async () => {
 
     const response = await $fetch(`/api/admin/agenda?${params}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     agendas.value = response
@@ -746,7 +746,7 @@ const saveAgenda = async () => {
       method,
       body: formData,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -822,7 +822,7 @@ const deleteAgenda = async () => {
     await $fetch(`/api/admin/agenda/${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -990,7 +990,7 @@ const deleteMultiple = async () => {
       $fetch(`/api/admin/agenda/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+          'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
         }
       })
     ))
@@ -1059,7 +1059,7 @@ const formatTimeDisplay = (dateString) => {
 
 // Check authentication and fetch data on mount
 onMounted(async () => {
-  const token = localStorage.getItem('admin_access_token')
+  const token = sessionStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

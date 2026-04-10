@@ -1,9 +1,9 @@
-export const useAdminApi = () => {
+﻿export const useAdminApi = () => {
   const config = useRuntimeConfig()
   const apiBase = config.public.apiBase || ''
 
   const makeRequest = async (url: string, options: any = {}) => {
-    const accessToken = localStorage.getItem('admin_access_token')
+    const accessToken = sessionStorage.getItem('admin_access_token')
     if (accessToken) {
       options.headers = {
         ...options.headers,
@@ -25,7 +25,7 @@ export const useAdminApi = () => {
             })
 
             // Store new tokens
-            localStorage.setItem('admin_access_token', refreshResponse.accessToken)
+            sessionStorage.setItem('admin_access_token', refreshResponse.accessToken)
             localStorage.setItem('admin_refresh_token', refreshResponse.refreshToken)
 
             // Retry original request with new token
@@ -36,7 +36,7 @@ export const useAdminApi = () => {
             return await $fetch(`${apiBase}${url}`, options)
           } catch (refreshError) {
             // Refresh failed, redirect to login
-            localStorage.removeItem('admin_access_token')
+            sessionStorage.removeItem('admin_access_token')
             localStorage.removeItem('admin_refresh_token')
             await navigateTo('/admin/login')
             throw refreshError

@@ -1,4 +1,4 @@
-export default defineNuxtPlugin(() => {
+﻿export default defineNuxtPlugin(() => {
   const originalFetch = (globalThis as any).fetch as typeof fetch;
 
   // Helper function to check if JWT token is expired
@@ -28,7 +28,7 @@ export default defineNuxtPlugin(() => {
   // Check token expiration periodically and warn user
   if (typeof window !== 'undefined') {
     setInterval(() => {
-      const token = localStorage.getItem('admin_access_token');
+      const token = sessionStorage.getItem('admin_access_token');
       if (token && !isTokenExpired(token) && isTokenExpiringSoon(token)) {
         console.warn('[Auth Plugin] Token will expire soon. Please save your work.');
         // You can add a toast notification here
@@ -41,7 +41,7 @@ export default defineNuxtPlugin(() => {
 
     // Only apply admin token for admin API routes
     if (url && url.includes('/api/admin')) {
-      const token = localStorage.getItem('admin_access_token');
+      const token = sessionStorage.getItem('admin_access_token');
       console.log('[Auth Plugin] Request to:', url, '| Token length:', token?.length || 0);
 
       if (token && !isTokenExpired(token)) {
@@ -53,7 +53,7 @@ export default defineNuxtPlugin(() => {
         if (token) {
           console.log('[Auth Plugin] Token expired, not adding Authorization header for request:', url);
           // Clear expired token
-          localStorage.removeItem('admin_access_token');
+          sessionStorage.removeItem('admin_access_token');
           localStorage.removeItem('admin_refresh_token');
           
           // Redirect to login if on admin page (only in browser)

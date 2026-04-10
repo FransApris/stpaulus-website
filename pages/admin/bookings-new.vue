@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -540,7 +540,7 @@ const loadBookings = async () => {
     const params = filterStatus.value ? `?status=${filterStatus.value}` : ''
     const response = await $fetch(`/api/admin/bookings${params}`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -565,7 +565,7 @@ const loadAuditLogs = async () => {
   try {
     const response = await $fetch('/api/admin/audit-logs', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     auditLogs.value = response.logs || []
@@ -578,7 +578,7 @@ const loadDeletedBookings = async () => {
   try {
     deletedBookings.value = await $fetch('/api/admin/deleted-bookings', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
   } catch (err) {
@@ -590,7 +590,7 @@ const loadStats = async () => {
   try {
     const response = await $fetch('/api/admin/bookings', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -637,7 +637,7 @@ const viewHistory = async (booking) => {
   try {
     bookingHistory.value = await $fetch(`/api/bookings/${booking.id}/history`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
   } catch (err) {
@@ -663,7 +663,7 @@ const approveBooking = async (booking) => {
     await $fetch(`/api/bookings/${booking.id}`, {
       method: 'PATCH',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: { status: 'APPROVED' }
     })
@@ -710,7 +710,7 @@ const confirmReject = async () => {
     await $fetch(`/api/bookings/${selectedBooking.value.id}`, {
       method: 'PATCH',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         status: 'REJECTED',
@@ -758,7 +758,7 @@ const confirmCancel = async () => {
     await $fetch(`/api/bookings/${selectedBooking.value.id}`, {
       method: 'PATCH',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         status: 'CANCELLED',
@@ -817,7 +817,7 @@ const deleteBooking = async () => {
     await $fetch(`/api/bookings/${selectedBooking.value.id}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -873,7 +873,7 @@ const restoreBooking = async (booking) => {
     await $fetch(`/api/bookings/${booking.id}/restore`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -916,7 +916,7 @@ const permanentDeleteBooking = async (booking) => {
     await $fetch(`/api/bookings/${booking.id}?permanent=true`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -936,7 +936,7 @@ const exportToExcel = async () => {
   try {
     const blob = await $fetch('/api/admin/bookings/export', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       responseType: 'blob'
     })

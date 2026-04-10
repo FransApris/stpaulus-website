@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Add Room Form -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -388,7 +388,7 @@ const loadRooms = async () => {
   try {
     rooms.value = await $fetch('/api/admin/rooms', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
   } catch (err) {
@@ -440,7 +440,7 @@ const createRoom = async () => {
     const result = await $fetch('/api/admin/rooms', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         ...roomData,
@@ -537,7 +537,7 @@ const updateRoom = async () => {
     const result = await $fetch(`/api/admin/rooms/${roomData.id}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         ...roomData,

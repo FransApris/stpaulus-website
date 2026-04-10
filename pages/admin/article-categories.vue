@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Header -->
     <div class="mb-8">
@@ -229,7 +229,7 @@ const fetchCategories = async () => {
   try {
     const response = await $fetch('/api/admin/article-categories', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     categories.value = response
@@ -307,7 +307,7 @@ const saveCategory = async () => {
       method,
       body: formData,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -347,7 +347,7 @@ const deleteCategory = async (id) => {
       await $fetch(`/api/admin/article-categories/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+          'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
         }
       })
 
@@ -367,7 +367,7 @@ const deleteCategory = async (id) => {
 
 // Initialize
 onMounted(async () => {
-  const token = localStorage.getItem('admin_access_token')
+  const token = sessionStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

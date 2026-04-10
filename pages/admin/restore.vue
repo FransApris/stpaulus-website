@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="p-6">
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Database Restore</h1>
@@ -296,7 +296,7 @@ const restoreDatabase = async () => {
   restoreStats.value = null
 
   try {
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
     
     if (!token) {
       throw new Error('Token tidak ditemukan. Silakan login ulang.')

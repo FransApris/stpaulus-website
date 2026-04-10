@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Add User Form -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -485,7 +485,7 @@ const loadCurrentUser = async () => {
   try {
     currentUser.value = await $fetch('/api/me', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
   } catch (err) {
@@ -498,7 +498,7 @@ const loadUserCategories = async () => {
   try {
     userCategories.value = await $fetch('/api/admin/user-categories', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
   } catch (err) {
@@ -516,7 +516,7 @@ const loadUsers = async () => {
   try {
     const response = await $fetch('/api/admin/users', {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -589,7 +589,7 @@ const createUser = async () => {
     const result = await $fetch('/api/admin/users', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: cleanUserData
     })
@@ -640,7 +640,7 @@ const deleteUser = async (user) => {
     await $fetch(`/api/admin/users/${user.id}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -692,7 +692,7 @@ const resetPassword = async () => {
     const response = await $fetch(`/api/admin/users/${selectedUser.value.id}/reset-password`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         newPassword: resetPasswordData.value.newPassword
@@ -740,7 +740,7 @@ const updateUser = async () => {
     const result = await $fetch(`/api/admin/users/${userData.id}`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('admin_access_token')}`
+        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: cleanUserData
     })

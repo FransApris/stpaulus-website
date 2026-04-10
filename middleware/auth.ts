@@ -1,11 +1,11 @@
-// Simple cache to avoid fetching user data on every navigation
+﻿// Simple cache to avoid fetching user data on every navigation
 let userDataCache: { data: any; timestamp: number; token: string } | null = null
 const CACHE_DURATION = 300000 // 5 minutes
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
   if (process.client) {
     // Only check for admin token - users should NOT access admin area
-    const accessToken = localStorage.getItem('admin_access_token')
+    const accessToken = sessionStorage.getItem('admin_access_token')
 
     if (!accessToken) {
       return navigateTo('/admin/login')
@@ -35,7 +35,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
         if (!response.ok) {
           if (response.status === 401) {
             userDataCache = null // Clear cache
-            localStorage.removeItem('admin_access_token')
+            sessionStorage.removeItem('admin_access_token')
             return navigateTo('/admin/login')
           }
           throw new Error('Failed to fetch user data')

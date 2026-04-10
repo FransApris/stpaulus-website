@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     <div class="sm:mx-auto sm:w-full sm:max-w-md">
       <div class="text-center">
@@ -88,7 +88,7 @@ const handleLogin = async () => {
     // IMPORTANT: Clear any existing tokens and auth state BEFORE login
     // This prevents token mixing between different users
     console.log('[Login] Clearing old tokens before new login')
-    localStorage.removeItem('admin_access_token')
+    sessionStorage.removeItem('admin_access_token')
     localStorage.removeItem('admin_refresh_token')
     
     // Clear useState auth state
@@ -113,7 +113,7 @@ const handleLogin = async () => {
     
     // Store NEW tokens in localStorage (persistent across sessions)
     console.log('[Login] Storing new tokens')
-    localStorage.setItem('admin_access_token', response.accessToken)
+    sessionStorage.setItem('admin_access_token', response.accessToken)
     localStorage.setItem('admin_refresh_token', response.refreshToken)
 
     // Wait for localStorage to commit (critical for token update)
@@ -121,7 +121,7 @@ const handleLogin = async () => {
     await new Promise(resolve => setTimeout(resolve, 200))
 
     // Verify tokens are stored
-    const storedToken = localStorage.getItem('admin_access_token')
+    const storedToken = sessionStorage.getItem('admin_access_token')
     console.log('[Login] Token stored successfully:', !!storedToken, 'Length:', storedToken?.length)
 
     // Fetch user data with NEW token
@@ -137,7 +137,7 @@ const handleLogin = async () => {
     await new Promise(resolve => setTimeout(resolve, 100))
 
     // Verify token is set before redirect with additional checks
-    const accessToken = localStorage.getItem('admin_access_token')
+    const accessToken = sessionStorage.getItem('admin_access_token')
     const refreshToken = localStorage.getItem('admin_refresh_token')
 
     if (accessToken && refreshToken && auth.user.value) {
@@ -160,7 +160,7 @@ const handleLogin = async () => {
   } catch (err) {
     error.value = err.data?.message || err.message || 'Login gagal'
     // Clear any partially stored tokens on failure
-    localStorage.removeItem('admin_access_token')
+    sessionStorage.removeItem('admin_access_token')
     localStorage.removeItem('admin_refresh_token')
   } finally {
     loading.value = false
@@ -169,7 +169,7 @@ const handleLogin = async () => {
 
 // Redirect if already logged in, but also clear old state
 onMounted(() => {
-  const accessToken = localStorage.getItem('admin_access_token')
+  const accessToken = sessionStorage.getItem('admin_access_token')
   const route = useRoute()
   
   // Check if redirected due to token expiration

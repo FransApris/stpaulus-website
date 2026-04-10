@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Header -->
     <div class="mb-6">
@@ -245,7 +245,7 @@ const fetchCategories = async () => {
   try {
     const response = await $fetch('/api/admin/gallery-categories', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     categories.value = response.categories
@@ -276,7 +276,7 @@ const saveCategory = async () => {
     const result = await $fetch(url, {
       method,
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: formData
@@ -336,7 +336,7 @@ const confirmDelete = async () => {
     await $fetch(`/api/admin/gallery-categories/${deletedId}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -375,7 +375,7 @@ const closeDeleteModal = () => {
 
 // Check authentication and fetch data on mount
 onMounted(async () => {
-  const token = localStorage.getItem('admin_access_token')
+  const token = sessionStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <!-- Header -->
     <div class="mb-6">
@@ -107,7 +107,7 @@ const fetchPages = async () => {
   try {
     const response = await $fetch('/api/admin/pages', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     pages.value = response
@@ -126,7 +126,7 @@ const togglePublish = async (page) => {
     await $fetch(`/api/admin/pages/${page.slug}`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`,
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`,
         'Content-Type': 'application/json'
       },
       body: { ...page, is_published: newStatus }
@@ -150,7 +150,7 @@ const deletePage = async (page) => {
     await $fetch(`/api/admin/pages/${page.slug}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
@@ -173,7 +173,7 @@ const formatDate = (dateString) => {
 
 // Check authentication and fetch data on mount
 onMounted(async () => {
-  const token = localStorage.getItem('admin_access_token')
+  const token = sessionStorage.getItem('admin_access_token')
   if (!token) {
     navigateTo('/admin/login')
     return

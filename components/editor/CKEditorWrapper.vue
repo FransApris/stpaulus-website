@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="ckeditor-wrapper">
     <!-- Loading state -->
     <div v-if="loading" class="loading-state">
@@ -170,7 +170,7 @@ const onReady = (editorInstance) => {
               fetch('/api/admin/uploads/image', {
                 method: 'POST',
                 headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+                  'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
                 },
                 body: formData
               })

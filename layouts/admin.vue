@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-gray-50 flex">
     <!-- Sidebar -->
     <ClientOnly>
@@ -530,7 +530,7 @@ watch(() => route.path, (newPath) => {
 onMounted(async () => {
   try {
     // Only check for admin token - users should NOT be here
-    const token = localStorage.getItem('admin_access_token')
+    const token = sessionStorage.getItem('admin_access_token')
 
     if (!token) {
       navigateTo('/admin/login')
@@ -781,7 +781,7 @@ const handleLogout = async () => {
   try {
     // Clear all admin tokens from local storage
     localStorage.removeItem('admin_token')
-    localStorage.removeItem('admin_access_token')
+    sessionStorage.removeItem('admin_access_token')
     localStorage.removeItem('admin_refresh_token')
 
     // Clear user state immediately

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="flex flex-col h-[calc(100vh-12rem)]">
     <!-- Header -->
     <div class="flex justify-between items-center mb-4">
@@ -248,7 +248,7 @@ const fetchMessages = async (page = 1) => {
   try {
     const response = await $fetch(`/api/admin/contact-messages?page=${page}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     messages.value = response.messages
@@ -278,7 +278,7 @@ const viewMessage = async (id) => {
   try {
     const message = await $fetch(`/api/admin/contact-messages/${id}`, {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
     
@@ -328,7 +328,7 @@ const deleteMessage = async (id) => {
       await $fetch(`/api/admin/contact-messages/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('admin_access_token')}`
+          'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
         }
       })
       
