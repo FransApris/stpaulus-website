@@ -18,8 +18,28 @@ interface DocumentWithCategory {
 
 export default defineEventHandler(async (event) => {
   try {
-    // Try with is_featured filter first; fall back to latest documents if column doesn't exist yet
+    // Try with is_featured filter first; fall back to latest documents if column doesn't exist or no featured docs
     let documents: DocumentWithCategory[]
+    const fallbackQuery = `
+      SELECT
+        d.id,
+        d.title,
+        d.description,
+        d.filename,
+        d.original_filename,
+        d.file_path,
+        d.file_size,
+        d.mime_type,
+        d.created_at,
+        dc.name as category_name,
+        dc.slug as category_slug,
+        dc.color as category_color
+      FROM documents d
+      LEFT JOIN document_categories dc ON d.category_id = dc.id
+      WHERE dc.is_active = 1
+      ORDER BY d.created_at DESC
+      LIMIT 6
+    `
     try {
       documents = await allQuery(`
         SELECT
@@ -42,28 +62,14 @@ export default defineEventHandler(async (event) => {
         ORDER BY d.created_at DESC
         LIMIT 6
       `) as DocumentWithCategory[]
+
+      // Jika tidak ada dokumen yang di-featured, tampilkan 6 dokumen terbaru
+      if (documents.length === 0) {
+        documents = await allQuery(fallbackQuery) as DocumentWithCategory[]
+      }
     } catch {
       // Fallback: column not yet migrated — return latest 6 documents
-      documents = await allQuery(`
-        SELECT
-          d.id,
-          d.title,
-          d.description,
-          d.filename,
-          d.original_filename,
-          d.file_path,
-          d.file_size,
-          d.mime_type,
-          d.created_at,
-          dc.name as category_name,
-          dc.slug as category_slug,
-          dc.color as category_color
-        FROM documents d
-        LEFT JOIN document_categories dc ON d.category_id = dc.id
-        WHERE dc.is_active = 1
-        ORDER BY d.created_at DESC
-        LIMIT 6
-      `) as DocumentWithCategory[]
+      documents = await allQuery(fallbackQuery) as DocumentWithCategory[]
     }
 
     return documents.map((doc: DocumentWithCategory) => ({

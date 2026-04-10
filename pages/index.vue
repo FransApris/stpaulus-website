@@ -287,7 +287,7 @@
                   </button>
                   <button @click="printDocument(doc)"
                     class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200"
-                    title="Cetak Dokumen">
+                    title="Cetak (buka PDF lalu Ctrl+P)">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
@@ -967,25 +967,8 @@ const viewDocument = (doc) => {
 
 const printDocument = (doc) => {
   if (process.client) {
-    const printWindow = globalThis.window.open(getDocumentUrl(doc.id, 'inline'), '_blank')
-
-    if (!printWindow) {
-      alert('Popup diblokir browser. Izinkan popup untuk mencetak dokumen.')
-      return
-    }
-
-    try {
-      printWindow.onload = () => {
-        try {
-          printWindow.print()
-        } catch {
-          // Some cross-origin viewers may block scripted print; user can print manually.
-        }
-      }
-    } catch (error) {
-      console.error('Failed to print document:', error)
-      alert('Gagal mencetak dokumen')
-    }
+    // Buka dokumen di tab baru — gunakan Ctrl+P di dalam PDF viewer untuk mencetak
+    globalThis.window.open(getDocumentUrl(doc.id, 'inline'), '_blank', 'noopener,noreferrer')
   }
 }
 
