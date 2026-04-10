@@ -200,8 +200,8 @@ export default defineEventHandler(async (event) => {
         SELECT 
           b.id,
           b.event_name,
-          DATE_FORMAT(b.start_time, '%H:%i') as start_time_formatted,
-          DATE_FORMAT(b.end_time, '%H:%i') as end_time_formatted,
+          b.start_time,
+          b.end_time,
           b.status,
           u.full_name
         FROM bookings b
@@ -217,10 +217,21 @@ export default defineEventHandler(async (event) => {
         const conflictInfo = conflicts[0]
         console.log('[CREATE BOOKING] Conflict found:', conflictInfo)
 
+        // Format waktu ke WIB (UTC+7) agar sesuai tampilan frontend
+        const formatWIBTime = (dt: Date | string) => {
+          const d = dt instanceof Date ? dt : new Date(dt as string)
+          return d.toLocaleTimeString('id-ID', {
+            hour: '2-digit', minute: '2-digit',
+            timeZone: 'Asia/Jakarta', hour12: false
+          }).replace(':', '.')
+        }
+        const startFormatted = formatWIBTime(conflictInfo.start_time)
+        const endFormatted = formatWIBTime(conflictInfo.end_time)
+
         const statusText = conflictInfo.status === 'PENDING' ? 'sedang menunggu persetujuan' : 'sudah disetujui'
         throw createError({
           statusCode: 409,
-          statusMessage: `Ruangan sudah dipesan oleh ${conflictInfo.full_name} dari pukul ${conflictInfo.start_time_formatted} - ${conflictInfo.end_time_formatted} (${statusText}). Silakan pilih waktu lain.`
+          statusMessage: `Ruangan sudah dipesan oleh ${conflictInfo.full_name} dari pukul ${startFormatted} - ${endFormatted} (${statusText}). Silakan pilih waktu lain.`
         })
       }
 
