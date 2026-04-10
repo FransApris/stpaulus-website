@@ -322,7 +322,7 @@ const form = ref({
   category_ids: [] as number[],
   image: '',
   gallery_images: [] as string[],
-  status: 'draft',
+  status: 'published',
   when_date: '',
   when_time: '',
   where_location: '',
