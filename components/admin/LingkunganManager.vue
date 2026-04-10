@@ -1112,7 +1112,7 @@ const saveLingkungan = async () => {
     
     // Check if record exists in database (not just from DPP)
     const isEdit = (modalMode.value === 'edit' || modalMode.value === 'edit-limited') && 
-                    (formData.value.source === 'database' || existingDbRecord)
+                    !!(formData.value.source === 'database' || existingDbRecord)
     
     console.log(`[Save Mode] modalMode=${modalMode.value}, isEditLimited=${isEditLimited}, isEdit=${isEdit}, existingDbRecord=${!!existingDbRecord}`)
     console.log(`[Form Data] no=${formData.value.no}, nama='${formData.value.nama}', wilayah='${formData.value.wilayah_text || formData.value.wilayah_nama}', no_hp='${formData.value.no_hp_pengurus}'`)
