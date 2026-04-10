@@ -10,8 +10,7 @@
                     <p class="text-sm font-medium text-teal-900">Data Lingkungan & Ketua (Hybrid)</p>
                     <p class="text-xs text-teal-700 mt-1">
                         Data lingkungan dengan info ketua dari <a href="/admin/dpp" class="font-semibold underline hover:text-teal-900">DPP</a>. 
-                        Jika belum ada data lingkungan, akan ditampilkan dari DPP. 
-                        Lingkungan dari DPP hanya bisa diedit di halaman DPP.
+                        Lingkungan yang bersumber dari DPP dapat diedit langsung di sini atau di <a href="/admin/dpp" class="font-semibold underline hover:text-teal-900">halaman DPP</a>.
                     </p>
                 </div>
             </div>
@@ -218,8 +217,8 @@
                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                             </button>
-                            <span v-else class="text-xs text-gray-400" title="Data dari DPP tidak dapat dihapus di sini">
-                                Edit di DPP
+                            <span v-else class="text-xs text-gray-400" title="Data dari DPP - hapus di halaman DPP">
+                                Data DPP
                             </span>
                         </td>
                     </tr>
@@ -371,20 +370,12 @@
                                 <div v-else class="inline-flex items-center gap-2">
                                     <button @click="editLingkunganLimited(ling)"
                                         class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1" 
-                                        title="Edit KK, Jiwa, No HP Pengurus">
+                                        title="Edit">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                         </svg>
                                     </button>
-                                    <a href="/admin/dpp"
-                                        class="text-teal-600 hover:text-teal-800 transition-colors p-1 flex items-center gap-1" 
-                                        title="Data Ketua dari DPP - Edit Ketua di DPP">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                        </svg>
-                                    </a>
                                 </div>
                                 <button v-if="ling.source === 'database'" @click="confirmDelete(ling)"
                                     class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
@@ -1014,7 +1005,7 @@ const mergeLingkunganWithDPP = () => {
                 mergedList.push({
                     id: member.id,
                     no: lingNo,
-                    nama: `Lingkungan ${lingNo}`,
+                    nama: `Lingkungan ${member.wilayah_name} ${lingNo}`,
                     wilayah_id: wilayahData ? wilayahData.id : null,
                     wilayah_nama: member.wilayah_name,
                     wilayah_text: member.wilayah_name,
@@ -1088,10 +1079,10 @@ const editLingkungan = (lingkungan) => {
     showModal.value = true
 }
 
-// Limited edit for DPP data - only jumlah_kk, jumlah_jiwa, no_hp_pengurus
+// Full edit for DPP data
 const editLingkunganLimited = (lingkungan) => {
     formData.value = { ...lingkungan }
-    modalMode.value = 'edit-limited'
+    modalMode.value = 'edit'
     showModal.value = true
 }
 
