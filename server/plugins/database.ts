@@ -12,7 +12,13 @@ export default defineNitroPlugin(async () => {
 
   // Idempotent permission migrations (INSERT IGNORE = aman dijalankan berulang kali)
   try {
-    // Pastikan manage_liturgy_types dimiliki oleh admin_sekretariat
+    // 1. Pastikan permission manage_liturgy_types ada di tabel permissions
+    await runQuery(`
+      INSERT IGNORE INTO permissions (name, display_name, description)
+      VALUES ('manage_liturgy_types', 'Kelola Jenis Liturgi', 'Manage liturgy types for mass schedules')
+    `)
+
+    // 2. Assign manage_liturgy_types ke role admin_sekretariat
     await runQuery(`
       INSERT IGNORE INTO role_permissions (role_id, permission_id)
       SELECT r.id, p.id
@@ -20,7 +26,7 @@ export default defineNitroPlugin(async () => {
       CROSS JOIN permissions p
       WHERE r.name = 'admin_sekretariat' AND p.name = 'manage_liturgy_types'
     `)
-    console.log('✅ Permission migrations applied')
+    console.log('✅ Permission migrations applied (manage_liturgy_types -> admin_sekretariat)')
   } catch (e: any) {
     // Non-critical: lanjutkan meskipun gagal (tabel mungkin belum ada)
     console.warn('Permission migration skipped:', e.message)

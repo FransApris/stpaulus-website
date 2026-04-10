@@ -41,12 +41,13 @@ export default defineEventHandler(async (event) => {
       permissionsCount: event.context.auth.permissions?.length || 0
     })
 
-    // Check permission
-    try {
-      requirePermission('manage_liturgy_types')(event)
-    } catch (permError) {
-      console.error('[Liturgy Types GET] Permission check failed:', permError)
-      throw permError
+    // Check permission: manage_liturgy_types ATAU manage_mass_schedules (admin_sekretariat)
+    const authContext = event.context.auth
+    const hasPermission = authContext?.permissions?.includes('manage_liturgy_types') ||
+      authContext?.permissions?.includes('manage_mass_schedules')
+    if (!hasPermission) {
+      console.error('[Liturgy Types GET] Permission check failed — user lacks manage_liturgy_types or manage_mass_schedules')
+      throw createError({ statusCode: 403, statusMessage: 'Forbidden: Insufficient permissions' })
     }
 
     // Fetch liturgy types
