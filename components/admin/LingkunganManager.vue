@@ -1326,7 +1326,7 @@ const saveLingkungan = async () => {
         // ===== AUTO-SYNC TO DPP =====
         // Jika lingkungan ini punya ketua dari DPP, update data DPP juga
         if (savedHasDppKetua && savedDppMemberId) {
-            const existingDppMember = dppMembers.value.find((m: any) => m.id === savedDppMemberId)
+            const existingDppMember = dppMembers.value.find((m) => m.id === savedDppMemberId)
             if (existingDppMember) {
                 try {
                     const token = process.client ? sessionStorage.getItem('admin_access_token') : null
@@ -1359,7 +1359,7 @@ const saveLingkungan = async () => {
                     console.log('[DPP Sync] ✅ DPP member synced from Teritorial')
                     await fetchDPPMembers()
                     mergeLingkunganWithDPP()
-                } catch (dppErr: any) {
+                } catch (dppErr) {
                     console.warn('[DPP Sync] ⚠️ Non-blocking sync error:', dppErr)
                 }
             }
