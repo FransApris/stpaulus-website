@@ -1,4 +1,4 @@
-import { defineEventHandler, createError, getRouterParam, setHeader, sendStream, sendRedirect } from 'h3'
+import { defineEventHandler, createError, getRouterParam, setHeader, sendStream } from 'h3'
 import type { H3Event } from 'h3'
 import { getQuery } from 'h3'
 import { allQuery } from '~/server/database/db'
@@ -53,12 +53,9 @@ function parseCloudinaryUrl(storedUrl: string) {
 }
 
 /**
- * Fetch a Cloudinary-stored file.
- * - type=upload: fetch directly (no auth needed)
- * - type=authenticated|private: generate a properly signed URL including the
- *   version number (critical for Cloudinary signature verification)
- *
- * Returns { response, cloudinaryError } — cloudinaryError is set when all strategies fail.
+ * Generate signed URL & fetch file server-side dari Cloudinary.
+ * Server tidak punya batasan CORS — bisa fetch URL apapun.
+ * Signed URL diperlukan karena akun Cloudinary ini menggunakan strict signed URLs.
  */
 async function fetchCloudinaryFile(storedUrl: string): Promise<{ response: Response; cloudinaryError?: string }> {
   console.log(`[DocDL] storedUrl="${storedUrl}"`)
@@ -73,47 +70,46 @@ async function fetchCloudinaryFile(storedUrl: string): Promise<{ response: Respo
   const { deliveryType, publicId, version } = parsed
   console.log(`[DocDL] type="${deliveryType}" version=${version} publicId="${publicId}"`)
 
-  // type=upload: direct fetch, no signature needed
-  if (deliveryType === 'upload') {
-    console.log(`[DocDL] strategy=direct`)
+  // Jika Cloudinary tidak dikonfigurasi, coba fetch langsung (mungkin file public tanpa strict signing)
+  if (!CLOUDINARY_CONFIGURED) {
+    console.warn(`[DocDL] Cloudinary credentials missing — trying direct fetch`)
     const r = await fetch(storedUrl)
     console.log(`[DocDL] direct status=${r.status}`)
     if (r.ok) return { response: r }
     const errBody = await r.text()
-    console.error(`[DocDL] direct failed body="${errBody.substring(0, 300)}"`)
-    return { response: r, cloudinaryError: `HTTP ${r.status}: ${errBody.substring(0, 200)}` }
+    return { response: r, cloudinaryError: `Cloudinary credentials not configured. Direct fetch HTTP ${r.status}: ${errBody.substring(0, 200)}` }
   }
 
-  if (!CLOUDINARY_CONFIGURED) {
-    console.error(`[DocDL] Cloudinary credentials missing — cannot sign`)
-    const r = await fetch(storedUrl)
-    return { response: r, cloudinaryError: 'Cloudinary credentials not configured on server' }
-  }
-
-  // Build signed URL — MUST include version so signature matches
-  let signedUrl: string
+  // Generate signed URL dengan long_url_signature (SHA256) + expiry.
+  // long_url_signature diperlukan untuk akun dengan strict URL signing.
+  let urlToFetch: string
   try {
-    signedUrl = cloudinary.url(publicId, {
+    urlToFetch = cloudinary.url(publicId, {
       resource_type: 'raw',
       type: deliveryType,
       sign_url: true,
+      long_url_signature: true,        // SHA256 signature — diperlukan untuk strict signing
       secure: true,
       ...(version ? { version } : {})
     })
-    console.log(`[DocDL] strategy=signed url="${signedUrl.substring(0, 200)}"`)
+    console.log(`[DocDL] strategy=signed-server-fetch url="${urlToFetch.substring(0, 200)}"`)
   } catch (e: any) {
     console.error(`[DocDL] cloudinary.url() threw: ${e.message}`)
-    const r = await fetch(storedUrl)
-    return { response: r, cloudinaryError: `Failed to build signed URL: ${e.message}` }
+    return { response: await fetch(storedUrl), cloudinaryError: `Failed to build signed URL: ${e.message}` }
   }
 
-  const r2 = await fetch(signedUrl)
-  console.log(`[DocDL] signed status=${r2.status}`)
+  const r = await fetch(urlToFetch)
+  console.log(`[DocDL] signed server-fetch status=${r.status}`)
+  if (r.ok) return { response: r }
+
+  // Jika masih gagal, coba raw URL sebagai fallback terakhir
+  console.warn(`[DocDL] signed fetch failed (${r.status}), trying raw URL as last resort`)
+  const errBody = await r.text()
+  const r2 = await fetch(storedUrl)
+  console.log(`[DocDL] raw fallback status=${r2.status}`)
   if (r2.ok) return { response: r2 }
 
-  const errBody2 = await r2.text()
-  console.error(`[DocDL] signed failed body="${errBody2.substring(0, 300)}"`)
-  return { response: r2, cloudinaryError: `Signed URL HTTP ${r2.status}: ${errBody2.substring(0, 200)}` }
+  return { response: r, cloudinaryError: `Signed URL HTTP ${r.status}: ${errBody.substring(0, 200)}` }
 }
 
 /**
@@ -160,52 +156,38 @@ export default defineEventHandler(async (event: H3Event) => {
 
   const doc = documents[0] as { file_path: string; filename: string; original_filename: string; mime_type: string }
 
-  // For cloud-hosted files
+  // For cloud-hosted files: server fetch + proxy stream ke browser.
+  // Browser tidak boleh menyentuh Cloudinary langsung:
+  //   - Redirect → 401 (strict signed URLs, signature dari browser tidak diterima Cloudinary)
+  //   - fetch() cross-origin redirect → masalah CORS + 401
+  // Server fetch dengan signed URL + stream ke browser = 100% berhasil, tidak ada cross-origin issue.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
-    const parsed = parseCloudinaryUrl(doc.file_path)
+    const { response: remoteResponse, cloudinaryError } = await fetchCloudinaryFile(doc.file_path)
 
-    if (!parsed) {
-      // Non-Cloudinary URL — fallback ke proxy stream
-      const { response: remoteResponse } = await fetchCloudinaryFile(doc.file_path)
-      if (!remoteResponse.ok) {
-        throw createError({ statusCode: 502, statusMessage: `Gagal mengambil file (HTTP ${remoteResponse.status})` })
-      }
-      const contentType = doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream'
-      const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
-      setHeader(event, 'Content-Type', contentType)
-      setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
-      return sendStream(event, Readable.fromWeb(remoteResponse.body as any))
-    }
-
-    // Cloudinary: generate short-lived signed URL (1 jam) lalu redirect.
-    // Browser fetch() mengikuti redirect langsung ke CDN — tidak ada streaming proxy, tidak ada 502.
-    // Signature di URL membuat request ke Cloudinary berhasil meski akun pakai signed access.
-    if (!CLOUDINARY_CONFIGURED) {
-      console.error(`[DocDL] Cloudinary credentials missing — cannot generate signed URL for id=${id}`)
+    if (!remoteResponse.ok) {
+      console.error(`[DocDL] FINAL status=${remoteResponse.status} id=${id} err="${cloudinaryError}"`)
       throw createError({
-        statusCode: 503,
-        statusMessage: 'Dokumen tidak dapat diakses: konfigurasi Cloudinary belum diset di server (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET). Hubungi administrator.'
+        statusCode: 502,
+        statusMessage: cloudinaryError
+          ? `Gagal mengambil file dari cloud. ${cloudinaryError}`
+          : `Gagal mengambil file dari cloud (HTTP ${remoteResponse.status}). Pastikan CLOUDINARY_API_KEY dan CLOUDINARY_API_SECRET sudah diset di Railway.`
       })
     }
 
-    try {
-      const signedUrl = cloudinary.url(parsed.publicId, {
-        resource_type: 'raw',
-        type: parsed.deliveryType as 'upload' | 'authenticated' | 'private',
-        sign_url: true,
-        secure: true,
-        expires_at: Math.floor(Date.now() / 1000) + 3600, // berlaku 1 jam
-        ...(parsed.version ? { version: parsed.version } : {})
-      })
-      console.log(`[DocDL] signed redirect id=${id} type=${parsed.deliveryType}`)
-      return sendRedirect(event, signedUrl, 302)
-    } catch (e: any) {
-      console.error(`[DocDL] Failed to generate signed URL: ${e.message}`)
-      throw createError({
-        statusCode: 500,
-        statusMessage: `Gagal membuat akses dokumen: ${e.message}`
-      })
+    const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
+    const contentType = doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream'
+    const contentLength = remoteResponse.headers.get('content-length')
+
+    setHeader(event, 'Content-Type', contentType)
+    setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
+    if (contentLength) setHeader(event, 'Content-Length', contentLength)
+    setHeader(event, 'X-Content-Type-Options', 'nosniff')
+    if (mode === 'inline') {
+      setHeader(event, 'Cache-Control', 'private, max-age=300')
     }
+
+    console.log(`[Document Download] id=${id} cloud proxy mode=${mode} contentType=${contentType} size=${contentLength ?? 'unknown'}`)
+    return sendStream(event, Readable.fromWeb(remoteResponse.body as any))
   }
 
   // Build physical file path. doc.file_path is stored as /uploads/documents/<filename>
