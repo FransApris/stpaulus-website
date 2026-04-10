@@ -1435,7 +1435,7 @@ const saveMember = async () => {
                             const lingRes = await $fetch('/api/admin/lingkungan') as any
                             const allLingkungan = lingRes.data || []
                             const matchLing = allLingkungan.find((l: any) =>
-                                parseInt(l.no) === parseInt(body.lingkungan_number) &&
+                                parseInt(l.no) === parseInt(String(body.lingkungan_number)) &&
                                 (l.wilayah_text === body.wilayah_name || l.wilayah_nama === body.wilayah_name)
                             )
                             if (matchLing) {
