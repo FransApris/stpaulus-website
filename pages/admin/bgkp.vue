@@ -504,6 +504,11 @@ const openCreateModal = () => {
     showModal.value = true
 }
 
+const toDateInput = (val: any) => {
+    if (!val) return ''
+    return String(val).substring(0, 10)
+}
+
 const editMember = (member: any) => {
     modalMode.value = 'edit'
     formData.value = {
@@ -514,10 +519,10 @@ const editMember = (member: any) => {
         position_level: member.position_level || '',
         is_ex_officio: Boolean(member.is_ex_officio),
         display_order: member.display_order || 0,
-        period_start_date: member.period_start_date || '',
-        period_end_date: member.period_end_date || '',
+        period_start_date: toDateInput(member.period_start_date),
+        period_end_date: toDateInput(member.period_end_date),
         decree_number: member.decree_number || '',
-        decree_date: member.decree_date || '',
+        decree_date: toDateInput(member.decree_date),
         notes: member.notes || '',
         is_active: Boolean(member.is_active)
     }
