@@ -2,7 +2,9 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modelValue" class="fixed inset-0 z-[100000] flex items-center justify-center p-4"
-        @click.self="closeModal">
+        @mousedown.self="overlayMousedown = true"
+        @mouseup.self="if (overlayMousedown) closeModal(); overlayMousedown = false"
+        @mouseleave="overlayMousedown = false">
         <!-- Backdrop -->
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
@@ -363,6 +365,8 @@ const handleLogout = () => {
   user.value = null
   closeModal()
 }
+
+const overlayMousedown = ref(false)
 
 const closeModal = () => {
   emit('update:modelValue', false)
