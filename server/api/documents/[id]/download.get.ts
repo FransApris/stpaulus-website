@@ -80,51 +80,47 @@ async function fetchCloudinaryFile(storedUrl: string): Promise<{ response: Respo
     return { response: r, cloudinaryError: `Cloudinary credentials not configured. Direct fetch HTTP ${r.status}: ${errBody.substring(0, 200)}` }
   }
 
-  // Generate signed URL dengan expires_at + coba dua strategy (long & short signature).
-  // Akun Cloudinary dengan strict signed URLs WAJIB punya expires_at dalam signature.
+  // Strategy 1 (PRIMARY): Gunakan private_download_url — Admin API signed download.
+  // Ini SATU-SATUNYA cara yang benar untuk Cloudinary strict signed URLs karena
+  // cloudinary.url() TIDAK memasukkan expires_at dalam kalkulasi signature (bug SDK).
+  // private_download_url menggunakan sign_request() yang menyertakan expires_at+timestamp.
   const expiresAt = Math.floor(Date.now() / 1000) + 3600 // 1 jam
   let urlToFetch: string
   try {
-    // Strategy 1: long_url_signature (SHA-256) + expires_at
-    urlToFetch = cloudinary.url(publicId, {
+    urlToFetch = (cloudinary.utils as any).private_download_url(publicId, '', {
       resource_type: 'raw',
       type: deliveryType,
-      sign_url: true,
-      long_url_signature: true,
       expires_at: expiresAt,
-      secure: true,
-      ...(version ? { version } : {})
+      attachment: false
     })
-    console.log(`[DocDL] strategy=long-signed+expiry url="${urlToFetch.substring(0, 200)}"`)
+    console.log(`[DocDL] strategy=private_download_url url="${urlToFetch.substring(0, 200)}"`)
   } catch (e: any) {
-    console.error(`[DocDL] cloudinary.url() threw: ${e.message}`)
-    return { response: await fetch(storedUrl), cloudinaryError: `Failed to build signed URL: ${e.message}` }
+    console.error(`[DocDL] private_download_url threw: ${e.message}`)
+    return { response: await fetch(storedUrl), cloudinaryError: `Failed to build download URL: ${e.message}` }
   }
 
-  let r = await fetch(urlToFetch)
-  console.log(`[DocDL] long-signed+expiry status=${r.status}`)
+  let r = await fetch(urlToFetch, { redirect: 'follow' })
+  console.log(`[DocDL] private_download_url status=${r.status}`)
   if (r.ok) return { response: r }
 
-  // Strategy 2: short signature (SHA-1) + expires_at
+  // Strategy 2: cloudinary.url() tanpa auth (untuk akun tanpa strict signing)
   try {
-    urlToFetch = cloudinary.url(publicId, {
+    const plainUrl = cloudinary.url(publicId, {
       resource_type: 'raw',
       type: deliveryType,
-      sign_url: true,
-      long_url_signature: false,
-      expires_at: expiresAt,
       secure: true,
+      sign_url: true,
       ...(version ? { version } : {})
     })
-    console.log(`[DocDL] strategy=short-signed+expiry url="${urlToFetch.substring(0, 200)}"`)
-    r = await fetch(urlToFetch)
-    console.log(`[DocDL] short-signed+expiry status=${r.status}`)
-    if (r.ok) return { response: r }
+    console.log(`[DocDL] strategy=plain-signed url="${plainUrl.substring(0, 200)}"`)
+    const r2 = await fetch(plainUrl)
+    console.log(`[DocDL] plain-signed status=${r2.status}`)
+    if (r2.ok) return { response: r2 }
   } catch (e: any) {
-    console.warn(`[DocDL] short-signed strategy failed: ${e.message}`)
+    console.warn(`[DocDL] plain-signed strategy failed: ${e.message}`)
   }
 
-  // Strategy 3: raw URL (last resort)
+  // Strategy 3: raw URL (last resort — works jika file tidak di-protect)
   console.warn(`[DocDL] all signed strategies failed, trying raw URL`)
   const errBody = await r.text()
   const r3 = await fetch(storedUrl)

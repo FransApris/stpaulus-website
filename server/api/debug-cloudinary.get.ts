@@ -64,39 +64,34 @@ export default defineEventHandler(async (event) => {
         // Generate signed URL dengan expires_at (wajib untuk strict signed URLs)
         const expiresAt = Math.floor(Date.now() / 1000) + 3600
         try {
-          // Strategy 1: long signature + expires_at
-          const signedUrlLong = cloudinary.url(publicId, {
+          // Strategy PRIMARY: private_download_url (Admin API signed — menyertakan expires_at dalam signature)
+          const privateUrl = (cloudinary.utils as any).private_download_url(publicId, '', {
+            resource_type: 'raw',
+            type: deliveryType,
+            expires_at: expiresAt,
+            attachment: false
+          })
+          result.private_download_url = `✅ ${privateUrl.substring(0, 200)}...`
+
+          const rPrivate = await fetch(privateUrl, { redirect: 'follow', signal: AbortSignal.timeout(15000) })
+          result.fetch_private_status = rPrivate.status
+          result.fetch_private_ok = rPrivate.ok
+          if (!rPrivate.ok) result.fetch_private_body = (await rPrivate.text()).substring(0, 300)
+          
+          // Strategy FALLBACK: cloudinary.url() biasa (tidak bisa strict signed URLs)
+          const signedUrlPlain = cloudinary.url(publicId, {
             resource_type: 'raw',
             type: deliveryType as any,
             sign_url: true,
-            long_url_signature: true,
-            expires_at: expiresAt,
             secure: true,
             ...(version ? { version } : {})
           })
-          result.signed_url_long = `✅ ${signedUrlLong.substring(0, 150)}...`
+          result.signed_url_plain = `${signedUrlPlain.substring(0, 150)}...`
 
-          const r1 = await fetch(signedUrlLong, { signal: AbortSignal.timeout(10000) })
-          result.fetch_long_signed_status = r1.status
-          result.fetch_long_signed_ok = r1.ok
-          if (!r1.ok) result.fetch_long_signed_body = (await r1.text()).substring(0, 300)
-
-          // Strategy 2: short signature + expires_at
-          const signedUrlShort = cloudinary.url(publicId, {
-            resource_type: 'raw',
-            type: deliveryType as any,
-            sign_url: true,
-            long_url_signature: false,
-            expires_at: expiresAt,
-            secure: true,
-            ...(version ? { version } : {})
-          })
-          result.signed_url_short = `✅ ${signedUrlShort.substring(0, 150)}...`
-
-          const r2 = await fetch(signedUrlShort, { signal: AbortSignal.timeout(10000) })
-          result.fetch_short_signed_status = r2.status
-          result.fetch_short_signed_ok = r2.ok
-          if (!r2.ok) result.fetch_short_signed_body = (await r2.text()).substring(0, 300)
+          const rPlain = await fetch(signedUrlPlain, { signal: AbortSignal.timeout(10000) })
+          result.fetch_plain_signed_status = rPlain.status
+          result.fetch_plain_signed_ok = rPlain.ok
+          if (!rPlain.ok) result.fetch_plain_signed_body = (await rPlain.text()).substring(0, 300)
         } catch (e: any) {
           result.signed_url_error = e.message
         }
