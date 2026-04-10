@@ -510,7 +510,7 @@ const openGroups = reactive({
 
 // Auto-open sidebar group berdasarkan route saat ini
 const route = useRoute()
-const groupRouteMap: Record<string, string[]> = {
+const groupRouteMap = {
   content: ['/admin/articles', '/admin/article-categories', '/admin/news', '/admin/gallery', '/admin/chatbot-faq-categories', '/admin/chatbot-faqs'],
   kronik: ['/admin/kronik'],
   schedule: ['/admin/agenda', '/admin/categories', '/admin/liturgy-types', '/admin/regular-mass-schedules', '/admin/mass-schedules'],
