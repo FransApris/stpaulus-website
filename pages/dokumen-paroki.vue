@@ -211,10 +211,11 @@ const fetchDocuments = async () => {
 
 const getDocumentUrl = (docId, mode = 'attachment') => `/api/documents/${docId}/download?mode=${mode}`
 
-// Untuk PDF Cloudinary publik, gunakan Google Docs Viewer agar tidak ada masalah cross-origin
+// Untuk PDF Cloudinary publik, buka URL langsung di browser PDF viewer bawaan
+// Hindari proxy server (timeout) dan Google Docs Viewer ("Tidak ada pratinjau")
 const getViewUrl = (doc) => {
   if (doc.file_path && doc.file_path.startsWith('https://') && doc.file_path.includes('/upload/')) {
-    return `https://docs.google.com/viewer?url=${encodeURIComponent(doc.file_path)}`
+    return doc.file_path
   }
   return getDocumentUrl(doc.id, 'inline')
 }
