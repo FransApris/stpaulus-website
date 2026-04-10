@@ -1427,6 +1427,28 @@ const saveMember = async () => {
                         members.value.splice(index, 1, response.data)
                     }
                     showToastMessage('Anggota DPP berhasil diperbarui!', 'success')
+
+                    // ===== AUTO-SYNC TO LINGKUNGAN =====
+                    // Jika ini ketua_lingkungan, update tabel lingkungan juga
+                    if (body.position_category === 'ketua_lingkungan' && body.wilayah_name && body.lingkungan_number) {
+                        try {
+                            const lingRes = await $fetch('/api/admin/lingkungan') as any
+                            const allLingkungan = lingRes.data || []
+                            const matchLing = allLingkungan.find((l: any) =>
+                                parseInt(l.no) === parseInt(body.lingkungan_number) &&
+                                (l.wilayah_text === body.wilayah_name || l.wilayah_nama === body.wilayah_name)
+                            )
+                            if (matchLing) {
+                                await $fetch(`/api/admin/lingkungan/${matchLing.id}`, {
+                                    method: 'PUT',
+                                    body: { ketua: body.name }
+                                })
+                                console.log('[Lingkungan Sync] ✅ Lingkungan ketua synced from DPP')
+                            }
+                        } catch (lingSyncErr: any) {
+                            console.warn('[Lingkungan Sync] ⚠️ Non-blocking sync error:', lingSyncErr)
+                        }
+                    }
                 }
             } catch (err: any) {
                 // Rollback on error using splice

@@ -1197,6 +1197,12 @@ const saveLingkungan = async () => {
     const savedNo = formData.value.no
     const savedWilayah = formData.value.wilayah_text || formData.value.wilayah_nama
     const toastName = lingkunganData.nama || formData.value.nama || 'Data'
+    // DPP sync targets (captured before modal closes)
+    const savedDppMemberId = formData.value.dpp_member_id
+    const savedHasDppKetua = formData.value.has_dpp_ketua
+    const savedKetua = formData.value.ketua
+    const savedWilayahName = lingkunganData.wilayah_text || formData.value.wilayah_nama || formData.value.wilayah_text
+    const savedLingkunganNo = parseInt(formData.value.no)
 
     // Close modal immediately BEFORE optimistic update
     closeModal()
@@ -1313,6 +1319,48 @@ const saveLingkungan = async () => {
                     if (index !== -1) {
                         lingkunganList.value.splice(index, 1, response.data)
                     }
+                }
+            }
+        }
+
+        // ===== AUTO-SYNC TO DPP =====
+        // Jika lingkungan ini punya ketua dari DPP, update data DPP juga
+        if (savedHasDppKetua && savedDppMemberId) {
+            const existingDppMember = dppMembers.value.find((m: any) => m.id === savedDppMemberId)
+            if (existingDppMember) {
+                try {
+                    const token = process.client ? sessionStorage.getItem('admin_access_token') : null
+                    await $fetch(`/api/admin/dpp/${savedDppMemberId}`, {
+                        method: 'PUT',
+                        headers: { Authorization: `Bearer ${token}` },
+                        body: {
+                            name: savedKetua || existingDppMember.name,
+                            position: existingDppMember.position,
+                            position_category: existingDppMember.position_category,
+                            wilayah_name: savedWilayahName || existingDppMember.wilayah_name,
+                            lingkungan_number: savedLingkunganNo || existingDppMember.lingkungan_number,
+                            position_type: existingDppMember.position_type,
+                            position_level: existingDppMember.position_level,
+                            bidang_name: existingDppMember.bidang_name,
+                            seksi_name: existingDppMember.seksi_name,
+                            sub_seksi_name: existingDppMember.sub_seksi_name,
+                            is_couple: existingDppMember.is_couple,
+                            couple_member_id: existingDppMember.couple_member_id,
+                            is_ex_officio: existingDppMember.is_ex_officio,
+                            display_order: existingDppMember.display_order,
+                            period_start_date: existingDppMember.period_start_date,
+                            period_end_date: existingDppMember.period_end_date,
+                            decree_number: existingDppMember.decree_number,
+                            decree_date: existingDppMember.decree_date,
+                            notes: existingDppMember.notes,
+                            is_active: existingDppMember.is_active
+                        }
+                    })
+                    console.log('[DPP Sync] ✅ DPP member synced from Teritorial')
+                    await fetchDPPMembers()
+                    mergeLingkunganWithDPP()
+                } catch (dppErr: any) {
+                    console.warn('[DPP Sync] ⚠️ Non-blocking sync error:', dppErr)
                 }
             }
         }
