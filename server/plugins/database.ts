@@ -50,7 +50,37 @@ export default defineNitroPlugin(async () => {
       CROSS JOIN permissions p
       WHERE r.name = 'admin_sekretariat' AND p.name LIKE 'kronik.bgkp.%'
     `)
-    console.log('✅ Permission migrations applied (manage_liturgy_types + kronik.bgkp.* -> admin_sekretariat)')
+
+    // 5. Pastikan permission kronik.wilayah.* dan kronik.lingkungan.* ada
+    const teritorialPermissions = [
+      ['kronik.wilayah.view', 'View Kronik Wilayah', 'Melihat data wilayah'],
+      ['kronik.wilayah.create', 'Create Kronik Wilayah', 'Membuat data wilayah'],
+      ['kronik.wilayah.edit', 'Edit Kronik Wilayah', 'Mengedit data wilayah'],
+      ['kronik.wilayah.delete', 'Delete Kronik Wilayah', 'Menghapus data wilayah'],
+      ['kronik.wilayah.publish', 'Publish Kronik Wilayah', 'Mempublikasi data wilayah'],
+      ['kronik.lingkungan.view', 'View Kronik Lingkungan', 'Melihat data lingkungan'],
+      ['kronik.lingkungan.create', 'Create Kronik Lingkungan', 'Membuat data lingkungan'],
+      ['kronik.lingkungan.edit', 'Edit Kronik Lingkungan', 'Mengedit data lingkungan'],
+      ['kronik.lingkungan.delete', 'Delete Kronik Lingkungan', 'Menghapus data lingkungan'],
+      ['kronik.lingkungan.publish', 'Publish Kronik Lingkungan', 'Mempublikasi data lingkungan']
+    ]
+    for (const [name, display, desc] of teritorialPermissions) {
+      await runQuery(`
+        INSERT IGNORE INTO permissions (name, display_name, description)
+        VALUES (?, ?, ?)
+      `, [name, display, desc])
+    }
+
+    // 6. Assign kronik.wilayah.* dan kronik.lingkungan.* ke role admin_sekretariat
+    await runQuery(`
+      INSERT IGNORE INTO role_permissions (role_id, permission_id)
+      SELECT r.id, p.id
+      FROM roles r
+      CROSS JOIN permissions p
+      WHERE r.name = 'admin_sekretariat'
+        AND (p.name LIKE 'kronik.wilayah.%' OR p.name LIKE 'kronik.lingkungan.%')
+    `)
+    console.log('✅ Permission migrations applied (manage_liturgy_types + kronik.bgkp.* + kronik.wilayah.* + kronik.lingkungan.* -> admin_sekretariat)')
   } catch (e: any) {
     // Non-critical: lanjutkan meskipun gagal (tabel mungkin belum ada)
     console.warn('Permission migration skipped:', e.message)
