@@ -1,5 +1,5 @@
-import { runQuery, getQuery } from '../../database/db'
-import { requireAuth, getUserPermissions } from '../../utils/auth'
+import { runQuery, getQuery } from '../../../database/db'
+import { requireAuth, getUserPermissions } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -57,12 +57,10 @@ export default defineEventHandler(async (event) => {
   } catch (error: any) {
     console.error('[DELETE BOOKING] Error:', error)
     
-    // If it's already a createError, rethrow it
     if (error.statusCode) {
       throw error
     }
     
-    // Otherwise wrap it
     throw createError({
       statusCode: 500,
       statusMessage: `Terjadi kesalahan: ${error.message || 'Unknown error'}`
