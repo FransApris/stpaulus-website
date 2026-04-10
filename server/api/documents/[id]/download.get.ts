@@ -164,44 +164,48 @@ export default defineEventHandler(async (event: H3Event) => {
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
     const parsed = parseCloudinaryUrl(doc.file_path)
 
-    // Untuk dokumen Cloudinary tipe 'upload' (public): redirect 302 langsung ke CDN.
-    // Client fetch() mengikuti redirect otomatis → tidak ada proxy server → tidak ada 502.
-    // Catatan: tidak menimbulkan chrome-error karena fetch() berbeda dari window.open() navigation.
-    if (parsed?.deliveryType === 'upload') {
-      console.log(`[DocDL] public Cloudinary → redirect 302 id=${id}`)
-      setHeader(event, 'Access-Control-Allow-Origin', '*')
-      return sendRedirect(event, doc.file_path, 302)
+    if (!parsed) {
+      // Non-Cloudinary URL — fallback ke proxy stream
+      const { response: remoteResponse } = await fetchCloudinaryFile(doc.file_path)
+      if (!remoteResponse.ok) {
+        throw createError({ statusCode: 502, statusMessage: `Gagal mengambil file (HTTP ${remoteResponse.status})` })
+      }
+      const contentType = doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream'
+      const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
+      setHeader(event, 'Content-Type', contentType)
+      setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
+      return sendStream(event, Readable.fromWeb(remoteResponse.body as any))
     }
 
-    // Untuk tipe authenticated/private: proxy stream (perlu signed URL via Cloudinary SDK)
-    const { response: remoteResponse, cloudinaryError } = await fetchCloudinaryFile(doc.file_path)
-
-    if (!remoteResponse.ok) {
-      console.error(`[DocDL] FINAL status=${remoteResponse.status} id=${id} err="${cloudinaryError}"`)
+    // Cloudinary: generate short-lived signed URL (1 jam) lalu redirect.
+    // Browser fetch() mengikuti redirect langsung ke CDN — tidak ada streaming proxy, tidak ada 502.
+    // Signature di URL membuat request ke Cloudinary berhasil meski akun pakai signed access.
+    if (!CLOUDINARY_CONFIGURED) {
+      console.error(`[DocDL] Cloudinary credentials missing — cannot generate signed URL for id=${id}`)
       throw createError({
-        statusCode: 502,
-        statusMessage: cloudinaryError
-          ? `Gagal mengambil file dari cloud. ${cloudinaryError}`
-          : `Gagal mengambil file dari cloud (HTTP ${remoteResponse.status}). Silakan upload ulang dokumen ini.`
+        statusCode: 503,
+        statusMessage: 'Dokumen tidak dapat diakses: konfigurasi Cloudinary belum diset di server (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET). Hubungi administrator.'
       })
     }
 
-    const encodedFilename = encodeURIComponent(doc.original_filename).replace(/['()]/g, escape).replace(/\*/g, '%2A')
-    const contentType = doc.mime_type || remoteResponse.headers.get('content-type') || 'application/octet-stream'
-    const contentLength = remoteResponse.headers.get('content-length')
-
-    setHeader(event, 'Content-Type', contentType)
-    setHeader(event, 'Content-Disposition', `${mode}; filename="${doc.original_filename}"; filename*=UTF-8''${encodedFilename}`)
-    if (contentLength) setHeader(event, 'Content-Length', contentLength)
-    setHeader(event, 'X-Content-Type-Options', 'nosniff')
-    if (mode === 'inline') {
-      setHeader(event, 'Cache-Control', 'private, max-age=300')
+    try {
+      const signedUrl = cloudinary.url(parsed.publicId, {
+        resource_type: 'raw',
+        type: parsed.deliveryType as 'upload' | 'authenticated' | 'private',
+        sign_url: true,
+        secure: true,
+        expires_at: Math.floor(Date.now() / 1000) + 3600, // berlaku 1 jam
+        ...(parsed.version ? { version: parsed.version } : {})
+      })
+      console.log(`[DocDL] signed redirect id=${id} type=${parsed.deliveryType}`)
+      return sendRedirect(event, signedUrl, 302)
+    } catch (e: any) {
+      console.error(`[DocDL] Failed to generate signed URL: ${e.message}`)
+      throw createError({
+        statusCode: 500,
+        statusMessage: `Gagal membuat akses dokumen: ${e.message}`
+      })
     }
-
-    console.log(`[Document Download] id=${id} cloud stream mode=${mode} contentType=${contentType} size=${contentLength ?? 'unknown'}`)
-
-    // Stream response body directly — avoids buffering entire PDF in server memory
-    return sendStream(event, Readable.fromWeb(remoteResponse.body as any))
   }
 
   // Build physical file path. doc.file_path is stored as /uploads/documents/<filename>
