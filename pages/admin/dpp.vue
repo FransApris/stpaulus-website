@@ -645,11 +645,22 @@
                             </div>
                             <div v-if="formData.position_category === 'ketua_lingkungan'">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Nomor Lingkungan <span class="text-red-500">*</span>
+                                    Lingkungan <span class="text-red-500">*</span>
                                 </label>
-                                <input v-model.number="formData.lingkungan_number" type="number" required
-                                    placeholder="1, 2, 3..."
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent" />
+                                <select v-if="filteredLingkunganByWilayah.length > 0"
+                                    v-model.number="formData.lingkungan_number" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                                    <option value="" disabled>Pilih Lingkungan</option>
+                                    <option v-for="ling in filteredLingkunganByWilayah" :key="ling.id" :value="parseInt(ling.no)">
+                                        Lingkungan {{ ling.no }} - {{ ling.nama }}
+                                    </option>
+                                </select>
+                                <div v-else class="flex gap-2">
+                                    <input v-model.number="formData.lingkungan_number" type="number" required
+                                        placeholder="Nomor Lingkungan..."
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent" />
+                                    <p class="text-xs text-gray-500 mt-1">Pilih wilayah dulu untuk melihat daftar lingkungan</p>
+                                </div>
                             </div>
                         </div>
 
@@ -853,6 +864,9 @@ const toastType = ref<'success' | 'error'>('success')
 
 // Wilayah data from API
 const wilayahList = ref<any[]>([])
+
+// Lingkungan data from API
+const lingkunganList = ref<any[]>([])
 
 // Filters
 const filters = ref({
@@ -1064,8 +1078,7 @@ const fetchWilayah = async () => {
     try {
         const response = await $fetch('/api/admin/wilayah') as any
         if (response.success) {
-            // Sort by display_order
-            wilayahList.value = response.data.sort((a: any, b: any) => 
+            wilayahList.value = response.data.sort((a: any, b: any) =>
                 (a.display_order || 0) - (b.display_order || 0)
             )
         }
@@ -1073,6 +1086,28 @@ const fetchWilayah = async () => {
         console.error('Error fetching wilayah:', err)
     }
 }
+
+const fetchLingkungan = async () => {
+    try {
+        const response = await $fetch('/api/admin/lingkungan') as any
+        if (response.success) {
+            lingkunganList.value = response.data.sort((a: any, b: any) =>
+                (parseInt(a.no) || 0) - (parseInt(b.no) || 0)
+            )
+        }
+    } catch (err: any) {
+        console.error('Error fetching lingkungan:', err)
+    }
+}
+
+// Lingkungan filtered by selected wilayah
+const filteredLingkunganByWilayah = computed(() => {
+    if (!formData.value.wilayah_name) return lingkunganList.value
+    return lingkunganList.value.filter(
+        (l: any) => l.wilayah_nama === formData.value.wilayah_name ||
+                    l.wilayah_text === formData.value.wilayah_name
+    )
+})
 
 const fetchMembers = async () => {
     try {
@@ -1590,6 +1625,7 @@ watch(totalPages, (pages: number) => {
 // Lifecycle
 onMounted(() => {
     fetchWilayah()
+    fetchLingkungan()
     fetchMembers()
 })
 </script>
