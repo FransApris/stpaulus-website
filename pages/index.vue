@@ -959,27 +959,38 @@ const formatFileSize = (bytes) => {
 
 const getDocumentUrl = (docId, mode = 'attachment') => `/api/documents/${docId}/download?mode=${mode}`
 
-// Untuk PDF Cloudinary publik, buka URL langsung di browser PDF viewer bawaan
-// Hindari proxy server (timeout) dan Google Docs Viewer ("Tidak ada pratinjau")
-const getViewUrl = (doc) => {
-  if (doc.file_path && doc.file_path.startsWith('https://') && doc.file_path.includes('/upload/')) {
-    return doc.file_path
+// State loading per-dokumen untuk beranda
+const loadingDocId = ref(null)
+
+// Buka dokumen lewat API server lalu tampilkan sebagai blob URL
+// Cara ini 100% same-origin, tidak ada masalah cross-origin/chrome-error
+const openDocumentAsBlob = async (doc) => {
+  if (!process.client) return
+  // Buka tab baru dulu (synchronous) agar popup blocker tidak aktif
+  const newTab = globalThis.window.open('', '_blank')
+  loadingDocId.value = doc.id
+  try {
+    const response = await fetch(getDocumentUrl(doc.id, 'attachment'))
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const blob = await response.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    if (newTab) {
+      newTab.location.href = blobUrl
+    } else {
+      globalThis.window.open(blobUrl, '_blank', 'noopener')
+    }
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+  } catch (error) {
+    console.error('Failed to open document:', error)
+    if (newTab) newTab.close()
+    alert('Gagal membuka dokumen. Silakan coba lagi.')
+  } finally {
+    loadingDocId.value = null
   }
-  return getDocumentUrl(doc.id, 'inline')
 }
 
-const viewDocument = (doc) => {
-  if (process.client) {
-    globalThis.window.open(getViewUrl(doc), '_blank', 'noopener,noreferrer')
-  }
-}
-
-const printDocument = (doc) => {
-  if (process.client) {
-    // Buka via Google Docs Viewer — gunakan Ctrl+P di dalam viewer untuk mencetak
-    globalThis.window.open(getViewUrl(doc), '_blank', 'noopener,noreferrer')
-  }
-}
+const viewDocument = (doc) => openDocumentAsBlob(doc)
+const printDocument = (doc) => openDocumentAsBlob(doc)
 
 const downloadDocument = (doc) => {
   if (process.client) {

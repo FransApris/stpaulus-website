@@ -91,9 +91,14 @@
               <!-- Action Buttons -->
               <div class="flex space-x-1">
                 <button @click="viewDocument(doc)"
-                  class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-200"
+                  :disabled="loadingDocId === doc.id"
+                  class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-wait"
                   title="Lihat Dokumen">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg v-if="loadingDocId === doc.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                  </svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -102,7 +107,8 @@
                   </svg>
                 </button>
                 <button @click="printDocument(doc)"
-                  class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200"
+                  :disabled="loadingDocId === doc.id"
+                  class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200 disabled:opacity-50 disabled:cursor-wait"
                   title="Cetak (buka PDF lalu Ctrl+P)">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -156,6 +162,7 @@ definePageMeta({
 const categories = useState('public-document-categories', () => [])
 const documents = useState('public-documents', () => [])
 const loading = ref(false)
+const loadingDocId = ref(null)
 const selectedCategory = ref('')
 const currentPage = useState('public-documents-page', () => 1)
 const pageLimit = 10
@@ -211,27 +218,36 @@ const fetchDocuments = async () => {
 
 const getDocumentUrl = (docId, mode = 'attachment') => `/api/documents/${docId}/download?mode=${mode}`
 
-// Untuk PDF Cloudinary publik, buka URL langsung di browser PDF viewer bawaan
-// Hindari proxy server (timeout) dan Google Docs Viewer ("Tidak ada pratinjau")
-const getViewUrl = (doc) => {
-  if (doc.file_path && doc.file_path.startsWith('https://') && doc.file_path.includes('/upload/')) {
-    return doc.file_path
+// Buka dokumen lewat API server lalu tampilkan sebagai blob URL
+// Cara ini 100% same-origin, tidak ada masalah cross-origin/chrome-error
+const openDocumentAsBlob = async (doc) => {
+  if (!process.client) return
+  // Buka tab baru dulu (synchronous) agar popup blocker tidak aktif
+  const newTab = globalThis.window.open('', '_blank')
+  loadingDocId.value = doc.id
+  try {
+    const response = await fetch(getDocumentUrl(doc.id, 'attachment'))
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const blob = await response.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    if (newTab) {
+      newTab.location.href = blobUrl
+    } else {
+      globalThis.window.open(blobUrl, '_blank', 'noopener')
+    }
+    // Bersihkan blob URL setelah 60 detik
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+  } catch (error) {
+    console.error('Failed to open document:', error)
+    if (newTab) newTab.close()
+    alert('Gagal membuka dokumen. Silakan coba lagi.')
+  } finally {
+    loadingDocId.value = null
   }
-  return getDocumentUrl(doc.id, 'inline')
 }
 
-const viewDocument = (doc) => {
-  if (process.client) {
-    globalThis.window.open(getViewUrl(doc), '_blank', 'noopener,noreferrer')
-  }
-}
-
-const printDocument = (doc) => {
-  if (process.client) {
-    // Buka via Google Docs Viewer — gunakan Ctrl+P di dalam viewer untuk mencetak
-    globalThis.window.open(getViewUrl(doc), '_blank', 'noopener,noreferrer')
-  }
-}
+const viewDocument = (doc) => openDocumentAsBlob(doc)
+const printDocument = (doc) => openDocumentAsBlob(doc)
 
 const downloadDocument = (doc) => {
   if (process.client) {
