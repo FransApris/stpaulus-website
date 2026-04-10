@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
       d.original_filename,
       d.file_size,
       d.mime_type,
+      d.file_path,
       d.created_at,
       dc.name as category_name,
       dc.color as category_color

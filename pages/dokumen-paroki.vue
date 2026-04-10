@@ -211,16 +211,24 @@ const fetchDocuments = async () => {
 
 const getDocumentUrl = (docId, mode = 'attachment') => `/api/documents/${docId}/download?mode=${mode}`
 
+// Untuk PDF Cloudinary publik, gunakan Google Docs Viewer agar tidak ada masalah cross-origin
+const getViewUrl = (doc) => {
+  if (doc.file_path && doc.file_path.startsWith('https://') && doc.file_path.includes('/upload/')) {
+    return `https://docs.google.com/viewer?url=${encodeURIComponent(doc.file_path)}`
+  }
+  return getDocumentUrl(doc.id, 'inline')
+}
+
 const viewDocument = (doc) => {
   if (process.client) {
-    globalThis.window.open(getDocumentUrl(doc.id, 'inline'), '_blank', 'noopener,noreferrer')
+    globalThis.window.open(getViewUrl(doc), '_blank', 'noopener,noreferrer')
   }
 }
 
 const printDocument = (doc) => {
   if (process.client) {
-    // Buka dokumen di tab baru — gunakan Ctrl+P di dalam PDF viewer untuk mencetak
-    globalThis.window.open(getDocumentUrl(doc.id, 'inline'), '_blank', 'noopener,noreferrer')
+    // Buka via Google Docs Viewer — gunakan Ctrl+P di dalam viewer untuk mencetak
+    globalThis.window.open(getViewUrl(doc), '_blank', 'noopener,noreferrer')
   }
 }
 

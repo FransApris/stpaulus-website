@@ -1,4 +1,4 @@
-import { defineEventHandler, createError, getRouterParam, setHeader, sendStream, sendRedirect } from 'h3'
+import { defineEventHandler, createError, getRouterParam, setHeader, sendStream } from 'h3'
 import type { H3Event } from 'h3'
 import { getQuery } from 'h3'
 import { allQuery } from '~/server/database/db'
@@ -160,18 +160,11 @@ export default defineEventHandler(async (event: H3Event) => {
 
   const doc = documents[0] as { file_path: string; filename: string; original_filename: string; mime_type: string }
 
-  // For cloud-hosted files
+  // For cloud-hosted files: stream bytes through this server.
+  // Direct redirect to Cloudinary raw URLs causes cross-origin errors in browser
+  // (Unsafe attempt to load URL from chrome-error://chromewebdata frame).
+  // Inline viewing is handled on client via Google Docs Viewer instead.
   if (doc.file_path.startsWith('https://') || doc.file_path.startsWith('http://')) {
-    const parsed = parseCloudinaryUrl(doc.file_path)
-
-    // Untuk file Cloudinary tipe 'upload' (public): redirect langsung ke CDN Cloudinary
-    // agar browser bisa render PDF secara inline tanpa melalui proxy server
-    // (proxy server sering timeout atau gagal untuk inline viewing)
-    if (parsed?.deliveryType === 'upload' && mode === 'inline') {
-      console.log(`[Document Download] id=${id} public Cloudinary → redirect inline`)
-      return sendRedirect(event, doc.file_path, 302)
-    }
-
     const { response: remoteResponse, cloudinaryError } = await fetchCloudinaryFile(doc.file_path)
 
     if (!remoteResponse.ok) {
