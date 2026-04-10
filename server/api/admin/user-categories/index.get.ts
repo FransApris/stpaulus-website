@@ -2,14 +2,17 @@ import { allQuery } from '../../../database/db'
 import { requireAuth } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
-  // Only super admin can access user categories
   requireAuth(event)
 
   const user = event.context.auth
-  if (!user || user.permissions?.includes('manage_users') !== true) {
+  // Super admin atau admin_sekretariat (manage_users_komsos_sekretariat) boleh baca
+  const canRead = user?.permissions?.includes('manage_users') ||
+    user?.permissions?.includes('manage_users_komsos_sekretariat')
+
+  if (!canRead) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Forbidden: Only Super Admin can manage user categories'
+      statusMessage: 'Forbidden: Insufficient permissions'
     })
   }
 
