@@ -468,7 +468,10 @@ const fetchMembers = async () => {
         loading.value = true
         error.value = ''
 
-        const response = await $fetch('/api/admin/bgkp') as any
+        const token = sessionStorage.getItem('admin_access_token')
+        const response = await $fetch('/api/admin/bgkp', {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }) as any
 
         if (response.success) {
             members.value = response.data
@@ -536,8 +539,10 @@ const saveMember = async () => {
 
         const method = modalMode.value === 'create' ? 'POST' : 'PUT'
 
+        const token = sessionStorage.getItem('admin_access_token')
         const response = await $fetch(url, {
             method,
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
             body: formData.value
         }) as any
 
@@ -560,8 +565,10 @@ const confirmDelete = (member: any) => {
 
 const deleteMember = async () => {
     try {
+        const token = sessionStorage.getItem('admin_access_token')
         const response = await $fetch(`/api/admin/bgkp/${memberToDelete.value.id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
         }) as any
 
         if (response.success) {
