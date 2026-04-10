@@ -1093,12 +1093,12 @@ const closeModal = () => {
 
 const saveLingkungan = async () => {
     const isEditLimited = modalMode.value === 'edit-limited'
+    const isDppSource = formData.value.source === 'dpp'
     
-    // For edit-limited mode, check if DB record with this no + wilayah already exists
+    // Check if DB record exists — for edit-limited AND for source='dpp' items
     let existingDbRecord = null
-    if (isEditLimited && formData.value.no) {
+    if ((isEditLimited || isDppSource) && formData.value.no) {
         const searchNo = parseInt(formData.value.no)
-        // IMPORTANT: Match by BOTH no AND wilayah (lingkungan number is unique per wilayah, not globally)
         const searchWilayah = formData.value.wilayah_text || formData.value.wilayah_nama
         
         existingDbRecord = lingkunganFromDB.value.find(l => {
@@ -1107,7 +1107,7 @@ const saveLingkungan = async () => {
             return matchNo && matchWilayah
         })
         
-        console.log(`[Edit-Limited] Searching for no=${searchNo} + wilayah='${searchWilayah}', found:`, existingDbRecord ? 'YES (id=' + existingDbRecord.id + ')' : 'NO')
+        console.log(`[DB Check] source=${formData.value.source}, Searching for no=${searchNo} + wilayah='${searchWilayah}', found:`, existingDbRecord ? 'YES (id=' + existingDbRecord.id + ')' : 'NO')
     }
     
     // Check if record exists in database (not just from DPP)
@@ -1203,6 +1203,8 @@ const saveLingkungan = async () => {
     const savedKetua = formData.value.ketua
     const savedWilayahName = lingkunganData.wilayah_text || formData.value.wilayah_nama || formData.value.wilayah_text
     const savedLingkunganNo = parseInt(formData.value.no)
+    // For removing original dpp item after POST success
+    const dppSourceItemId = isDppSource ? formData.value.id : null
 
     // Close modal immediately BEFORE optimistic update
     closeModal()
@@ -1222,7 +1224,7 @@ const saveLingkungan = async () => {
                 lingkunganList.value.splice(index, 1, optimisticData) // Use splice for reactivity
             }
         } else {
-            // Add new item optimistically at the top
+            // Add new item optimistically
             const tempId = `temp_${Date.now()}`
             const optimisticData = {
                 id: tempId,
@@ -1230,7 +1232,17 @@ const saveLingkungan = async () => {
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             }
-            lingkunganList.value.unshift(optimisticData)
+            if (isDppSource && dppSourceItemId) {
+                // Replace original dpp item in-place to avoid duplicate
+                const dppIdx = lingkunganList.value.findIndex(l => l.id === dppSourceItemId)
+                if (dppIdx !== -1) {
+                    lingkunganList.value.splice(dppIdx, 1, optimisticData)
+                } else {
+                    lingkunganList.value.unshift(optimisticData)
+                }
+            } else {
+                lingkunganList.value.unshift(optimisticData)
+            }
         }
     }
 
@@ -1270,7 +1282,12 @@ const saveLingkungan = async () => {
                 }
             } else {
                 // Update with real server data for normal edit
-                if (response.data) {
+                if (isDppSource) {
+                    // Full refresh for dpp-source items to properly merge DB + DPP
+                    await fetchLingkunganFromDB()
+                    await fetchDPPMembers()
+                    mergeLingkunganWithDPP()
+                } else if (response.data) {
                     const index = lingkunganList.value.findIndex(l => l.id === editId)
                     if (index !== -1) {
                         lingkunganList.value.splice(index, 1, response.data)
@@ -1314,7 +1331,12 @@ const saveLingkungan = async () => {
                 }
             } else {
                 // Replace temp ID with real data from server
-                if (response.data) {
+                if (isDppSource) {
+                    // Full refresh for dpp-source items — merge will remove stale dpp item
+                    await fetchLingkunganFromDB()
+                    await fetchDPPMembers()
+                    mergeLingkunganWithDPP()
+                } else if (response.data) {
                     const index = lingkunganList.value.findIndex(l => typeof l.id === 'string' && l.id.startsWith('temp_'))
                     if (index !== -1) {
                         lingkunganList.value.splice(index, 1, response.data)
