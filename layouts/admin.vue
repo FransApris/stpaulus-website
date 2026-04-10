@@ -504,8 +504,27 @@ const openGroups = reactive({
   admin: false,
   theme: false,
   documents: false,
-  footer: false
+  footer: false,
+  kronik: false
 })
+
+// Auto-open sidebar group berdasarkan route saat ini
+const route = useRoute()
+const groupRouteMap: Record<string, string[]> = {
+  content: ['/admin/articles', '/admin/article-categories', '/admin/news', '/admin/gallery', '/admin/chatbot-faq-categories', '/admin/chatbot-faqs'],
+  kronik: ['/admin/kronik'],
+  schedule: ['/admin/agenda', '/admin/categories', '/admin/liturgy-types', '/admin/regular-mass-schedules', '/admin/mass-schedules'],
+  admin: ['/admin/users', '/admin/user-categories', '/admin/rooms', '/admin/bookings-new', '/admin/announcements', '/admin/contact-messages'],
+  theme: ['/admin/hero-themes', '/admin/backup', '/admin/parish-statistics', '/admin/pastors', '/admin/bgkp', '/admin/teritorial', '/admin/footer-settings', '/admin/dpp'],
+  documents: ['/admin/document-categories', '/admin/documents']
+}
+watch(() => route.path, (newPath) => {
+  for (const [group, routes] of Object.entries(groupRouteMap)) {
+    if (routes.some(r => newPath.startsWith(r))) {
+      openGroups[group] = true
+    }
+  }
+}, { immediate: true })
 
 // Persist decoded admin identity across navigations to avoid menu flashes
 onMounted(async () => {
@@ -692,7 +711,7 @@ const groupVisibility = computed(() => {
   return {
     content: menuVisibility.value.articles || menuVisibility.value.news || menuVisibility.value.articleCategories || menuVisibility.value.gallery || menuVisibility.value.chatbotFaqCategories || menuVisibility.value.chatbotFaqs,
     kronik: menuVisibility.value.kronikEntries || menuVisibility.value.kronikSections,
-    schedule: menuVisibility.value.agenda || menuVisibility.value.agendaCategories || menuVisibility.value.regularMassSchedules || menuVisibility.value.massSchedules,
+    schedule: menuVisibility.value.agenda || menuVisibility.value.agendaCategories || menuVisibility.value.regularMassSchedules || menuVisibility.value.massSchedules || menuVisibility.value.liturgyTypes,
     admin: menuVisibility.value.users || menuVisibility.value.userCategories || menuVisibility.value.rooms || menuVisibility.value.bookings,
     theme: menuVisibility.value.heroThemes || menuVisibility.value.footerSettings || menuVisibility.value.backup || menuVisibility.value.parishStatistics || menuVisibility.value.pastors || menuVisibility.value.bgkp || menuVisibility.value.teritorial,
     documents: menuVisibility.value.documentCategories || menuVisibility.value.documents
