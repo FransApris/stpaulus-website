@@ -367,7 +367,7 @@
                                         <div>
                                             <div class="font-medium text-gray-900">{{ ling.name }}</div>
                                             <div class="text-xs text-gray-600 mt-0.5">{{ ling.position }}</div>
-                                            <div class="text-xs text-gray-500 mt-0.5">Lingkungan {{ ling.lingkungan_number }}</div>
+                                            <div class="text-xs text-gray-500 mt-0.5">Lingkungan {{ wilayahGroup.name }} {{ ling.lingkungan_number }}</div>
                                         </div>
                                     </div>
 
