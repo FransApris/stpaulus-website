@@ -23,8 +23,10 @@
         <div class="grid md:grid-cols-2 gap-8 mx-[10%]">
           <div>
             <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-4">Alamat & Telepon</h2>
-            <p>Jl. Juanda No. 123, Sidoarjo, Jawa Timur 61234</p>
-            <p>Tel: (031) 123-4567 | Email: info@stpaulusjuanda.org</p>
+            <p class="mb-2">Jl. Raya Bandara Juanda No.10, Semambung, Kec. Gedangan, Kabupaten Sidoarjo, Jawa Timur 61254</p>
+            <p class="mb-1">Tel: 031-8557854</p>
+            <p class="mb-1">Email: <a href="mailto:stpaulus.sekretariat@gmail.com" class="text-[#882f1d] hover:underline">stpaulus.sekretariat@gmail.com</a></p>
+            <p>Instagram: <a href="https://www.instagram.com/stpaulusjuanda" target="_blank" rel="noopener noreferrer" class="text-[#882f1d] hover:underline">@stpaulusjuanda</a></p>
           </div>
           <div>
             <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-4">Form Kontak</h2>
