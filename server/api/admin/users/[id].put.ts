@@ -14,10 +14,10 @@ export default defineEventHandler(async (event) => {
   const { username, email, full_name, contact_phone, user_category, unit_name, role } = body
 
   // Validate required fields
-  if (!username || !email || !full_name) {
+  if (!username || !full_name) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Username, email, dan nama lengkap diperlukan'
+      statusMessage: 'Username dan nama lengkap diperlukan'
     })
   }
 
@@ -50,10 +50,14 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if username/email is already taken by another user
-  const duplicateCheck = await getQuery(`
-    SELECT id FROM users
-    WHERE (username = ? OR email = ?) AND id != ?
-  `, [username, email, targetUserId]) as any
+  // Only check email if it's not empty (email is optional for booking users)
+  const duplicateCheckQuery = email
+    ? `SELECT id FROM users WHERE (username = ? OR email = ?) AND id != ?`
+    : `SELECT id FROM users WHERE username = ? AND id != ?`
+  const duplicateCheckParams = email
+    ? [username, email, targetUserId]
+    : [username, targetUserId]
+  const duplicateCheck = await getQuery(duplicateCheckQuery, duplicateCheckParams) as any
 
   if (duplicateCheck) {
     throw createError({
