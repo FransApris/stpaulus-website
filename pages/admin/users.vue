@@ -724,10 +724,8 @@ const updateUser = async () => {
     user_category: userData.user_category
   }
   
-  // Only super admin can edit role
-  if (isSuperAdmin.value && userData.role) {
-    cleanUserData.role = userData.role
-  }
+  // Role tidak diubah via form edit (tidak ada dropdown role)
+  // Gunakan role_name dari RBAC jika ada agar tidak kirim nilai legacy 'admin'
   
   editLoading.value = true
   editMessage.value = ''
