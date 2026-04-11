@@ -9,6 +9,16 @@
       </button>
     </div>
 
+    <!-- Status Legend -->
+    <div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+      <p class="text-xs font-semibold text-blue-700 mb-2">Keterangan Status Artikel:</p>
+      <div class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-700">
+        <span><span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-medium mr-1">Draft</span>Belum dipublikasikan — hanya terlihat oleh admin, tidak tampil di website.</span>
+        <span><span class="inline-block bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-medium mr-1">Published</span>Sudah dipublikasikan — tampil untuk semua pengunjung website.</span>
+        <span><span class="inline-block bg-gray-100 text-gray-800 px-2 py-0.5 rounded-full font-medium mr-1">Archived</span>Diarsipkan — disembunyikan dari website tanpa dihapus, bisa diaktifkan kembali.</span>
+      </div>
+    </div>
+
     <!-- Articles List -->
     <div class="bg-white shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
@@ -195,6 +205,11 @@
               <option value="published">Published</option>
               <option value="archived">Archived</option>
             </select>
+            <div class="mt-1 text-xs text-gray-500 space-y-0.5">
+              <p><span class="font-medium text-yellow-700">Draft:</span> Belum dipublikasikan, tidak tampil di website.</p>
+              <p><span class="font-medium text-green-700">Published:</span> Tampil untuk semua pengunjung website.</p>
+              <p><span class="font-medium text-gray-600">Archived:</span> Disembunyikan tanpa dihapus, bisa diaktifkan kembali.</p>
+            </div>
           </div>
 
           <div class="flex justify-end space-x-3 pt-4">
