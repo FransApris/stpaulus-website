@@ -85,7 +85,7 @@
     <!-- Map Iframe (load ONLY after click) -->
     <div v-else-if="shouldLoadMap" class="relative"
       :class="{ 'opacity-0': isLoading, 'opacity-100 transition-opacity duration-500': !isLoading }">
-      <div class="rounded-lg overflow-hidden shadow-lg bg-gray-100 relative">
+      <div class="rounded-lg overflow-hidden shadow-lg bg-transparent relative">
         <iframe ref="mapIframe" :src="mapUrl" :width="width" :height="actualHeight" style="border:0;display:block;"
           allowfullscreen="" loading="eager" referrerpolicy="no-referrer-when-downgrade" :title="title" @load="onLoad"
           @error="onError" :class="{ 'pointer-events-none': !isMapActive }"></iframe>

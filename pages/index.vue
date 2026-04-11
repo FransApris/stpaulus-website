@@ -42,7 +42,7 @@
 
     <!-- Section 2: Teritorial Lingkungan -->
     <ClientOnly>
-      <section class="py-16 bg-gray-50">
+      <section class="py-16 bg-white">
         <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
           <div class="text-center mb-12">
             <div class="flex items-center justify-center mb-3">
