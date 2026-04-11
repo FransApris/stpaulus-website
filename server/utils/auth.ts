@@ -257,16 +257,17 @@ export const requireUserManagementPermission = async (event: any) => {
     return authContext
   }
 
-  // Admin Sekretariat hanya bisa manage admin_komsos dan admin_sekretariat
+  // Admin Sekretariat bisa manage user biasa, admin_komsos, dan admin_sekretariat
   if (permissions.includes('manage_users_komsos_sekretariat')) {
-    // For list endpoint (no target user), allow access
+    // For list/create endpoint (no target user ID), allow access
     const targetUserId = getRouterParam(event, 'id')
     if (!targetUserId) {
       return authContext
     }
-    // Cek apakah target user adalah admin_komsos atau admin_sekretariat
+    // Cek apakah target user bukan super_admin
     const targetRole = await getQuery('SELECT r.name FROM roles r JOIN users u ON u.role_id = r.id WHERE u.id = ?', [targetUserId]) as { name: string } | undefined
-    if (targetRole && ['admin_komsos', 'admin_sekretariat'].includes(targetRole.name)) {
+    const allowedRoles = ['user', 'admin_komsos', 'admin_sekretariat']
+    if (!targetRole || allowedRoles.includes(targetRole.name)) {
       return authContext
     }
   }

@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const userId = decoded.userId
 
   // Check permissions using RBAC
-  requireUserManagementPermission(event)
+  await requireUserManagementPermission(event)
 
   const targetUserId = getRouterParam(event, 'id')
   const body = await readBody(event)
