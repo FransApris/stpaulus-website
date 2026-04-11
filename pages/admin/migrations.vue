@@ -60,6 +60,14 @@ const migrations = ref<Migration[]>([
     running: false,
     done: false,
     result: null
+  },
+  {
+    key: '008_add_manage_users_permission_to_sekretariat',
+    label: '008 - Tambah permission manage_users ke Admin Sekretariat',
+    description: 'Memberikan permission manage_users_komsos_sekretariat ke role admin_sekretariat agar bisa melihat dan mengelola daftar pengguna ruangan.',
+    running: false,
+    done: false,
+    result: null
   }
 ])
 
