@@ -939,7 +939,7 @@ const formatDate = (dateString) => {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
-    timeZone: 'Asia/Jakarta'
+    timeZone: 'UTC'
   })
 }
 
