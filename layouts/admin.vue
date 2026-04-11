@@ -446,6 +446,15 @@
                   </svg>
                   Database Restore
                 </NuxtLink>
+                <NuxtLink v-if="menuVisibility.migrations" to="/admin/migrations"
+                  class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
+                  :class="$route.path === '/admin/migrations' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
+                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
+                  </svg>
+                  DB Migrations
+                </NuxtLink>
               </div>
             </div>
 
@@ -515,7 +524,7 @@ const groupRouteMap = {
   kronik: ['/admin/kronik'],
   schedule: ['/admin/agenda', '/admin/categories', '/admin/liturgy-types', '/admin/regular-mass-schedules', '/admin/mass-schedules'],
   admin: ['/admin/users', '/admin/user-categories', '/admin/rooms', '/admin/bookings-new', '/admin/announcements', '/admin/contact-messages'],
-  theme: ['/admin/hero-themes', '/admin/backup', '/admin/parish-statistics', '/admin/pastors', '/admin/bgkp', '/admin/teritorial', '/admin/footer-settings', '/admin/dpp'],
+  theme: ['/admin/hero-themes', '/admin/backup', '/admin/parish-statistics', '/admin/pastors', '/admin/bgkp', '/admin/teritorial', '/admin/footer-settings', '/admin/dpp', '/admin/migrations'],
   documents: ['/admin/document-categories', '/admin/documents']
 }
 watch(() => route.path, (newPath) => {
@@ -615,6 +624,7 @@ const menuVisibility = computed(() => {
       parishStatistics: true,
       backup: true,
       restore: true,
+      migrations: true,
       kronikEntries: true,
       kronikSections: true
     }
@@ -713,7 +723,7 @@ const groupVisibility = computed(() => {
     kronik: menuVisibility.value.kronikEntries || menuVisibility.value.kronikSections,
     schedule: menuVisibility.value.agenda || menuVisibility.value.agendaCategories || menuVisibility.value.regularMassSchedules || menuVisibility.value.massSchedules || menuVisibility.value.liturgyTypes,
     admin: menuVisibility.value.users || menuVisibility.value.userCategories || menuVisibility.value.rooms || menuVisibility.value.bookings,
-    theme: menuVisibility.value.heroThemes || menuVisibility.value.footerSettings || menuVisibility.value.backup || menuVisibility.value.parishStatistics || menuVisibility.value.pastors || menuVisibility.value.bgkp || menuVisibility.value.teritorial,
+    theme: menuVisibility.value.heroThemes || menuVisibility.value.footerSettings || menuVisibility.value.backup || menuVisibility.value.parishStatistics || menuVisibility.value.pastors || menuVisibility.value.bgkp || menuVisibility.value.teritorial || menuVisibility.value.migrations,
     documents: menuVisibility.value.documentCategories || menuVisibility.value.documents
   }
 })
@@ -762,6 +772,7 @@ const pageTitle = computed(() => {
   if (route.path === '/admin/announcements') return 'Pengumuman Gereja'
   if (route.path === '/admin/backup') return 'Database Backup'
   if (route.path === '/admin/restore') return 'Database Restore'
+  if (route.path === '/admin/migrations') return 'DB Migrations'
   if (route.path === '/admin/kronik') return 'Kelola Kronik'
   if (route.path === '/admin/kronik/create') return 'Buat Kronik Baru'
   if (route.path === '/admin/kronik/sections') return 'Kelola BGKP & DPP'
