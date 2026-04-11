@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
         }
 
         const body = await readBody(event)
-        const { title, description, activity_type, thumbnail, event_date, event_time, is_active, display_order } = body
+        const { title, description, activity_type, thumbnail, event_date, event_time, is_active, display_order, agenda_id } = body
 
         // Validation
         if (!title || !event_date || !event_time) {
@@ -49,7 +49,7 @@ export default defineEventHandler(async (event) => {
         await runQuery(
             `UPDATE church_announcements 
        SET title = ?, description = ?, activity_type = ?, thumbnail = ?, event_date = ?, event_time = ?, 
-           is_active = ?, display_order = ?, updated_by = ?
+           is_active = ?, display_order = ?, agenda_id = ?, updated_by = ?
        WHERE id = ?`,
             [
                 title,
@@ -60,6 +60,7 @@ export default defineEventHandler(async (event) => {
                 event_time,
                 is_active !== false ? 1 : 0,
                 display_order || 0,
+                agenda_id || null,
                 decoded.userId,
                 id
             ]

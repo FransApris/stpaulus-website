@@ -26,28 +26,31 @@ export default defineEventHandler(async (event) => {
 
         let sql = `
       SELECT 
-        id,
-        title,
-        description,
-        activity_type,
-        thumbnail,
-        event_date,
-        event_time,
-        is_active,
-        display_order,
-        created_at,
-        updated_at
-      FROM church_announcements
+        ca.id,
+        ca.title,
+        ca.description,
+        ca.activity_type,
+        ca.thumbnail,
+        ca.event_date,
+        ca.event_time,
+        ca.is_active,
+        ca.display_order,
+        ca.agenda_id,
+        a.title AS agenda_title,
+        ca.created_at,
+        ca.updated_at
+      FROM church_announcements ca
+      LEFT JOIN agendas a ON ca.agenda_id = a.id
       WHERE 1=1
     `
         const params: any[] = []
 
         if (search) {
-            sql += ` AND (title LIKE ? OR description LIKE ?)`
+            sql += ` AND (ca.title LIKE ? OR ca.description LIKE ?)`
             params.push(`%${search}%`, `%${search}%`)
         }
 
-        sql += ` ORDER BY event_date DESC, event_time ASC`
+        sql += ` ORDER BY ca.event_date DESC, ca.event_time ASC`
 
         // Use string interpolation for LIMIT/OFFSET to avoid prepared statement issues
         sql += ` LIMIT ${limit} OFFSET ${offset}`
@@ -56,10 +59,10 @@ export default defineEventHandler(async (event) => {
         console.log('[Announcements API] Query result:', announcements?.length || 0, 'items')
 
         // Get total count
-        let countSql = `SELECT COUNT(*) as total FROM church_announcements WHERE 1=1`
+        let countSql = `SELECT COUNT(*) as total FROM church_announcements ca WHERE 1=1`
         const countParams: any[] = []
         if (search) {
-            countSql += ` AND (title LIKE ? OR description LIKE ?)`
+            countSql += ` AND (ca.title LIKE ? OR ca.description LIKE ?)`
             countParams.push(`%${search}%`, `%${search}%`)
         }
         const countResult = await runQuery(countSql, countParams) as any[]

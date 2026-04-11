@@ -64,6 +64,14 @@
                 <div class="flex-1">
                   <div class="text-sm font-medium text-gray-900">{{ announcement.title }}</div>
                   <div class="text-sm text-gray-500 line-clamp-1">{{ announcement.description }}</div>
+                  <div v-if="announcement.agenda_title"
+                    class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs rounded-full">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    {{ announcement.agenda_title }}
+                  </div>
                 </div>
               </div>
             </td>
@@ -242,6 +250,23 @@
                 </select>
               </div>
 
+              <!-- Link Agenda (opsional) -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Berdasarkan Agenda
+                  <span class="text-gray-400 font-normal">(opsional)</span>
+                </label>
+                <select v-model="formData.agenda_id"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                  <option :value="null">— Tidak terkait agenda —</option>
+                  <option v-for="ag in agendaOptions" :key="ag.id" :value="ag.id">
+                    {{ ag.title }} ({{ formatDate(ag.start_date) }})
+                  </option>
+                </select>
+                <p v-if="formData.agenda_id" class="mt-1 text-xs text-blue-600">
+                  Pengumuman ini akan ditautkan ke agenda tersebut.
+                </p>
+              </div>
+
               <!-- Event Date & Time -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -412,16 +437,26 @@ interface Announcement {
   event_time: string
   is_active: boolean
   display_order: number
+  agenda_id?: number | null
+  agenda_title?: string | null
   created_at: string
   updated_at: string
 }
 
+interface AgendaOption {
+  id: number
+  title: string
+  start_date: string
+}
+
 // State
 const announcements = ref<Announcement[]>([])
+const agendaOptions = ref<AgendaOption[]>([])
 const loading = ref(false)
 const searchQuery = ref('')
 const currentPage = ref(1)
 const totalPages = ref(1)
+const route = useRoute()
 
 // Modal states
 const showModal = ref(false)
@@ -443,6 +478,7 @@ interface FormData {
   event_time: string
   is_active: boolean
   display_order: number
+  agenda_id: number | null
 }
 
 // Form data
@@ -455,8 +491,23 @@ const formData = ref<FormData>({
   event_date: '',
   event_time: '',
   is_active: true,
-  display_order: 0
+  display_order: 0,
+  agenda_id: null
 })
+
+// Load agenda options for dropdown (semua agenda, tidak cuma mendatang)
+const loadAgendaOptions = async () => {
+  try {
+    const res = await $fetch<any>('/api/agenda/all')
+    agendaOptions.value = (Array.isArray(res) ? res : (res.data || [])).map((a: any) => ({
+      id: a.id,
+      title: a.title,
+      start_date: a.start_date
+    }))
+  } catch {
+    agendaOptions.value = []
+  }
+}
 
 // Load data
 const loadAnnouncements = async (page = 1) => {
@@ -544,18 +595,19 @@ const triggerFileInput = () => {
 }
 
 // Modal handlers
-const openCreateModal = () => {
+const openCreateModal = (prefill?: Partial<FormData>) => {
   isEditMode.value = false
   formData.value = {
     id: null,
-    title: '',
-    description: '',
+    title: prefill?.title || '',
+    description: prefill?.description || '',
     activity_type: 'Kegiatan',
     thumbnail: '',
-    event_date: '',
-    event_time: '',
+    event_date: prefill?.event_date || '',
+    event_time: prefill?.event_time || '',
     is_active: true,
-    display_order: 0
+    display_order: 0,
+    agenda_id: prefill?.agenda_id || null
   }
   showModal.value = true
 }
@@ -579,7 +631,8 @@ const openEditModal = (announcement: Announcement) => {
     event_date: formattedDate,
     event_time: announcement.event_time,
     is_active: announcement.is_active,
-    display_order: announcement.display_order
+    display_order: announcement.display_order,
+    agenda_id: announcement.agenda_id || null
   }
   showModal.value = true
 }
@@ -653,6 +706,8 @@ const handleSubmit = async () => {
         event_time: formData.value.event_time,
         is_active: formData.value.is_active,
         display_order: formData.value.display_order,
+        agenda_id: formData.value.agenda_id,
+        agenda_title: agendaOptions.value.find(a => a.id === formData.value.agenda_id)?.title || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }
@@ -660,14 +715,14 @@ const handleSubmit = async () => {
       announcements.value.unshift(optimisticItem)
 
       try {
-        const { data } = await $fetch<any>('/api/admin/announcements', {
+        const response = await $fetch<any>('/api/admin/announcements', {
           method: 'POST',
           body: formData.value
         })
         // Replace temp item with real data
         const index = announcements.value.findIndex(a => a && a.id === tempId)
-        if (index !== -1 && data && data.data) {
-          announcements.value[index] = data.data
+        if (index !== -1 && response && response.data) {
+          announcements.value[index] = response.data
         }
       } catch (error) {
         // Remove temp item on error
@@ -731,5 +786,16 @@ const formatTime = (timeStr: string) => {
 // Initial load
 onMounted(() => {
   loadAnnouncements()
+  loadAgendaOptions()
+  // Auto-open create modal dari shortcut halaman Agenda
+  const { from_agenda, agenda_id, agenda_title, event_date, event_time } = route.query
+  if (from_agenda) {
+    openCreateModal({
+      title: agenda_title ? String(agenda_title) : '',
+      event_date: event_date ? String(event_date) : '',
+      event_time: event_time ? String(event_time) : '',
+      agenda_id: agenda_id ? Number(agenda_id) : null
+    })
+  }
 })
 </script>
