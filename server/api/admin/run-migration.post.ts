@@ -12,6 +12,9 @@ const MIGRATIONS: Record<string, string[]> = {
     `ALTER TABLE church_announcements ADD COLUMN agenda_id INT NULL DEFAULT NULL AFTER display_order`,
     `ALTER TABLE church_announcements ADD INDEX idx_agenda_id (agenda_id)`,
     `ALTER TABLE church_announcements ADD CONSTRAINT fk_announcement_agenda FOREIGN KEY (agenda_id) REFERENCES agendas(id) ON DELETE SET NULL`
+  ],
+  '008_add_manage_users_permission_to_sekretariat': [
+    `INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name = 'manage_users_komsos_sekretariat' WHERE r.name = 'admin_sekretariat'`
   ]
 }
 
