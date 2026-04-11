@@ -68,9 +68,9 @@
               <div class="grid md:grid-cols-2 gap-6">
                 <div>
                   <h4 class="font-semibold text-gray-800 mb-2">Sekretariat Paroki</h4>
-                  <p class="text-gray-600">Jl. Juanda No. 123, Sidoarjo</p>
-                  <p class="text-gray-600">Tel: (031) 123-4567</p>
-                  <p class="text-gray-600">Email: info@stpaulusjuanda.org</p>
+                  <p class="text-gray-600">Jl. Raya Bandara Juanda No.10, Semambung, Kec. Gedangan, Kabupaten Sidoarjo, Jawa Timur 61254</p>
+                  <p class="text-gray-600">Tel: 031-8557854</p>
+                  <p class="text-gray-600">Email: stpaulus.sekretariat@gmail.com</p>
                 </div>
                 <div>
                   <h4 class="font-semibold text-gray-800 mb-2">Jam Operasional</h4>

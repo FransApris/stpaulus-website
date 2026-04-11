@@ -18,8 +18,7 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Paroki St. Paulus Juanda</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jl. Juanda No. 123, Sidoarjo, Jawa Timur
-            61234<br />Tel: (031) 123-4567 | Email: info@stpaulusjuanda.org</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jl. Raya Bandara Juanda No.10, Semambung, Kec. Gedangan, Kabupaten Sidoarjo, Jawa Timur 61254<br />Tel: 031-8557854 | Email: stpaulus.sekretariat@gmail.com</p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
           <SimpleCard title="Gallery Foto"
