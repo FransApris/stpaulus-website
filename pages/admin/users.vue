@@ -309,10 +309,10 @@
             <h3 class="text-lg font-semibold mb-4">Edit Pengguna</h3>
             <form @submit.prevent="updateUser" class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input v-model="editingUser.username" type="text" placeholder="Username" class="border p-2 rounded" required />
-              <input v-model="editingUser.email" type="email" placeholder="Email" class="border p-2 rounded" required />
+              <input v-model="editingUser.email" type="email" placeholder="Email (opsional)" class="border p-2 rounded" />
               <input v-model="editingUser.full_name" type="text" placeholder="Nama Lengkap" class="border p-2 rounded" required />
               <input v-model="editingUser.contact_phone" type="text" placeholder="No. Telepon" class="border p-2 rounded" />
-              <select v-model="editingUser.user_category" class="border p-2 rounded" required>
+              <select v-model="editingUser.user_category" class="border p-2 rounded">
                 <option value="">Pilih Kategori</option>
                 <option v-for="category in userCategories.filter(c => c.is_active)" :key="category.id" :value="category.name">
                   {{ category.display_name }}
