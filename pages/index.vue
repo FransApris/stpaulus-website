@@ -447,6 +447,7 @@
     </section>
 
     <!-- Section 8: Status Pemesanan Ruangan -->
+    <ClientOnly>
     <section id="booking-section" class="py-16 bg-gray-50">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-12">
@@ -643,6 +644,7 @@
         </div>
       </div>
     </section>
+    </ClientOnly>
 
     <!-- Section 9: QR Persembahan - Sebelum Footer -->
     <QRPersembahan />
