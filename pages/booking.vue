@@ -64,6 +64,12 @@
               </svg>
               Kembali ke Beranda untuk Login
             </NuxtLink>
+            <div class="mt-4 text-sm text-gray-600">
+              Belum punya akun?
+              <NuxtLink to="/daftar" class="text-[#882f1d] font-semibold hover:underline">
+                Daftar di sini →
+              </NuxtLink>
+            </div>
           </div>
         </div>
 

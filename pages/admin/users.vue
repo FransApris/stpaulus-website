@@ -109,6 +109,17 @@
       <p v-if="error" class="mt-2 text-red-600">{{ error }}</p>
     </div>        <!-- Users List -->
         <div class="bg-white p-6 rounded-lg shadow">
+          <!-- Pending approval banner -->
+          <div v-if="pendingCount > 0 && activeTab !== 'pending'" class="mb-4 bg-yellow-50 border border-yellow-300 rounded-lg p-3 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-yellow-800">
+              <span>⏳</span>
+              <span class="font-medium text-sm">{{ pendingCount }} akun menunggu persetujuan</span>
+            </div>
+            <button @click="activeTab = 'pending'" class="text-yellow-700 text-sm font-semibold hover:underline">
+              Lihat →
+            </button>
+          </div>
+
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-semibold">Daftar Pengguna</h2>
             <div class="flex items-center gap-4">
@@ -124,6 +135,43 @@
                 </span>
               </div>
             </div>
+          </div>
+
+          <!-- Tab navigation -->
+          <div class="flex gap-2 mb-4 border-b border-gray-200">
+            <button
+              @click="activeTab = 'active'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                activeTab === 'active' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800'
+              ]"
+            >Aktif</button>
+            <button
+              @click="activeTab = 'pending'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors flex items-center gap-1',
+                activeTab === 'pending' ? 'border-yellow-500 text-yellow-700 bg-yellow-50' : 'border-transparent text-gray-600 hover:text-gray-800'
+              ]"
+            >
+              ⏳ Menunggu
+              <span v-if="pendingCount > 0" class="bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {{ pendingCount }}
+              </span>
+            </button>
+            <button
+              @click="activeTab = 'inactive'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                activeTab === 'inactive' ? 'border-red-500 text-red-700 bg-red-50' : 'border-transparent text-gray-600 hover:text-gray-800'
+              ]"
+            >Nonaktif</button>
+            <button
+              @click="activeTab = 'all'"
+              :class="[
+                'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                activeTab === 'all' ? 'border-gray-500 text-gray-700 bg-gray-50' : 'border-transparent text-gray-600 hover:text-gray-800'
+              ]"
+            >Semua</button>
           </div>
           
           <div v-if="users.length === 0" class="text-gray-500">Belum ada pengguna.</div>
@@ -184,6 +232,7 @@
                       </span>
                     </button>
                   </th>
+                  <th class="px-4 py-2 text-left font-semibold">Status</th>
                   <th class="px-4 py-2 text-left font-semibold">Aksi</th>
                 </tr>
               </thead>
@@ -205,6 +254,20 @@
                     </span>
                   </td>
                   <td class="px-4 py-2">
+                    <span v-if="!user.account_status || user.account_status === 'ACTIVE'" class="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs">Aktif</span>
+                    <span v-else-if="user.account_status === 'PENDING'" class="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">Menunggu</span>
+                    <span v-else class="inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Nonaktif</span>
+                  </td>
+                  <td class="px-4 py-2">
+                    <!-- Approve / Reject buttons for PENDING users (only sekretariat & super admin) -->
+                    <template v-if="user.account_status === 'PENDING' && (isSuperAdmin || isAdminSekretariat)">
+                      <button @click="approveUser(user)" title="Setujui" class="text-green-600 hover:text-green-800 mr-1 p-1 inline-flex items-center text-xs font-medium border border-green-400 rounded hover:bg-green-50">
+                        ✓ Setujui
+                      </button>
+                      <button @click="rejectUser(user)" title="Tolak" class="text-red-600 hover:text-red-800 mr-2 p-1 inline-flex items-center text-xs font-medium border border-red-400 rounded hover:bg-red-50">
+                        ✗ Tolak
+                      </button>
+                    </template>
                     <button @click="editUser(user)" title="Edit" class="text-blue-600 hover:text-blue-800 mr-2 p-1 inline-flex items-center">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -374,6 +437,10 @@ const loading = ref(false)
 const message = ref('')
 const error = ref('')
 
+// Tab filter for pending approvals
+const activeTab = ref('active') // 'active' | 'pending' | 'inactive' | 'all'
+const pendingCount = ref(0)
+
 // Sorting state
 const sortField = ref('username')
 const sortOrder = ref('asc')
@@ -417,11 +484,27 @@ const isSuperAdmin = computed(() => {
   return currentUser.value?.role_name === 'super_admin'
 })
 
-// Sorted users computed property
+// Check if current user is admin sekretariat (can approve/reject)
+const isAdminSekretariat = computed(() => {
+  return currentUser.value?.role_name === 'admin_sekretariat'
+})
+
+// Sorted + filtered users computed property
 const sortedUsers = computed(() => {
   if (!users.value || users.value.length === 0) return []
+
+  // Filter by tab
+  let filtered = [...users.value]
+  if (activeTab.value === 'pending') {
+    filtered = filtered.filter(u => u.account_status === 'PENDING')
+  } else if (activeTab.value === 'inactive') {
+    filtered = filtered.filter(u => u.account_status === 'INACTIVE')
+  } else if (activeTab.value === 'active') {
+    filtered = filtered.filter(u => !u.account_status || u.account_status === 'ACTIVE')
+  }
+  // 'all' — no filter
   
-  const sorted = [...users.value].sort((a, b) => {
+  const sorted = [...filtered].sort((a, b) => {
     let aValue = a[sortField.value]
     let bValue = b[sortField.value]
     
@@ -522,8 +605,9 @@ const loadUsers = async () => {
     
     // Handle both array response (old) and object response (new)
     users.value = Array.isArray(response) ? response : (response.users || [])
+    pendingCount.value = Array.isArray(response) ? 0 : (response.pendingCount || 0)
     
-    console.log('[Users Page] Loaded', users.value.length, 'users')
+    console.log('[Users Page] Loaded', users.value.length, 'users,', pendingCount.value, 'pending')
   } catch (err) {
     console.error('[Users Page] Failed to load users:', err)
     users.value = []
@@ -536,7 +620,7 @@ onMounted(async () => {
   await loadUsers()
 })
 
-watch([sortField, sortOrder], () => {
+watch([sortField, sortOrder, activeTab], () => {
   currentPage.value = 1
 })
 
@@ -771,6 +855,50 @@ const updateUser = async () => {
     }
   } finally {
     editLoading.value = false
+  }
+}
+
+const approveUser = async (user) => {
+  if (!confirm(`Setujui pendaftaran akun "${user.username}" (${user.full_name})?`)) return
+
+  // Optimistic: update status immediately
+  const index = users.value.findIndex(u => u.id === user.id)
+  if (index !== -1) users.value[index] = { ...users.value[index], account_status: 'ACTIVE' }
+  pendingCount.value = Math.max(0, pendingCount.value - 1)
+
+  try {
+    await $fetch(`/api/admin/users/${user.id}/approve`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}` },
+      body: { action: 'approve' }
+    })
+    alert(`Akun ${user.username} berhasil disetujui!`)
+  } catch (err) {
+    // Rollback
+    if (index !== -1) users.value[index] = { ...users.value[index], account_status: 'PENDING' }
+    pendingCount.value++
+    alert(`Gagal menyetujui: ${err.data?.statusMessage || 'Terjadi kesalahan'}`)
+  }
+}
+
+const rejectUser = async (user) => {
+  if (!confirm(`Tolak pendaftaran akun "${user.username}" (${user.full_name})? Pengguna tidak akan bisa login.`)) return
+
+  const index = users.value.findIndex(u => u.id === user.id)
+  if (index !== -1) users.value[index] = { ...users.value[index], account_status: 'INACTIVE' }
+  pendingCount.value = Math.max(0, pendingCount.value - 1)
+
+  try {
+    await $fetch(`/api/admin/users/${user.id}/approve`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}` },
+      body: { action: 'reject' }
+    })
+    alert(`Pendaftaran ${user.username} berhasil ditolak.`)
+  } catch (err) {
+    if (index !== -1) users.value[index] = { ...users.value[index], account_status: 'PENDING' }
+    pendingCount.value++
+    alert(`Gagal menolak: ${err.data?.statusMessage || 'Terjadi kesalahan'}`)
   }
 }
 

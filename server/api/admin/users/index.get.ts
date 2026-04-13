@@ -30,6 +30,7 @@ export default defineEventHandler(async (event) => {
         u.unit_name, 
         u.role, 
         u.role_id,
+        u.account_status,
         r.name as role_name, 
         r.display_name as role_display_name, 
         u.created_at
@@ -59,9 +60,12 @@ export default defineEventHandler(async (event) => {
 
     console.log('[GET /api/admin/users] Found', users.length, 'users')
 
+    const pendingCount = (users as any[]).filter(u => u.account_status === 'PENDING').length
+
     return {
       users,
-      total: users.length
+      total: users.length,
+      pendingCount
     }
   } catch (error: any) {
     console.error('[GET /api/admin/users] Error:', error)

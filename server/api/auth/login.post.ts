@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check user type - booking users should NOT have role_id (or role_id should be NULL)
-    const userDetails = await getQuery('SELECT role_id, role FROM users WHERE id = ?', [result.user.id]) as { role_id?: number; role?: string } | undefined
+    const userDetails = await getQuery('SELECT role_id, role, account_status FROM users WHERE id = ?', [result.user.id]) as { role_id?: number; role?: string; account_status?: string } | undefined
     
     console.log('[User Login] User details:', userDetails)
 
@@ -38,6 +38,22 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 403,
         statusMessage: 'Akses ditolak. Akun admin tidak dapat digunakan untuk pemesanan ruangan. Silakan gunakan panel admin.'
+      })
+    }
+
+    // Block PENDING users (waiting approval)
+    if (userDetails?.account_status === 'PENDING') {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Akun Anda sedang menunggu persetujuan admin. Silakan hubungi sekretariat paroki.'
+      })
+    }
+
+    // Block INACTIVE users (rejected/disabled)
+    if (userDetails?.account_status === 'INACTIVE') {
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Akun Anda tidak aktif. Silakan hubungi sekretariat paroki untuk informasi lebih lanjut.'
       })
     }
 

@@ -142,9 +142,9 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // Insert user
+    // Insert user — admin-created users are immediately ACTIVE
     const result = await runQuery(
-      'INSERT INTO users (username, email, password_hash, full_name, contact_phone, user_category, role, role_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO users (username, email, password_hash, full_name, contact_phone, user_category, role, role_id, account_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         sanitizedData.username,
         sanitizedData.email,
@@ -153,7 +153,8 @@ export default defineEventHandler(async (event) => {
         sanitizedData.contact_phone,
         sanitizedData.user_category,
         sanitizedData.roleString,
-        sanitizedData.roleId
+        sanitizedData.roleId,
+        'ACTIVE'
       ]
     )
 
