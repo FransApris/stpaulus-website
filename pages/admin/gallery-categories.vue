@@ -282,7 +282,7 @@ const saveCategory = async () => {
       body: formData
     })
 
-    // Optimistic update - langsung update state
+    // Update state with server result
     if (wasEditing) {
       const index = categories.value.findIndex(c => c.id === editingId)
       if (index !== -1) {
@@ -290,6 +290,8 @@ const saveCategory = async () => {
       }
     } else {
       categories.value.push(result)
+      // Sort by display_order setelah insert
+      categories.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
     }
 
     setTimeout(() => {
@@ -325,14 +327,15 @@ const deleteCategory = (category) => {
 // Confirm delete
 const confirmDelete = async () => {
   loading.value = true
-  try {
-    const deletedId = deletingCategory.value.id
-    const deletedCat = { ...deletingCategory.value }
-    
-    // Optimistic update - langsung hapus dari UI
-    categories.value = categories.value.filter(c => c.id !== deletedId)
-    closeDeleteModal()
+  const deletedId = deletingCategory.value.id
+  const deletedCat = JSON.parse(JSON.stringify(deletingCategory.value))
+  const originalIndex = categories.value.findIndex(c => c.id === deletedId)
 
+  // Optimistic update - langsung hapus dari UI
+  categories.value = categories.value.filter(c => c.id !== deletedId)
+  closeDeleteModal()
+
+  try {
     await $fetch(`/api/admin/gallery-categories/${deletedId}`, {
       method: 'DELETE',
       headers: {
@@ -345,8 +348,10 @@ const confirmDelete = async () => {
     }, 100)
   } catch (error) {
     console.error('Failed to delete category:', error)
-    // Rollback on error
-    if (deletedCat) {
+    // Rollback - kembalikan ke posisi semula
+    if (originalIndex !== -1) {
+      categories.value.splice(originalIndex, 0, deletedCat)
+    } else {
       categories.value.push(deletedCat)
     }
     alert('Gagal menghapus kategori')

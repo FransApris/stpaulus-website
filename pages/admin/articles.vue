@@ -469,15 +469,17 @@ const editArticle = async (article) => {
 
 // Toggle publish status
 const togglePublish = async (article) => {
+  // Save original status BEFORE mutation to avoid aliasing bug
+  const originalStatus = article.status
+  const newStatus = originalStatus === 'published' ? 'draft' : 'published'
+
+  // Optimistic update - langsung update UI
+  const index = articles.value.findIndex(a => a.id === article.id)
+  if (index !== -1) {
+    articles.value[index].status = newStatus
+  }
+
   try {
-    const newStatus = article.status === 'published' ? 'draft' : 'published'
-
-    // Optimistic update - langsung update UI
-    const index = articles.value.findIndex(a => a.id === article.id)
-    if (index !== -1) {
-      articles.value[index].status = newStatus
-    }
-
     await $fetch(`/api/admin/articles/${article.id}`, {
       method: 'PUT',
       headers: {
@@ -492,10 +494,10 @@ const togglePublish = async (article) => {
     }, 100)
   } catch (error) {
     console.error('Failed to toggle publish status:', error)
-    // Rollback on error
-    const index = articles.value.findIndex(a => a.id === article.id)
-    if (index !== -1) {
-      articles.value[index].status = article.status
+    // Rollback on error - use originalStatus captured before mutation
+    const idx = articles.value.findIndex(a => a.id === article.id)
+    if (idx !== -1) {
+      articles.value[idx].status = originalStatus
     }
     alert('Gagal mengubah status artikel')
   }
@@ -507,10 +509,13 @@ const deleteArticle = async (article) => {
     return
   }
 
-  try {
-    // Optimistic update - langsung hapus dari UI
-    articles.value = articles.value.filter(a => a.id !== article.id)
+  // Save original index untuk rollback posisi yang benar
+  const originalIndex = articles.value.findIndex(a => a.id === article.id)
 
+  // Optimistic update - langsung hapus dari UI
+  articles.value = articles.value.filter(a => a.id !== article.id)
+
+  try {
     await $fetch(`/api/admin/articles/${article.id}`, {
       method: 'DELETE',
       headers: {
@@ -523,8 +528,12 @@ const deleteArticle = async (article) => {
     }, 100)
   } catch (error) {
     console.error('Failed to delete article:', error)
-    // Rollback on error
-    articles.value.push(article)
+    // Rollback - kembalikan ke posisi semula
+    if (originalIndex !== -1) {
+      articles.value.splice(originalIndex, 0, article)
+    } else {
+      articles.value.unshift(article)
+    }
     alert('Gagal menghapus artikel')
   }
 }

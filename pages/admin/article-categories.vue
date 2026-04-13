@@ -233,18 +233,6 @@ const fetchCategories = async () => {
       }
     })
     categories.value = response
-
-    // Flatten for parent selection
-    const flattenCategories = (cats) => {
-      let result = []
-      cats.forEach(cat => {
-        result.push({ id: cat.id, name: cat.name })
-        if (cat.children) {
-          result = result.concat(flattenCategories(cat.children))
-        }
-      })
-      return result
-    }
     allCategories.value = flattenCategories(response)
   } catch (error) {
     console.error('Failed to fetch categories:', error)
@@ -285,23 +273,99 @@ const closeModal = () => {
   }
 }
 
+// Helper: flatten tree to flat list
+const flattenCategories = (cats) => {
+  let result = []
+  cats.forEach(cat => {
+    result.push({ id: cat.id, name: cat.name })
+    if (cat.children?.length) result = result.concat(flattenCategories(cat.children))
+  })
+  return result
+}
+
+// Helper: recursively find category by id in tree
+const findInTree = (cats, id) => {
+  for (const cat of cats) {
+    if (cat.id === id) return cat
+    if (cat.children?.length) {
+      const found = findInTree(cat.children, id)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+// Helper: recursively update category in tree
+const updateInTree = (cats, id, newData) => {
+  for (let i = 0; i < cats.length; i++) {
+    if (cats[i].id === id) {
+      cats[i] = { ...cats[i], ...newData }
+      return true
+    }
+    if (cats[i].children?.length) {
+      if (updateInTree(cats[i].children, id, newData)) return true
+    }
+  }
+  return false
+}
+
+// Helper: recursively delete category from tree
+const deleteFromTree = (cats, id) => {
+  const idx = cats.findIndex(c => c.id === id)
+  if (idx !== -1) {
+    cats.splice(idx, 1)
+    return true
+  }
+  for (const cat of cats) {
+    if (cat.children?.length) {
+      if (deleteFromTree(cat.children, id)) return true
+    }
+  }
+  return false
+}
+
+// Helper: insert new category at correct tree position based on parent_id
+const insertInTree = (cats, newCat) => {
+  if (!newCat.parent_id) {
+    cats.push(newCat)
+    return
+  }
+  const parent = findInTree(cats, newCat.parent_id)
+  if (parent) {
+    if (!parent.children) parent.children = []
+    parent.children.push(newCat)
+  } else {
+    cats.push(newCat) // fallback: parent not found, add to root
+  }
+}
+
 // Save category
 const saveCategory = async () => {
   saving.value = true
+  const wasEditing = isEditing.value
+  const currentEditingId = editingId.value
+  const formData = { ...form.value }
+
+  // Snapshot for rollback
+  const snapshot = JSON.parse(JSON.stringify(categories.value))
+  const tempId = `temp_${Date.now()}`
+
+  // True optimistic update BEFORE API call
+  if (wasEditing) {
+    updateInTree(categories.value, currentEditingId, formData)
+  } else {
+    insertInTree(categories.value, { id: tempId, ...formData, children: [], slug: '' })
+  }
+  allCategories.value = flattenCategories(categories.value)
+
+  // Close modal immediately
+  closeModal()
+
   try {
-    const url = isEditing.value
-      ? `/api/admin/article-categories/${editingId.value}`
+    const url = wasEditing
+      ? `/api/admin/article-categories/${currentEditingId}`
       : '/api/admin/article-categories'
-
-    const method = isEditing.value ? 'PUT' : 'POST'
-
-    // Simpan context sebelum close modal
-    const wasEditing = isEditing.value
-    const currentEditingId = editingId.value
-    const formData = { ...form.value }
-    
-    // Close modal immediately for better UX
-    closeModal()
+    const method = wasEditing ? 'PUT' : 'POST'
 
     const result = await $fetch(url, {
       method,
@@ -311,20 +375,26 @@ const saveCategory = async () => {
       }
     })
 
-    // Optimistic update - langsung update state
+    // Replace optimistic placeholder with real server data
     if (wasEditing) {
-      const index = categories.value.findIndex(c => c.id === currentEditingId)
-      if (index !== -1) {
-        categories.value[index] = { ...categories.value[index], ...result }
-      }
+      updateInTree(categories.value, currentEditingId, result)
     } else {
-      categories.value.push(result)
+      deleteFromTree(categories.value, tempId)
+      insertInTree(categories.value, result)
     }
+    allCategories.value = flattenCategories(categories.value)
 
     setTimeout(() => {
       alert(wasEditing ? 'Kategori berhasil diupdate' : 'Kategori berhasil ditambahkan')
     }, 100)
   } catch (error) {
+    // Rollback and reopen modal with original data
+    categories.value = snapshot
+    allCategories.value = flattenCategories(snapshot)
+    isEditing.value = wasEditing
+    editingId.value = currentEditingId
+    form.value = formData
+    showModal.value = true
     console.error('Failed to save category:', error)
     alert(error.data?.message || 'Gagal menyimpan kategori')
   } finally {
@@ -338,28 +408,28 @@ const deleteCategory = async (id) => {
     return
   }
 
+  // Snapshot for rollback
+  const snapshot = JSON.parse(JSON.stringify(categories.value))
+
+  // True optimistic: recursively delete from tree immediately
+  deleteFromTree(categories.value, id)
+  allCategories.value = allCategories.value.filter(c => c.id !== id)
+
   try {
-    // Optimistic update - langsung hapus dari UI
-    const originalCategories = [...categories.value]
-    categories.value = categories.value.filter(c => c.id !== id)
+    await $fetch(`/api/admin/article-categories/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
+      }
+    })
 
-    try {
-      await $fetch(`/api/admin/article-categories/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
-        }
-      })
-
-      setTimeout(() => {
-        alert('Kategori berhasil dihapus')
-      }, 100)
-    } catch (deleteError) {
-      // Rollback on error
-      categories.value = originalCategories
-      throw deleteError
-    }
+    setTimeout(() => {
+      alert('Kategori berhasil dihapus')
+    }, 100)
   } catch (error) {
+    // Rollback on error
+    categories.value = snapshot
+    allCategories.value = flattenCategories(snapshot)
     console.error('Failed to delete category:', error)
     alert(error.data?.message || 'Gagal menghapus kategori')
   }
