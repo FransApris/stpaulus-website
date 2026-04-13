@@ -145,6 +145,14 @@
                   class="w-full bg-paulus-blue hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                   {{ loading ? 'Memproses...' : 'Masuk' }}
                 </button>
+
+                <!-- Link daftar akun baru -->
+                <div class="text-center text-sm text-gray-600">
+                  Belum punya akun?
+                  <NuxtLink to="/daftar" @click="$emit('update:modelValue', false)" class="text-paulus-blue font-semibold hover:underline">
+                    Daftar di sini →
+                  </NuxtLink>
+                </div>
               </form>
 
               <!-- Info -->
