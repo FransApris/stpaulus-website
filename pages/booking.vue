@@ -1565,7 +1565,6 @@ const createBooking = async () => {
       await nextTick()
       document.getElementById('pemesanan-saya')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 1500)
-    }, 2500)
 
   } catch (error) {
     bookingError.value = error.data?.statusMessage || 'Pemesanan gagal'
