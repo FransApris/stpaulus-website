@@ -134,6 +134,14 @@
                   👤 User Booking
                 </span>
               </div>
+              <!-- Tombol hapus semua user booking (super admin only) -->
+              <button
+                v-if="isSuperAdmin"
+                @click="showClearModal = true; clearConfirmText = ''"
+                class="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 transition-colors"
+              >
+                🗑️ Hapus Semua User Booking
+              </button>
             </div>
           </div>
 
@@ -366,6 +374,47 @@
           </div>
         </div>
 
+        <!-- Modal Konfirmasi Hapus Semua Booking Users -->
+        <div v-if="showClearModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div class="bg-white p-6 rounded-xl shadow-xl max-w-md w-full mx-4">
+            <div class="text-center mb-4">
+              <div class="text-4xl mb-2">⚠️</div>
+              <h3 class="text-lg font-bold text-red-700">Hapus Semua User Booking</h3>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 text-sm text-red-800 space-y-1">
+              <p class="font-semibold">Tindakan ini tidak dapat dibatalkan!</p>
+              <p>Semua akun user booking (bukan admin) akan dihapus permanen.</p>
+              <p>Semua data pemesanan milik mereka juga akan terhapus.</p>
+            </div>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Ketik <strong>HAPUS</strong> untuk konfirmasi:
+              </label>
+              <input
+                v-model="clearConfirmText"
+                type="text"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+                placeholder="Ketik HAPUS"
+              />
+            </div>
+            <div class="flex gap-3">
+              <button
+                @click="showClearModal = false; clearConfirmText = ''"
+                class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Batal
+              </button>
+              <button
+                @click="clearAllBookingUsers"
+                :disabled="clearConfirmText !== 'HAPUS' || clearLoading"
+                class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed font-semibold"
+              >
+                {{ clearLoading ? 'Menghapus...' : 'Hapus Sekarang' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Edit User Modal -->
         <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
@@ -488,6 +537,32 @@ const isSuperAdmin = computed(() => {
 const isAdminSekretariat = computed(() => {
   return currentUser.value?.role_name === 'admin_sekretariat'
 })
+
+// Clear all booking users
+const showClearModal = ref(false)
+const clearLoading = ref(false)
+const clearConfirmText = ref('')
+
+const clearAllBookingUsers = async () => {
+  if (clearConfirmText.value !== 'HAPUS') return
+
+  clearLoading.value = true
+  try {
+    const result = await $fetch('/api/admin/users/clear-booking-users', {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}` }
+    })
+
+    showClearModal.value = false
+    clearConfirmText.value = ''
+    alert(result.message)
+    await loadUsers()
+  } catch (err) {
+    alert(`Gagal: ${err.data?.statusMessage || 'Terjadi kesalahan'}`)
+  } finally {
+    clearLoading.value = false
+  }
+}
 
 // Sorted + filtered users computed property
 const sortedUsers = computed(() => {
