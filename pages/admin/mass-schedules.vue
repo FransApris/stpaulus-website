@@ -932,6 +932,8 @@ const saveDevotion = async () => {
       }
     } else {
       devotions.value.push({ ...payload, id: result.data.id })
+      // Sort by display_order after insert
+      devotions.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
     }
 
     // Show success message without blocking
@@ -950,7 +952,9 @@ const saveDevotion = async () => {
 }
 
 const toggleDevotion = async (devotion) => {
-  const newStatus = devotion.is_active === 1 ? 0 : 1
+  // Capture original BEFORE mutation to avoid aliasing bug
+  const originalStatus = devotion.is_active
+  const newStatus = originalStatus === 1 ? 0 : 1
 
   // Optimistic update
   const index = devotions.value.findIndex(d => d.id === devotion.id)
@@ -978,9 +982,9 @@ const toggleDevotion = async (devotion) => {
     console.error('Failed to toggle devotion:', error)
     alert('Gagal mengubah status devosi')
 
-    // Revert on error
+    // Rollback using originalStatus captured before mutation
     if (index !== -1) {
-      devotions.value[index].is_active = devotion.is_active
+      devotions.value[index].is_active = originalStatus
     }
   }
 }

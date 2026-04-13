@@ -713,6 +713,7 @@ const handleSubmit = async () => {
       }
 
       announcements.value.unshift(optimisticItem)
+      announcements.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
 
       try {
         const response = await $fetch<any>('/api/admin/announcements', {
@@ -723,6 +724,7 @@ const handleSubmit = async () => {
         const index = announcements.value.findIndex(a => a && a.id === tempId)
         if (index !== -1 && response && response.data) {
           announcements.value[index] = response.data
+          announcements.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
         }
       } catch (error) {
         // Remove temp item on error

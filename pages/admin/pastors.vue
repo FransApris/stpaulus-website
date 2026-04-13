@@ -686,6 +686,7 @@ const savePastor = async () => {
                 updated_at: new Date().toISOString()
             }
             pastors.value.unshift(tempPastor)
+            pastors.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
             console.log('[Pastor Create] Optimistic add applied')
         }
 
@@ -719,6 +720,7 @@ const savePastor = async () => {
             const tempIndex = pastors.value.findIndex(p => typeof p.id === 'string' && p.id.startsWith('temp-'))
             if (tempIndex !== -1) {
                 pastors.value[tempIndex] = response.data
+                pastors.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
                 console.log('[Pastor Create] Synced with server data')
             }
         } else {

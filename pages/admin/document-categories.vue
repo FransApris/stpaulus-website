@@ -392,6 +392,8 @@ const saveCategory = async () => {
     } else {
       console.log('➕ Adding new category:', result)
       categories.value.push(result)
+      // Sort by display_order after insert
+      categories.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
       console.log('✅ New category added to UI')
     }
 

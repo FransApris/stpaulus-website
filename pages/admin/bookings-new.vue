@@ -826,7 +826,7 @@ const deleteBooking = async () => {
     console.error('Failed to delete booking', err)
     // Rollback on error
     if (removedBooking) {
-      bookings.value.push(removedBooking)
+      bookings.value.splice(index, 0, removedBooking)
       if (removedBooking.status === 'PENDING') stats.value.pending++
       else if (removedBooking.status === 'APPROVED') stats.value.approved++
       else if (removedBooking.status === 'REJECTED') stats.value.rejected++
@@ -886,7 +886,7 @@ const restoreBooking = async (booking) => {
       if (mainIndex !== -1) {
         bookings.value.splice(mainIndex, 1)
       }
-      deletedBookings.value.push(booking)
+      deletedBookings.value.splice(deletedIndex, 0, booking)
       
       if (restoredBooking.status === 'PENDING') stats.value.pending--
       else if (restoredBooking.status === 'APPROVED') stats.value.approved--
@@ -925,7 +925,7 @@ const permanentDeleteBooking = async (booking) => {
     console.error('Failed to permanently delete booking', err)
     // Rollback on error
     if (removedBooking) {
-      deletedBookings.value.push(removedBooking)
+      deletedBookings.value.splice(index, 0, removedBooking)
       stats.value.deleted++
     }
     showToast('Gagal menghapus permanen pemesanan', 'error')

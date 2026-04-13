@@ -1377,7 +1377,8 @@ const saveMember = async () => {
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
             }
-            members.value.unshift(tempMember) // Add to beginning for better UX
+            members.value.unshift(tempMember)
+            members.value.sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
             closeModal()
             saving.value = false
 
@@ -1389,6 +1390,7 @@ const saveMember = async () => {
                     const index = members.value.findIndex((m: any) => m.id === tempId)
                     if (index !== -1) {
                         members.value.splice(index, 1, response.data)
+                        members.value.sort((a: any, b: any) => (a.display_order ?? 0) - (b.display_order ?? 0))
                     }
                     showToastMessage('Anggota DPP berhasil ditambahkan!', 'success')
                 }

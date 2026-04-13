@@ -270,6 +270,7 @@ const saveType = async () => {
     // For new item, add with temporary ID
     const tempId = Date.now()
     liturgyTypes.value.unshift({ ...typeData, id: tempId, _isOptimistic: true })
+    liturgyTypes.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
   }
 
   // Close modal immediately for instant UX
@@ -304,6 +305,7 @@ const saveType = async () => {
       }
       // Use data from server response
       liturgyTypes.value.unshift(result.data || result)
+      liturgyTypes.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
       showToast('Jenis liturgi berhasil ditambahkan', 'success')
     }
   } catch (error) {
