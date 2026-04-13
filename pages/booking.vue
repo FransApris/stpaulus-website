@@ -265,6 +265,7 @@
                 <div>
                   <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Acara *</label>
                   <input v-model="bookingForm.event_date" type="date" :min="getTodayDate()"
+                    @change="checkAvailability"
                     class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
                     required />
                 </div>
@@ -273,15 +274,48 @@
                   <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Mulai *</label>
                     <input v-model="bookingForm.start_time" type="time"
+                      @change="checkAvailability"
                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
                       required />
                   </div>
                   <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Selesai *</label>
                     <input v-model="bookingForm.end_time" type="time"
+                      @change="checkAvailability"
                       class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
                       required />
                   </div>
+                </div>
+
+                <!-- Saran 2: Status ketersediaan real-time -->
+                <div v-if="availabilityChecking" class="flex items-center gap-2 text-sm text-gray-500">
+                  <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Memeriksa ketersediaan...
+                </div>
+                <div v-else-if="availabilityStatus === 'available'"
+                  class="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  Waktu tersedia — ruangan bebas di jadwal ini
+                </div>
+                <div v-else-if="availabilityStatus === 'conflict'"
+                  class="px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+                  <div class="flex items-center gap-2 mb-1">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <strong>Waktu bentrok</strong> dengan {{ availabilityConflicts.length }} pemesanan lain
+                  </div>
+                  <ul class="ml-6 space-y-0.5">
+                    <li v-for="c in availabilityConflicts" :key="c.id" class="text-xs">
+                      {{ c.event_name }} ({{ formatTime(c.start_time) }}–{{ formatTime(c.end_time) }})
+                    </li>
+                  </ul>
                 </div>
 
                 <div v-if="bookingMessage"
@@ -337,6 +371,39 @@
                 </svg>
                 <span>{{ showHistory ? 'Kembali ke Aktif' : 'Lihat Riwayat' }}</span>
               </button>
+            </div>
+
+            <!-- Saran 5: Badge summary status pemesanan -->
+            <div v-if="myBookings.length > 0" class="flex flex-wrap gap-2 mb-4">
+              <span v-if="bookingSummary.PENDING > 0"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+                <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+                Menunggu: {{ bookingSummary.PENDING }}
+              </span>
+              <span v-if="bookingSummary.APPROVED > 0"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                Disetujui: {{ bookingSummary.APPROVED }}
+              </span>
+              <span v-if="bookingSummary.REJECTED > 0"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-200">
+                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                Ditolak: {{ bookingSummary.REJECTED }}
+              </span>
+              <span v-if="bookingSummary.CANCELLED > 0"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
+                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                Dibatalkan: {{ bookingSummary.CANCELLED }}
+              </span>
+              <!-- Notifikasi perubahan status (Saran 1) -->
+              <span v-if="hasNewStatusChange"
+                @click="hasNewStatusChange = false"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200 cursor-pointer hover:bg-blue-200 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                Ada perubahan status — klik untuk tutup
+              </span>
             </div>
 
             <!-- Info badge -->
@@ -575,7 +642,26 @@
             <!-- Date Selector -->
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Tanggal</label>
-              <input v-model="selectedDate" type="date" @change="loadRoomAvailability" class="p-2 border rounded" />
+              <!-- Saran 6: Navigasi tanggal prev/next -->
+              <div class="flex items-center gap-2">
+                <button @click="navigateDate(-1)"
+                  class="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+                  title="Hari sebelumnya">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Kemarin
+                </button>
+                <input v-model="selectedDate" type="date" @change="loadRoomAvailability" class="p-2 border rounded" />
+                <button @click="navigateDate(1)"
+                  class="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+                  title="Hari berikutnya">
+                  Besok
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Mobile View: Card Layout -->
@@ -865,6 +951,16 @@ const loginError = ref('')
 const bookingMessage = ref('')
 const bookingError = ref('')
 
+// Availability check state (Saran 2)
+const availabilityChecking = ref(false)
+const availabilityStatus = ref(null) // null | 'available' | 'conflict'
+const availabilityConflicts = ref([])
+
+// Polling state (Saran 1)
+let pollingInterval = null
+const prevPendingCount = ref(0)
+const hasNewStatusChange = ref(false)
+
 // Computed: Empty state messages
 const emptyStateTitle = computed(() =>
   showHistory.value
@@ -895,6 +991,15 @@ const mapUserCategoryLabel = (value) => {
 }
 
 const displayUserCategory = computed(() => mapUserCategoryLabel(user.value?.user_category))
+
+// Computed: Summary status pemesanan (Saran 5)
+const bookingSummary = computed(() => {
+  const counts = { PENDING: 0, APPROVED: 0, REJECTED: 0, CANCELLED: 0 }
+  myBookings.value.forEach(b => {
+    if (counts[b.status] !== undefined) counts[b.status]++
+  })
+  return counts
+})
 
 // Toggle room bookings visibility (mobile cards)
 const toggleRoomBookings = (roomId) => {
@@ -1102,6 +1207,7 @@ onMounted(async () => {
       user.value = response
       isLoggedIn.value = true
       await loadData()
+      startPolling() // Saran 1: mulai polling setelah data dimuat
     } catch (error) {
       console.error('[MOUNTED] Token invalid, removing:', error)
       localStorage.removeItem('auth_token')
@@ -1166,6 +1272,7 @@ const login = async () => {
     user.value = userResponse
     isLoggedIn.value = true
     await loadData()
+    startPolling() // Saran 1: mulai polling setelah login
   } catch (error) {
     console.error('[Booking Login] Error:', error)
     loginError.value = error.data?.statusMessage || 'Login gagal'
@@ -1176,11 +1283,16 @@ const login = async () => {
 
 const logout = () => {
   localStorage.removeItem('auth_token')
+  stopPolling() // Saran 1: hentikan polling saat logout
   isLoggedIn.value = false
   user.value = {}
   rooms.value = []
   myBookings.value = []
 }
+
+onUnmounted(() => {
+  stopPolling()
+})
 
 const confirmCancelBooking = (bookingId) => {
   if (confirm('Apakah Anda yakin ingin membatalkan pemesanan ini?')) {
@@ -1285,8 +1397,88 @@ const loadRoomAvailability = async () => {
 
 const selectRoom = (room) => {
   selectedRoom.value = room
-  if (!bookingForm.value.requester_name) {
-    bookingForm.value.requester_name = String(user.value?.full_name || '').trim()
+  // Saran 3: Auto-fill requester_name dari data user yang login
+  bookingForm.value.requester_name = String(user.value?.full_name || '').trim()
+  // Reset availability state
+  availabilityStatus.value = null
+  availabilityConflicts.value = []
+}
+
+// Saran 2: Cek ketersediaan real-time
+const checkAvailability = async () => {
+  if (!selectedRoom.value || !bookingForm.value.event_date || !bookingForm.value.start_time || !bookingForm.value.end_time) {
+    availabilityStatus.value = null
+    return
+  }
+  if (bookingForm.value.start_time >= bookingForm.value.end_time) {
+    availabilityStatus.value = null
+    return
+  }
+  availabilityChecking.value = true
+  try {
+    const startDateTime = new Date(`${bookingForm.value.event_date}T${bookingForm.value.start_time}`).toISOString()
+    const endDateTime = new Date(`${bookingForm.value.event_date}T${bookingForm.value.end_time}`).toISOString()
+    const res = await $fetch('/api/rooms-availability', {
+      params: { date: bookingForm.value.event_date }
+    })
+    const roomData = (res.rooms || []).find(r => r.id === selectedRoom.value.id)
+    if (roomData) {
+      const conflicts = (roomData.bookings || []).filter(b => {
+        if (b.status === 'REJECTED' || b.status === 'CANCELLED') return false
+        const bStart = new Date(b.start_time)
+        const bEnd = new Date(b.end_time)
+        const reqStart = new Date(startDateTime)
+        const reqEnd = new Date(endDateTime)
+        return reqStart < bEnd && reqEnd > bStart
+      })
+      availabilityConflicts.value = conflicts
+      availabilityStatus.value = conflicts.length > 0 ? 'conflict' : 'available'
+    }
+  } catch (e) {
+    availabilityStatus.value = null
+  } finally {
+    availabilityChecking.value = false
+  }
+}
+
+// Saran 6: Navigasi tanggal prev/next
+const navigateDate = (direction) => {
+  const current = new Date(selectedDate.value)
+  current.setDate(current.getDate() + direction)
+  selectedDate.value = current.toISOString().split('T')[0]
+  loadRoomAvailability()
+}
+
+// Saran 1: Polling untuk notifikasi perubahan status PENDING
+const startPolling = () => {
+  if (pollingInterval) return
+  prevPendingCount.value = myBookings.value.filter(b => b.status === 'PENDING').length
+  pollingInterval = setInterval(async () => {
+    if (!isLoggedIn.value) return
+    try {
+      const token = localStorage.getItem('auth_token')
+      const res = await $fetch('/api/bookings', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.success && res.data) {
+        const newBookings = res.data.sort((a, b) =>
+          new Date(b.created_at || b.start_time) - new Date(a.created_at || a.start_time)
+        )
+        const newPendingCount = newBookings.filter(b => b.status === 'PENDING').length
+        if (prevPendingCount.value > newPendingCount) {
+          hasNewStatusChange.value = true
+          myBookings.value = newBookings
+        }
+        prevPendingCount.value = newPendingCount
+      }
+    } catch {}
+  }, 30000) // poll setiap 30 detik
+}
+
+const stopPolling = () => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
+    pollingInterval = null
   }
 }
 
@@ -1295,7 +1487,7 @@ const createBooking = async () => {
   bookingMessage.value = ''
   bookingError.value = ''
 
-  // Frontend validation
+  // Frontend validation (Saran 4)
   const eventDate = new Date(bookingForm.value.event_date)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -1310,6 +1502,26 @@ const createBooking = async () => {
     bookingError.value = 'Waktu selesai harus lebih besar dari waktu mulai'
     bookingLoading.value = false
     return
+  }
+
+  // Validasi durasi minimum 30 menit (Saran 4)
+  const startMinutes = bookingForm.value.start_time.split(':').reduce((h, m, i) => i === 0 ? +h * 60 : +h + +m)
+  const endMinutes = bookingForm.value.end_time.split(':').reduce((h, m, i) => i === 0 ? +h * 60 : +h + +m)
+  if (endMinutes - startMinutes < 30) {
+    bookingError.value = 'Durasi pemesanan minimal 30 menit'
+    bookingLoading.value = false
+    return
+  }
+
+  // Validasi tidak boleh waktu yang sudah lewat hari ini (Saran 4)
+  const isToday = bookingForm.value.event_date === new Date().toISOString().split('T')[0]
+  if (isToday) {
+    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes()
+    if (startMinutes < nowMinutes) {
+      bookingError.value = 'Waktu mulai tidak boleh di masa lalu'
+      bookingLoading.value = false
+      return
+    }
   }
 
   try {
@@ -1343,11 +1555,16 @@ const createBooking = async () => {
     // Refresh data immediately after successful booking
     await loadData()
 
-    // Close modal and reset form after showing success message
-    setTimeout(() => {
+    // Saran 7: Close modal, reset form, scroll ke #pemesanan-saya
+    setTimeout(async () => {
       selectedRoom.value = null
       bookingForm.value = { event_name: '', requester_name: '', event_date: '', start_time: '', end_time: '' }
+      availabilityStatus.value = null
+      availabilityConflicts.value = []
       bookingMessage.value = ''
+      await nextTick()
+      document.getElementById('pemesanan-saya')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 1500)
     }, 2500)
 
   } catch (error) {
@@ -1362,6 +1579,8 @@ const closeBookingModal = () => {
   bookingForm.value = { event_name: '', requester_name: '', event_date: '', start_time: '', end_time: '' }
   bookingMessage.value = ''
   bookingError.value = ''
+  availabilityStatus.value = null
+  availabilityConflicts.value = []
 }
 
 const getStatusClass = (status) => {
