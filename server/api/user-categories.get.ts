@@ -1,4 +1,4 @@
-import { allQuery } from '../../database/db'
+import { allQuery } from '../database/db'
 
 // Public endpoint — returns active user categories for the registration form
 export default defineEventHandler(async () => {
