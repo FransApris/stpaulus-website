@@ -27,7 +27,13 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check user type - booking users should NOT have role_id (or role_id should be NULL)
-    const userDetails = await getQuery('SELECT role_id, role, account_status FROM users WHERE id = ?', [result.user.id]) as { role_id?: number; role?: string; account_status?: string } | undefined
+    let userDetails: { role_id?: number; role?: string; account_status?: string } | undefined
+    try {
+      userDetails = await getQuery('SELECT role_id, role, account_status FROM users WHERE id = ?', [result.user.id]) as any
+    } catch (_) {
+      // Fallback if account_status column doesn't exist yet (migration not run)
+      userDetails = await getQuery('SELECT role_id, role FROM users WHERE id = ?', [result.user.id]) as any
+    }
     
     console.log('[User Login] User details:', userDetails)
 

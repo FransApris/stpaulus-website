@@ -1,8 +1,27 @@
 import { runQuery, getQuery, allQuery } from '../../database/db'
 import { hashPassword } from '../../utils/auth'
 
+// Ensure account_status column exists (auto-migrate if not yet run)
+async function ensureAccountStatusColumn() {
+  try {
+    await runQuery(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS account_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
+    `)
+    // Set existing users to ACTIVE so they are not blocked
+    await runQuery(`
+      UPDATE users SET account_status = 'ACTIVE' 
+      WHERE account_status IS NULL OR account_status = ''
+    `)
+  } catch (_) {
+    // Column already exists or DB doesn't support IF NOT EXISTS — safe to ignore
+  }
+}
+
 export default defineEventHandler(async (event) => {
   try {
+    // Auto-apply migration if needed
+    await ensureAccountStatusColumn()
     const body = await readBody(event)
     const { username, email, password, full_name, contact_phone, user_category, unit_name } = body
 
