@@ -3,7 +3,8 @@ import nodemailer from 'nodemailer'
 // Create transporter lazily so missing env vars don't crash at startup
 function createTransporter() {
   const host = process.env.SMTP_HOST
-  const port = parseInt(process.env.SMTP_PORT || '587')
+  // Default to 465 (SSL) — Railway blocks port 587 (STARTTLS)
+  const port = parseInt(process.env.SMTP_PORT || '465')
   const user = process.env.SMTP_USER
   const pass = process.env.SMTP_PASS
 
