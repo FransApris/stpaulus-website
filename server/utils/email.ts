@@ -15,6 +15,8 @@ function createTransporter() {
     host,
     port,
     secure: port === 465,
+    // Force IPv4 — Railway does not support IPv6 outbound connections
+    family: 4,
     auth: { user, pass }
   })
 }
