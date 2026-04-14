@@ -1,5 +1,6 @@
 import { runQuery, getQuery } from '../../../../database/db'
 import { requireAuth } from '../../../../utils/auth'
+import { sendAccountApprovedEmail, sendAccountRejectedEmail } from '../../../../utils/email'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -30,7 +31,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const targetUser = await getQuery(
-      'SELECT id, username, account_status, role_id FROM users WHERE id = ?',
+      'SELECT id, username, email, full_name, account_status, role_id FROM users WHERE id = ?',
       [targetId]
     ) as any
 
@@ -53,6 +54,20 @@ export default defineEventHandler(async (event) => {
     )
 
     console.log(`[User Approval] User ${targetUser.username} ${action}d by admin ${adminId}`)
+
+    // Send email notification (non-blocking — failure doesn't affect the response)
+    if (targetUser.email) {
+      const emailParams = {
+        to: targetUser.email,
+        username: targetUser.username,
+        fullName: targetUser.full_name || targetUser.username
+      }
+      if (action === 'approve') {
+        sendAccountApprovedEmail(emailParams).catch(() => {})
+      } else {
+        sendAccountRejectedEmail(emailParams).catch(() => {})
+      }
+    }
 
     return {
       success: true,

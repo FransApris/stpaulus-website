@@ -1,5 +1,6 @@
 import { runQuery, getQuery, allQuery } from '../../database/db'
 import { hashPassword } from '../../utils/auth'
+import { sendRegistrationPendingEmail } from '../../utils/email'
 
 // Ensure account_status column exists (auto-migrate if not yet run)
 // Uses INFORMATION_SCHEMA for MySQL 5.7+ compatibility (avoids IF NOT EXISTS on ALTER)
@@ -92,6 +93,16 @@ export default defineEventHandler(async (event) => {
     )
 
     console.log('[Register] New user registered, awaiting approval:', username)
+
+    // Send confirmation email (non-blocking)
+    const emailAddr = email.trim().toLowerCase()
+    if (emailAddr) {
+      sendRegistrationPendingEmail({
+        to: emailAddr,
+        username: username.trim(),
+        fullName: full_name.trim()
+      }).catch(() => {})
+    }
 
     return {
       success: true,
