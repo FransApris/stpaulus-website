@@ -6,7 +6,7 @@
             <div class="text-center mb-8">
                 <GerejaLogo class="mx-auto mb-4" />
                 <h1 class="text-2xl font-bold text-gray-900">Daftar Akun Pemesanan</h1>
-                <p class="text-gray-600 mt-2">Paroki Santo Paulus Sinaboi</p>
+                <p class="text-gray-600 mt-2">Paroki St. Paulus, Juanda</p>
             </div>
 
             <!-- Success State -->
@@ -163,8 +163,8 @@
 definePageMeta({ layout: 'default' })
 
 useHead({
-    title: 'Daftar Akun - Paroki Santo Paulus Sinaboi',
-    meta: [{ name: 'description', content: 'Daftarkan akun untuk pemesanan ruangan Paroki Santo Paulus Sinaboi' }]
+    title: 'Daftar Akun - Paroki St. Paulus, Juanda',
+    meta: [{ name: 'description', content: 'Daftarkan akun untuk pemesanan ruangan Paroki St. Paulus, Juanda' }]
 })
 
 const form = ref({
