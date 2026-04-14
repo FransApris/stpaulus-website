@@ -22,28 +22,21 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Alamat email tujuan tidak valid' })
   }
 
-  // Log env config (without showing full password)
-  const smtpHost = process.env.SMTP_HOST
-  const smtpUser = process.env.SMTP_USER
-  const smtpPass = process.env.SMTP_PASS
-  const smtpFrom = process.env.SMTP_FROM
+  // Log env config
+  const resendKey = process.env.RESEND_API_KEY
+  const resendFrom = process.env.RESEND_FROM
 
-  console.log('[Test Email] SMTP config check:', {
-    SMTP_HOST: smtpHost || '❌ MISSING',
-    SMTP_PORT: process.env.SMTP_PORT || '587 (default)',
-    SMTP_USER: smtpUser || '❌ MISSING',
-    SMTP_PASS: smtpPass ? `✅ set (${smtpPass.length} chars)` : '❌ MISSING',
-    SMTP_FROM: smtpFrom || '❌ MISSING'
+  console.log('[Test Email] Resend config check:', {
+    RESEND_API_KEY: resendKey ? `✅ set (${resendKey.length} chars)` : '❌ MISSING',
+    RESEND_FROM: resendFrom || '(using default noreply@stpaulusjuanda.org)'
   })
 
-  if (!smtpHost || !smtpUser || !smtpPass) {
+  if (!resendKey) {
     return {
       success: false,
-      message: 'SMTP belum dikonfigurasi. Pastikan SMTP_HOST, SMTP_USER, dan SMTP_PASS sudah di-set di Railway Variables.',
+      message: 'RESEND_API_KEY belum dikonfigurasi. Daftar di resend.com lalu set variabel ini di Railway.',
       config: {
-        SMTP_HOST: smtpHost ? '✅' : '❌ MISSING',
-        SMTP_USER: smtpUser ? '✅' : '❌ MISSING',
-        SMTP_PASS: smtpPass ? '✅' : '❌ MISSING'
+        RESEND_API_KEY: '❌ MISSING'
       }
     }
   }

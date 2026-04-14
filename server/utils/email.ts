@@ -1,63 +1,37 @@
-import nodemailer from 'nodemailer'
-import dns from 'dns'
-import { promisify } from 'util'
+import { Resend } from 'resend'
 
-const dnsLookup = promisify(dns.lookup)
-
-// Create transporter lazily. Manually resolves hostname to IPv4 first
-// because Railway blocks IPv6 outbound and nodemailer's `family:4` is unreliable.
-async function createTransporter() {
-  const host = process.env.SMTP_HOST
-  // Default to 465 (SSL) — Railway blocks port 587 (STARTTLS)
-  const port = parseInt(process.env.SMTP_PORT || '465')
-  const user = process.env.SMTP_USER
-  const pass = process.env.SMTP_PASS
-
-  if (!host || !user || !pass) {
+// Resend client — lazily created
+function getResend(): Resend | null {
+  const apiKey = process.env.RESEND_API_KEY
+  if (!apiKey) {
+    console.warn('[Email] RESEND_API_KEY not set — skipping email')
     return null
   }
-
-  // Resolve to IPv4 address explicitly to bypass Railway's IPv6 DNS resolution
-  let resolvedHost = host
-  try {
-    const { address } = await dnsLookup(host, 4)
-    resolvedHost = address
-    console.log(`[Email] Resolved ${host} → ${resolvedHost} (IPv4)`)
-  } catch (e) {
-    console.warn(`[Email] DNS lookup failed for ${host}, using original hostname`)
-  }
-
-  return nodemailer.createTransport({
-    host: resolvedHost,
-    port,
-    secure: port === 465,
-    // Keep original hostname for TLS SNI verification
-    tls: { servername: host },
-    auth: { user, pass }
-  })
+  return new Resend(apiKey)
 }
 
 const FROM_NAME = 'Paroki Santo Paulus Sinaboi'
-const FROM_EMAIL = process.env.SMTP_FROM || process.env.SMTP_USER || 'noreply@stpaulusjuanda.org'
+const FROM_EMAIL = process.env.RESEND_FROM || 'noreply@stpaulusjuanda.org'
 const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL || 'https://stpaulusjuanda.org'
 
 /**
- * Send email — silently skips if SMTP is not configured.
+ * Send email via Resend HTTP API — silently skips if not configured.
  * Returns true if sent, false if skipped/error.
  */
 async function sendMail(options: { to: string; subject: string; html: string }): Promise<boolean> {
-  const transporter = await createTransporter()
-  if (!transporter) {
-    console.warn('[Email] SMTP not configured (SMTP_HOST/SMTP_USER/SMTP_PASS missing) — skipping email')
-    return false
-  }
+  const resend = getResend()
+  if (!resend) return false
   try {
-    await transporter.sendMail({
-      from: `"${FROM_NAME}" <${FROM_EMAIL}>`,
+    const { error } = await resend.emails.send({
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
       to: options.to,
       subject: options.subject,
       html: options.html
     })
+    if (error) {
+      console.error('[Email] Resend error:', error)
+      return false
+    }
     console.log(`[Email] Sent "${options.subject}" to ${options.to}`)
     return true
   } catch (err) {
