@@ -5,6 +5,27 @@
       <p class="text-gray-500 mt-1 text-sm">Jalankan migration SQL yang pending. Hanya super_admin.</p>
     </div>
 
+    <!-- Email Test Tool -->
+    <div class="bg-white rounded-xl shadow-sm border border-blue-200 p-5 mb-6">
+      <div class="font-medium text-gray-900 mb-1">🔧 Test Konfigurasi Email (SMTP)</div>
+      <p class="text-sm text-gray-500 mb-3">Kirim email percobaan untuk memverifikasi konfigurasi SMTP sudah benar.</p>
+      <div class="flex gap-3 items-start">
+        <input v-model="testEmailTo" type="email" placeholder="Masukkan email tujuan"
+          class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+        <button @click="runTestEmail" :disabled="testEmailRunning"
+          class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+          {{ testEmailRunning ? 'Mengirim...' : 'Kirim Test Email' }}
+        </button>
+      </div>
+      <div v-if="testEmailResult" class="mt-3 text-sm px-3 py-2 rounded-lg"
+        :class="testEmailResult.success ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'">
+        <p class="font-medium">{{ testEmailResult.success ? '✅' : '❌' }} {{ testEmailResult.message }}</p>
+        <div v-if="testEmailResult.config" class="mt-2 space-y-0.5">
+          <p v-for="(val, key) in testEmailResult.config" :key="key" class="font-mono text-xs">{{ key }}: {{ val }}</p>
+        </div>
+      </div>
+    </div>
+
     <div class="space-y-4">
       <div v-for="m in migrations" :key="m.key"
         class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start justify-between gap-4">
@@ -97,6 +118,32 @@ const run = async (m: Migration) => {
     }
   } finally {
     m.running = false
+  }
+}
+
+// Email test
+const testEmailTo = ref('')
+const testEmailRunning = ref(false)
+const testEmailResult = ref<any>(null)
+
+const runTestEmail = async () => {
+  if (!testEmailTo.value.trim()) return
+  testEmailRunning.value = true
+  testEmailResult.value = null
+  try {
+    const res = await $fetch<any>('/api/admin/test-email', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}` },
+      body: { to: testEmailTo.value.trim() }
+    })
+    testEmailResult.value = res
+  } catch (err: any) {
+    testEmailResult.value = {
+      success: false,
+      message: err?.data?.statusMessage || err?.message || 'Terjadi kesalahan'
+    }
+  } finally {
+    testEmailRunning.value = false
   }
 }
 </script>
