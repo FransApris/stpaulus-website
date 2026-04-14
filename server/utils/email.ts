@@ -67,13 +67,13 @@ export async function sendRegistrationPendingEmail(params: {
   to: string
   username: string
   fullName: string
-}): Promise<void> {
-  await sendMail({
+}): Promise<boolean> {
+  return sendMail({
     to: params.to,
     subject: 'Pendaftaran Diterima — Menunggu Persetujuan',
     html: baseTemplate(`
       <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
-      <p style="color: #374151;">Terima kasih telah mendaftar di sistem pemesanan ruangan <strong>Paroki Santo Paulus Sinaboi</strong>.</p>
+      <p style="color: #374151;">Terima kasih telah mendaftar di sistem pemesanan ruangan <strong>Paroki St. Paulus - Juanda</strong>.</p>
       <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <p style="margin: 0; color: #713f12;">
           ⏳ <strong>Akun Anda sedang menunggu persetujuan</strong> dari admin sekretariat paroki.
@@ -96,8 +96,8 @@ export async function sendAccountApprovedEmail(params: {
   to: string
   username: string
   fullName: string
-}): Promise<void> {
-  await sendMail({
+}): Promise<boolean> {
+  return sendMail({
     to: params.to,
     subject: '✅ Akun Anda Telah Disetujui',
     html: baseTemplate(`
@@ -122,8 +122,8 @@ export async function sendAccountRejectedEmail(params: {
   to: string
   username: string
   fullName: string
-}): Promise<void> {
-  await sendMail({
+}): Promise<boolean> {
+  return sendMail({
     to: params.to,
     subject: 'Pendaftaran Tidak Dapat Diproses',
     html: baseTemplate(`
