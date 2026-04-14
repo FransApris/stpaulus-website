@@ -10,7 +10,7 @@ function getResend(): Resend | null {
   return new Resend(apiKey)
 }
 
-const FROM_NAME = 'Paroki Santo Paulus Sinaboi'
+const FROM_NAME = 'Paroki Santo Paulus Juanda'
 const FROM_EMAIL = process.env.RESEND_FROM || 'noreply@stpaulusjuanda.org'
 const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL || 'https://stpaulusjuanda.org'
 
