@@ -2,19 +2,28 @@ import { runQuery, getQuery, allQuery } from '../../database/db'
 import { hashPassword } from '../../utils/auth'
 
 // Ensure account_status column exists (auto-migrate if not yet run)
+// Uses INFORMATION_SCHEMA for MySQL 5.7+ compatibility (avoids IF NOT EXISTS on ALTER)
 async function ensureAccountStatusColumn() {
   try {
-    await runQuery(`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS account_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
-    `)
-    // Set existing users to ACTIVE so they are not blocked
-    await runQuery(`
-      UPDATE users SET account_status = 'ACTIVE' 
-      WHERE account_status IS NULL OR account_status = ''
-    `)
-  } catch (_) {
-    // Column already exists or DB doesn't support IF NOT EXISTS — safe to ignore
+    const dbName = process.env.MYSQL_DATABASE || process.env.MYSQLDATABASE || 'stpaulus_cms_db'
+    const col = await getQuery(
+      `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+       WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'account_status'`,
+      [dbName]
+    ) as any
+
+    if (!col) {
+      // Column does not exist — add it (throws if fails, caught by caller)
+      await runQuery(`
+        ALTER TABLE users
+        ADD COLUMN account_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
+      `)
+      console.log('[Register] account_status column added to users table')
+    }
+  } catch (err) {
+    console.error('[Register] ensureAccountStatusColumn error:', err)
+    // Re-throw so the registration fails with a clear 500 rather than a cryptic column-not-found error
+    throw createError({ statusCode: 500, statusMessage: 'Kesalahan konfigurasi database. Silakan hubungi administrator.' })
   }
 }
 
