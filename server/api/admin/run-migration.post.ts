@@ -15,6 +15,9 @@ const MIGRATIONS: Record<string, string[]> = {
   ],
   '008_add_manage_users_permission_to_sekretariat': [
     `INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name = 'manage_users_komsos_sekretariat' WHERE r.name = 'admin_sekretariat'`
+  ],
+  '009_add_liturgy_types_permission_to_sekretariat': [
+    `INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name = 'manage_liturgy_types' WHERE r.name = 'admin_sekretariat'`
   ]
 }
 

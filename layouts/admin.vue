@@ -204,7 +204,7 @@
                   </svg>
                   Kelola Jadwal Misa
                 </NuxtLink>
-                <NuxtLink v-if="menuVisibility.liturgyTypes" to="/admin/liturgy-types"
+                <NuxtLink v-if="menuVisibility.liturgyTypes" :prefetch="false" to="/admin/liturgy-types"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/liturgy-types' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

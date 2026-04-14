@@ -68,6 +68,14 @@ const migrations = ref<Migration[]>([
     running: false,
     done: false,
     result: null
+  },
+  {
+    key: '009_add_liturgy_types_permission_to_sekretariat',
+    label: '009 - Tambah permission manage_liturgy_types ke Admin Sekretariat',
+    description: 'Memberikan permission manage_liturgy_types ke role admin_sekretariat agar bisa mengakses dan mengelola jenis liturgi (diperlukan untuk halaman jadwal misa).',
+    running: false,
+    done: false,
+    result: null
   }
 ])
 
