@@ -153,7 +153,7 @@
               </div>
               <div class="min-w-0">
                 <div class="font-medium text-gray-800 truncate">{{ ag.title }}</div>
-                <div class="text-xs text-gray-400">{{ ag.location || '-' }} {{ ag.start_time ? '· ' + formatTime(ag.start_time) : '' }}</div>
+                <div class="text-xs text-gray-400">{{ ag.location || '-' }}</div>
               </div>
             </div>
           </div>

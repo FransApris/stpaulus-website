@@ -25,10 +25,10 @@ export default defineEventHandler(async (event) => {
 
     // Upcoming agenda (next 7 days)
     const upcomingAgenda = await allQuery(`
-      SELECT title, event_date, start_time, location
-      FROM agenda
-      WHERE event_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-      ORDER BY event_date ASC, start_time ASC
+      SELECT title, start_date as event_date, location
+      FROM agendas
+      WHERE start_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+      ORDER BY start_date ASC
       LIMIT 5
     `, []).catch(() => [])
     result.upcomingAgenda = upcomingAgenda
@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
   if (role === 'super_admin') {
     // Pending user activations
     const pendingUsersRows = await dbGetOne(
-      `SELECT COUNT(*) as cnt FROM users WHERE status = 'PENDING' AND (role_id IS NULL OR role_id = 0)`, []
+      `SELECT COUNT(*) as cnt FROM users WHERE account_status = 'PENDING'`, []
     ) as any
     result.pendingUsers = Number(pendingUsersRows?.cnt) || 0
 
