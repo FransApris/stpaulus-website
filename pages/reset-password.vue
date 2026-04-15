@@ -92,8 +92,8 @@ useHead({
 })
 
 const route = useRoute()
-const token = route.query.token as string | undefined
-const email = route.query.email as string | undefined
+const token = route.query.token
+const email = route.query.email
 
 const password = ref('')
 const confirmPassword = ref('')
