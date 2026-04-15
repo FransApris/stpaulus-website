@@ -7,8 +7,8 @@
         <h1 class="text-2xl font-bold text-gray-800">Laporan Pemesanan Ruangan</h1>
         <p class="text-gray-500 mt-1 text-sm">Analisa & statistik penggunaan ruangan</p>
       </div>
-      <!-- Date filter -->
-      <div class="flex flex-wrap items-center gap-2">
+      <!-- Date filter + Export buttons -->
+      <div class="flex flex-wrap items-center gap-2 no-print">
         <input type="date" v-model="filterStart"
           class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
         <span class="text-gray-500 text-sm">s/d</span>
@@ -21,6 +21,21 @@
         <button @click="resetFilter"
           class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-200 transition-colors">
           Reset
+        </button>
+        <div class="w-px h-6 bg-gray-300"></div>
+        <button @click="exportXLS" :disabled="!report"
+          class="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Export Excel
+        </button>
+        <button @click="exportPDF" :disabled="!report"
+          class="flex items-center gap-1 bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          Export PDF
         </button>
       </div>
     </div>
@@ -330,4 +345,95 @@ const DAY_ID = {
   Wednesday: 'Rabu', Thursday: 'Kamis', Friday: 'Jumat', Saturday: 'Sabtu'
 }
 const translateDay = (name) => DAY_ID[name] || name
+
+// ---------- Export Excel (xlsx / SheetJS) ----------
+const exportXLS = async () => {
+  if (!report.value) return
+  const XLSX = await import('xlsx')
+  const wb = XLSX.utils.book_new()
+
+  // Sheet 1: Ringkasan
+  const s = report.value.summary
+  const summaryData = [
+    ['Ringkasan Pemesanan'],
+    ['Periode', `${filterStart.value || '-'} s/d ${filterEnd.value || '-'}`],
+    [],
+    ['Status', 'Jumlah'],
+    ['Total', s.total || 0],
+    ['Disetujui', s.approved || 0],
+    ['Menunggu', s.pending || 0],
+    ['Ditolak', s.rejected || 0],
+    ['Dibatalkan', s.cancelled || 0],
+    [],
+    ['Tingkat Persetujuan', approvalPct.value + '%'],
+    ['Tingkat Penolakan', rejectionPct.value + '%'],
+  ]
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryData), 'Ringkasan')
+
+  // Sheet 2: Tren Bulanan
+  const trendRows = [['Bulan', 'Total', 'Disetujui', 'Ditolak', 'Dibatalkan']]
+  for (const m of report.value.monthlyTrend) {
+    trendRows.push([formatMonth(m.month), m.total, m.approved, m.rejected, m.cancelled])
+  }
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(trendRows), 'Tren Bulanan')
+
+  // Sheet 3: Ruangan
+  const roomRows = [['No', 'Ruangan', 'Lokasi', 'Total Pemesanan', 'Disetujui', 'Total Jam']]
+  report.value.roomUsage.forEach((r, i) => {
+    roomRows.push([i + 1, r.room_name, r.location, r.total_bookings, r.approved, r.total_hours])
+  })
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(roomRows), 'Ruangan')
+
+  // Sheet 4: Kategori Pengguna
+  const catRows = [['Kategori', 'Total Pemesanan', 'Disetujui']]
+  for (const c of report.value.byCategory) catRows.push([c.category, c.total, c.approved])
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(catRows), 'Per Kategori')
+
+  // Sheet 5: Hari & Jam
+  const dayRows = [['Hari', 'Jumlah (Disetujui)']]
+  for (const d of sortedDays.value) dayRows.push([translateDay(d.day_name), d.total])
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(dayRows), 'Per Hari')
+
+  const hourRows = [['Jam', 'Jumlah (Disetujui)']]
+  for (const h of report.value.byHour) hourRows.push([h.hour + ':00', h.total])
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(hourRows), 'Per Jam')
+
+  // Sheet 6: Penolakan
+  const rejRows = [['Acara', 'Ruangan', 'Pemesan', 'Kategori', 'Tanggal', 'Alasan Penolakan']]
+  for (const r of report.value.rejections)
+    rejRows.push([r.event_name, r.room_name, r.user_name, r.user_category, r.booking_date, r.rejection_reason || ''])
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rejRows), 'Penolakan')
+
+  const fileName = `Laporan-Pemesanan_${filterStart.value || 'semua'}_sd_${filterEnd.value || 'semua'}.xlsx`
+  XLSX.writeFile(wb, fileName)
+}
+
+// ---------- Export PDF (browser print) ----------
+const exportPDF = () => {
+  window.print()
+}
 </script>
+
+<style>
+@media print {
+  /* Hide layout shell: sidebar, top nav, buttons */
+  aside, nav, header,
+  .no-print,
+  [class*="sidebar"] { display: none !important; }
+
+  /* Let main content fill full page width */
+  main, body, #__nuxt { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+
+  /* Page breaks before each section card */
+  .space-y-6 > div { break-inside: avoid; }
+
+  /* Ensure white backgrounds print */
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+  /* Print title at top */
+  .print-title { display: block !important; }
+}
+
+/* Hidden outside print */
+.print-title { display: none; }
+</style>
