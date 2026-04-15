@@ -32,6 +32,181 @@
     </ClientOnly>
   </div>
 
+  <!-- ── Action Widgets (role-specific) ── -->
+  <ClientOnly>
+    <div v-if="widgets" class="mb-6 space-y-4">
+
+      <!-- Super Admin & Sekretariat: Pending items banner -->
+      <div v-if="widgets.pendingBookings > 0 || widgets.pendingUsers > 0"
+        class="flex flex-wrap gap-4">
+        <NuxtLink v-if="widgets.pendingBookings > 0" to="/admin/bookings-new"
+          class="flex items-center gap-3 bg-yellow-50 border border-yellow-300 rounded-lg px-5 py-4 hover:bg-yellow-100 transition-colors flex-1 min-w-[200px]">
+          <div class="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-yellow-700">{{ widgets.pendingBookings }}</div>
+            <div class="text-sm text-yellow-600 font-medium">Pemesanan menunggu persetujuan</div>
+          </div>
+          <svg class="w-5 h-5 text-yellow-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </NuxtLink>
+
+        <NuxtLink v-if="widgets.pendingUsers > 0" to="/admin/users"
+          class="flex items-center gap-3 bg-blue-50 border border-blue-300 rounded-lg px-5 py-4 hover:bg-blue-100 transition-colors flex-1 min-w-[200px]">
+          <div class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-blue-700">{{ widgets.pendingUsers }}</div>
+            <div class="text-sm text-blue-600 font-medium">User menunggu aktivasi</div>
+          </div>
+          <svg class="w-5 h-5 text-blue-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          </svg>
+        </NuxtLink>
+      </div>
+
+      <!-- Admin Komsos: stale drafts + published this month -->
+      <div v-if="widgets.staleDrafts !== undefined" class="flex flex-wrap gap-4">
+        <div v-if="widgets.staleDrafts > 0"
+          class="flex items-center gap-3 bg-red-50 border border-red-300 rounded-lg px-5 py-4 flex-1 min-w-[200px]">
+          <div class="w-10 h-10 rounded-full bg-red-400 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-red-700">{{ widgets.staleDrafts }}</div>
+            <div class="text-sm text-red-600 font-medium">Draft artikel belum dipublish &gt; 30 hari</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg px-5 py-4 flex-1 min-w-[200px]">
+          <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-lg font-bold text-green-700">
+              {{ widgets.publishedThisMonth.articles }} artikel · {{ widgets.publishedThisMonth.news }} berita
+            </div>
+            <div class="text-sm text-green-600">Dipublish bulan ini</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 bg-indigo-50 border border-indigo-200 rounded-lg px-5 py-4 flex-1 min-w-[200px]">
+          <div class="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-indigo-700">{{ widgets.activeFaq }}</div>
+            <div class="text-sm text-indigo-600">FAQ Chatbot aktif</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Super Admin & Sekretariat: 2-column grid — Today bookings + Upcoming agenda -->
+      <div v-if="widgets.todayBookings !== undefined" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+        <!-- Today's bookings -->
+        <div class="bg-white rounded-lg shadow p-5">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Ruangan Digunakan Hari Ini
+          </h3>
+          <div v-if="widgets.todayBookings.length > 0" class="space-y-2">
+            <div v-for="b in widgets.todayBookings" :key="b.id"
+              class="flex items-center justify-between bg-gray-50 rounded px-3 py-2 text-sm">
+              <div>
+                <div class="font-medium text-gray-800">{{ b.room_name }}</div>
+                <div class="text-xs text-gray-400">{{ b.user_name }} — {{ b.event_name }}</div>
+              </div>
+              <div class="text-xs text-gray-500 shrink-0 ml-2">{{ formatTime(b.start_time) }}–{{ formatTime(b.end_time) }}</div>
+            </div>
+          </div>
+          <p v-else class="text-gray-400 text-sm">Tidak ada pemesanan hari ini.</p>
+        </div>
+
+        <!-- Upcoming agenda -->
+        <div class="bg-white rounded-lg shadow p-5">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Agenda 7 Hari ke Depan
+          </h3>
+          <div v-if="widgets.upcomingAgenda.length > 0" class="space-y-2">
+            <div v-for="ag in widgets.upcomingAgenda" :key="ag.title + ag.event_date"
+              class="flex items-start gap-3 bg-gray-50 rounded px-3 py-2 text-sm">
+              <div class="w-10 text-center shrink-0">
+                <div class="text-xs font-bold text-[#882f1d]">{{ formatAgendaDay(ag.event_date) }}</div>
+                <div class="text-xs text-gray-400">{{ formatAgendaMonth(ag.event_date) }}</div>
+              </div>
+              <div class="min-w-0">
+                <div class="font-medium text-gray-800 truncate">{{ ag.title }}</div>
+                <div class="text-xs text-gray-400">{{ ag.location || '-' }} {{ ag.start_time ? '· ' + formatTime(ag.start_time) : '' }}</div>
+              </div>
+            </div>
+          </div>
+          <p v-else class="text-gray-400 text-sm">Tidak ada agenda mendatang.</p>
+        </div>
+      </div>
+
+      <!-- Admin Komsos: latest kronik -->
+      <div v-if="widgets.latestKronik !== undefined" class="bg-white rounded-lg shadow p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+          Entri Kronik Terbaru
+        </h3>
+        <div v-if="widgets.latestKronik.length > 0" class="space-y-2">
+          <div v-for="k in widgets.latestKronik" :key="k.title"
+            class="flex items-center justify-between bg-gray-50 rounded px-3 py-2 text-sm">
+            <div>
+              <div class="font-medium text-gray-800">{{ k.title }}</div>
+              <div class="text-xs text-gray-400">{{ k.section || 'Umum' }}</div>
+            </div>
+            <div class="text-xs text-gray-500 shrink-0 ml-2">{{ formatBookingDate(k.when_date) }}</div>
+          </div>
+        </div>
+        <p v-else class="text-gray-400 text-sm">Belum ada entri kronik.</p>
+      </div>
+
+      <!-- Super Admin: recent activity -->
+      <div v-if="widgets.recentActivity !== undefined" class="bg-white rounded-lg shadow p-5">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Aktivitas Konten Terbaru
+        </h3>
+        <div v-if="widgets.recentActivity.length > 0" class="space-y-1">
+          <div v-for="a in widgets.recentActivity" :key="a.title + a.updated_at"
+            class="flex items-center gap-3 text-sm py-1.5 border-b border-gray-50 last:border-0">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium shrink-0"
+              :class="a.type === 'artikel' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'">
+              {{ a.type }}
+            </span>
+            <span class="truncate text-gray-700 flex-1">{{ a.title }}</span>
+            <span class="text-xs text-gray-400 shrink-0">{{ formatDate(a.updated_at) }}</span>
+          </div>
+        </div>
+        <p v-else class="text-gray-400 text-sm">Belum ada aktivitas.</p>
+      </div>
+
+    </div>
+  </ClientOnly>
+
   <!-- Statistics Section -->
   <div class="mb-8">
     <div class="bg-white shadow rounded-lg">
@@ -507,6 +682,7 @@ const stats = ref({
 const articles = ref([])
 const news = ref([])
 const bookings = ref([])
+const widgets = ref(null)
 const loading = ref(false)
 const loadingBookings = ref(false)
 const currentPage = ref(1)
@@ -841,6 +1017,31 @@ const getBookingStatusText = (status) => {
   }
 }
 
+// Fetch role-specific dashboard widgets
+const fetchWidgets = async () => {
+  try {
+    const response = await $fetch('/api/admin/dashboard-widgets', {
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
+      }
+    })
+    widgets.value = response
+  } catch (error) {
+    console.error('Failed to fetch dashboard widgets:', error)
+  }
+}
+
+// Date helpers for agenda mini-calendar
+const formatAgendaDay = (dateString) => {
+  if (!dateString) return '-'
+  return new Date(dateString).toLocaleDateString('id-ID', { day: '2-digit' })
+}
+
+const formatAgendaMonth = (dateString) => {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('id-ID', { month: 'short' })
+}
+
 // Watch for page changes and reset to first page when content changes
 watch([articles, news], () => {
   currentPage.value = 1
@@ -852,13 +1053,14 @@ watch(() => auth.user.value, (newUser, oldUser) => {
     fetchStats()
     fetchContent()
     fetchBookings()
+    fetchWidgets()
   }
 }, { immediate: true })
 
 // Fetch data on mount (middleware already checks auth)
 onMounted(async () => {
   if (auth.user.value) {
-    await Promise.all([fetchStats(), fetchContent(), fetchBookings()])
+    await Promise.all([fetchStats(), fetchContent(), fetchBookings(), fetchWidgets()])
   }
 })
 </script>
