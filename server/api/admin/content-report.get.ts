@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
   const startDate = (queryParams.startDate as string) || ''
   const endDate = (queryParams.endDate as string) || ''
 
+  // Filters WITH table alias (for queries that use alias a/n/ga)
   const articleDateFilter = startDate && endDate
     ? `AND DATE(a.created_at) BETWEEN '${startDate}' AND '${endDate}'`
     : startDate ? `AND DATE(a.created_at) >= '${startDate}'`
@@ -35,6 +36,19 @@ export default defineEventHandler(async (event) => {
     ? `AND DATE(ga.created_at) BETWEEN '${startDate}' AND '${endDate}'`
     : startDate ? `AND DATE(ga.created_at) >= '${startDate}'`
     : endDate   ? `AND DATE(ga.created_at) <= '${endDate}'`
+    : ''
+
+  // Filters WITHOUT alias (for subqueries without alias)
+  const articleDateFilterRaw = startDate && endDate
+    ? `AND DATE(created_at) BETWEEN '${startDate}' AND '${endDate}'`
+    : startDate ? `AND DATE(created_at) >= '${startDate}'`
+    : endDate   ? `AND DATE(created_at) <= '${endDate}'`
+    : ''
+
+  const newsDateFilterRaw = startDate && endDate
+    ? `AND DATE(created_at) BETWEEN '${startDate}' AND '${endDate}'`
+    : startDate ? `AND DATE(created_at) >= '${startDate}'`
+    : endDate   ? `AND DATE(created_at) <= '${endDate}'`
     : ''
 
   // 1. Articles summary
@@ -165,9 +179,9 @@ export default defineEventHandler(async (event) => {
   const topAuthors = await allQuery(`
     SELECT author, SUM(cnt) as total
     FROM (
-      SELECT author, COUNT(*) as cnt FROM articles WHERE author IS NOT NULL AND author != '' ${articleDateFilter} GROUP BY author
+      SELECT author, COUNT(*) as cnt FROM articles WHERE author IS NOT NULL AND author != '' ${articleDateFilterRaw} GROUP BY author
       UNION ALL
-      SELECT author, COUNT(*) as cnt FROM news WHERE author IS NOT NULL AND author != '' ${newsDateFilter} GROUP BY author
+      SELECT author, COUNT(*) as cnt FROM news WHERE author IS NOT NULL AND author != '' ${newsDateFilterRaw} GROUP BY author
     ) combined
     GROUP BY author
     ORDER BY total DESC
