@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-50 flex">
     <!-- Sidebar -->
     <ClientOnly>
-      <div class="w-64 bg-white shadow-lg">
+      <div id="admin-sidebar" class="w-64 bg-white shadow-lg">
         <div class="flex flex-col h-full">
           <!-- Logo/Header -->
           <div class="flex items-center justify-center h-16 px-4 bg-[#882f1d]">
@@ -488,7 +488,7 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col">
       <!-- Header -->
-      <header class="bg-white shadow-sm">
+      <header id="admin-topheader" class="bg-white shadow-sm">
         <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <div>

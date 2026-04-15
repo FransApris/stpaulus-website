@@ -416,24 +416,22 @@ const exportPDF = () => {
 
 <style>
 @media print {
-  /* Hide layout shell: sidebar, top nav, buttons */
-  aside, nav, header,
-  .no-print,
-  [class*="sidebar"] { display: none !important; }
+  /* Hide sidebar, top header bar, filter/export buttons */
+  #admin-sidebar,
+  #admin-topheader,
+  .no-print { display: none !important; }
+
+  /* Remove flex layout so content fills full page */
+  .min-h-screen { display: block !important; }
 
   /* Let main content fill full page width */
-  main, body, #__nuxt { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+  .flex-1 { width: 100% !important; }
+  main, body, #__nuxt { width: 100% !important; padding: 8px !important; margin: 0 !important; }
 
-  /* Page breaks before each section card */
+  /* Avoid splitting section cards across pages */
   .space-y-6 > div { break-inside: avoid; }
 
-  /* Ensure white backgrounds print */
+  /* Ensure colored backgrounds print */
   * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-
-  /* Print title at top */
-  .print-title { display: block !important; }
 }
-
-/* Hidden outside print */
-.print-title { display: none; }
 </style>
