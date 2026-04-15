@@ -822,7 +822,7 @@ const deleteUser = async (user, force = false) => {
     const index = users.value.findIndex(u => u.id === user.id)
     if (index !== -1) users.value.splice(index, 1)
   } catch (err) {
-    if (err?.status === 409 || err?.statusCode === 409) {
+    if ((err?.status === 409 || err?.statusCode === 409) && !force) {
       const count = err?.data?.data?.activeBookingCount || err?.data?.activeBookingCount || 'beberapa'
       deletingId.value = null
       const proceed = confirm(

@@ -1,4 +1,4 @@
-import { runQuery, getQuery } from '../../../database/db'
+import { runQuery, getQuery as dbGetOne } from '../../../database/db'
 import { requireAuth, requireUserManagementPermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if user exists
-  const user = await getQuery('SELECT id, username, role FROM users WHERE id = ?', [targetUserId]) as any
+  const user = await dbGetOne('SELECT id, username, role FROM users WHERE id = ?', [targetUserId]) as any
   if (!user) {
     throw createError({
       statusCode: 404,
@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if user has any active bookings
-  const activeBookings = await getQuery(`
+  const activeBookings = await dbGetOne(`
     SELECT COUNT(*) as count FROM bookings
     WHERE user_id = ? AND status IN ('PENDING', 'APPROVED')
   `, [targetUserId]) as any
