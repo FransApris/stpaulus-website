@@ -795,18 +795,23 @@ const editUser = (user) => {
   showEditModal.value = true
 }
 
-const deleteUser = async (user) => {
+const deleteUser = async (user, force = false) => {
   // Guard: prevent double-click
   if (deletingId.value === user.id) return
 
-  if (!confirm(`Apakah Anda yakin ingin menghapus pengguna "${user.username}"? Tindakan ini tidak dapat dibatalkan.`)) {
-    return
+  if (!force) {
+    if (!confirm(`Apakah Anda yakin ingin menghapus pengguna "${user.username}"? Tindakan ini tidak dapat dibatalkan.`)) {
+      return
+    }
   }
 
   deletingId.value = user.id
 
   try {
-    await $fetch(`/api/admin/users/${user.id}`, {
+    const url = force
+      ? `/api/admin/users/${user.id}?force=true`
+      : `/api/admin/users/${user.id}`
+    await $fetch(url, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
@@ -817,6 +822,19 @@ const deleteUser = async (user) => {
     const index = users.value.findIndex(u => u.id === user.id)
     if (index !== -1) users.value.splice(index, 1)
   } catch (err) {
+    if (err?.status === 409 || err?.statusCode === 409) {
+      const count = err?.data?.data?.activeBookingCount || err?.data?.activeBookingCount || 'beberapa'
+      deletingId.value = null
+      const proceed = confirm(
+        `⚠️ Peringatan: Pengguna "${user.username}" memiliki ${count} pemesanan aktif (PENDING/APPROVED).\n\n` +
+        `Jika Anda melanjutkan, semua pemesanan aktif tersebut akan dibatalkan secara otomatis dan pengguna akan dihapus.\n\n` +
+        `Lanjutkan penghapusan?`
+      )
+      if (proceed) {
+        await deleteUser(user, true)
+      }
+      return
+    }
     const msg = err?.data?.statusMessage || err?.statusMessage || 'Terjadi kesalahan'
     alert(`Gagal menghapus pengguna "${user.username}": ${msg}`)
   } finally {

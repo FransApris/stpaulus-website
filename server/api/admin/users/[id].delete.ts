@@ -4,6 +4,8 @@ import { requireAuth, requireUserManagementPermission } from '../../../utils/aut
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
   const userId = decoded.userId
+  const queryParams = getQuery(event)
+  const force = queryParams.force === 'true'
 
   // Check permissions using RBAC - only super admin can delete users
   requireUserManagementPermission(event)
@@ -42,17 +44,26 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Check if user has any active bookings (optional - could be a business rule)
+  // Check if user has any active bookings
   const activeBookings = await getQuery(`
     SELECT COUNT(*) as count FROM bookings
     WHERE user_id = ? AND status IN ('PENDING', 'APPROVED')
   `, [targetUserId]) as any
 
   if (activeBookings.count > 0) {
-    throw createError({
-      statusCode: 409,
-      statusMessage: 'Tidak dapat menghapus pengguna yang memiliki pemesanan aktif'
-    })
+    if (!force) {
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Pengguna ini memiliki pemesanan aktif',
+        data: { activeBookingCount: activeBookings.count }
+      })
+    }
+    // force=true: cancel all active bookings before deletion
+    await runQuery(
+      `UPDATE bookings SET status = 'CANCELLED', cancellation_reason = 'Akun pengguna dihapus oleh admin'
+       WHERE user_id = ? AND status IN ('PENDING', 'APPROVED')`,
+      [targetUserId]
+    )
   }
 
   // Delete the user
