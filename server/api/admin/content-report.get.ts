@@ -95,12 +95,12 @@ export default defineEventHandler(async (event) => {
       SUM(articles) as articles,
       SUM(news_count) as news
     FROM (
-      SELECT DATE_FORMAT(published_at, '%Y-%01') as month_date, COUNT(*) as articles, 0 as news_count
+      SELECT DATE_FORMAT(published_at, '%Y-%m') as month_date, COUNT(*) as articles, 0 as news_count
       FROM articles
       WHERE published_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH) AND status = 'published'
       GROUP BY DATE_FORMAT(published_at, '%Y-%m')
       UNION ALL
-      SELECT DATE_FORMAT(published_at, '%Y-%01') as month_date, 0 as articles, COUNT(*) as news_count
+      SELECT DATE_FORMAT(published_at, '%Y-%m') as month_date, 0 as articles, COUNT(*) as news_count
       FROM news
       WHERE published_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH) AND status = 'published'
       GROUP BY DATE_FORMAT(published_at, '%Y-%m')

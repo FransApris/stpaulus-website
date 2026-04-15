@@ -680,7 +680,7 @@ const menuVisibility = computed(() => {
       kronikEntries: true,
       kronikSections: true,
       contentReport: true,
-      bookingReport: true
+      bookingReport: false
     }
   }
 
