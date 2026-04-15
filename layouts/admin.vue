@@ -749,7 +749,7 @@ const groupVisibility = computed(() => {
     content: menuVisibility.value.articles || menuVisibility.value.news || menuVisibility.value.articleCategories || menuVisibility.value.gallery || menuVisibility.value.chatbotFaqCategories || menuVisibility.value.chatbotFaqs,
     kronik: menuVisibility.value.kronikEntries || menuVisibility.value.kronikSections,
     schedule: menuVisibility.value.agenda || menuVisibility.value.agendaCategories || menuVisibility.value.regularMassSchedules || menuVisibility.value.massSchedules || menuVisibility.value.liturgyTypes,
-    admin: menuVisibility.value.users || menuVisibility.value.userCategories || menuVisibility.value.rooms || menuVisibility.value.bookings,
+    admin: menuVisibility.value.users || menuVisibility.value.userCategories || menuVisibility.value.rooms || menuVisibility.value.bookings || menuVisibility.value.bookingReport || menuVisibility.value.contentReport,
     theme: menuVisibility.value.heroThemes || menuVisibility.value.footerSettings || menuVisibility.value.backup || menuVisibility.value.parishStatistics || menuVisibility.value.pastors || menuVisibility.value.bgkp || menuVisibility.value.teritorial || menuVisibility.value.migrations,
     documents: menuVisibility.value.documentCategories || menuVisibility.value.documents
   }
@@ -761,7 +761,7 @@ const isGroupActive = (group) => {
     content: ['/admin/articles', '/admin/article-categories', '/admin/news', '/admin/gallery', '/admin/chatbot-faq-categories', '/admin/chatbot-faqs'],
     kronik: ['/admin/kronik', '/admin/kronik/create', '/admin/kronik/sections'],
     schedule: ['/admin/agenda', '/admin/categories', '/admin/liturgy-types', '/admin/regular-mass-schedules', '/admin/mass-schedules'],
-    admin: ['/admin/users', '/admin/user-categories', '/admin/rooms', '/admin/bookings-new', '/admin/announcements', '/admin/contact-messages'],
+    admin: ['/admin/users', '/admin/user-categories', '/admin/rooms', '/admin/bookings-new', '/admin/bookings-report', '/admin/content-report', '/admin/announcements', '/admin/contact-messages'],
     theme: ['/admin/hero-themes', '/admin/backup', '/admin/parish-statistics', '/admin/pastors', '/admin/bgkp', '/admin/teritorial', '/admin/footer-settings'],
     documents: ['/admin/document-categories', '/admin/documents'],
     footer: ['/admin/footer-settings']
@@ -789,6 +789,8 @@ const pageTitle = computed(() => {
   if (route.path === '/admin/user-categories') return 'Kelola Kategori Pengguna'
   if (route.path === '/admin/rooms') return 'Kelola Ruangan'
   if (route.path === '/admin/bookings-new') return 'Kelola Pemesanan'
+  if (route.path === '/admin/bookings-report') return 'Laporan Pemesanan'
+  if (route.path === '/admin/content-report') return 'Laporan Konten'
   if (route.path === '/admin/chatbot-faq-categories') return 'Kategori Chatbot FAQ'
   if (route.path === '/admin/chatbot-faqs') return 'Kelola Chatbot FAQ'
   if (route.path === '/admin/hero-themes') return 'Pengelola Tema Hero'
