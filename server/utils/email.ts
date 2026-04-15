@@ -138,3 +138,37 @@ export async function sendAccountRejectedEmail(params: {
     `)
   })
 }
+
+/**
+ * Send password reset link email.
+ */
+export async function sendPasswordResetEmail(params: {
+  to: string
+  fullName: string
+  resetLink: string
+}): Promise<boolean> {
+  return sendMail({
+    to: params.to,
+    subject: '🔑 Reset Password Akun Anda',
+    html: baseTemplate(`
+      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <p style="color: #374151;">Kami menerima permintaan untuk mereset password akun Anda di sistem
+      <strong>Paroki St. Paulus - Juanda</strong>.</p>
+      <div style="text-align: center; margin: 28px 0;">
+        <a href="${params.resetLink}"
+           style="display: inline-block; background: #166534; color: white; padding: 14px 32px;
+                  border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
+          Reset Password Saya
+        </a>
+      </div>
+      <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 14px; margin: 20px 0;">
+        <p style="margin: 0; color: #713f12; font-size: 13px;">
+          ⏰ Link ini hanya berlaku selama <strong>1 jam</strong>.
+        </p>
+      </div>
+      <p style="color: #9ca3af; font-size: 13px;">
+        Jika Anda tidak meminta reset password, abaikan email ini. Akun Anda tetap aman.
+      </p>
+    `)
+  })
+}

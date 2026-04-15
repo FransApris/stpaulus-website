@@ -135,6 +135,12 @@
                   <input v-model="loginForm.password" type="password" required
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-paulus-blue focus:border-transparent text-gray-900"
                     placeholder="Masukkan password" />
+                  <div class="text-right mt-1">
+                    <NuxtLink to="/lupa-password" @click="$emit('update:modelValue', false)"
+                      class="text-xs text-paulus-blue hover:underline">
+                      Lupa password?
+                    </NuxtLink>
+                  </div>
                 </div>
 
                 <div v-if="errorMessage" class="p-3 bg-red-50 border border-red-200 rounded-lg">
