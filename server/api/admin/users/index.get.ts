@@ -42,8 +42,8 @@ export default defineEventHandler(async (event) => {
 
     // Filter users based on requester's role
     if (currentUser?.role_name === 'admin_sekretariat') {
-      // Admin sekretariat bisa lihat semua user kecuali super_admin
-      query += ` WHERE (r.name IS NULL OR r.name NOT IN ('super_admin'))`
+      // Admin sekretariat hanya bisa lihat user biasa (bukan admin)
+      query += ` WHERE (u.role_id IS NULL OR u.role_id = 0) AND (u.role = 'user' OR u.role IS NULL)`
     } else if (currentUser?.role_name === 'admin_komsos') {
       // Admin komsos can only see users with role 'user'
       // Check both RBAC role name and legacy role field
