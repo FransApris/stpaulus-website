@@ -4,13 +4,17 @@
         <div class="mb-4 bg-teal-50 border-l-4 border-teal-600 p-4 rounded">
             <div class="flex items-center gap-3">
                 <svg class="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clip-rule="evenodd" />
                 </svg>
                 <div class="flex-1">
                     <p class="text-sm font-medium text-teal-900">Data Lingkungan & Ketua (Hybrid)</p>
                     <p class="text-xs text-teal-700 mt-1">
-                        Data lingkungan dengan info ketua dari <a href="/admin/dpp" class="font-semibold underline hover:text-teal-900">DPP</a>. 
-                        Lingkungan yang bersumber dari DPP dapat diedit langsung di sini atau di <a href="/admin/dpp" class="font-semibold underline hover:text-teal-900">halaman DPP</a>.
+                        Data lingkungan dengan info ketua dari <a href="/admin/dpp"
+                            class="font-semibold underline hover:text-teal-900">DPP</a>.
+                        Lingkungan yang bersumber dari DPP dapat diedit langsung di sini atau di <a href="/admin/dpp"
+                            class="font-semibold underline hover:text-teal-900">halaman DPP</a>.
                     </p>
                 </div>
             </div>
@@ -34,9 +38,9 @@
                         : 'bg-purple-600 text-white hover:bg-purple-700'
                 ]">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path v-if="!bulkSelectionMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        <path v-if="!bulkSelectionMode" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                        <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />
                     </svg>
                     {{ bulkSelectionMode ? 'Batal' : 'Edit Massal' }}
@@ -44,7 +48,7 @@
                 <button v-if="bulkSelectionMode && selectedLingkungan.length > 0" @click="openBulkEditModal"
                     class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     Edit {{ selectedLingkungan.length }} Lingkungan
@@ -123,7 +127,8 @@
                             Wilayah</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ketua
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KK / Jiwa
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KK /
+                            Jiwa
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status</th>
@@ -157,13 +162,15 @@
                             <div v-if="ling.telp" class="text-xs text-gray-500">📞 {{ ling.telp }}</div>
                             <div v-if="ling.no_hp_pengurus" class="text-xs text-blue-600">
                                 <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                    <path
+                                        d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                 </svg>
                                 Pengurus: {{ ling.no_hp_pengurus }}
                             </div>
                             <div v-else class="text-xs text-amber-600 italic">
                                 <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                    <path
+                                        d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                 </svg>
                                 Pengurus: [Belum diisi]
                             </div>
@@ -184,7 +191,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                             <button v-if="ling.source === 'database'" @click="editLingkungan(ling)"
-                                class="text-[#882f1d] hover:text-[#6b2416] transition-colors" 
+                                class="text-[#882f1d] hover:text-[#6b2416] transition-colors"
                                 title="Edit Data Lingkungan">
                                 <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -193,7 +200,7 @@
                             </button>
                             <div v-else class="inline-flex items-center gap-2">
                                 <button @click="editLingkunganLimited(ling)"
-                                    class="text-[#882f1d] hover:text-[#6b2416] transition-colors" 
+                                    class="text-[#882f1d] hover:text-[#6b2416] transition-colors"
                                     title="Edit KK, Jiwa, No. HP Kontak">
                                     <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -201,7 +208,7 @@
                                     </svg>
                                 </button>
                                 <a href="/admin/dpp"
-                                    class="text-teal-600 hover:text-teal-800 transition-colors inline-flex items-center gap-1" 
+                                    class="text-teal-600 hover:text-teal-800 transition-colors inline-flex items-center gap-1"
                                     title="Data Ketua dari DPP - Edit Ketua di DPP">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -230,7 +237,7 @@
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+                </svg>
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Tidak Ada Data</h3>
                 <p class="text-gray-500">Belum ada lingkungan yang ditambahkan atau tidak sesuai filter.</p>
             </div>
@@ -238,7 +245,7 @@
 
         <!-- Grouped View -->
         <div v-else class="space-y-4">
-            <div v-for="group in lingkunganGroupedByWilayah" :key="group.wilayah" 
+            <div v-for="group in lingkunganGroupedByWilayah" :key="group.wilayah"
                 class="bg-white rounded-lg shadow-sm overflow-hidden">
                 <!-- Wilayah Header -->
                 <div class="bg-gradient-to-r from-[#882f1d] to-[#6b2416] px-6 py-4">
@@ -265,30 +272,40 @@
                 </div>
 
                 <!-- Pengurus Wilayah (Ketua Wilayah) -->
-                <div v-if="getPengurusWilayah(group.wilayah)" class="bg-gradient-to-r from-amber-50 to-orange-50 border-b-2 border-orange-200 px-6 py-4">
+                <div v-if="getPengurusWilayah(group.wilayah)"
+                    class="bg-gradient-to-r from-amber-50 to-orange-50 border-b-2 border-orange-200 px-6 py-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#882f1d] to-[#6b2416] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-br from-[#882f1d] to-[#6b2416] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                             {{ group.wilayah.charAt(0) }}
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
                                 <svg class="w-4 h-4 text-[#882f1d]" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                        clip-rule="evenodd" />
                                 </svg>
                                 <span class="text-xs font-semibold text-gray-600 uppercase">Ketua Wilayah</span>
                             </div>
-                            <div class="font-bold text-gray-900 text-lg mt-1">{{ getPengurusWilayah(group.wilayah).name }}</div>
+                            <div class="font-bold text-gray-900 text-lg mt-1">{{ getPengurusWilayah(group.wilayah).name
+                                }}</div>
                         </div>
                         <div class="flex flex-col gap-2">
-                            <div v-if="getPengurusWilayah(group.wilayah).telp" class="flex items-center gap-2 text-sm text-gray-700">
-                                <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            <div v-if="getPengurusWilayah(group.wilayah).telp"
+                                class="flex items-center gap-2 text-sm text-gray-700">
+                                <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </svg>
                                 <span class="font-medium">{{ getPengurusWilayah(group.wilayah).telp }}</span>
                             </div>
-                            <div v-if="getPengurusWilayah(group.wilayah).email" class="flex items-center gap-2 text-sm text-gray-700">
-                                <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            <div v-if="getPengurusWilayah(group.wilayah).email"
+                                class="flex items-center gap-2 text-sm text-gray-700">
+                                <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                                 <span class="font-medium">{{ getPengurusWilayah(group.wilayah).email }}</span>
                             </div>
@@ -303,8 +320,8 @@
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-4 flex-1">
                                 <!-- Bulk Select Checkbox -->
-                                <input v-if="bulkSelectionMode" type="checkbox" :value="ling" v-model="selectedLingkungan"
-                                    :disabled="ling.source === 'database'"
+                                <input v-if="bulkSelectionMode" type="checkbox" :value="ling"
+                                    v-model="selectedLingkungan" :disabled="ling.source === 'database'"
                                     class="w-5 h-5 text-[#882f1d] border-gray-300 rounded focus:ring-[#882f1d] disabled:opacity-30" />
                                 <!-- Number Badge -->
                                 <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
@@ -316,30 +333,35 @@
                                 <div class="flex-1 grid grid-cols-3 gap-4">
                                     <div>
                                         <div class="text-sm font-semibold text-gray-900">{{ ling.nama }}</div>
-                                        <div v-if="ling.keterangan" class="text-xs text-gray-500">{{ ling.keterangan }}</div>
+                                        <div v-if="ling.keterangan" class="text-xs text-gray-500">{{ ling.keterangan }}
+                                        </div>
                                     </div>
                                     <div>
                                         <div class="text-xs text-gray-500 mb-0.5">Ketua Lingkungan:</div>
                                         <div class="text-sm font-medium text-gray-900">{{ ling.ketua || '-' }}</div>
-                                        <div v-if="ling.telp" class="text-xs text-gray-500 mt-0.5">📞 {{ ling.telp }}</div>
+                                        <div v-if="ling.telp" class="text-xs text-gray-500 mt-0.5">📞 {{ ling.telp }}
+                                        </div>
                                         <div v-if="ling.no_hp_pengurus" class="text-xs text-blue-600 mt-0.5">
                                             <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                                <path
+                                                    d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                             </svg>
                                             Pengurus: {{ ling.no_hp_pengurus }}
                                         </div>
                                         <div v-else class="text-xs text-amber-600 italic mt-0.5">
                                             <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                                <path
+                                                    d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                             </svg>
                                             Pengurus: [Belum diisi]
                                         </div>
-                                        <div v-if="ling.has_dpp_ketua" class="text-xs text-teal-600 mt-0.5">✓ Data dari DPP</div>
+                                        <div v-if="ling.has_dpp_ketua" class="text-xs text-teal-600 mt-0.5">✓ Data dari
+                                            DPP</div>
                                     </div>
                                     <div>
                                         <div class="text-xs text-gray-500 mb-0.5">Jumlah:</div>
                                         <div class="text-sm text-gray-900">
-                                            <span class="font-medium">{{ ling.jumlah_kk || 0 }}</span> KK / 
+                                            <span class="font-medium">{{ ling.jumlah_kk || 0 }}</span> KK /
                                             <span class="font-medium">{{ ling.jumlah_jiwa || 0 }}</span> Jiwa
                                         </div>
                                     </div>
@@ -356,11 +378,12 @@
                                 ]">
                                     {{ ling.is_visible ? 'Aktif' : 'Tidak Aktif' }}
                                 </span>
-                                <span v-if="ling.source === 'dpp'" class="px-2 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
+                                <span v-if="ling.source === 'dpp'"
+                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
                                     Data DPP
                                 </span>
                                 <button v-if="ling.source === 'database'" @click="editLingkungan(ling)"
-                                    class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1" 
+                                    class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1"
                                     title="Edit Data Lingkungan">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -369,8 +392,7 @@
                                 </button>
                                 <div v-else class="inline-flex items-center gap-2">
                                     <button @click="editLingkunganLimited(ling)"
-                                        class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1" 
-                                        title="Edit">
+                                        class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1" title="Edit">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -396,8 +418,7 @@
             </div>
 
             <!-- Empty State for Grouped View -->
-            <div v-if="lingkunganGroupedByWilayah.length === 0" 
-                class="bg-white rounded-lg shadow-sm p-12 text-center">
+            <div v-if="lingkunganGroupedByWilayah.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                         d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
@@ -415,7 +436,8 @@
                     <div
                         class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                         <h2 class="text-xl font-bold text-gray-800">
-                            {{ modalMode === 'create' ? 'Tambah Lingkungan' : modalMode === 'edit-limited' ? 'Edit Data Lingkungan (Terbatas)' : 'Edit Lingkungan' }}
+                            {{ modalMode === 'create' ? 'Tambah Lingkungan' : modalMode === 'edit-limited' ? 'Edit Data
+                            Lingkungan(Terbatas)' : 'Edit Lingkungan' }}
                         </h2>
                         <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -427,17 +449,22 @@
 
                     <form @submit.prevent="saveLingkungan" class="p-6 space-y-4">
                         <!-- Info Banner for Limited Edit -->
-                        <div v-if="modalMode === 'edit-limited'" class="mb-4 bg-teal-50 border-l-4 border-teal-600 p-4 rounded">
+                        <div v-if="modalMode === 'edit-limited'"
+                            class="mb-4 bg-teal-50 border-l-4 border-teal-600 p-4 rounded">
                             <div class="flex items-center gap-3">
                                 <svg class="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    <path fill-rule="evenodd"
+                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                                        clip-rule="evenodd" />
                                 </svg>
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-teal-900">Mode Edit Terbatas</p>
                                     <p class="text-xs text-teal-700 mt-1">
-                                        Data ketua berasal dari <a href="/admin/dpp" class="font-semibold underline hover:text-teal-900">DPP</a>. 
+                                        Data ketua berasal dari <a href="/admin/dpp"
+                                            class="font-semibold underline hover:text-teal-900">DPP</a>.
                                         Hanya Jumlah KK, Jumlah Jiwa, dan No. HP Kontak yang dapat diedit di sini.
-                                        Untuk edit data ketua, silakan ke <a href="/admin/dpp" class="font-semibold underline hover:text-teal-900">halaman DPP</a>.
+                                        Untuk edit data ketua, silakan ke <a href="/admin/dpp"
+                                            class="font-semibold underline hover:text-teal-900">halaman DPP</a>.
                                     </p>
                                 </div>
                             </div>
@@ -450,8 +477,7 @@
                                     No <span class="text-red-500">*</span>
                                 </label>
                                 <input v-model.number="formData.no" type="number" required placeholder="1"
-                                    :readonly="modalMode === 'edit' || modalMode === 'edit-limited'"
-                                    :class="[
+                                    :readonly="modalMode === 'edit' || modalMode === 'edit-limited'" :class="[
                                         'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent',
                                         (modalMode === 'edit' || modalMode === 'edit-limited') ? 'bg-gray-100 cursor-not-allowed' : ''
                                     ]" />
@@ -461,8 +487,7 @@
                                     Nama Lingkungan <span class="text-red-500">*</span>
                                 </label>
                                 <input v-model="formData.nama" type="text" required placeholder="St. Petrus"
-                                    :readonly="modalMode === 'edit-limited'"
-                                    :class="[
+                                    :readonly="modalMode === 'edit-limited'" :class="[
                                         'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent',
                                         modalMode === 'edit-limited' ? 'bg-gray-100 cursor-not-allowed' : ''
                                     ]" />
@@ -493,13 +518,14 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ketua</label>
                                 <input v-model="formData.ketua" type="text" placeholder="Bapak Andreas"
-                                    :readonly="formData.has_dpp_ketua"
-                                    :class="[
+                                    :readonly="formData.has_dpp_ketua" :class="[
                                         'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent',
                                         formData.has_dpp_ketua ? 'bg-gray-100 cursor-not-allowed' : ''
                                     ]" />
-                                <p v-if="formData.has_dpp_ketua" class="text-xs text-teal-600 mt-1">✓ Data dari DPP - <a href="/admin/dpp" class="underline">Edit di DPP</a></p>
-                                <p v-else class="text-xs text-gray-500 mt-1">Atau kelola di <a href="/admin/dpp" class="text-teal-600 underline">DPP</a></p>
+                                <p v-if="formData.has_dpp_ketua" class="text-xs text-teal-600 mt-1">✓ Data dari DPP - <a
+                                        href="/admin/dpp" class="underline">Edit di DPP</a></p>
+                                <p v-else class="text-xs text-gray-500 mt-1">Atau kelola di <a href="/admin/dpp"
+                                        class="text-teal-600 underline">DPP</a></p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">No. HP Kontak</label>
@@ -635,14 +661,15 @@
                         <h2 class="text-2xl font-bold text-gray-900">Edit Massal - Tambah No. HP Kontak</h2>
                         <button @click="closeBulkEditModal" class="text-gray-400 hover:text-gray-600 transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
 
                     <div class="mb-4 bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
                         <p class="text-sm text-blue-900">
-                            <strong>{{ selectedLingkungan.length }}</strong> lingkungan dipilih. 
+                            <strong>{{ selectedLingkungan.length }}</strong> lingkungan dipilih.
                             Isi nomor HP pengurus untuk setiap lingkungan di bawah, lalu klik Simpan Semua.
                         </p>
                     </div>
@@ -652,12 +679,18 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lingkungan</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Wilayah</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. HP Kontak</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">KK</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jiwa</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Lingkungan</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                                            Wilayah</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No.
+                                            HP Kontak</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">KK
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jiwa
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-200">
@@ -670,26 +703,24 @@
                                         </td>
                                         <td class="px-4 py-3">
                                             <div class="text-sm font-medium text-gray-900">{{ ling.nama }}</div>
-                                            <div v-if="ling.ketua" class="text-xs text-gray-500">Ketua: {{ ling.ketua }}</div>
+                                            <div v-if="ling.ketua" class="text-xs text-gray-500">Ketua: {{ ling.ketua }}
+                                            </div>
                                         </td>
                                         <td class="px-4 py-3 text-sm text-gray-600">
                                             {{ ling.wilayah_nama || ling.wilayah_text }}
                                         </td>
                                         <td class="px-4 py-3">
-                                            <input v-model="bulkEditData[ling.id].no_hp_pengurus" 
-                                                type="text" 
+                                            <input v-model="bulkEditData[ling.id].no_hp_pengurus" type="text"
                                                 placeholder="081234567890"
                                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent text-sm" />
                                         </td>
                                         <td class="px-4 py-3">
-                                            <input v-model.number="bulkEditData[ling.id].jumlah_kk" 
-                                                type="number" 
+                                            <input v-model.number="bulkEditData[ling.id].jumlah_kk" type="number"
                                                 placeholder="0"
                                                 class="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-[#882f1d] text-sm" />
                                         </td>
                                         <td class="px-4 py-3">
-                                            <input v-model.number="bulkEditData[ling.id].jumlah_jiwa" 
-                                                type="number" 
+                                            <input v-model.number="bulkEditData[ling.id].jumlah_jiwa" type="number"
                                                 placeholder="0"
                                                 class="w-20 px-2 py-1 border border-gray-300 rounded focus:ring-1 focus:ring-[#882f1d] text-sm" />
                                         </td>
@@ -710,7 +741,7 @@
                                 <button type="submit"
                                     class="px-6 py-2 bg-[#882f1d] text-white rounded-lg hover:bg-[#6b2416] transition-colors flex items-center gap-2">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M5 13l4 4L19 7" />
                                     </svg>
                                     Simpan Semua
@@ -828,7 +859,7 @@ const lingkunganGroupedByWilayah = computed(() => {
 
     filteredLingkungan.value.forEach(ling => {
         const wilayahName = ling.wilayah_nama || ling.wilayah_text || 'Tanpa Wilayah'
-        
+
         if (!groups[wilayahName]) {
             groups[wilayahName] = {
                 wilayah: wilayahName,
@@ -849,7 +880,7 @@ const lingkunganGroupedByWilayah = computed(() => {
     })
 
     // Convert to array and sort by wilayah name
-    return Object.values(groups).sort((a, b) => 
+    return Object.values(groups).sort((a, b) =>
         a.wilayah.localeCompare(b.wilayah)
     )
 })
@@ -894,8 +925,8 @@ const showToast = (message, type = 'success', duration = 3000) => {
 
 // Helper: Get Pengurus Wilayah by Wilayah Name
 const getPengurusWilayah = (wilayahName) => {
-    return dppMembers.value.find(m => 
-        m.position_category === 'ketua_wilayah' && 
+    return dppMembers.value.find(m =>
+        m.position_category === 'ketua_wilayah' &&
         m.wilayah_name === wilayahName
     )
 }
@@ -930,7 +961,7 @@ const mergeLingkunganWithDPP = () => {
         // Create a map of DPP ketua by wilayah and lingkungan number
         const dppKetuaMap = {}
         const dppLingkunganSet = new Set()
-        
+
         dppMembers.value.forEach(member => {
             if (member.position_category === 'ketua_lingkungan') {
                 const key = `${member.wilayah_name}-${member.lingkungan_number}`
@@ -970,12 +1001,12 @@ const mergeLingkunganWithDPP = () => {
                     ketua_is_active: dppKetua ? dppKetua.is_active : null,
                     source: 'database'  // Data from lingkungan table
                 }
-                
+
                 // Debug log for items with no_hp_pengurus
                 if (ling.no_hp_pengurus) {
                     console.log('[Merge] DB item with phone:', { no: ling.no, wilayah: matchedKey, phone: ling.no_hp_pengurus })
                 }
-                
+
                 mergedList.push(mergedItem)
             })
         }
@@ -993,14 +1024,14 @@ const mergeLingkunganWithDPP = () => {
                         .replace('fransikus', 'fransiskus')
                         .replace('teresia', 'theresia')
                 }
-                
+
                 const normalizedMemberWilayah = normalizeWilayahName(member.wilayah_name)
-                const wilayahData = wilayahList.value.find(w => 
+                const wilayahData = wilayahList.value.find(w =>
                     normalizeWilayahName(w.nama) === normalizedMemberWilayah
                 )
-                
+
                 const lingNo = parseInt(member.lingkungan_number)
-                
+
                 mergedList.push({
                     id: member.id,
                     no: lingNo,
@@ -1035,17 +1066,17 @@ const mergeLingkunganWithDPP = () => {
             if (wilayahCompare !== 0) return wilayahCompare
             return a.no - b.no
         })
-        
+
         // Final debug: Log items with no_hp_pengurus in merged result
         const finalWithPhone = lingkunganList.value.filter(l => l.no_hp_pengurus)
         console.log('[Merge Result] Total lingkungan with no_hp_pengurus:', finalWithPhone.length)
         if (finalWithPhone.length > 0) {
-            console.table(finalWithPhone.map(l => ({ 
-                no: l.no, 
-                nama: l.nama, 
-                wilayah: l.wilayah_nama, 
+            console.table(finalWithPhone.map(l => ({
+                no: l.no,
+                nama: l.nama,
+                wilayah: l.wilayah_nama,
                 phone: l.no_hp_pengurus,
-                source: l.source 
+                source: l.source
             })))
         }
     } catch (err) {
@@ -1093,26 +1124,26 @@ const closeModal = () => {
 const saveLingkungan = async () => {
     const isEditLimited = modalMode.value === 'edit-limited'
     const isDppSource = formData.value.source === 'dpp'
-    
+
     // Check if DB record exists — for edit-limited AND for source='dpp' items
     let existingDbRecord = null
     if ((isEditLimited || isDppSource) && formData.value.no) {
         const searchNo = parseInt(formData.value.no)
         const searchWilayah = formData.value.wilayah_text || formData.value.wilayah_nama
-        
+
         existingDbRecord = lingkunganFromDB.value.find(l => {
             const matchNo = parseInt(l.no) === searchNo
             const matchWilayah = (l.wilayah_text === searchWilayah) || (l.wilayah_nama === searchWilayah)
             return matchNo && matchWilayah
         })
-        
+
         console.log(`[DB Check] source=${formData.value.source}, Searching for no=${searchNo} + wilayah='${searchWilayah}', found:`, existingDbRecord ? 'YES (id=' + existingDbRecord.id + ')' : 'NO')
     }
-    
+
     // Check if record exists in database (not just from DPP)
-    const isEdit = (modalMode.value === 'edit' || modalMode.value === 'edit-limited') && 
-                    !!(formData.value.source === 'database' || existingDbRecord)
-    
+    const isEdit = (modalMode.value === 'edit' || modalMode.value === 'edit-limited') &&
+        !!(formData.value.source === 'database' || existingDbRecord)
+
     console.log(`[Save Mode] modalMode=${modalMode.value}, isEditLimited=${isEditLimited}, isEdit=${isEdit}, existingDbRecord=${!!existingDbRecord}`)
     console.log(`[Form Data] no=${formData.value.no}, nama='${formData.value.nama}', wilayah='${formData.value.wilayah_text || formData.value.wilayah_nama}', no_hp='${formData.value.no_hp_pengurus}'`)
 
@@ -1143,14 +1174,14 @@ const saveLingkungan = async () => {
             // Create new DB record with core fields from DPP
             lingkunganData.no = parseInt(formData.value.no)
             lingkunganData.nama = formData.value.nama?.trim()
-            
+
             // Validation for create mode
             if (!lingkunganData.no || !lingkunganData.nama) {
                 showToast('Data tidak lengkap: Nomor dan Nama harus diisi!', 'error')
                 console.error('[Edit-Limited] CREATE failed - missing no or nama:', { no: lingkunganData.no, nama: lingkunganData.nama })
                 return
             }
-            
+
             lingkunganData.wilayah_id = formData.value.wilayah_id || null
             lingkunganData.wilayah_text = formData.value.wilayah_text?.trim() || null
             lingkunganData.ketua = formData.value.ketua?.trim() || null
@@ -1308,6 +1339,11 @@ const saveLingkungan = async () => {
                             ketua: currentItem.has_dpp_ketua ? currentItem.ketua : response.data.ketua,
                         })
                     }
+                    // Also update lingkunganFromDB so DPP auto-sync's mergeLingkunganWithDPP uses fresh data
+                    const dbIdx = lingkunganFromDB.value.findIndex(l => l.id === editId)
+                    if (dbIdx !== -1) {
+                        lingkunganFromDB.value[dbIdx] = { ...lingkunganFromDB.value[dbIdx], ...response.data }
+                    }
                 }
             }
         } else {
@@ -1317,7 +1353,7 @@ const saveLingkungan = async () => {
                 body: lingkunganData
             })
             console.log('[API] POST Response:', response)
-            
+
             const actionText = isEditLimited ? 'berhasil disimpan ke database' : 'berhasil ditambahkan'
             showToast(`Lingkungan ${toastName} ${actionText}!`)
 
@@ -1412,7 +1448,7 @@ const saveLingkungan = async () => {
         }
     } catch (err) {
         console.error('Error saving lingkungan:', err)
-        
+
         // Extract error message from various possible locations
         // Nuxt's createError might put the message in different places
         const errorMessage = err?.response?._data?.message || err?.data?.message || err?.message || err?.statusMessage || 'Unknown error'
@@ -1453,7 +1489,7 @@ const deleteLingkungan = async () => {
         showToast(`Lingkungan ${deletedItem.nama} berhasil dihapus!`)
     } catch (err) {
         console.error('Error deleting lingkungan:', err)
-        
+
         // Extract error message from various possible locations
         // Nuxt's createError might put the message in different places
         const errorMessage = err?.response?._data?.message || err?.data?.message || err?.message || err?.statusMessage || 'Unknown error'
