@@ -1368,7 +1368,8 @@ const saveLingkungan = async () => {
 
         // ===== AUTO-SYNC TO DPP =====
         // Jika lingkungan ini punya ketua dari DPP, update data DPP juga
-        if (savedHasDppKetua && savedDppMemberId) {
+        // SKIP for edit-limited: only KK/jiwa/HP changed, ketua not changed
+        if (!isEditLimited && savedHasDppKetua && savedDppMemberId) {
             const existingDppMember = dppMembers.value.find((m) => m.id === savedDppMemberId)
             if (existingDppMember) {
                 try {
