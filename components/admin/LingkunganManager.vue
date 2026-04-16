@@ -1303,7 +1303,17 @@ const saveLingkungan = async () => {
                 } else if (response.data) {
                     const index = lingkunganList.value.findIndex(l => l.id === editId)
                     if (index !== -1) {
-                        lingkunganList.value.splice(index, 1, response.data)
+                        const currentItem = lingkunganList.value[index]
+                        // Merge server data but preserve frontend-computed fields not returned by API
+                        lingkunganList.value.splice(index, 1, {
+                            ...response.data,
+                            source: currentItem.source,
+                            has_dpp_ketua: currentItem.has_dpp_ketua,
+                            dpp_member_id: currentItem.dpp_member_id,
+                            ketua_is_active: currentItem.ketua_is_active,
+                            // Keep DPP-overridden ketua name if applicable
+                            ketua: currentItem.has_dpp_ketua ? currentItem.ketua : response.data.ketua,
+                        })
                     }
                 }
             }
@@ -1352,7 +1362,12 @@ const saveLingkungan = async () => {
                 } else if (response.data) {
                     const index = lingkunganList.value.findIndex(l => typeof l.id === 'string' && l.id.startsWith('temp_'))
                     if (index !== -1) {
-                        lingkunganList.value.splice(index, 1, response.data)
+                        // Add source field not returned by server API
+                        lingkunganList.value.splice(index, 1, {
+                            ...response.data,
+                            source: 'database',
+                            has_dpp_ketua: false,
+                        })
                     }
                 }
             }
