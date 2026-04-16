@@ -73,7 +73,7 @@ export default defineEventHandler(async (event) => {
     );
 
     // Process categories
-    const categories: Array<{id: number, name: string, slug: string}> = [];
+    const categories: Array<{ id: number, name: string, slug: string }> = [];
     if (article.category_names) {
       const names = article.category_names.split(',');
       const ids = article.category_ids.split(',');

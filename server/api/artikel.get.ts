@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   setHeader(event, 'Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
   setHeader(event, 'Pragma', 'no-cache')
   setHeader(event, 'Expires', '0')
-  
+
   try {
     // Fetch articles with categories (only published ones for public API)
     const sql = `
@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
     // Process categories for each article item
     const processedArticles = articlesList.map((article: any) => {
-      const categories: Array<{id: number, name: string, slug: string}> = [];
+      const categories: Array<{ id: number, name: string, slug: string }> = [];
       if (article.category_names) {
         const names = article.category_names.split(',');
         const ids = article.category_ids.split(',');

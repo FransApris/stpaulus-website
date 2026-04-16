@@ -10,17 +10,12 @@
     <div class="bg-white rounded-lg shadow">
       <div class="border-b border-gray-200">
         <nav class="flex -mb-px overflow-x-auto">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            @click="activeTab = tab.id"
-            :class="[
-              'flex items-center space-x-2 px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap transition-colors',
-              activeTab === tab.id
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            ]"
-          >
+          <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
+            'flex items-center space-x-2 px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap transition-colors',
+            activeTab === tab.id
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          ]">
             <span>{{ tab.icon }}</span>
             <span>{{ tab.label }}</span>
             <span v-if="tab.count !== undefined" class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">
@@ -38,7 +33,8 @@
             <!-- Filter & Actions -->
             <div class="flex flex-wrap gap-4 items-center justify-between">
               <div class="flex gap-2">
-                <select v-model="filterStatus" @change="loadBookings" class="border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <select v-model="filterStatus" @change="loadBookings"
+                  class="border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500">
                   <option value="">Semua Status</option>
                   <option value="PENDING">Pending</option>
                   <option value="APPROVED">Approved</option>
@@ -49,7 +45,8 @@
                   🔄 Refresh
                 </button>
               </div>
-              <button @click="exportToExcel" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
+              <button @click="exportToExcel"
+                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
                 📊 Export Excel
               </button>
             </div>
@@ -63,8 +60,10 @@
                     Rentang Tanggal Pemesanan
                   </p>
                   <p class="text-xs text-blue-700 leading-relaxed">
-                    Menampilkan pemesanan dari <strong>30 hari yang lalu</strong> sampai <strong>90 hari ke depan</strong> (termasuk yang sudah selesai). 
-                    Pemesanan di luar rentang ini tidak akan muncul. Total: <strong>{{ bookings.length }} pemesanan</strong>.
+                    Menampilkan pemesanan dari <strong>30 hari yang lalu</strong> sampai <strong>90 hari ke
+                      depan</strong> (termasuk yang sudah selesai).
+                    Pemesanan di luar rentang ini tidak akan muncul. Total: <strong>{{ bookings.length }}
+                      pemesanan</strong>.
                   </p>
                 </div>
               </div>
@@ -78,54 +77,68 @@
               Belum ada pemesanan.
             </div>
             <div v-else class="space-y-4">
-              <div v-for="booking in paginatedBookings" :key="booking.id" class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow">
+              <div v-for="booking in paginatedBookings" :key="booking.id"
+                class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow">
                 <div class="flex justify-between items-start">
                   <div class="flex-1">
                     <h3 class="font-semibold text-lg text-gray-800">{{ booking.event_name }}</h3>
                     <div class="mt-2 space-y-1 text-sm text-gray-600">
                       <p>🏢 Ruangan: <span class="font-medium">{{ booking.room_name }}</span></p>
-                      <p>👤 Pemesan: <span class="font-medium">{{ booking.user_name }}</span> ({{ booking.user_category }})</p>
+                      <p>👤 Pemesan: <span class="font-medium">{{ booking.user_name }}</span> ({{ booking.user_category
+                        }})</p>
                       <p>🏛️ Unit: <span class="font-medium">{{ booking.unit_name }}</span></p>
                       <p>📅 Tanggal: <span class="font-medium">{{ formatBookingDate(booking.start_time) }}</span></p>
-                      <p>⏰ Waktu: <span class="font-medium">{{ formatBookingTime(booking.start_time, booking.end_time) }}</span></p>
+                      <p>⏰ Waktu: <span class="font-medium">{{ formatBookingTime(booking.start_time, booking.end_time)
+                          }}</span></p>
                       <p>📊 Status: <span :class="getStatusClass(booking.status)">{{ booking.status }}</span></p>
-                      <p v-if="booking.rejection_reason" class="text-red-600">❌ Alasan Penolakan: {{ booking.rejection_reason }}</p>
-                      <p v-if="booking.cancellation_reason" class="text-orange-600">🚫 Alasan Pembatalan: {{ booking.cancellation_reason }}</p>
+                      <p v-if="booking.rejection_reason" class="text-red-600">❌ Alasan Penolakan: {{
+                        booking.rejection_reason }}</p>
+                      <p v-if="booking.cancellation_reason" class="text-orange-600">🚫 Alasan Pembatalan: {{
+                        booking.cancellation_reason }}</p>
                     </div>
                   </div>
                   <div class="ml-4 space-x-2 flex">
                     <!-- View History Button -->
-                    <button @click="viewHistory(booking)" title="Lihat History" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 inline-flex items-center">
+                    <button @click="viewHistory(booking)" title="Lihat History"
+                      class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 inline-flex items-center">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </button>
-                    
+
                     <!-- Approve Button - Only for PENDING -->
-                    <button v-if="booking.status === 'PENDING'" @click="approveBooking(booking)" title="Setujui" class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 inline-flex items-center">
+                    <button v-if="booking.status === 'PENDING'" @click="approveBooking(booking)" title="Setujui"
+                      class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 inline-flex items-center">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                       </svg>
                     </button>
-                    
+
                     <!-- Reject Button - Only for PENDING -->
-                    <button v-if="booking.status === 'PENDING'" @click="rejectBooking(booking)" title="Tolak" class="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 inline-flex items-center">
+                    <button v-if="booking.status === 'PENDING'" @click="rejectBooking(booking)" title="Tolak"
+                      class="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 inline-flex items-center">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
-                    
+
                     <!-- Cancel Button - Only for APPROVED -->
-                    <button v-if="booking.status === 'APPROVED'" @click="cancelBooking(booking)" title="Batalkan" class="bg-orange-600 text-white p-2 rounded-lg hover:bg-orange-700 inline-flex items-center">
+                    <button v-if="booking.status === 'APPROVED'" @click="cancelBooking(booking)" title="Batalkan"
+                      class="bg-orange-600 text-white p-2 rounded-lg hover:bg-orange-700 inline-flex items-center">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                       </svg>
                     </button>
-                    
+
                     <!-- Delete Button -->
-                    <button @click="confirmDeleteBooking(booking)" title="Hapus" class="bg-gray-600 text-white p-2 rounded-lg hover:bg-gray-700 inline-flex items-center">
+                    <button @click="confirmDeleteBooking(booking)" title="Hapus"
+                      class="bg-gray-600 text-white p-2 rounded-lg hover:bg-gray-700 inline-flex items-center">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
                   </div>
@@ -162,7 +175,7 @@
                 🔄 Refresh
               </button>
             </div>
-            
+
             <div v-if="auditLogs.length === 0" class="text-center py-8 text-gray-500">
               Belum ada log aktivitas.
             </div>
@@ -230,12 +243,13 @@
                 🔄 Refresh
               </button>
             </div>
-            
+
             <div v-if="deletedBookings.length === 0" class="text-center py-8 text-gray-500">
               Tidak ada pemesanan yang dihapus.
             </div>
             <div v-else class="space-y-4">
-              <div v-for="booking in paginatedDeletedBookings" :key="booking.id" class="border border-red-200 bg-red-50 p-4 rounded-lg">
+              <div v-for="booking in paginatedDeletedBookings" :key="booking.id"
+                class="border border-red-200 bg-red-50 p-4 rounded-lg">
                 <div class="flex justify-between items-start">
                   <div class="flex-1">
                     <h3 class="font-semibold text-lg text-gray-800">{{ booking.event_name }}</h3>
@@ -243,14 +257,17 @@
                       <p>🏢 Ruangan: {{ booking.room_name }}</p>
                       <p>👤 Pemesan: {{ booking.user_name }}</p>
                       <p>📅 Tanggal: {{ formatBookingDate(booking.start_time) }}</p>
-                      <p class="text-red-600">🗑️ Dihapus oleh: {{ booking.deleter_name }} pada {{ formatDateTime(booking.deleted_at) }}</p>
+                      <p class="text-red-600">🗑️ Dihapus oleh: {{ booking.deleter_name }} pada {{
+                        formatDateTime(booking.deleted_at) }}</p>
                     </div>
                   </div>
                   <div class="ml-4 space-y-2 flex flex-col">
-                    <button @click="restoreBooking(booking)" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
+                    <button @click="restoreBooking(booking)"
+                      class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm">
                       ♻️ Restore
                     </button>
-                    <button @click="permanentDeleteBooking(booking)" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
+                    <button @click="permanentDeleteBooking(booking)"
+                      class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm">
                       🗑️ Hapus Permanen
                     </button>
                   </div>
@@ -282,7 +299,7 @@
         <div v-show="activeTab === 'stats'">
           <div class="space-y-6">
             <h2 class="text-lg font-semibold">Statistik Pemesanan</h2>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div class="bg-blue-50 p-6 rounded-lg border border-blue-200">
                 <div class="text-3xl font-bold text-blue-600">{{ stats.pending }}</div>
@@ -328,7 +345,7 @@
           <h3 class="text-lg font-semibold">📜 History Pemesanan</h3>
           <button @click="showHistoryModal = false" class="text-gray-500 hover:text-gray-700">✕</button>
         </div>
-        
+
         <div v-if="selectedBooking" class="mb-4 p-4 bg-gray-50 rounded">
           <h4 class="font-semibold">{{ selectedBooking.event_name }}</h4>
           <p class="text-sm text-gray-600">{{ selectedBooking.room_name }}</p>
@@ -340,11 +357,12 @@
         <div v-else class="space-y-4">
           <div v-for="(history, index) in bookingHistory" :key="history.id" class="relative pl-8 pb-4">
             <!-- Timeline Line -->
-            <div v-if="index !== bookingHistory.length - 1" class="absolute left-2 top-8 bottom-0 w-0.5 bg-gray-300"></div>
-            
+            <div v-if="index !== bookingHistory.length - 1" class="absolute left-2 top-8 bottom-0 w-0.5 bg-gray-300">
+            </div>
+
             <!-- Timeline Dot -->
             <div class="absolute left-0 top-2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white"></div>
-            
+
             <!-- History Content -->
             <div class="bg-white border border-gray-200 rounded-lg p-4">
               <div class="flex justify-between items-start mb-2">
@@ -368,10 +386,14 @@
       <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
         <h3 class="text-lg font-semibold mb-4">Tolak Pemesanan</h3>
         <p class="mb-4">Alasan penolakan:</p>
-        <textarea v-model="rejectionReason" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-red-500" rows="3" required></textarea>
+        <textarea v-model="rejectionReason"
+          class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-red-500" rows="3"
+          required></textarea>
         <div class="flex justify-end space-x-2 mt-4">
-          <button @click="showRejectModal = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Batal</button>
-          <button @click="confirmReject" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Tolak</button>
+          <button @click="showRejectModal = false"
+            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Batal</button>
+          <button @click="confirmReject"
+            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Tolak</button>
         </div>
       </div>
     </div>
@@ -382,10 +404,14 @@
         <h3 class="text-lg font-semibold mb-4">Batalkan Pemesanan</h3>
         <p class="mb-2 text-gray-700">Pemesanan yang sudah disetujui akan dibatalkan.</p>
         <p class="mb-4 text-sm text-gray-600">Alasan pembatalan (opsional):</p>
-        <textarea v-model="cancellationReason" class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-orange-500" rows="3" placeholder="Masukkan alasan pembatalan..."></textarea>
+        <textarea v-model="cancellationReason"
+          class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-orange-500" rows="3"
+          placeholder="Masukkan alasan pembatalan..."></textarea>
         <div class="flex justify-end space-x-2 mt-4">
-          <button @click="showCancelModal = false" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Batal</button>
-          <button @click="confirmCancel" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">Batalkan Pemesanan</button>
+          <button @click="showCancelModal = false"
+            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Batal</button>
+          <button @click="confirmCancel"
+            class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">Batalkan Pemesanan</button>
         </div>
       </div>
     </div>
@@ -406,7 +432,8 @@
       <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
         <div class="flex items-center mb-4">
           <svg class="w-6 h-6 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <h3 class="text-lg font-semibold text-gray-900">Konfirmasi Hapus Pemesanan</h3>
         </div>
@@ -420,8 +447,10 @@
           <p class="text-red-600 text-sm mt-2 font-medium">⚠️ Pemesanan akan masuk ke "Soft Delete"</p>
         </div>
         <div class="flex justify-end space-x-2">
-          <button @click="showDeleteModal = false" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Batal</button>
-          <button @click="deleteBooking" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Hapus Pemesanan</button>
+          <button @click="showDeleteModal = false"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Batal</button>
+          <button @click="deleteBooking" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Hapus
+            Pemesanan</button>
         </div>
       </div>
     </div>
@@ -543,7 +572,7 @@ const loadBookings = async () => {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    
+
     // Handle new response structure with metadata
     if (response && typeof response === 'object' && 'bookings' in response) {
       bookings.value = response.bookings
@@ -593,12 +622,12 @@ const loadStats = async () => {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    
+
     // Handle new response structure
     let allBookings
     if (response && typeof response === 'object' && 'bookings' in response) {
       allBookings = response.bookings
-      
+
       // Use status_summary from API if available
       if (response.status_summary) {
         stats.value = {
@@ -615,7 +644,7 @@ const loadStats = async () => {
       // Fallback for old response format
       allBookings = response
     }
-    
+
     // Manual calculation if status_summary not available
     stats.value = {
       pending: allBookings.filter(b => b.status === 'PENDING').length,
@@ -633,7 +662,7 @@ const loadStats = async () => {
 const viewHistory = async (booking) => {
   selectedBooking.value = booking
   showHistoryModal.value = true
-  
+
   try {
     bookingHistory.value = await $fetch(`/api/bookings/${booking.id}/history`, {
       headers: {
@@ -651,14 +680,14 @@ const approveBooking = async (booking) => {
   // Optimistic update: Langsung update UI
   const originalStatus = booking.status
   const index = bookings.value.findIndex(b => b.id === booking.id)
-  
+
   if (index !== -1) {
     bookings.value[index].status = 'APPROVED'
     // Update stats secara optimistic
     stats.value.pending--
     stats.value.approved++
   }
-  
+
   try {
     await $fetch(`/api/bookings/${booking.id}`, {
       method: 'PATCH',
@@ -695,7 +724,7 @@ const confirmReject = async () => {
   // Optimistic update
   const originalStatus = selectedBooking.value.status
   const index = bookings.value.findIndex(b => b.id === selectedBooking.value.id)
-  
+
   if (index !== -1) {
     bookings.value[index].status = 'REJECTED'
     bookings.value[index].rejection_reason = rejectionReason.value
@@ -703,7 +732,7 @@ const confirmReject = async () => {
     if (originalStatus === 'PENDING') stats.value.pending--
     stats.value.rejected++
   }
-  
+
   showRejectModal.value = false
 
   try {
@@ -717,7 +746,7 @@ const confirmReject = async () => {
         rejection_reason: rejectionReason.value
       }
     })
-    
+
     showToast('Pemesanan berhasil ditolak')
   } catch (err) {
     console.error('Failed to reject booking', err)
@@ -742,7 +771,7 @@ const confirmCancel = async () => {
   // Optimistic update
   const originalStatus = selectedBooking.value.status
   const index = bookings.value.findIndex(b => b.id === selectedBooking.value.id)
-  
+
   if (index !== -1) {
     bookings.value[index].status = 'CANCELLED'
     bookings.value[index].cancellation_reason = cancellationReason.value || 'Dibatalkan oleh admin'
@@ -751,7 +780,7 @@ const confirmCancel = async () => {
     else if (originalStatus === 'APPROVED') stats.value.approved--
     stats.value.cancelled++
   }
-  
+
   showCancelModal.value = false
 
   try {
@@ -765,7 +794,7 @@ const confirmCancel = async () => {
         cancellation_reason: cancellationReason.value || 'Dibatalkan oleh admin'
       }
     })
-    
+
     showToast('Pemesanan berhasil dibatalkan')
   } catch (err) {
     console.error('Failed to cancel booking', err)
@@ -790,11 +819,11 @@ const deleteBooking = async () => {
   // Optimistic update: Hapus dari list dan tambahkan ke deleted
   const index = bookings.value.findIndex(b => b.id === selectedBooking.value.id)
   let removedBooking = null
-  
+
   if (index !== -1) {
     removedBooking = { ...bookings.value[index] }
     bookings.value.splice(index, 1)
-    
+
     // Update stats
     if (removedBooking.status === 'PENDING') stats.value.pending--
     else if (removedBooking.status === 'APPROVED') stats.value.approved--
@@ -802,7 +831,7 @@ const deleteBooking = async () => {
     else if (removedBooking.status === 'CANCELLED') stats.value.cancelled--
     stats.value.total--
     stats.value.deleted++
-    
+
     // Tambahkan ke deleted bookings
     deletedBookings.value.unshift({
       ...removedBooking,
@@ -810,7 +839,7 @@ const deleteBooking = async () => {
       deleter_name: 'Admin'
     })
   }
-  
+
   showDeleteModal.value = false
 
   try {
@@ -820,7 +849,7 @@ const deleteBooking = async () => {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    
+
     showToast('Pemesanan berhasil dihapus (soft delete)')
   } catch (err) {
     console.error('Failed to delete booking', err)
@@ -833,7 +862,7 @@ const deleteBooking = async () => {
       else if (removedBooking.status === 'CANCELLED') stats.value.cancelled++
       stats.value.total++
       stats.value.deleted--
-      
+
       // Hapus dari deleted bookings
       const deletedIndex = deletedBookings.value.findIndex(b => b.id === selectedBooking.value.id)
       if (deletedIndex !== -1) {
@@ -846,20 +875,20 @@ const deleteBooking = async () => {
 
 const restoreBooking = async (booking) => {
   if (!confirm(`Restore pemesanan "${booking.event_name}"?`)) return
-  
+
   // Optimistic update: Hapus dari deleted list dan tambahkan ke main list
   const deletedIndex = deletedBookings.value.findIndex(b => b.id === booking.id)
   let restoredBooking = null
-  
+
   if (deletedIndex !== -1) {
     restoredBooking = { ...deletedBookings.value[deletedIndex] }
     delete restoredBooking.deleted_at
     delete restoredBooking.deleted_by
     delete restoredBooking.deleter_name
-    
+
     deletedBookings.value.splice(deletedIndex, 1)
     bookings.value.unshift(restoredBooking)
-    
+
     // Update stats
     if (restoredBooking.status === 'PENDING') stats.value.pending++
     else if (restoredBooking.status === 'APPROVED') stats.value.approved++
@@ -868,7 +897,7 @@ const restoreBooking = async (booking) => {
     stats.value.total++
     stats.value.deleted--
   }
-  
+
   try {
     await $fetch(`/api/bookings/${booking.id}/restore`, {
       method: 'POST',
@@ -876,7 +905,7 @@ const restoreBooking = async (booking) => {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    
+
     showToast('Pemesanan berhasil direstore')
   } catch (err) {
     console.error('Failed to restore booking', err)
@@ -887,7 +916,7 @@ const restoreBooking = async (booking) => {
         bookings.value.splice(mainIndex, 1)
       }
       deletedBookings.value.splice(deletedIndex, 0, booking)
-      
+
       if (restoredBooking.status === 'PENDING') stats.value.pending--
       else if (restoredBooking.status === 'APPROVED') stats.value.approved--
       else if (restoredBooking.status === 'REJECTED') stats.value.rejected--
@@ -901,17 +930,17 @@ const restoreBooking = async (booking) => {
 
 const permanentDeleteBooking = async (booking) => {
   if (!confirm(`HAPUS PERMANEN pemesanan "${booking.event_name}"? Tindakan ini tidak dapat dibatalkan!`)) return
-  
+
   // Optimistic update: Hapus dari deleted list
   const index = deletedBookings.value.findIndex(b => b.id === booking.id)
   let removedBooking = null
-  
+
   if (index !== -1) {
     removedBooking = { ...deletedBookings.value[index] }
     deletedBookings.value.splice(index, 1)
     stats.value.deleted--
   }
-  
+
   try {
     await $fetch(`/api/bookings/${booking.id}?permanent=true`, {
       method: 'DELETE',
@@ -919,7 +948,7 @@ const permanentDeleteBooking = async (booking) => {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    
+
     showToast('Pemesanan berhasil dihapus permanen')
   } catch (err) {
     console.error('Failed to permanently delete booking', err)
@@ -940,7 +969,7 @@ const exportToExcel = async () => {
       },
       responseType: 'blob'
     })
-    
+
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
