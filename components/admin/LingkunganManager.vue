@@ -1272,30 +1272,18 @@ const saveLingkungan = async () => {
             console.log('[API] PUT Response:', response)
             showToast(`Lingkungan ${toastName} berhasil diperbarui!`)
 
-            // For edit-limited mode, refresh data to properly merge DB + DPP
+            // For edit-limited: update lingkunganFromDB in-place (optimistic already updated lingkunganList)
             if (isEditLimited) {
-                console.log('[Edit-Limited] Refreshing data after UPDATE/CREATE')
-                await fetchLingkunganFromDB()
-                await fetchDPPMembers()
-                mergeLingkunganWithDPP()
-                console.log('[Edit-Limited] Data refreshed successfully')
-                console.log(`[Edit-Limited] Now checking lingkungan no=${savedNo} + wilayah='${savedWilayah}' in final list...`)
-                const savedItem = lingkunganList.value.find(l => {
-                    const matchNo = parseInt(l.no) === parseInt(savedNo)
-                    const matchWilayah = (l.wilayah_text === savedWilayah) || (l.wilayah_nama === savedWilayah)
-                    return matchNo && matchWilayah
-                })
-                if (savedItem) {
-                    console.log('[Edit-Limited] ✅ Found in merged list:', {
-                        no: savedItem.no,
-                        nama: savedItem.nama,
-                        wilayah: savedItem.wilayah_nama || savedItem.wilayah_text,
-                        no_hp_pengurus: savedItem.no_hp_pengurus,
-                        source: savedItem.source
-                    })
-                } else {
-                    console.error('[Edit-Limited] ❌ NOT found in merged list!')
+                const dbIdx = lingkunganFromDB.value.findIndex(l => l.id === editId)
+                if (dbIdx !== -1) {
+                    lingkunganFromDB.value[dbIdx] = {
+                        ...lingkunganFromDB.value[dbIdx],
+                        no_hp_pengurus: lingkunganData.no_hp_pengurus ?? lingkunganFromDB.value[dbIdx].no_hp_pengurus,
+                        jumlah_kk: lingkunganData.jumlah_kk ?? lingkunganFromDB.value[dbIdx].jumlah_kk,
+                        jumlah_jiwa: lingkunganData.jumlah_jiwa ?? lingkunganFromDB.value[dbIdx].jumlah_jiwa,
+                    }
                 }
+                // lingkunganList already updated by optimistic — nothing more needed
             } else {
                 // Update with real server data for normal edit
                 if (isDppSource) {
@@ -1331,29 +1319,31 @@ const saveLingkungan = async () => {
             const actionText = isEditLimited ? 'berhasil disimpan ke database' : 'berhasil ditambahkan'
             showToast(`Lingkungan ${toastName} ${actionText}!`)
 
-            // For edit-limited mode, refresh data to properly merge DB + DPP
+            // For edit-limited POST: upgrade DPP item → DB item in-place, no full rebuild
             if (isEditLimited) {
-                console.log('[Edit-Limited] Refreshing data after CREATE')
-                await fetchLingkunganFromDB()
-                await fetchDPPMembers()
-                mergeLingkunganWithDPP()
-                console.log('[Edit-Limited] Data refreshed successfully')
-                console.log(`[Edit-Limited] Now checking lingkungan no=${savedNo} + wilayah='${savedWilayah}' in final list...`)
-                const savedItem = lingkunganList.value.find(l => {
-                    const matchNo = parseInt(l.no) === parseInt(savedNo)
-                    const matchWilayah = (l.wilayah_text === savedWilayah) || (l.wilayah_nama === savedWilayah)
-                    return matchNo && matchWilayah
-                })
-                if (savedItem) {
-                    console.log('[Edit-Limited] ✅ Found in merged list:', {
-                        no: savedItem.no,
-                        nama: savedItem.nama,
-                        wilayah: savedItem.wilayah_nama || savedItem.wilayah_text,
-                        no_hp_pengurus: savedItem.no_hp_pengurus,
-                        source: savedItem.source
-                    })
-                } else {
-                    console.error('[Edit-Limited] ❌ NOT found in merged list!')
+                if (response.data) {
+                    // Add to lingkunganFromDB so future merges know the DB record exists
+                    lingkunganFromDB.value.push(response.data)
+                    // Replace the DPP list item with a proper DB-sourced item
+                    const dppIdx = dppSourceItemId
+                        ? lingkunganList.value.findIndex(l => l.id === dppSourceItemId)
+                        : -1
+                    if (dppIdx !== -1) {
+                        const existing = lingkunganList.value[dppIdx]
+                        lingkunganList.value.splice(dppIdx, 1, {
+                            ...response.data,
+                            source: 'database',
+                            // Preserve DPP-enriched display fields
+                            ketua: existing.ketua,
+                            has_dpp_ketua: existing.has_dpp_ketua,
+                            dpp_member_id: existing.dpp_member_id ?? existing.id,
+                            ketua_is_active: existing.ketua_is_active,
+                            // Apply saved values
+                            no_hp_pengurus: lingkunganData.no_hp_pengurus || '',
+                            jumlah_kk: lingkunganData.jumlah_kk ?? response.data.jumlah_kk,
+                            jumlah_jiwa: lingkunganData.jumlah_jiwa ?? response.data.jumlah_jiwa,
+                        })
+                    }
                 }
             } else {
                 // Replace temp ID with real data from server
