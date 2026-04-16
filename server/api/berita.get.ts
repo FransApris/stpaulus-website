@@ -49,7 +49,8 @@ export default defineEventHandler(async (event) => {
         created_at: news.created_at,
         updated_at: news.updated_at,
         slug: news.slug,
-        date: new Date(news.published_at || news.created_at).toLocaleDateString('id-ID', {
+        date: new Date((news.published_at || news.created_at).toString().replace(' ', 'T') + 'Z').toLocaleDateString('id-ID', {
+          timeZone: 'Asia/Jakarta',
           year: 'numeric',
           month: 'long',
           day: 'numeric'

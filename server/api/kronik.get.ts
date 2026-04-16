@@ -70,7 +70,11 @@ export default defineEventHandler(async (event) => {
             title: n.title,
             date: n.date
           })))
-          kronikItems.push(...news)
+          // Normalize UTC-stored published_at to ISO UTC format so clients (WIB) parse correctly
+          kronikItems.push(...news.map((n: any) => ({
+            ...n,
+            date: n.date ? String(n.date).replace(' ', 'T') + 'Z' : n.date
+          })))
         }
       } catch (newsError: any) {
         console.error('[Kronik API] Error fetching news:', newsError.message)
