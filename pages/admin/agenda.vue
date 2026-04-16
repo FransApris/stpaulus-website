@@ -21,7 +21,7 @@
     <!-- Filters -->
     <div class="mt-6 bg-white shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-5">
           <div>
             <label class="block text-sm font-medium text-gray-700">Cari</label>
             <input v-model="filters.search" type="text" placeholder="Cari agenda..."
@@ -68,6 +68,22 @@
               <option value="2024">2024</option>
               <option value="2025">2025</option>
               <option value="2026">2026</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Urutkan</label>
+            <select v-model="filters.sort"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#882f1d] focus:ring-[#882f1d] sm:text-sm">
+              <option value="date_asc">Tanggal ↑ (Terlama)</option>
+              <option value="date_desc">Tanggal ↓ (Terbaru)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Urutkan</label>
+            <select v-model="filters.sort"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#882f1d] focus:ring-[#882f1d] sm:text-sm">
+              <option value="date_asc">Tanggal ↑ (Terlama)</option>
+              <option value="date_desc">Tanggal ↓ (Terbaru)</option>
             </select>
           </div>
         </div>
@@ -601,17 +617,36 @@ const confirmDelete = ref({
   agendaTitle: ''
 })
 
-const showPreview = ref(false)
-const previewAgenda = ref(null)
-
-const selectedAgendas = ref([])
+const sortedAgendas = computed(() => {
+  const list = [...agendas.value]
+  list.sort((a, b) => {
+    const da = new Date(a.start_date).getTime()
+    const db = new Date(b.start_date).getTime()
+    return filters.value.sort === 'date_desc' ? db - da : da - db
+  })
+  return list
+})
+const paginatedAgendas = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return sortedAgendas.value.slice(start, start + pageLimit)
+})
+const totalItems = computed(() => agendas.value.lengthonst selectedAgendas = ref([])
 const currentPage = useState('admin-agenda-page', () => 1)
 const pageLimit = 10
 const totalItems = computed(() => agendas.value.length)
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const sortedAgendas = computed(() => {
+  const list = [...agendas.value]
+  list.sort((a, b) => {
+    const da = new Date(a.start_date).getTime()
+    const db = new Date(b.start_date).getTime()
+    return filters.value.sort === 'date_desc' ? db - da : da - db
+  })
+  return list
+})
 const paginatedAgendas = computed(() => {
   const start = (currentPage.value - 1) * pageLimit
-  return agendas.value.slice(start, start + pageLimit)
+  return sortedAgendas.value.slice(start, start + pageLimit)
 })
 const visiblePages = computed(() => {
   const pages = []
@@ -642,7 +677,8 @@ const stats = computed(() => {
     past: agendas.value.filter(a => {
       const end = a.end_date ? new Date(a.end_date) : new Date(a.start_date)
       return end < now
-    }).length
+    }).len,
+  sort: 'date_asc'gth
   }
 })
 
@@ -659,7 +695,8 @@ const filters = ref({
   search: '',
   category: '',
   month: '',
-  year: ''
+  year: '',
+  sort: 'date_asc'
 })
 
 const agendaForm = ref({
