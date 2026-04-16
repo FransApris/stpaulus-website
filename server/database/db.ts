@@ -44,7 +44,10 @@ const dbConfig = {
   enableKeepAlive: true,
   keepAliveInitialDelay: 10000,
   // Fail fast on connect timeout instead of hanging
-  connectTimeout: 10000
+  connectTimeout: 10000,
+  // Return DATE/DATETIME/TIME columns as raw strings to avoid timezone shifting
+  // (e.g. DATE "2026-04-07" stays "2026-04-07", not "2026-04-06T17:00:00.000Z")
+  dateStrings: true
 }
 
 // Initialize database connection pool

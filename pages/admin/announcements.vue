@@ -615,11 +615,11 @@ const openCreateModal = (prefill?: Partial<FormData>) => {
 const openEditModal = (announcement: Announcement) => {
   isEditMode.value = true
 
-  // Format event_date to YYYY-MM-DD for input type="date"
+  // Extract YYYY-MM-DD safely regardless of whether event_date is a Date object
+  // or a string like "2026-04-07" or "2026-04-07T00:00:00.000Z"
   let formattedDate = announcement.event_date
   if (formattedDate) {
-    const date = new Date(formattedDate)
-    formattedDate = date.toISOString().split('T')[0]
+    formattedDate = String(formattedDate).split('T')[0]
   }
 
   formData.value = {
