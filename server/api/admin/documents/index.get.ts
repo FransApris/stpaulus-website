@@ -14,6 +14,12 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const query = getQuery(event)
+  const categoryId = query.category_id
+
+  const whereClause = categoryId ? `WHERE d.category_id = ?` : ''
+  const params = categoryId ? [categoryId] : []
+
   const documents = await allQuery(`
     SELECT 
       d.id,
@@ -33,10 +39,11 @@ export default defineEventHandler(async (event) => {
       dc.color as category_color,
       u.full_name as uploader_name
     FROM documents d
-    JOIN document_categories dc ON d.category_id = dc.id
+    LEFT JOIN document_categories dc ON d.category_id = dc.id
     LEFT JOIN users u ON d.uploaded_by = u.id
+    ${whereClause}
     ORDER BY d.created_at DESC
-  `)
+  `, params)
 
   return documents
 })

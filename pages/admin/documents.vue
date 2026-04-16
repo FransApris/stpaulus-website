@@ -346,6 +346,7 @@ const editingId = ref(null)
 const selectedCategory = ref('')
 const fileInput = ref(null)
 const expandedDescriptions = ref(new Set()) // Track expanded descriptions
+let fetchDocumentsSeq = 0 // race condition guard
 
 // Pagination state (client-side)
 const currentPage = ref(1)
@@ -427,6 +428,7 @@ const fetchCategories = async () => {
 
 // Fetch documents
 const fetchDocuments = async () => {
+  const mySeq = ++fetchDocumentsSeq
   const hasCache = documents.value.length > 0
   if (!hasCache) loading.value = true
   try {
@@ -443,7 +445,10 @@ const fetchDocuments = async () => {
         'Authorization': `Bearer ${token}`
       }
     })
-    documents.value = response
+    // Only update if this is still the latest request
+    if (mySeq === fetchDocumentsSeq) {
+      documents.value = response
+    }
   } catch (error) {
     console.error('Failed to fetch documents:', error)
     
@@ -457,7 +462,9 @@ const fetchDocuments = async () => {
       alert('Gagal memuat dokumen')
     }
   } finally {
-    loading.value = false
+    if (mySeq === fetchDocumentsSeq) {
+      loading.value = false
+    }
   }
 }
 
