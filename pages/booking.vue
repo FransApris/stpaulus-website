@@ -1057,7 +1057,7 @@ const filteredMyBookings = computed(() => {
     // Hanya tampilkan pemesanan sekarang dan akan datang (tidak termasuk yang sudah lewat)
     const now = new Date()
     return myBookings.value.filter(booking => {
-      const bookingEndTime = new Date(booking.end_time)
+      const bookingEndTime = toUtcDate(booking.end_time)
       return bookingEndTime >= now // Hanya yang belum selesai
     })
   }
@@ -1149,7 +1149,7 @@ const nextPage = () => {
 // Check if booking has passed
 const isBookingPassed = (endTime) => {
   const now = new Date()
-  const bookingEndTime = new Date(endTime)
+  const bookingEndTime = toUtcDate(endTime)
   return bookingEndTime < now
 }
 
@@ -1173,14 +1173,24 @@ const closeBookingDetail = async () => {
   console.log('[CLOSE DETAIL] Data reloaded')
 }
 
+// Booking datetimes are stored as UTC in MySQL.
+// With dateStrings:true, they come back as "YYYY-MM-DD HH:MM:SS" (no TZ info).
+// Append 'Z' so browsers treat them correctly as UTC instead of local WIB.
+const toUtcDate = (s) => {
+  if (!s) return new Date(NaN)
+  const str = String(s)
+  if (str.includes('Z') || str.includes('+')) return new Date(str)
+  return new Date(str.replace(' ', 'T') + 'Z')
+}
+
 const formatDate = (dateTime) => {
-  const date = new Date(dateTime)
+  const date = toUtcDate(dateTime)
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
   return date.toLocaleDateString('id-ID', options)
 }
 
 const formatTime = (dateTime) => {
-  const date = new Date(dateTime)
+  const date = toUtcDate(dateTime)
   return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
 }
 
@@ -1467,8 +1477,8 @@ const checkAvailability = async () => {
     if (roomData) {
       const conflicts = (roomData.bookings || []).filter(b => {
         if (b.status === 'REJECTED' || b.status === 'CANCELLED') return false
-        const bStart = new Date(b.start_time)
-        const bEnd = new Date(b.end_time)
+        const bStart = toUtcDate(b.start_time)
+        const bEnd = toUtcDate(b.end_time)
         const reqStart = new Date(startDateTime)
         const reqEnd = new Date(endDateTime)
         return reqStart < bEnd && reqEnd > bStart
@@ -1636,7 +1646,7 @@ const getStatusClass = (status) => {
 
 const getStatusText = (status, startTime) => {
   const now = new Date()
-  const eventStart = new Date(startTime)
+  const eventStart = toUtcDate(startTime)
 
   if (status === 'APPROVED' && eventStart < now) {
     return 'Selesai Digunakan'
@@ -1682,8 +1692,8 @@ const getBookingStatusText = (status) => {
 }
 
 const formatBookingTime = (startTime, endTime) => {
-  const start = new Date(startTime)
-  const end = new Date(endTime)
+  const start = toUtcDate(startTime)
+  const end = toUtcDate(endTime)
 
   const options = {
     weekday: 'long',

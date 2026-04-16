@@ -956,19 +956,29 @@ const exportToExcel = async () => {
 }
 
 // Utility Functions
+// Booking datetimes are stored as UTC in MySQL.
+// With dateStrings:true, they come back as "YYYY-MM-DD HH:MM:SS" (no TZ info).
+// Append 'Z' so browsers treat them correctly as UTC instead of local WIB.
+const toUtcDate = (s) => {
+  if (!s) return new Date(NaN)
+  const str = String(s)
+  if (str.includes('Z') || str.includes('+')) return new Date(str)
+  return new Date(str.replace(' ', 'T') + 'Z')
+}
+
 const formatBookingDate = (startTime) => {
-  const date = new Date(startTime)
+  const date = toUtcDate(startTime)
   return date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 }
 
 const formatBookingTime = (startTime, endTime) => {
-  const start = new Date(startTime)
-  const end = new Date(endTime)
+  const start = toUtcDate(startTime)
+  const end = toUtcDate(endTime)
   return `${start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
 }
 
 const formatDateTime = (dateTime) => {
-  const date = new Date(dateTime)
+  const date = toUtcDate(dateTime)
   return date.toLocaleString('id-ID', {
     year: 'numeric',
     month: 'short',
