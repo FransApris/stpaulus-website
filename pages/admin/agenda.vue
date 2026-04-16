@@ -664,8 +664,7 @@ const stats = computed(() => {
     past: agendas.value.filter(a => {
       const end = a.end_date ? new Date(a.end_date) : new Date(a.start_date)
       return end < now
-    }).len,
-  sort: 'date_asc'gth
+    }).length,
   }
 })
 
