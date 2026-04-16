@@ -78,14 +78,6 @@
               <option value="date_desc">Tanggal ↓ (Terbaru)</option>
             </select>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Urutkan</label>
-            <select v-model="filters.sort"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#882f1d] focus:ring-[#882f1d] sm:text-sm">
-              <option value="date_asc">Tanggal ↑ (Terlama)</option>
-              <option value="date_desc">Tanggal ↓ (Terbaru)</option>
-            </select>
-          </div>
         </div>
       </div>
     </div>
