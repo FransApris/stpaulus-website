@@ -436,8 +436,7 @@
                     <div
                         class="sticky top-0 bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                         <h2 class="text-xl font-bold text-gray-800">
-                            {{ modalMode === 'create' ? 'Tambah Lingkungan' : modalMode === 'edit-limited' ? 'Edit Data
-                            Lingkungan(Terbatas)' : 'Edit Lingkungan' }}
+                            {{ modalMode === 'create' ? 'Tambah Lingkungan' : modalMode === 'edit-limited' ? 'Edit Data Lingkungan (Terbatas)' : 'Edit Lingkungan' }}
                         </h2>
                         <button @click="closeModal" class="text-gray-400 hover:text-gray-600">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
