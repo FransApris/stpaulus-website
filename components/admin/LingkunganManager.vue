@@ -1210,7 +1210,9 @@ const saveLingkungan = async () => {
 
     // Optimistic update for edit-limited mode (only KK / jiwa / HP fields)
     if (isEditLimited) {
-        const targetId = isEdit ? editId : dppSourceItemId
+        // Always use dppSourceItemId: the item user clicked always has id=member.id in the list,
+        // regardless of whether a DB record already exists (isEdit=true uses DB id which won't match)
+        const targetId = dppSourceItemId
         if (targetId) {
             const index = lingkunganList.value.findIndex(l => l.id === targetId)
             if (index !== -1) {
