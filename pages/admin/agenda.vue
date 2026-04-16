@@ -617,20 +617,7 @@ const confirmDelete = ref({
   agendaTitle: ''
 })
 
-const sortedAgendas = computed(() => {
-  const list = [...agendas.value]
-  list.sort((a, b) => {
-    const da = new Date(a.start_date).getTime()
-    const db = new Date(b.start_date).getTime()
-    return filters.value.sort === 'date_desc' ? db - da : da - db
-  })
-  return list
-})
-const paginatedAgendas = computed(() => {
-  const start = (currentPage.value - 1) * pageLimit
-  return sortedAgendas.value.slice(start, start + pageLimit)
-})
-const totalItems = computed(() => agendas.value.lengthonst selectedAgendas = ref([])
+const selectedAgendas = ref([])
 const currentPage = useState('admin-agenda-page', () => 1)
 const pageLimit = 10
 const totalItems = computed(() => agendas.value.length)
