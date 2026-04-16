@@ -945,13 +945,16 @@ const mergeLingkunganWithDPP = () => {
         // Step 1: Add all lingkungan from database (if any)
         if (lingkunganFromDB.value && lingkunganFromDB.value.length > 0) {
             lingkunganFromDB.value.forEach(ling => {
-                const wilayahName = ling.wilayah_nama || ling.wilayah_text
-                const key = `${wilayahName}-${ling.no}`
-                const dppKetua = dppKetuaMap[key]
+                // Try wilayah_text first: DPP-created DB records store member.wilayah_name in wilayah_text,
+                // so it matches the DPP key exactly. Fall back to wilayah_nama (JOIN result).
+                const keyByText = ling.wilayah_text ? `${ling.wilayah_text}-${ling.no}` : null
+                const keyByName = `${ling.wilayah_nama || ling.wilayah_text}-${ling.no}`
+                const dppKetua = (keyByText && dppKetuaMap[keyByText]) || dppKetuaMap[keyByName]
+                const matchedKey = (keyByText && dppKetuaMap[keyByText]) ? keyByText : keyByName
 
-                // Mark this combination as processed
+                // Mark this combination as processed (remove from DPP-only set)
                 if (dppKetua) {
-                    dppLingkunganSet.delete(key)
+                    dppLingkunganSet.delete(matchedKey)
                 }
 
                 const mergedItem = {
@@ -970,7 +973,7 @@ const mergeLingkunganWithDPP = () => {
                 
                 // Debug log for items with no_hp_pengurus
                 if (ling.no_hp_pengurus) {
-                    console.log('[Merge] DB item with phone:', { no: ling.no, wilayah: wilayahName, phone: ling.no_hp_pengurus })
+                    console.log('[Merge] DB item with phone:', { no: ling.no, wilayah: matchedKey, phone: ling.no_hp_pengurus })
                 }
                 
                 mergedList.push(mergedItem)
