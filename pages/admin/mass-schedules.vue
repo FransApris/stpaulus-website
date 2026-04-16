@@ -11,18 +11,24 @@
       <nav class="flex space-x-1 bg-gray-100 p-1 rounded-lg">
         <button @click="activeTab = 'regular'"
           :class="activeTab === 'regular' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
-          class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200">
+          class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200 flex items-center justify-center gap-2">
           Jadwal Rutin
+          <span class="text-xs px-1.5 py-0.5 rounded-full"
+            :class="activeTab === 'regular' ? 'bg-[#882f1d] text-white' : 'bg-gray-300 text-gray-600'">{{ regularSchedules.length }}</span>
         </button>
         <button @click="activeTab = 'special'"
           :class="activeTab === 'special' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
-          class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200">
+          class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200 flex items-center justify-center gap-2">
           Misa Khusus
+          <span class="text-xs px-1.5 py-0.5 rounded-full"
+            :class="activeTab === 'special' ? 'bg-[#882f1d] text-white' : 'bg-gray-300 text-gray-600'">{{ specialSchedules.length }}</span>
         </button>
         <button @click="activeTab = 'devotion'"
           :class="activeTab === 'devotion' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'"
-          class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200">
+          class="flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors duration-200 flex items-center justify-center gap-2">
           Devosi
+          <span class="text-xs px-1.5 py-0.5 rounded-full"
+            :class="activeTab === 'devotion' ? 'bg-[#882f1d] text-white' : 'bg-gray-300 text-gray-600'">{{ devotions.length }}</span>
         </button>
       </nav>
     </div>
@@ -56,58 +62,55 @@
           <p class="mt-1 text-sm text-gray-500">Mulai dengan membuat jadwal misa rutin pertama.</p>
         </div>
 
-        <div v-else class="p-6">
-          <div class="space-y-4">
-            <div v-for="schedule in regularSchedules" :key="schedule.id"
-              class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h4 class="text-lg font-medium text-gray-900">{{ schedule.mass_type }}</h4>
-                  <div class="mt-2 space-y-1 text-sm text-gray-600">
-                    <p><span class="font-medium">Hari:</span> {{ schedule.day_of_week }}</p>
-                    <p><span class="font-medium">Waktu:</span> {{ schedule.time }}</p>
-                    <p><span class="font-medium">Status:</span>
-                      <span :class="schedule.is_active ? 'text-green-600' : 'text-red-600'">
-                        {{ schedule.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-                <div class="flex space-x-2">
-                  <button @click="editRegularSchedule(schedule)" class="text-blue-600 hover:text-blue-800 p-1"
-                    title="Edit">
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50 sticky top-0 z-10">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hari</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Misa</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+              <tr v-for="schedule in sortedRegularSchedules" :key="schedule.id"
+                :class="!schedule.is_active ? 'opacity-50 bg-gray-50' : 'hover:bg-gray-50'"
+                class="transition-opacity">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    :class="schedule.day_of_week === 'Minggu' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'">
+                    {{ schedule.day_of_week }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ schedule.time }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ schedule.mass_type }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <button @click="toggleRegularSchedule(schedule)" type="button"
+                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                    :class="schedule.is_active ? 'bg-green-500' : 'bg-gray-300'"
+                    :title="schedule.is_active ? 'Nonaktifkan' : 'Aktifkan'">
+                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                      :class="schedule.is_active ? 'translate-x-5' : 'translate-x-0'"></span>
+                  </button>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                  <button @click="editRegularSchedule(schedule)" class="text-blue-600 hover:text-blue-800 p-1 mr-1" title="Edit">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                      </path>
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                   </button>
-                  <button @click="toggleRegularSchedule(schedule)"
-                    :class="schedule.is_active ? 'text-yellow-600 hover:text-yellow-800' : 'text-green-600 hover:text-green-800'"
-                    class="p-1" :title="schedule.is_active ? 'Nonaktifkan' : 'Aktifkan'">
-                    <svg v-if="schedule.is_active" class="w-5 h-5" fill="none" stroke="currentColor"
-                      viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21">
-                      </path>
-                    </svg>
-                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </button>
-                  <button @click="deleteRegularSchedule(schedule)" class="text-red-600 hover:text-red-800 p-1"
-                    title="Hapus">
+                  <button @click="deleteRegularSchedule(schedule)" class="text-red-600 hover:text-red-800 p-1" title="Hapus">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                      </path>
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
                   </button>
-                </div>
-              </div>
-            </div>
-          </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -141,61 +144,57 @@
           <p class="mt-1 text-sm text-gray-500">Mulai dengan membuat jadwal misa khusus pertama.</p>
         </div>
 
-        <div v-else class="p-6">
-          <div class="space-y-4">
-            <div v-for="schedule in specialSchedules" :key="schedule.id"
-              class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-              <div class="flex justify-between items-start">
-                <div class="flex-1">
-                  <h4 class="text-lg font-medium text-gray-900">{{ schedule.title }}</h4>
-                  <div class="mt-2 space-y-1 text-sm text-gray-600">
-                    <p><span class="font-medium">Tanggal:</span> {{ formatDate(schedule.date) }}</p>
-                    <p><span class="font-medium">Waktu:</span> {{ schedule.time }}</p>
-                    <p><span class="font-medium">Lokasi:</span> {{ schedule.location }}</p>
-                    <p v-if="schedule.priest_name"><span class="font-medium">Umat:</span> {{ schedule.priest_name }}</p>
-                    <p><span class="font-medium">Status:</span>
-                      <span :class="schedule.status === 'active' ? 'text-green-600' : 'text-red-600'">
-                        {{ schedule.status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
-                      </span>
-                    </p>
-                  </div>
-                  <p v-if="schedule.notes" class="mt-2 text-sm text-gray-500">{{ schedule.notes }}</p>
-                </div>
-                <div class="flex space-x-2">
-                  <button @click="editSpecialSchedule(schedule)" class="text-blue-600 hover:text-blue-800 p-1"
-                    title="Edit">
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50 sticky top-0 z-10">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imam / Umat</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-100">
+              <tr v-for="schedule in sortedSpecialSchedules" :key="schedule.id"
+                :class="schedule.status !== 'active' ? 'opacity-50 bg-gray-50' : 'hover:bg-gray-50'"
+                class="transition-opacity">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ formatDate(schedule.date) }}</td>
+                <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                  {{ schedule.title }}
+                  <p v-if="schedule.notes" class="text-xs text-gray-400 mt-0.5">{{ schedule.notes }}</p>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ schedule.time }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ schedule.location }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ schedule.priest_name || '-' }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <button @click="toggleSpecialSchedule(schedule)" type="button"
+                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                    :class="schedule.status === 'active' ? 'bg-green-500' : 'bg-gray-300'"
+                    :title="schedule.status === 'active' ? 'Nonaktifkan' : 'Aktifkan'">
+                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                      :class="schedule.status === 'active' ? 'translate-x-5' : 'translate-x-0'"></span>
+                  </button>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                  <button @click="editSpecialSchedule(schedule)" class="text-blue-600 hover:text-blue-800 p-1 mr-1" title="Edit">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
-                      </path>
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                     </svg>
                   </button>
-                  <button @click="toggleSpecialSchedule(schedule)"
-                    :class="schedule.status === 'active' ? 'text-yellow-600 hover:text-yellow-800' : 'text-green-600 hover:text-green-800'"
-                    class="p-1" :title="schedule.status === 'active' ? 'Nonaktifkan' : 'Aktifkan'">
-                    <svg v-if="schedule.status === 'active'" class="w-5 h-5" fill="none" stroke="currentColor"
-                      viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21">
-                      </path>
-                    </svg>
-                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </button>
-                  <button @click="deleteSpecialSchedule(schedule)" class="text-red-600 hover:text-red-800 p-1"
-                    title="Hapus">
+                  <button @click="deleteSpecialSchedule(schedule)" class="text-red-600 hover:text-red-800 p-1" title="Hapus">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                      </path>
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                     </svg>
                   </button>
-                </div>
-              </div>
-            </div>
-          </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -454,6 +453,15 @@ const liturgyTypes = ref([])
 const liturgyTypesLoading = ref(false)
 const loading = ref(false)
 const saving = ref(false)
+
+// Sorted computed lists
+const DAY_ORDER = { 'Senin': 1, 'Selasa': 2, 'Rabu': 3, 'Kamis': 4, 'Jumat': 5, 'Sabtu': 6, 'Minggu': 7 }
+const sortedRegularSchedules = computed(() =>
+  [...regularSchedules.value].sort((a, b) => (DAY_ORDER[a.day_of_week] || 8) - (DAY_ORDER[b.day_of_week] || 8))
+)
+const sortedSpecialSchedules = computed(() =>
+  [...specialSchedules.value].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+)
 
 // Modal states
 const showAddRegularModal = ref(false)
