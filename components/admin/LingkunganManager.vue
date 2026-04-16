@@ -632,7 +632,7 @@
                 @click.self="closeBulkEditModal">
                 <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
                     <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-gray-900">Edit Massal - Tambah No. HP Pengurus</h2>
+                        <h2 class="text-2xl font-bold text-gray-900">Edit Massal - Tambah No. HP Kontak</h2>
                         <button @click="closeBulkEditModal" class="text-gray-400 hover:text-gray-600 transition-colors">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -655,7 +655,7 @@
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lingkungan</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Wilayah</th>
-                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. HP Pengurus</th>
+                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. HP Kontak</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">KK</th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jiwa</th>
                                     </tr>
@@ -1078,7 +1078,7 @@ const editLingkungan = (lingkungan) => {
 // Full edit for DPP data
 const editLingkunganLimited = (lingkungan) => {
     formData.value = { ...lingkungan }
-    modalMode.value = 'edit'
+    modalMode.value = 'edit-limited'
     showModal.value = true
 }
 
@@ -1205,7 +1205,24 @@ const saveLingkungan = async () => {
     // Close modal immediately BEFORE optimistic update
     closeModal()
 
-    // Optimistic update with proper reactivity (skip for edit-limited mode)
+    // Optimistic update for edit-limited mode (only KK / jiwa / HP fields)
+    if (isEditLimited) {
+        const targetId = isEdit ? editId : dppSourceItemId
+        if (targetId) {
+            const index = lingkunganList.value.findIndex(l => l.id === targetId)
+            if (index !== -1) {
+                lingkunganList.value.splice(index, 1, {
+                    ...lingkunganList.value[index],
+                    jumlah_kk: lingkunganData.jumlah_kk ?? lingkunganList.value[index].jumlah_kk,
+                    jumlah_jiwa: lingkunganData.jumlah_jiwa ?? lingkunganList.value[index].jumlah_jiwa,
+                    no_hp_pengurus: lingkunganData.no_hp_pengurus ?? lingkunganList.value[index].no_hp_pengurus,
+                    updated_at: new Date().toISOString()
+                })
+            }
+        }
+    }
+
+    // Optimistic update with proper reactivity (for non-edit-limited)
     if (!isEditLimited) {
         if (isEdit) {
             // Update existing item optimistically using splice for reactivity
@@ -1475,53 +1492,53 @@ const closeBulkEditModal = () => {
 }
 
 const saveBulkEdit = async () => {
-    let successCount = 0
-    let errorCount = 0
-    const errors = []
-
     // Close modal immediately for better UX
     closeBulkEditModal()
 
     // Show progress toast
     showToast('Menyimpan perubahan...', 'info')
 
-    for (const ling of selectedLingkungan.value) {
-        const editData = bulkEditData.value[ling.id]
-        
-        // Check if there's any data to save (at least one field filled)
-        const hasData = editData.no_hp_pengurus || editData.jumlah_kk > 0 || editData.jumlah_jiwa > 0
-        
-        if (!hasData) {
-            continue // Skip if no data provided
-        }
+    // Filter only items that have data to save
+    const itemsToSave = selectedLingkungan.value.filter(ling => {
+        const e = bulkEditData.value[ling.id]
+        return e.no_hp_pengurus || e.jumlah_kk > 0 || e.jumlah_jiwa > 0
+    })
 
-        try {
-            // Check if lingkungan already exists in database (match by NO + WILAYAH)
-            const lingWilayah = ling.wilayah_text || ling.wilayah_nama
-            const existingDbRecord = lingkunganFromDB.value.find(l => {
-                const matchNo = parseInt(l.no) === parseInt(ling.no)
-                const matchWilayah = (l.wilayah_text === lingWilayah) || (l.wilayah_nama === lingWilayah)
-                return matchNo && matchWilayah
-            })
-            
-            if (existingDbRecord) {
-                // UPDATE existing record
-                console.log(`[Bulk Edit] Updating existing record for Ling ${ling.no} + wilayah='${lingWilayah}' (id=${existingDbRecord.id})`)
-                
-                const updatePayload = {}
-                if (editData.no_hp_pengurus) updatePayload.no_hp_pengurus = editData.no_hp_pengurus.trim()
-                if (editData.jumlah_kk > 0) updatePayload.jumlah_kk = editData.jumlah_kk
-                if (editData.jumlah_jiwa > 0) updatePayload.jumlah_jiwa = editData.jumlah_jiwa
-                
-                await $fetch(`/api/admin/lingkungan/${existingDbRecord.id}`, {
-                    method: 'PUT',
-                    body: updatePayload
-                })
-            } else {
-                // CREATE new record (for DPP-only lingkungan)
-                console.log(`[Bulk Edit] Creating new record for Ling ${ling.no}`)
-                
-                const createPayload = {
+    // Optimistic update: reflect changes in the list immediately
+    for (const ling of itemsToSave) {
+        const editData = bulkEditData.value[ling.id]
+        const index = lingkunganList.value.findIndex(l => l.id === ling.id)
+        if (index !== -1) {
+            const updated = { ...lingkunganList.value[index] }
+            if (editData.no_hp_pengurus) updated.no_hp_pengurus = editData.no_hp_pengurus.trim()
+            if (editData.jumlah_kk > 0) updated.jumlah_kk = editData.jumlah_kk
+            if (editData.jumlah_jiwa > 0) updated.jumlah_jiwa = editData.jumlah_jiwa
+            lingkunganList.value.splice(index, 1, updated)
+        }
+    }
+
+    // Fire all API calls in parallel
+    const savePromises = itemsToSave.map(async (ling) => {
+        const editData = bulkEditData.value[ling.id]
+        const lingWilayah = ling.wilayah_text || ling.wilayah_nama
+        const existingDbRecord = lingkunganFromDB.value.find(l => {
+            const matchNo = parseInt(l.no) === parseInt(ling.no)
+            const matchWilayah = (l.wilayah_text === lingWilayah) || (l.wilayah_nama === lingWilayah)
+            return matchNo && matchWilayah
+        })
+
+        if (existingDbRecord) {
+            console.log(`[Bulk Edit] Updating existing record for Ling ${ling.no} + wilayah='${lingWilayah}' (id=${existingDbRecord.id})`)
+            const updatePayload = {}
+            if (editData.no_hp_pengurus) updatePayload.no_hp_pengurus = editData.no_hp_pengurus.trim()
+            if (editData.jumlah_kk > 0) updatePayload.jumlah_kk = editData.jumlah_kk
+            if (editData.jumlah_jiwa > 0) updatePayload.jumlah_jiwa = editData.jumlah_jiwa
+            return $fetch(`/api/admin/lingkungan/${existingDbRecord.id}`, { method: 'PUT', body: updatePayload })
+        } else {
+            console.log(`[Bulk Edit] Creating new record for Ling ${ling.no}`)
+            return $fetch('/api/admin/lingkungan', {
+                method: 'POST',
+                body: {
                     no: ling.no,
                     nama: ling.nama,
                     wilayah_id: ling.wilayah_id || null,
@@ -1534,20 +1551,17 @@ const saveBulkEdit = async () => {
                     color: ling.color || '#3B82F6',
                     is_visible: 1
                 }
-                
-                await $fetch('/api/admin/lingkungan', {
-                    method: 'POST',
-                    body: createPayload
-                })
-            }
-            
-            successCount++
-        } catch (err) {
-            console.error(`Error saving lingkungan ${ling.nama}:`, err)
-            errorCount++
-            errors.push(ling.nama)
+            })
         }
-    }
+    })
+
+    const results = await Promise.allSettled(savePromises)
+    const successCount = results.filter(r => r.status === 'fulfilled').length
+    const errorCount = results.filter(r => r.status === 'rejected').length
+    const errors = itemsToSave.filter((_, i) => results[i].status === 'rejected').map(l => l.nama)
+    results.filter(r => r.status === 'rejected').forEach((r, i) =>
+        console.error(`Error saving lingkungan ${itemsToSave[i].nama}:`, r.reason)
+    )
 
     // Refresh data after bulk edit
     await fetchLingkunganFromDB()
