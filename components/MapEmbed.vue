@@ -6,7 +6,7 @@
       style="aspect-ratio: 1 / 1; width: 65%;">
       <!-- Real Map Thumbnail Image -->
       <img :src="mapThumbnailUrl" :alt="title" class="w-full h-full transition-opacity duration-300"
-        :class="imageError ? 'opacity-0' : 'opacity-100'" style="object-fit: cover; object-position: center;"
+        :class="imageError ? 'opacity-0' : 'opacity-100'" style="object-fit: contain; object-position: center; background-color: #ffffff;"
         @error="handleImageError" @load="handleImageLoad" />
 
       <!-- Fallback if image fails to load -->
