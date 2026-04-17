@@ -71,8 +71,7 @@
           <h2 class="text-xl md:text-2xl font-cinzel font-bold text-[#882f1d] mb-4 text-center">📍 Peta Wilayah
             Interaktif</h2>
           <MapEmbed :height="600" title="Peta Wilayah Teritorial Paroki St. Paulus Juanda"
-            address="Paroki St Paulus Juanda Sidoarjo" thumbnail-desktop="/images/map-thumbnail-desktop.jpg"
-            thumbnail-mobile="/images/map-thumbnail-mobile.jpg" />
+            address="Paroki St Paulus Juanda Sidoarjo" />
         </div>
 
         <!-- Daftar Lingkungan -->
