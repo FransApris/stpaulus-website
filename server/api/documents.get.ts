@@ -5,6 +5,9 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const categoryId = query.category_id
 
+  const whereClause = categoryId ? `WHERE d.category_id = ?` : ''
+  const params = categoryId ? [categoryId] : []
+
   let sql = `
     SELECT
       d.id,
@@ -20,18 +23,10 @@ export default defineEventHandler(async (event) => {
       dc.name as category_name,
       dc.color as category_color
     FROM documents d
-    INNER JOIN document_categories dc ON d.category_id = dc.id
-    WHERE dc.is_active = 1
+    LEFT JOIN document_categories dc ON d.category_id = dc.id
+    ${whereClause}
+    ORDER BY d.created_at DESC
   `
-
-  const params = []
-
-  if (categoryId) {
-    sql += ` AND d.category_id = ?`
-    params.push(categoryId)
-  }
-
-  sql += ` ORDER BY d.created_at DESC`
 
   const documents = await allQuery(sql, params)
 

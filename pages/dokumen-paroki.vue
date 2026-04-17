@@ -172,7 +172,8 @@ const filteredDocuments = computed(() => {
   if (!selectedCategory.value) {
     return documents.value
   }
-  return documents.value.filter(doc => doc.category_id === selectedCategory.value)
+  // Use == (not ===) to handle potential number/string mismatch from API
+  return documents.value.filter(doc => doc.category_id == selectedCategory.value)
 })
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredDocuments.value.length / pageLimit)))
