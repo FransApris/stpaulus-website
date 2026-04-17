@@ -670,7 +670,7 @@ const menuVisibility = computed(() => {
       bookings: false,
       chatbotFaqCategories: hasPermission('manage_chatbot_faqs') || hasPermission('manage_chatbot'),
       chatbotFaqs: true,
-      heroThemes: true,
+      heroThemes: false,
       pastors: false,
       bgkp: false,
       dpp: false,
@@ -678,7 +678,7 @@ const menuVisibility = computed(() => {
       documentCategories: false,
       documents: false,
       kronikEntries: true,
-      kronikSections: true,
+      kronikSections: false,
       contentReport: true,
       bookingReport: false
     }
