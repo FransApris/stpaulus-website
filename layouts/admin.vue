@@ -26,25 +26,24 @@
               Dashboard
             </NuxtLink>
 
-            <!-- Manajemen Konten -->
-            <div v-if="groupVisibility.content">
-              <div @click="openGroups.content = !openGroups.content"
+            <!-- Artikel -->
+            <div v-if="groupVisibility.artikel">
+              <div @click="openGroups.artikel = !openGroups.artikel"
                 class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 cursor-pointer"
-                :class="isGroupActive('content') ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
+                :class="isGroupActive('artikel') ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                   </path>
                 </svg>
-                Manajemen Konten
+                Artikel
                 <svg class="w-4 h-4 ml-auto transition-transform duration-200"
-                  :class="openGroups.content ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  :class="openGroups.artikel ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>
               </div>
-              <div v-show="openGroups.content" class="ml-6 space-y-1">
-                <!-- kelola artikel -->
-                <NuxtLink v-if="menuVisibility.articles" to="/admin/articles" :prefetch="false" @click.stop
+              <div v-show="openGroups.artikel" class="ml-6 space-y-1">
+                <NuxtLink v-if="menuVisibility.articles" to="/admin/articles" :prefetch="false"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/articles' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,8 +53,7 @@
                   </svg>
                   Kelola Artikel
                 </NuxtLink>
-                <!-- kategori artikel/ berita -->
-                <NuxtLink v-if="menuVisibility.articleCategories" to="/admin/article-categories" @click.stop
+                <NuxtLink v-if="menuVisibility.articleCategories" to="/admin/article-categories"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/article-categories' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,8 +63,27 @@
                   </svg>
                   Kategori Artikel / Berita
                 </NuxtLink>
-                <!-- kelola berita -->
-                <NuxtLink v-if="menuVisibility.news" to="/admin/news" :prefetch="false" @click.stop
+              </div>
+            </div>
+
+            <!-- Berita -->
+            <div v-if="groupVisibility.berita">
+              <div @click="openGroups.berita = !openGroups.berita"
+                class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 cursor-pointer"
+                :class="isGroupActive('berita') ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z">
+                  </path>
+                </svg>
+                Berita
+                <svg class="w-4 h-4 ml-auto transition-transform duration-200"
+                  :class="openGroups.berita ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+              <div v-show="openGroups.berita" class="ml-6 space-y-1">
+                <NuxtLink v-if="menuVisibility.news" to="/admin/news" :prefetch="false"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/news' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,8 +93,27 @@
                   </svg>
                   Kelola Berita
                 </NuxtLink>
-                <!-- kelola galeri -->
-                <NuxtLink v-if="menuVisibility.gallery" to="/admin/gallery" @click.stop
+              </div>
+            </div>
+
+            <!-- Galeri -->
+            <div v-if="groupVisibility.galeri">
+              <div @click="openGroups.galeri = !openGroups.galeri"
+                class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 cursor-pointer"
+                :class="isGroupActive('galeri') ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                  </path>
+                </svg>
+                Galeri
+                <svg class="w-4 h-4 ml-auto transition-transform duration-200"
+                  :class="openGroups.galeri ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+              <div v-show="openGroups.galeri" class="ml-6 space-y-1">
+                <NuxtLink v-if="menuVisibility.gallery" to="/admin/gallery"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/gallery' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,8 +123,7 @@
                   </svg>
                   Kelola Galeri
                 </NuxtLink>
-                <!-- kategori galeri -->
-                <NuxtLink v-if="hasPermission('manage_gallery_categories')" to="/admin/gallery-categories" @click.stop
+                <NuxtLink v-if="hasPermission('manage_gallery_categories')" to="/admin/gallery-categories"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/gallery-categories' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +133,26 @@
                   </svg>
                   Kategori Galeri
                 </NuxtLink>
-                <!-- kelola chatbot -->
+              </div>
+            </div>
+
+            <!-- Chatbot -->
+            <div v-if="groupVisibility.chatbot">
+              <div @click="openGroups.chatbot = !openGroups.chatbot"
+                class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 cursor-pointer"
+                :class="isGroupActive('chatbot') ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+                  </path>
+                </svg>
+                Chatbot FAQ
+                <svg class="w-4 h-4 ml-auto transition-transform duration-200"
+                  :class="openGroups.chatbot ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </div>
+              <div v-show="openGroups.chatbot" class="ml-6 space-y-1">
                 <NuxtLink v-if="menuVisibility.chatbotFaqs" to="/admin/chatbot-faqs"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/chatbot-faqs' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
@@ -109,7 +163,6 @@
                   </svg>
                   Kelola Chatbot FAQ
                 </NuxtLink>
-                <!-- kategori chatbot -->
                 <NuxtLink v-if="menuVisibility.chatbotFaqCategories" to="/admin/chatbot-faq-categories"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/chatbot-faq-categories' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
@@ -528,7 +581,10 @@ const user = useState('admin-layout-user', () => null)
 
 // Group toggle states
 const openGroups = reactive({
-  content: false,
+  artikel: false,
+  berita: false,
+  galeri: false,
+  chatbot: false,
   schedule: false,
   admin: false,
   theme: false,
@@ -540,7 +596,10 @@ const openGroups = reactive({
 // Auto-open sidebar group berdasarkan route saat ini
 const route = useRoute()
 const groupRouteMap = {
-  content: ['/admin/articles', '/admin/article-categories', '/admin/news', '/admin/gallery', '/admin/chatbot-faq-categories', '/admin/chatbot-faqs'],
+  artikel: ['/admin/articles', '/admin/article-categories'],
+  berita: ['/admin/news'],
+  galeri: ['/admin/gallery', '/admin/gallery-categories'],
+  chatbot: ['/admin/chatbot-faq-categories', '/admin/chatbot-faqs'],
   kronik: ['/admin/kronik'],
   schedule: ['/admin/agenda', '/admin/categories', '/admin/liturgy-types', '/admin/regular-mass-schedules', '/admin/mass-schedules'],
   admin: ['/admin/users', '/admin/user-categories', '/admin/rooms', '/admin/bookings-new', '/admin/announcements', '/admin/contact-messages'],
@@ -746,7 +805,10 @@ const menuVisibility = computed(() => {
 // Computed for group visibility
 const groupVisibility = computed(() => {
   return {
-    content: menuVisibility.value.articles || menuVisibility.value.news || menuVisibility.value.articleCategories || menuVisibility.value.gallery || menuVisibility.value.chatbotFaqCategories || menuVisibility.value.chatbotFaqs,
+    artikel: menuVisibility.value.articles || menuVisibility.value.articleCategories,
+    berita: menuVisibility.value.news,
+    galeri: menuVisibility.value.gallery,
+    chatbot: menuVisibility.value.chatbotFaqCategories || menuVisibility.value.chatbotFaqs,
     kronik: menuVisibility.value.kronikEntries || menuVisibility.value.kronikSections,
     schedule: menuVisibility.value.agenda || menuVisibility.value.agendaCategories || menuVisibility.value.regularMassSchedules || menuVisibility.value.massSchedules || menuVisibility.value.liturgyTypes,
     admin: menuVisibility.value.users || menuVisibility.value.userCategories || menuVisibility.value.rooms || menuVisibility.value.bookings || menuVisibility.value.bookingReport || menuVisibility.value.contentReport,
@@ -758,7 +820,10 @@ const groupVisibility = computed(() => {
 // Function to check if group is active
 const isGroupActive = (group) => {
   const routes = {
-    content: ['/admin/articles', '/admin/article-categories', '/admin/news', '/admin/gallery', '/admin/chatbot-faq-categories', '/admin/chatbot-faqs'],
+    artikel: ['/admin/articles', '/admin/article-categories'],
+    berita: ['/admin/news'],
+    galeri: ['/admin/gallery', '/admin/gallery-categories'],
+    chatbot: ['/admin/chatbot-faq-categories', '/admin/chatbot-faqs'],
     kronik: ['/admin/kronik', '/admin/kronik/create', '/admin/kronik/sections'],
     schedule: ['/admin/agenda', '/admin/categories', '/admin/liturgy-types', '/admin/regular-mass-schedules', '/admin/mass-schedules'],
     admin: ['/admin/users', '/admin/user-categories', '/admin/rooms', '/admin/bookings-new', '/admin/bookings-report', '/admin/content-report', '/admin/announcements', '/admin/contact-messages'],
