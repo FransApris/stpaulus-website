@@ -70,8 +70,13 @@
         <div class="max-w-7xl mx-auto mb-8 md:mb-12">
           <h2 class="text-xl md:text-2xl font-cinzel font-bold text-[#882f1d] mb-4 text-center">📍 Peta Wilayah
             Interaktif</h2>
-          <MapEmbed :height="600" title="Peta Wilayah Teritorial Paroki St. Paulus Juanda"
-            address="Paroki St Paulus Juanda Sidoarjo" thumbnail-size="65%" />
+          <!-- wrapper: full lebar di mobile, 50% di desktop -->
+          <div class="flex justify-center">
+            <div class="w-full md:w-1/2">
+              <MapEmbed :height="600" title="Peta Wilayah Teritorial Paroki St. Paulus Juanda"
+                address="Paroki St Paulus Juanda Sidoarjo" />
+            </div>
+          </div>
         </div>
 
         <!-- Daftar Lingkungan -->
