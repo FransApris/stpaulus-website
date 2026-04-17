@@ -6,6 +6,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { requireAuth, requirePermission } from '~/server/utils/auth'
+import { isCloudinaryEnabled, uploadToCloudinary } from '~/server/utils/cloudinary'
 
 export default defineEventHandler(async (event) => {
     requireAuth(event)
@@ -46,25 +47,34 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        // Generate unique filename
-        const timestamp = Date.now()
-        const randomString = Math.random().toString(36).substring(2, 8)
-        const ext = file.filename.split('.').pop()
-        const filename = `announcement-${timestamp}-${randomString}.${ext}`
+        let publicUrl: string
 
-        // Create upload directory if not exists
-        const uploadDir = join(process.cwd(), 'public', 'uploads', 'announcements')
-        if (!existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true })
+        if (isCloudinaryEnabled()) {
+            // Upload to Cloudinary — persists across redeploys
+            console.log('[Announcement Upload] Uploading to Cloudinary...')
+            publicUrl = await uploadToCloudinary(
+                Buffer.from(file.data),
+                'announcements',
+                file.filename
+            )
+            console.log('[Announcement Upload] Cloudinary success:', publicUrl)
+        } else {
+            // Fallback: save to local disk
+            const timestamp = Date.now()
+            const randomString = Math.random().toString(36).substring(2, 8)
+            const ext = file.filename.split('.').pop()
+            const filename = `announcement-${timestamp}-${randomString}.${ext}`
+
+            const uploadDir = join(process.cwd(), 'public', 'uploads', 'announcements')
+            if (!existsSync(uploadDir)) {
+                await mkdir(uploadDir, { recursive: true })
+            }
+
+            const filePath = join(uploadDir, filename)
+            await writeFile(filePath, file.data)
+            publicUrl = `/uploads/announcements/${filename}`
+            console.log('[Announcement Upload] Saved locally (Cloudinary not configured):', publicUrl)
         }
-
-        // Save file
-        const filePath = join(uploadDir, filename)
-        await writeFile(filePath, file.data)
-
-        const publicUrl = `/uploads/announcements/${filename}`
-
-        console.log('[Announcement Upload] File uploaded:', publicUrl)
 
         return {
             success: true,

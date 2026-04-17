@@ -2,6 +2,7 @@ import { runQuery } from '../../../../../database/db'
 import { requirePermission } from '../../../../../utils/auth'
 import { promises as fs } from 'fs'
 import path from 'path'
+import { isCloudinaryEnabled, uploadToCloudinary } from '../../../../../utils/cloudinary'
 
 export default defineEventHandler(async (event) => {
   // Check permissions
@@ -65,18 +66,28 @@ export default defineEventHandler(async (event) => {
   const ext = path.extname(originalFilename)
   const filename = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}${ext}`
 
-  // Ensure upload directory exists
-  const uploadDir = path.join(process.cwd(), 'public/uploads/gallery')
-  await fs.mkdir(uploadDir, { recursive: true })
+  let photoPath: string
 
-  // Save file
-  const filepath = path.join(uploadDir, filename)
-  await fs.writeFile(filepath, file.data)
+  if (isCloudinaryEnabled()) {
+    // Upload to Cloudinary — persists across redeploys
+    photoPath = await uploadToCloudinary(
+      Buffer.from(file.data),
+      'gallery',
+      originalFilename
+    )
+  } else {
+    // Fallback: save to local disk
+    const uploadDir = path.join(process.cwd(), 'public/uploads/gallery')
+    await fs.mkdir(uploadDir, { recursive: true })
+    const filepath = path.join(uploadDir, filename)
+    await fs.writeFile(filepath, file.data)
+    photoPath = `/uploads/gallery/${filename}`
+  }
 
   // Save to database
   const result = await runQuery(
     'INSERT INTO gallery_photos (album_id, filename, original_filename, path, size, mime_type) VALUES (?, ?, ?, ?, ?, ?)',
-    [albumId, filename, originalFilename, `/uploads/gallery/${filename}`, file.data.length, file.type]
+    [albumId, filename, originalFilename, photoPath, file.data.length, file.type]
   )
 
   return {
@@ -86,7 +97,7 @@ export default defineEventHandler(async (event) => {
       album_id: albumId,
       filename,
       original_filename: originalFilename,
-      path: `/uploads/gallery/${filename}`,
+      path: photoPath,
       size: file.data.length,
       mime_type: file.type
     }
