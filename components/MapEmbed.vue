@@ -2,8 +2,8 @@
   <div ref="mapContainer" class="map-container">
     <!-- Static Thumbnail Preview (show before map loads) -->
     <div v-if="!mapActivated" @click="activateAndLoadMap"
-      class="relative rounded-lg overflow-hidden shadow-lg cursor-pointer group bg-transparent mx-auto"
-      style="aspect-ratio: 1 / 1; width: 65%;">
+      class="relative rounded-lg overflow-hidden shadow-lg cursor-pointer group bg-transparent mx-auto w-[90%] sm:w-[75%] md:w-[65%]"
+      style="aspect-ratio: 1 / 1;">
       <!-- Real Map Thumbnail Image -->
       <img :src="mapThumbnailUrl" :alt="title" class="w-full h-full transition-opacity duration-300"
         :class="imageError ? 'opacity-0' : 'opacity-100'" style="object-fit: contain; object-position: center; background-color: #ffffff;"
