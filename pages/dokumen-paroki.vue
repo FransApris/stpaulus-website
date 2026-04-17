@@ -166,6 +166,7 @@ const loadingDocId = ref(null)
 const selectedCategory = ref('')
 const currentPage = useState('public-documents-page', () => 1)
 const pageLimit = 10
+let fetchDocumentsSeq = 0
 
 // Computed filtered documents
 const filteredDocuments = computed(() => {
@@ -206,14 +207,19 @@ const fetchCategories = async () => {
 
 // Fetch documents
 const fetchDocuments = async () => {
+  const mySeq = ++fetchDocumentsSeq
   loading.value = true
   try {
-    const response = await $fetch('/api/documents', { server: false })
-    documents.value = response
+    const response = await $fetch('/api/documents')
+    if (mySeq === fetchDocumentsSeq) {
+      documents.value = response
+    }
   } catch (error) {
     console.error('Failed to fetch documents:', error)
   } finally {
-    loading.value = false
+    if (mySeq === fetchDocumentsSeq) {
+      loading.value = false
+    }
   }
 }
 
