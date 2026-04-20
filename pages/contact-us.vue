@@ -12,9 +12,9 @@
         </div>
 
         <!-- Lokasi Map -->
-        <div class="mb-12 max-w-5xl mx-auto">
+        <div class="mb-12 max-w-3xl mx-auto">
           <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-6 text-center">Lokasi Kami</h2>
-          <MapEmbed :height="400" title="Lokasi Paroki St. Paulus Juanda"
+          <MapEmbed :height="240" title="Lokasi Paroki St. Paulus Juanda"
             address="Jl. Raya Bandara Juanda No.10, Semambung, Kec. Gedangan, Kabupaten Sidoarjo, Jawa Timur 61254" />
         </div>
 
