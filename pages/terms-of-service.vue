@@ -154,6 +154,31 @@
             </div>
           </div>
 
+          <!-- 7. Hak Cipta -->
+          <div id="section-7" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="flex items-center gap-4 px-6 py-4 bg-[#882f1d]/5 border-b border-[#882f1d]/10">
+              <div class="w-9 h-9 rounded-full bg-[#882f1d] flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8a1 1 0 10-2 0v1H7z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <h2 class="text-lg font-cinzel font-semibold text-[#882f1d]">7. Hak Cipta</h2>
+            </div>
+            <div class="px-6 py-5">
+              <div class="flex items-start gap-4 p-4 bg-amber-50 border border-amber-200 rounded-lg mb-4">
+                <svg class="w-6 h-6 text-amber-600 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V8a1 1 0 10-2 0v1H7z" clip-rule="evenodd"/>
+                </svg>
+                <p class="text-amber-800 font-semibold">Hak Cipta © {{ new Date().getFullYear() }} Paroki St. Paulus Juanda – Sidoarjo.</p>
+              </div>
+              <p class="text-gray-700 leading-relaxed">
+                Seluruh konten, teks, gambar, logo, desain, dokumentasi, dan materi multimedia yang terdapat
+                di situs web <span class="font-medium text-[#882f1d]">stpaulusjuanda.org</span> dilindungi oleh undang-undang hak cipta dan
+                peraturan perundang-undangan yang berlaku di Republik Indonesia.
+              </p>
+            </div>
+          </div>
+
           <!-- CTA Kontak -->
           <div class="bg-gradient-to-br from-[#882f1d] to-[#5a1e12] rounded-xl shadow-sm overflow-hidden">
             <div class="px-6 py-8 text-center">
@@ -195,6 +220,7 @@ const sections = [
   'Penolakan Jaminan',
   'Perubahan Syarat',
   'Hukum yang Berlaku',
+  'Hak Cipta',
 ]
 
 const usageItems = [
