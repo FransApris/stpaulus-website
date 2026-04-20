@@ -29,7 +29,7 @@
         <!-- Table of Contents -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
           <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Daftar Isi</h2>
-          <ol class="space-y-2">
+          <ol class="list-none space-y-2 p-0 m-0">
             <li v-for="(item, i) in sections" :key="i">
               <a :href="'#section-' + (i+1)" class="flex items-center gap-3 text-gray-700 hover:text-[#882f1d] transition-colors group">
                 <span class="w-6 h-6 rounded-full bg-[#882f1d]/10 text-[#882f1d] text-xs font-bold flex items-center justify-center shrink-0 group-hover:bg-[#882f1d] group-hover:text-white transition-colors">{{ i + 1 }}</span>
