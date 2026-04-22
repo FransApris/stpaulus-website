@@ -36,8 +36,13 @@
                 {{ link.title }}
               </NuxtLink>
             </li>
-            <li class="text-gray-300 text-sm">
-              © {{ currentYear }} {{ footerData.settings?.copyright_entity || 'KOMSOS Paroki St. Paulus - Juanda' }}
+            <li>
+              <NuxtLink
+                to="/terms-of-service#hak-cipta"
+                class="text-gray-300 hover:text-white transition-colors duration-200"
+              >
+                Hak Cipta
+              </NuxtLink>
             </li>
           </ul>
         </div>
@@ -90,6 +95,13 @@
         >
           <i :class="social.platform_icon" class="text-xl"></i>
         </a>
+      </div>
+
+      <!-- Copyright -->
+      <div class="border-t border-gray-700 pt-8 text-center mb-4">
+        <p class="text-sm text-gray-300">
+          © {{ currentYear }} {{ footerData.settings?.copyright_entity || 'KOMSOS Paroki St. Paulus - Juanda' }}
+        </p>
       </div>
 
       <!-- Mobile Bottom Nav Spacer - ensures content is above mobile nav -->
