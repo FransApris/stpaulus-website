@@ -36,6 +36,9 @@
                 {{ link.title }}
               </NuxtLink>
             </li>
+            <li class="text-gray-300 text-sm">
+              © {{ currentYear }} {{ footerData.settings?.copyright_entity || 'KOMSOS Paroki St. Paulus - Juanda' }}
+            </li>
           </ul>
         </div>
 
@@ -89,13 +92,6 @@
         </a>
       </div>
 
-      <!-- Copyright -->
-      <div class="border-t border-gray-700 pt-8 text-center mb-4">
-        <p class="text-sm text-gray-300">
-          © {{ currentYear }} {{ footerData.settings?.copyright_entity || 'KOMSOS Paroki St. Paulus - Juanda' }}
-        </p>
-      </div>
-      
       <!-- Mobile Bottom Nav Spacer - ensures content is above mobile nav -->
       <div class="h-16 md:hidden" aria-hidden="true"></div>
     </div>
