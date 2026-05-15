@@ -6,7 +6,7 @@
     <!-- Main Content: Full Remaining Height -->
     <main
       :class="isHomePage
-        ? 'flex-grow pt-16 pb-20 md:pb-4 overflow-x-hidden w-full max-w-full'
+        ? 'flex-grow pb-20 md:pb-4 overflow-x-hidden w-full max-w-full'
         : 'flex-grow pt-16 container mx-auto p-4 pb-20 md:pb-4 overflow-x-hidden max-w-full'"
       style="box-sizing: border-box;"> <!-- Offset fixed navbar and mobile bottom nav -->
       <NuxtPage />
