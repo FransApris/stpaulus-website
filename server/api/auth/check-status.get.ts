@@ -1,4 +1,4 @@
-import { getQuery } from '../../database/db'
+import { getQuery as dbQuery } from '../../database/db'
 
 /**
  * Public endpoint — let a registered user check their own account status.
@@ -18,12 +18,12 @@ export default defineEventHandler(async (event) => {
     let row: any
 
     if (username) {
-      row = await getQuery(
+      row = await dbQuery(
         'SELECT account_status FROM users WHERE LOWER(username) = LOWER(?) AND (role_id IS NULL OR role_id = 0)',
         [username]
       )
     } else {
-      row = await getQuery(
+      row = await dbQuery(
         'SELECT account_status FROM users WHERE LOWER(email) = LOWER(?) AND (role_id IS NULL OR role_id = 0)',
         [email!]
       )
