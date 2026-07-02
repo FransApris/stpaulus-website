@@ -18,7 +18,9 @@
             <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
           </div>
           <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Paroki St. Paulus Juanda</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jl. Raya Bandara Juanda No.10, Semambung, Kec. Gedangan, Kabupaten Sidoarjo, Jawa Timur 61254<br />Tel: 031-8557854 | Email: stpaulus.sekretariat@gmail.com</p>
+          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jl. Raya Bandara Juanda No.10, Semambung, Kec.
+            Gedangan, Kabupaten Sidoarjo, Jawa Timur 61254<br />Tel: 031-8557854 | Email: stpaulus.sekretariat@gmail.com
+          </p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
           <SimpleCard title="Gallery Foto"
@@ -447,202 +449,205 @@
 
     <!-- Section 8: Status Pemesanan Ruangan -->
     <ClientOnly>
-    <section id="booking-section" class="py-16 bg-gray-50">
-      <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <div class="text-center mb-12">
-          <div class="flex items-center justify-center mb-3">
-            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+      <section id="booking-section" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
+          <div class="text-center mb-12">
+            <div class="flex items-center justify-center mb-3">
+              <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+            </div>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Status Pemesanan Ruangan</h2>
+            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Status pemesanan ruangan di Paroki St.
+              Paulus
+              - Juanda.</p>
           </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Status Pemesanan Ruangan</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Status pemesanan ruangan di Paroki St. Paulus
-            - Juanda.</p>
-        </div>
 
-        <!-- Info Badge: Filter Active -->
-        <div class="mb-6 max-w-4xl mx-auto bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
-          <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <p class="text-sm font-semibold text-blue-900 mb-1">📅 Menampilkan Pemesanan Aktif</p>
-            <p class="text-sm text-blue-800">
-              Hanya menampilkan pemesanan <strong>hari ini dan mendatang</strong>. Pemesanan yang sudah selesai tidak
-              ditampilkan.
-            </p>
-          </div>
-        </div>
-
-        <div v-if="bookingsPending" class="text-center text-gray-500">
-          Memuat status pemesanan...
-        </div>
-        <div v-else-if="bookingsError" class="text-center text-red-500">
-          Gagal memuat status pemesanan. Silakan refresh halaman.
-        </div>
-        <div v-else-if="publicBookings && publicBookings.length > 0">
-          <!-- Mobile View: Card Layout -->
-          <div class="md:hidden space-y-4 mb-6">
-            <div v-for="booking in paginatedBookings" :key="booking.id"
-              class="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300">
-              <!-- Event Name with Icon -->
-              <div class="flex items-center mb-4 pb-3 border-b-2 border-gray-100">
-                <div class="bg-[#882f1d]/10 p-2 rounded-lg mr-3">
-                  <svg class="w-6 h-6 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 truncate flex-1">
-                  {{ booking.event_name }}
-                </h3>
-              </div>
-
-              <!-- Info Grid -->
-              <div class="grid grid-cols-2 gap-4 mb-4">
-                <!-- Date -->
-                <div class="bg-gray-50 rounded-xl p-3">
-                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">📅 Tanggal</p>
-                  <p class="text-sm font-bold text-gray-800">{{ formatDate(booking.event_date) }}</p>
-                </div>
-
-                <!-- Time -->
-                <div class="bg-gray-50 rounded-xl p-3">
-                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">🕐 Waktu</p>
-                  <p class="text-sm font-bold text-gray-800">{{ booking.start_time }}</p>
-                  <p class="text-xs text-gray-600">s/d {{ booking.end_time }}</p>
-                </div>
-
-                <!-- Room -->
-                <div class="bg-gray-50 rounded-xl p-3">
-                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">🏢 Ruangan</p>
-                  <p class="text-sm font-bold text-gray-800">{{ booking.room_name }}</p>
-                  <p class="text-xs text-gray-600">{{ booking.room_location }}</p>
-                </div>
-
-                <!-- Status -->
-                <div class="bg-gray-50 rounded-xl p-3">
-                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">✓ Status</p>
-                  <span :style="getBookingStatusStyle(booking.status)"
-                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
-                    {{ booking.status }}
-                  </span>
-                </div>
-              </div>
-
-              <div class="bg-gray-50 rounded-xl p-3">
-                <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">👤 Pemesan</p>
-                <p class="text-sm font-bold text-gray-800">{{ booking.requester_name || booking.user_name || '-' }}</p>
-                <p class="text-xs text-gray-600">Username: {{ booking.username || '-' }}</p>
-              </div>
+          <!-- Info Badge: Filter Active -->
+          <div class="mb-6 max-w-4xl mx-auto bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p class="text-sm font-semibold text-blue-900 mb-1">📅 Menampilkan Pemesanan Aktif</p>
+              <p class="text-sm text-blue-800">
+                Hanya menampilkan pemesanan <strong>hari ini dan mendatang</strong>. Pemesanan yang sudah selesai tidak
+                ditampilkan.
+              </p>
             </div>
           </div>
 
-          <!-- Desktop View: Table -->
-          <div class="hidden md:block overflow-x-auto">
-            <table class="min-w-full bg-white rounded-lg shadow-md">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal &
-                    Waktu</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
-                    Acara</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pemesan
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{{ formatDate(booking.event_date) }}</div>
-                    <div class="text-sm text-gray-500">{{ booking.start_time }} - {{ booking.end_time }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{ booking.event_name }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{{ booking.room_name }}</div>
-                    <div class="text-sm text-gray-500">{{ booking.room_location }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">{{ booking.requester_name || booking.user_name || '-' }}</div>
-                    <div class="text-sm text-gray-500">@{{ booking.username || '-' }}</div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+          <div v-if="bookingsPending" class="text-center text-gray-500">
+            Memuat status pemesanan...
+          </div>
+          <div v-else-if="bookingsError" class="text-center text-red-500">
+            Gagal memuat status pemesanan. Silakan refresh halaman.
+          </div>
+          <div v-else-if="publicBookings && publicBookings.length > 0">
+            <!-- Mobile View: Card Layout -->
+            <div class="md:hidden space-y-4 mb-6">
+              <div v-for="booking in paginatedBookings" :key="booking.id"
+                class="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300">
+                <!-- Event Name with Icon -->
+                <div class="flex items-center mb-4 pb-3 border-b-2 border-gray-100">
+                  <div class="bg-[#882f1d]/10 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 class="text-xl font-bold text-gray-900 truncate flex-1">
+                    {{ booking.event_name }}
+                  </h3>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                  <!-- Date -->
+                  <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">📅 Tanggal</p>
+                    <p class="text-sm font-bold text-gray-800">{{ formatDate(booking.event_date) }}</p>
+                  </div>
+
+                  <!-- Time -->
+                  <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">🕐 Waktu</p>
+                    <p class="text-sm font-bold text-gray-800">{{ booking.start_time }}</p>
+                    <p class="text-xs text-gray-600">s/d {{ booking.end_time }}</p>
+                  </div>
+
+                  <!-- Room -->
+                  <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">🏢 Ruangan</p>
+                    <p class="text-sm font-bold text-gray-800">{{ booking.room_name }}</p>
+                    <p class="text-xs text-gray-600">{{ booking.room_location }}</p>
+                  </div>
+
+                  <!-- Status -->
+                  <div class="bg-gray-50 rounded-xl p-3">
+                    <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">✓ Status</p>
                     <span :style="getBookingStatusStyle(booking.status)"
                       class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
                       {{ booking.status }}
                     </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                  </div>
+                </div>
 
-          <!-- Pagination Controls -->
-          <div v-if="totalBookingPages > 1" class="mt-6 flex items-center justify-center space-x-2">
-            <!-- Previous Button -->
-            <button @click="goToBookingPage(currentBookingPage - 1)" :disabled="currentBookingPage === 1" :class="[
-              'px-4 py-2 rounded-lg font-medium transition-colors',
-              currentBookingPage === 1
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-[#882f1d] border border-[#882f1d] hover:bg-[#882f1d] hover:text-white'
-            ]">
-              ‹ Sebelumnya
-            </button>
-
-            <!-- Page Numbers -->
-            <div class="flex space-x-1">
-              <button v-for="page in totalBookingPages" :key="page" @click="goToBookingPage(page)" :class="[
-                'px-4 py-2 rounded-lg font-medium transition-colors',
-                page === currentBookingPage
-                  ? 'bg-[#882f1d] text-white'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-              ]">
-                {{ page }}
-              </button>
+                <div class="bg-gray-50 rounded-xl p-3">
+                  <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">👤 Pemesan</p>
+                  <p class="text-sm font-bold text-gray-800">{{ booking.requester_name || booking.user_name || '-' }}
+                  </p>
+                  <p class="text-xs text-gray-600">Username: {{ booking.username || '-' }}</p>
+                </div>
+              </div>
             </div>
 
-            <!-- Next Button -->
-            <button @click="goToBookingPage(currentBookingPage + 1)"
-              :disabled="currentBookingPage === totalBookingPages" :class="[
+            <!-- Desktop View: Table -->
+            <div class="hidden md:block overflow-x-auto">
+              <table class="min-w-full bg-white rounded-lg shadow-md">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal &
+                      Waktu</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
+                      Acara</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pemesan
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">{{ formatDate(booking.event_date) }}</div>
+                      <div class="text-sm text-gray-500">{{ booking.start_time }} - {{ booking.end_time }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900">{{ booking.event_name }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">{{ booking.room_name }}</div>
+                      <div class="text-sm text-gray-500">{{ booking.room_location }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">{{ booking.requester_name || booking.user_name || '-' }}</div>
+                      <div class="text-sm text-gray-500">@{{ booking.username || '-' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span :style="getBookingStatusStyle(booking.status)"
+                        class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                        {{ booking.status }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Pagination Controls -->
+            <div v-if="totalBookingPages > 1" class="mt-6 flex items-center justify-center space-x-2">
+              <!-- Previous Button -->
+              <button @click="goToBookingPage(currentBookingPage - 1)" :disabled="currentBookingPage === 1" :class="[
                 'px-4 py-2 rounded-lg font-medium transition-colors',
-                currentBookingPage === totalBookingPages
+                currentBookingPage === 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-white text-[#882f1d] border border-[#882f1d] hover:bg-[#882f1d] hover:text-white'
               ]">
-              Selanjutnya ›
-            </button>
-          </div>
+                ‹ Sebelumnya
+              </button>
 
-          <!-- Info Text -->
-          <div class="mt-4 text-center text-sm text-gray-600">
-            Menampilkan {{ (currentBookingPage - 1) * bookingsPerPage + 1 }} -
-            {{ Math.min(currentBookingPage * bookingsPerPage, publicBookings.length) }}
-            dari {{ publicBookings.length }} pemesanan
+              <!-- Page Numbers -->
+              <div class="flex space-x-1">
+                <button v-for="page in totalBookingPages" :key="page" @click="goToBookingPage(page)" :class="[
+                  'px-4 py-2 rounded-lg font-medium transition-colors',
+                  page === currentBookingPage
+                    ? 'bg-[#882f1d] text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                ]">
+                  {{ page }}
+                </button>
+              </div>
+
+              <!-- Next Button -->
+              <button @click="goToBookingPage(currentBookingPage + 1)"
+                :disabled="currentBookingPage === totalBookingPages" :class="[
+                  'px-4 py-2 rounded-lg font-medium transition-colors',
+                  currentBookingPage === totalBookingPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-[#882f1d] border border-[#882f1d] hover:bg-[#882f1d] hover:text-white'
+                ]">
+                Selanjutnya ›
+              </button>
+            </div>
+
+            <!-- Info Text -->
+            <div class="mt-4 text-center text-sm text-gray-600">
+              Menampilkan {{ (currentBookingPage - 1) * bookingsPerPage + 1 }} -
+              {{ Math.min(currentBookingPage * bookingsPerPage, publicBookings.length) }}
+              dari {{ publicBookings.length }} pemesanan
+            </div>
+          </div>
+          <div v-else class="text-center text-gray-500">
+            <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+            <h3 class="text-lg font-cinzel font-medium text-gray-900 mb-2">Tidak ada pemesanan aktif</h3>
+            <p class="text-gray-600">Saat ini tidak ada pemesanan ruangan untuk hari ini dan mendatang.</p>
+          </div>
+          <!-- CTA ke Full Bookings -->
+          <div class="text-center mt-12">
+            <NuxtLink to="/booking"
+              class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
+              Pesan Ruangan
+            </NuxtLink>
           </div>
         </div>
-        <div v-else class="text-center text-gray-500">
-          <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-            </path>
-          </svg>
-          <h3 class="text-lg font-cinzel font-medium text-gray-900 mb-2">Tidak ada pemesanan aktif</h3>
-          <p class="text-gray-600">Saat ini tidak ada pemesanan ruangan untuk hari ini dan mendatang.</p>
-        </div>
-        <!-- CTA ke Full Bookings -->
-        <div class="text-center mt-12">
-          <NuxtLink to="/booking"
-            class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
-            Pesan Ruangan
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
+      </section>
     </ClientOnly>
 
     <!-- Section 9: QR Persembahan - Sebelum Footer -->
@@ -651,6 +656,9 @@
 </template>
 
 <script setup>
+// DIAGNOSTIC: Temporarily disable SSR to test IPC crash
+definePageMeta({ ssr: false })
+
 // Set page title and meta
 useHead({
   title: 'Paroki St. Paulus - Juanda, Sidoarjo',

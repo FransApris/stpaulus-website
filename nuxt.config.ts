@@ -135,6 +135,12 @@ export default defineNuxtConfig({
 
   // Build optimization
   vite: {
+    server: {
+      // Increase HMR timeout to prevent IPC socket drops under heavy SSR load
+      hmr: {
+        timeout: 60000
+      }
+    },
     build: {
       rollupOptions: {
         output: {
@@ -153,12 +159,6 @@ export default defineNuxtConfig({
     },
     define: {
       global: 'globalThis',
-    },
-    resolve: {
-      alias: {
-        path: 'path-browserify',
-        process: 'process/browser',
-      },
     },
   },
 
@@ -191,7 +191,7 @@ export default defineNuxtConfig({
           // 🔒 SECURITY: Whitelist specific origins instead of '*'
           // In production, set ALLOWED_ORIGINS in .env to your actual domain
           'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:3001',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Authorization, Content-Type',
           'Access-Control-Allow-Credentials': 'true',
           // No cache for API responses — always return fresh data

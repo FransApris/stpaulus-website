@@ -137,7 +137,7 @@
                 d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <h3 class="text-lg font-semibold text-blue-900 mb-3">ðŸ“‹ Cara Pemesanan Ruangan</h3>
+              <h3 class="text-lg font-semibold text-blue-900 mb-3">Cara Pemesanan Ruangan</h3>
               <ol class="space-y-2 text-blue-800">
                 <li class="flex items-start">
                   <span class="font-bold mr-2">1.</span>
@@ -163,7 +163,7 @@
               </ol>
               <div class="mt-4 pt-4 border-t border-blue-200">
                 <p class="text-sm text-blue-700">
-                  <strong>ðŸ’¡ Tips:</strong> Lihat pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
+                  <strong>Tips:</strong> Lihat pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
                   berubah menjadi
                   <span
                     class="inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-semibold">DISETUJUI</span>
@@ -1554,8 +1554,9 @@ const createBooking = async () => {
   }
 
   // Validasi durasi minimum 30 menit (Saran 4)
-  const startMinutes = bookingForm.value.start_time.split(':').reduce((h, m, i) => i === 0 ? +h * 60 : +h + +m)
-  const endMinutes = bookingForm.value.end_time.split(':').reduce((h, m, i) => i === 0 ? +h * 60 : +h + +m)
+  const timeToMinutes = (t) => { const [h, m] = t.split(':'); return +h * 60 + +m }
+  const startMinutes = timeToMinutes(bookingForm.value.start_time)
+  const endMinutes = timeToMinutes(bookingForm.value.end_time)
   if (endMinutes - startMinutes < 30) {
     bookingError.value = 'Durasi pemesanan minimal 30 menit'
     bookingLoading.value = false

@@ -125,7 +125,9 @@ export default defineEventHandler(async (event) => {
         kategorial: ['kategorial', 'categorical group', 'categorical_group'],
         komunitas: ['komunitas', 'community'],
         seksi: ['seksi', 'section'],
-        dewan: ['dewan pastoral paroki', 'dewan paroki pastoral', 'dewan paroki', 'dpp', 'parish council', 'parish_council']
+        // BGKP (Badan Gereja Katolik Paroki) is grouped with DPP — both are parish-level bodies
+        // so BGKP users get access to the same rooms that allow "Dewan Pastoral Paroki"
+        dewan: ['dewan pastoral paroki', 'dewan paroki pastoral', 'dewan paroki', 'dpp', 'parish council', 'parish_council', 'badan gereja katolik paroki', 'bgkp']
       }
 
       const canonicalizeCategory = (raw: string): string => {
