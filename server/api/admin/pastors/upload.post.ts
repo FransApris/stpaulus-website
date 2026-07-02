@@ -1,18 +1,18 @@
 // API: Upload pastor photo
 // Path: POST /api/admin/pastors/upload
-// Purpose: Handle pastor photo upload
+// Purpose: Handle pastor photo upload with Cloudinary support
 
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
+import { requireAuth } from '~/server/utils/auth'
+import { isCloudinaryEnabled, uploadToCloudinary } from '~/server/utils/cloudinary'
 
 export default defineEventHandler(async (event) => {
     try {
         console.log('[Pastor Photo Upload] Request received')
 
-        // TODO: Add authentication check
-        // const user = await requireAuth(event)
-        // if (!user || !user.isAdmin) throw createError({ statusCode: 403, message: 'Forbidden' })
+        requireAuth(event)
 
         const form = await readMultipartFormData(event)
 
@@ -25,7 +25,6 @@ export default defineEventHandler(async (event) => {
 
         // Find the file in form data
         const fileData = form.find(item => item.name === 'file')
-        const typeData = form.find(item => item.name === 'type')
 
         if (!fileData || !fileData.filename || !fileData.data) {
             console.error('[Pastor Photo Upload] File data missing:', { fileData })
@@ -34,9 +33,6 @@ export default defineEventHandler(async (event) => {
                 message: 'Invalid file data'
             })
         }
-
-        // Get file type (default to 'pastors')
-        const type = typeData?.data?.toString() || 'pastors'
 
         // Validate file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
@@ -48,7 +44,7 @@ export default defineEventHandler(async (event) => {
         }
 
         // Validate file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024 // 5MB
+        const maxSize = 5 * 1024 * 1024
         if (fileData.data.length > maxSize) {
             throw createError({
                 statusCode: 400,
@@ -56,28 +52,38 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        // Create upload directory if it doesn't exist
-        const uploadDir = join(process.cwd(), 'public', 'uploads', type)
-        if (!existsSync(uploadDir)) {
-            await mkdir(uploadDir, { recursive: true })
-            console.log('[Pastor Photo Upload] Directory created:', uploadDir)
+        let publicUrl: string
+
+        if (isCloudinaryEnabled()) {
+            // Upload to Cloudinary — persists across redeploys
+            console.log('[Pastor Photo Upload] Uploading to Cloudinary...')
+            publicUrl = await uploadToCloudinary(
+                Buffer.from(fileData.data),
+                'pastors',
+                fileData.filename
+            )
+            console.log('[Pastor Photo Upload] Cloudinary success:', publicUrl)
+        } else {
+            // Fallback: save to local disk
+            const uploadDir = join(process.cwd(), 'public', 'uploads', 'pastors')
+            if (!existsSync(uploadDir)) {
+                await mkdir(uploadDir, { recursive: true })
+                console.log('[Pastor Photo Upload] Directory created:', uploadDir)
+            }
+
+            const ext = fileData.filename.split('.').pop()
+            const filename = `pastors-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
+            const filepath = join(uploadDir, filename)
+
+            await writeFile(filepath, fileData.data)
+            publicUrl = `/uploads/pastors/${filename}`
+            console.log('[Pastor Photo Upload] Saved locally (Cloudinary not configured):', publicUrl)
         }
-
-        // Generate unique filename
-        const ext = fileData.filename.split('.').pop()
-        const filename = `${type}-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
-        const filepath = join(uploadDir, filename)
-
-        // Write file
-        await writeFile(filepath, fileData.data)
-
-        const publicPath = `/uploads/${type}/${filename}`
-        console.log('[Pastor Photo Upload] File saved:', publicPath)
 
         return {
             success: true,
-            url: publicPath,
-            filename: filename
+            url: publicUrl,
+            filename: fileData.filename
         }
 
     } catch (error: any) {

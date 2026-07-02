@@ -3,9 +3,10 @@
     class="bg-white rounded-lg overflow-hidden shadow-lg transition duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 border border-gray-100">
     <!-- Image Container with Lazy Loading -->
     <div class="h-64 sm:h-80 w-full overflow-hidden relative bg-gray-200">
-      <img :src="pastor.photoUrl || '/default-pastor.jpg'" :alt="`Foto Romo ${pastor.name}`" loading="lazy"
+      <img :src="pastor.photoUrl || '/images/default-pastor.svg'" :alt="`Foto Romo ${pastor.name}`" loading="lazy"
         class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        :class="pastor.photoUrl ? 'object-top' : 'object-center'" />
+        :class="pastor.photoUrl ? 'object-top' : 'object-center'"
+        @error="(e) => { e.target.src = '/images/default-pastor.svg' }" />
 
       <!-- Status Badge Overlay -->
       <div class="absolute top-3 right-3">

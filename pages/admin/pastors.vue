@@ -103,7 +103,8 @@
                     <tr v-for="pastor in paginatedPastors" :key="pastor.id" class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <img :src="pastor.photo_url || '/images/default-pastor.svg'" :alt="pastor.name"
-                                class="w-12 h-12 rounded-full object-cover" />
+                                class="w-12 h-12 rounded-full object-cover"
+                                @error="(e) => { e.target.src = '/images/default-pastor.svg' }" />
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-sm font-medium text-gray-900">{{ pastor.name }}</div>
