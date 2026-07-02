@@ -81,9 +81,17 @@
             <td class="px-6 py-4">{{ entry.section_name || '-' }}</td>
             <td class="px-6 py-4">{{ formatDate(entry.when_date) }}</td>
             <td class="px-6 py-4">
-              <span :class="getStatusClass(entry.status)">
-                {{ entry.status }}
-              </span>
+              <select
+                :value="entry.status"
+                @change="updateStatus(entry, $event.target.value)"
+                :class="getStatusSelectClass(entry.status)"
+                class="rounded-full text-xs font-medium px-2 py-1 border-0 cursor-pointer focus:ring-2 focus:ring-offset-1"
+              >
+                <option value="published">published</option>
+                <option value="draft">draft</option>
+                <option value="pending">pending</option>
+                <option value="archived">archived</option>
+              </select>
             </td>
             <td class="px-6 py-4">{{ entry.views_count }}</td>
             <td class="px-6 py-4">
@@ -243,6 +251,40 @@ const getStatusClass = (status) => {
     archived: 'bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium'
   }
   return classes[status] || ''
+}
+
+const getStatusSelectClass = (status) => {
+  const classes = {
+    published: 'bg-green-100 text-green-800 focus:ring-green-400',
+    draft: 'bg-yellow-100 text-yellow-800 focus:ring-yellow-400',
+    pending: 'bg-blue-100 text-blue-800 focus:ring-blue-400',
+    archived: 'bg-gray-100 text-gray-800 focus:ring-gray-400'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800'
+}
+
+const updatingStatus = ref(null)
+
+const updateStatus = async (entry, newStatus) => {
+  if (entry.status === newStatus) return
+  updatingStatus.value = entry.id
+  const oldStatus = entry.status
+  entry.status = newStatus
+
+  try {
+    const token = localStorage.getItem('auth_token')
+    await $fetch(`/api/admin/kronik/entries/${entry.id}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { status: newStatus }
+    })
+  } catch (error) {
+    console.error('Error updating status:', error)
+    entry.status = oldStatus
+    alert('Gagal mengubah status')
+  } finally {
+    updatingStatus.value = null
+  }
 }
 
 const deleteEntry = async (id) => {
