@@ -167,7 +167,8 @@
             </table>
 
             <div v-if="totalPages > 1" class="px-6 py-4 border-t flex items-center justify-between">
-                <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }} • {{ totalItems }} romo</p>
+                <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }} • {{ totalItems }} romo
+                </p>
                 <div class="flex items-center gap-2">
                     <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
                         class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
@@ -386,7 +387,8 @@
 
                         <!-- Ordination Date -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Imamat (Tahbisan)</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Imamat
+                                (Tahbisan)</label>
                             <input v-model="formData.ordination_date" type="date"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent" />
                             <p class="text-xs text-gray-500 mt-1">Tanggal ditahbiskan menjadi imam</p>
