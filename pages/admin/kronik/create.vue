@@ -15,10 +15,19 @@
       </div>
 
       <!-- Bagian/Section -->
-      <div v-if="sections.length">
-        <label class="block text-sm font-medium mb-2">Bagian</label>
-        <select v-model="form.section_id" class="w-full border rounded-lg px-4 py-2">
-          <option value="">Pilih Bagian (Opsional)</option>
+      <div v-if="sections.length || isSectionRequired">
+        <label class="block text-sm font-medium mb-2">
+          Bagian
+          <span v-if="isSectionRequired" class="text-red-500">*</span>
+          <span v-else class="text-gray-400 text-xs">(Opsional)</span>
+        </label>
+        <div v-if="isSectionRequired && !sections.length"
+          class="bg-yellow-50 border border-yellow-300 rounded-lg p-3 text-yellow-800 text-sm mb-2">
+          ⚠️ Belum ada bagian untuk kategori ini. Tambahkan dulu di
+          <NuxtLink to="/admin/kronik/sections" class="underline font-semibold">halaman Sections</NuxtLink>.
+        </div>
+        <select v-model="form.section_id" :required="isSectionRequired" class="w-full border rounded-lg px-4 py-2">
+          <option value="">{{ isSectionRequired ? '-- Pilih Wilayah / Lingkungan --' : 'Pilih Bagian (Opsional)' }}</option>
           <option v-for="sec in sections" :key="sec.id" :value="sec.id">
             {{ sec.name }}
           </option>
@@ -210,6 +219,12 @@ const { data: sectionsData } = await useFetch('/api/admin/kronik/sections', {
   query: computed(() => ({ category_id: form.category_id }))
 })
 const sections = computed(() => sectionsData.value?.data || [])
+
+// Wilayah & Lingkungan wajib memilih bagian spesifik
+const isSectionRequired = computed(() => {
+  const selected = categories.value.find(c => c.id == form.category_id)
+  return selected?.slug === 'wilayah' || selected?.slug === 'lingkungan'
+})
 
 // Handle featured image upload
 const handleFeaturedImageUpload = async (event) => {
