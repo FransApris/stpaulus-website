@@ -5,7 +5,7 @@
       <div class="text-center mb-8">
         <GerejaLogo class="mx-auto mb-4" />
         <h1 class="text-2xl font-bold text-gray-900">Cek Status Akun</h1>
-        <p class="text-gray-600 mt-2">Paroki Santo Paulus Sinaboi</p>
+        <p class="text-gray-600 mt-2">Paroki Santo Paulus - Juanda</p>
       </div>
 
       <div class="bg-white rounded-xl shadow p-6">
@@ -28,18 +28,18 @@
         </form>
 
         <!-- Result -->
-        <div v-if="result" class="mt-6 rounded-lg p-4 text-center"
-          :class="{
-            'bg-yellow-50 border border-yellow-200': result === 'PENDING',
-            'bg-green-50 border border-green-200': result === 'ACTIVE',
-            'bg-red-50 border border-red-200': result === 'INACTIVE',
-            'bg-gray-50 border border-gray-200': result === 'NOT_FOUND'
-          }">
+        <div v-if="result" class="mt-6 rounded-lg p-4 text-center" :class="{
+          'bg-yellow-50 border border-yellow-200': result === 'PENDING',
+          'bg-green-50 border border-green-200': result === 'ACTIVE',
+          'bg-red-50 border border-red-200': result === 'INACTIVE',
+          'bg-gray-50 border border-gray-200': result === 'NOT_FOUND'
+        }">
 
           <template v-if="result === 'PENDING'">
             <div class="text-3xl mb-2">⏳</div>
             <p class="font-semibold text-yellow-800">Menunggu Persetujuan</p>
-            <p class="text-sm text-yellow-700 mt-1">Akun Anda sedang diproses oleh admin sekretariat. Anda akan mendapat email setelah akun disetujui atau ditolak.</p>
+            <p class="text-sm text-yellow-700 mt-1">Akun Anda sedang diproses oleh admin sekretariat. Anda akan mendapat
+              email setelah akun disetujui atau ditolak.</p>
           </template>
 
           <template v-else-if="result === 'ACTIVE'">
@@ -55,13 +55,15 @@
           <template v-else-if="result === 'INACTIVE'">
             <div class="text-3xl mb-2">❌</div>
             <p class="font-semibold text-red-800">Akun Tidak Disetujui</p>
-            <p class="text-sm text-red-700 mt-1">Pendaftaran Anda tidak disetujui. Silakan hubungi sekretariat paroki untuk informasi lebih lanjut.</p>
+            <p class="text-sm text-red-700 mt-1">Pendaftaran Anda tidak disetujui. Silakan hubungi sekretariat paroki
+              untuk informasi lebih lanjut.</p>
           </template>
 
           <template v-else-if="result === 'NOT_FOUND'">
             <div class="text-3xl mb-2">🔍</div>
             <p class="font-semibold text-gray-700">Akun Tidak Ditemukan</p>
-            <p class="text-sm text-gray-600 mt-1">Username atau email tidak terdaftar. Pastikan data yang Anda masukkan sudah benar.</p>
+            <p class="text-sm text-gray-600 mt-1">Username atau email tidak terdaftar. Pastikan data yang Anda masukkan
+              sudah benar.</p>
             <nuxt-link to="/daftar"
               class="inline-block mt-3 bg-green-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">
               Daftar Sekarang
@@ -69,11 +71,13 @@
           </template>
         </div>
 
-        <div v-if="error" class="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">{{ error }}</div>
+        <div v-if="error" class="mt-4 bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">{{ error }}
+        </div>
       </div>
 
       <div class="mt-6 text-center">
-        <nuxt-link to="/" class="text-sm text-gray-500 hover:text-gray-700 hover:underline">← Kembali ke Beranda</nuxt-link>
+        <nuxt-link to="/" class="text-sm text-gray-500 hover:text-gray-700 hover:underline">← Kembali ke
+          Beranda</nuxt-link>
       </div>
 
     </div>
@@ -84,7 +88,7 @@
 definePageMeta({ layout: 'default' })
 
 useHead({
-  title: 'Cek Status Akun - Paroki Santo Paulus Sinaboi',
+  title: 'Cek Status Akun - Paroki Santo Paulus - Juanda',
   meta: [{ name: 'robots', content: 'noindex' }]
 })
 
