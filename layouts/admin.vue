@@ -773,7 +773,9 @@ const menuVisibility = computed(() => {
       documents: true,
       footerSettings: hasPermission('manage_footer'),
       parishStatistics: hasPermission('manage_users_komsos_sekretariat'),
-      backup: hasPermission('manage_content')
+      backup: hasPermission('manage_content'),
+      kronikEntries: true,
+      kronikSections: true
     }
   }
 
