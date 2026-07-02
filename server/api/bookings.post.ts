@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
 
     console.log('[CREATE BOOKING] Request:', { userId, room_id, event_name, requester_name, start_time, end_time })
 
-    if (!room_id || !event_name || !requester_name || !start_time || !end_time) {
+    if (!room_id || !event_name || !start_time || !end_time) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Semua field diperlukan'

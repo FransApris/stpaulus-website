@@ -1,937 +1,816 @@
-﻿<template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div class="bg-[#882f1d] text-white">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div class="text-center">
-          <h1 class="text-4xl font-cinzel font-bold mb-4">Pemesanan Ruangan</h1>
-          <p class="text-xl text-gray-200 max-w-2xl mx-auto">
-            Pesan ruangan gereja untuk kegiatan Anda
-          </p>
+<template>
+  <div class="min-h-screen pt-16 bg-gray-50"
+    style="overflow-x: hidden !important; max-width: 100vw !important; box-sizing: border-box;">
+    <section class="py-16 bg-white"
+      style="overflow-x: hidden !important; max-width: 100vw !important; box-sizing: border-box;">
+      <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]"
+        style="overflow-x: hidden !important; max-width: 100% !important; box-sizing: border-box;">
+        <Breadcrumb title="Pemesanan Ruangan" />
+
+        <div class="text-center mb-12">
+          <h1 class="text-4xl font-cinzel text-[#882f1d] mb-4">Pemesanan Ruangan</h1>
+          <p class="text-xl text-gray-600">Pesan ruangan gereja untuk kegiatan Anda.</p>
         </div>
-      </div>
-    </div>
 
-    <!-- Breadcrumb -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Breadcrumb title="Pemesanan Ruangan" />
-    </div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-      <!-- Login Required Message -->
-      <div v-if="!isLoggedIn" class="max-w-2xl mx-auto mb-12">
-        <div
-          class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg p-8 text-center border-2 border-blue-200">
-          <div class="mb-6">
-            <svg class="w-20 h-20 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h2 class="text-3xl font-cinzel font-bold text-[#882f1d] mb-4">Login Diperlukan</h2>
-          <p class="text-lg text-gray-700 mb-6">
-            Silakan login terlebih dahulu untuk mengakses pemesanan ruang paroki.
-          </p>
-          <div class="bg-white/60 rounded-lg p-4 mb-6">
-            <p class="text-sm text-gray-600 mb-3">
-              <strong>Belum punya akun?</strong> Login di beranda untuk mendapatkan akses ke:
+        <!-- Login Required Message -->
+        <div v-if="!isLoggedIn" class="max-w-2xl mx-auto mb-12">
+          <div
+            class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl shadow-lg p-8 text-center border-2 border-blue-200">
+            <div class="mb-6">
+              <svg class="w-20 h-20 mx-auto text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <h2 class="text-3xl font-cinzel font-bold text-[#882f1d] mb-4">Login Diperlukan</h2>
+            <p class="text-lg text-gray-700 mb-6">
+              Silakan login terlebih dahulu untuk mengakses pemesanan ruang paroki.
             </p>
-            <ul class="text-left text-sm text-gray-700 space-y-2 max-w-md mx-auto">
-              <li class="flex items-center">
-                <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd" />
-                </svg>
-                Pemesanan ruang paroki
-              </li>
-              <li class="flex items-center">
-                <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clip-rule="evenodd" />
-                </svg>
-                Kelola kronik (Admin & Pengurus)
-              </li>
-            </ul>
-          </div>
-          <NuxtLink to="/"
-            class="inline-flex items-center bg-[#882f1d] text-white px-8 py-4 rounded-xl hover:bg-[#6b2416] transition-all duration-300 shadow-md hover:shadow-xl font-semibold text-lg">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            Kembali ke Beranda untuk Login
-          </NuxtLink>
-          <div class="mt-4 text-sm text-gray-600">
-            Belum punya akun?
-            <NuxtLink to="/daftar" class="text-[#882f1d] font-semibold hover:underline">
-              Daftar di sini →
+            <div class="bg-white/60 rounded-lg p-4 mb-6">
+              <p class="text-sm text-gray-600 mb-3">
+                <strong>Belum punya akun?</strong> Login di beranda untuk mendapatkan akses ke:
+              </p>
+              <ul class="text-left text-sm text-gray-700 space-y-2 max-w-md mx-auto">
+                <li class="flex items-center">
+                  <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd" />
+                  </svg>
+                  Pemesanan ruang paroki
+                </li>
+                <li class="flex items-center">
+                  <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clip-rule="evenodd" />
+                  </svg>
+                  Kelola kronik (Admin & Pengurus)
+                </li>
+              </ul>
+            </div>
+            <NuxtLink to="/"
+              class="inline-flex items-center bg-[#882f1d] text-white px-8 py-4 rounded-xl hover:bg-[#6b2416] transition-all duration-300 shadow-md hover:shadow-xl font-semibold text-lg">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Kembali ke Beranda untuk Login
             </NuxtLink>
           </div>
         </div>
-      </div>
 
-      <!-- Booking Section -->
-      <div v-else>
-        <!-- User Info Card -->
-        <div class="mb-8 bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-          <div class="bg-gradient-to-r from-[#882f1d] to-[#b8442a] px-6 py-4 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <div class="min-w-0">
-              <p class="text-white font-semibold text-base leading-tight truncate">{{ user?.full_name || 'Memuat...' }}
-              </p>
-              <p class="text-red-200 text-xs mt-0.5">Pengguna Aktif</p>
-            </div>
-          </div>
-          <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div class="flex flex-col sm:flex-row gap-3 sm:gap-6">
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 flex-shrink-0">
-                  <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                  </svg>
-                </span>
-                <div>
-                  <p class="text-xs text-gray-400 leading-none">Kategori</p>
-                  <p class="text-sm font-medium text-gray-800 mt-0.5">{{ displayUserCategory }}</p>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 flex-shrink-0">
-                  <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </span>
-                <div>
-                  <p class="text-xs text-gray-400 leading-none">Unit</p>
-                  <p class="text-sm font-medium text-gray-800 mt-0.5">{{ user?.unit_name || 'â€”' }}</p>
-                </div>
-              </div>
-            </div>
-            <button @click="logout"
-              class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 text-sm font-medium w-full sm:w-auto">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Logout
-            </button>
-          </div>
-        </div>
-
-        <!-- Petunjuk Penggunaan -->
-        <div class="mb-8 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
-          <div class="flex items-start">
-            <svg class="w-6 h-6 text-blue-500 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <div>
-              <h3 class="text-lg font-semibold text-blue-900 mb-3">Cara Pemesanan Ruangan</h3>
-              <ol class="space-y-2 text-blue-800">
-                <li class="flex items-start">
-                  <span class="font-bold mr-2">1.</span>
-                  <span><strong>Pilih Ruangan:</strong> Klik tombol "Pesan" pada ruangan yang tersedia di bawah</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="font-bold mr-2">2.</span>
-                  <span><strong>Isi Detail:</strong> Masukkan nama acara, tanggal, jam mulai, dan jam selesai</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="font-bold mr-2">3.</span>
-                  <span><strong>Konfirmasi:</strong> Klik "Konfirmasi Pemesanan" setelah mengisi semua data</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="font-bold mr-2">4.</span>
-                  <span><strong>Tunggu Persetujuan:</strong> Pemesanan Anda akan diproses oleh admin</span>
-                </li>
-                <li class="flex items-start">
-                  <span class="font-bold mr-2">5.</span>
-                  <span><strong>Batalkan (Opsional):</strong> Anda dapat membatalkan pemesanan selama status masih
-                    <span class="font-semibold">PENDING</span></span>
-                </li>
-              </ol>
-              <div class="mt-4 pt-4 border-t border-blue-200">
-                <p class="text-sm text-blue-700">
-                  <strong>Tips:</strong> Lihat pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
-                  berubah menjadi
-                  <span
-                    class="inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-semibold">DISETUJUI</span>
-                  atau
-                  <span
-                    class="inline-block px-2 py-0.5 bg-red-100 text-red-800 rounded text-xs font-semibold">DITOLAK</span>
-                  setelah ditinjau admin.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Divider -->
-        <div class="flex items-center gap-4 my-8">
-          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-[#882f1d]/30 to-[#882f1d]/60"></div>
-          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#882f1d]/30 bg-[#882f1d]/5">
-            <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <span class="text-sm font-semibold text-[#882f1d] font-cinzel">Peta Pemesanan</span>
-          </div>
-          <div class="flex-1 h-px bg-gradient-to-l from-transparent via-[#882f1d]/30 to-[#882f1d]/60"></div>
-        </div>
-
-        <!-- Room Availability Table -->
-        <div class="overflow-x-hidden w-full">
-          <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-4">Peta Pemesanan Ruangan</h2>
-
-          <!-- Date Selector -->
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Tanggal</label>
-            <!-- Saran 6: Navigasi tanggal prev/next -->
-            <div class="flex items-center gap-2">
-              <button @click="navigateDate(-1)"
-                class="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
-                title="Hari sebelumnya">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-                Kemarin
-              </button>
-              <input v-model="selectedDate" type="date" @change="loadRoomAvailability" class="p-2 border rounded" />
-              <button @click="navigateDate(1)"
-                class="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
-                title="Hari berikutnya">
-                Besok
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Mobile View: Card Layout -->
-          <div class="md:hidden space-y-4 mb-6 w-full overflow-x-hidden mobile-cards-only">
-            <div v-for="room in roomAvailability" :key="room.id"
-              class="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300 w-full max-w-full overflow-hidden">
-              <!-- Room Name with Icon -->
-              <div class="flex items-center mb-4 pb-3 border-b-2 border-gray-100">
-                <div class="bg-[#882f1d]/10 p-2 rounded-lg mr-3">
-                  <svg class="w-6 h-6 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                  </svg>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 truncate flex-1">
-                  {{ room.name }}
-                </h3>
-              </div>
-
-              <!-- Room Info (2-column grid) -->
-              <div class="grid grid-cols-2 gap-3 mb-4 w-full">
-                <div class="min-w-0 bg-gray-50 p-3 rounded-lg">
-                  <div class="text-xs text-gray-500 uppercase font-semibold mb-2">Kapasitas</div>
-                  <div class="font-bold text-gray-900 flex items-center text-base">
-                    <svg class="w-5 h-5 mr-2 text-[#882f1d] flex-shrink-0" fill="none" stroke="currentColor"
-                      viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <span class="truncate">{{ room.capacity }}</span>
-                  </div>
-                </div>
-                <div class="min-w-0 bg-gray-50 p-3 rounded-lg">
-                  <div class="text-xs text-gray-500 uppercase font-semibold mb-2">Lokasi</div>
-                  <div class="font-bold text-gray-900 flex items-center text-base">
-                    <svg class="w-5 h-5 mr-2 text-[#882f1d] flex-shrink-0" fill="none" stroke="currentColor"
-                      viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    </svg>
-                    <span class="truncate">{{ room.location }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Facilities -->
-              <div v-if="room.facilities" class="mb-4 pb-4 border-b border-gray-200 w-full overflow-hidden">
-                <div class="text-xs text-gray-500 uppercase font-semibold mb-2 flex items-center">
-                  <svg class="w-4 h-4 mr-1 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Fasilitas
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <span v-for="(facility, index) in parseFacilities(room.facilities)" :key="index"
-                    class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
-                    <svg class="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
-                      <circle cx="10" cy="10" r="3" />
-                    </svg>
-                    {{ facility }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Status Badge -->
-              <div class="mb-4">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs text-gray-500 uppercase font-semibold">Status</span>
-                  <span :class="getAvailabilityStatusClass(room.status)"
-                    class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
-                    <span class="w-2 h-2 rounded-full mr-2 animate-pulse" :class="{
-                      'bg-green-400': room.status === 'Tersedia',
-                      'bg-blue-400': room.status === 'Sedang Digunakan',
-                      'bg-yellow-400': room.status === 'Sudah Dipesan',
-                      'bg-orange-400': room.status === 'Menunggu Persetujuan'
-                    }"></span>
-                    {{ room.status }}
-                  </span>
-                </div>
-                <div v-if="room.statusDetails" class="text-sm text-gray-600 mt-2 italic">
-                  {{ room.statusDetails }}
-                </div>
-              </div>
-
-              <!-- Bookings Today (Collapsible) -->
-              <div v-if="room.bookings && room.bookings.length > 0" class="border-t-2 border-gray-200 pt-4">
-                <button @click="toggleRoomBookings(room.id)"
-                  class="flex items-center justify-between w-full text-base font-bold text-gray-800 mb-3 hover:text-[#882f1d] transition-colors bg-gray-50 p-3 rounded-lg">
-                  <span class="flex items-center">
-                    <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    Jadwal Hari Ini
-                    <span class="ml-2 px-2 py-0.5 bg-[#882f1d] text-white rounded-full text-xs font-bold">
-                      {{ room.bookings.length }}
-                    </span>
-                  </span>
-                  <svg class="w-6 h-6 transition-transform duration-300"
-                    :class="{ 'rotate-180': expandedRooms[room.id] }" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                <div v-show="expandedRooms[room.id]" class="space-y-3 mt-2 animate-fade-in w-full">
-                  <div v-for="booking in room.bookings" :key="booking.id"
-                    class="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border-l-4 border-[#882f1d] w-full overflow-hidden shadow-sm">
-                    <div class="font-bold text-base text-gray-900 mb-2 break-words">
-                      {{ booking.event_name }}
-                    </div>
-                    <div class="text-sm text-gray-700 mb-2 break-words">
-                      <strong>Pemesan:</strong> {{ booking.requester_name || booking.user_name || '-' }}
-                    </div>
-                    <div class="text-sm text-gray-600 flex items-center mb-3">
-                      <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span class="font-semibold">{{ formatTime(booking.start_time) }} - {{
-                        formatTime(booking.end_time) }}</span>
-                    </div>
-                    <span :class="getBookingStatusBadgeClass(booking.status)"
-                      class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">
-                      {{ getBookingStatusText(booking.status) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- No Bookings Message -->
-              <div v-else class="text-center py-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Booking Section -->
+        <div v-else>
+          <!-- User Info Card -->
+          <div class="mb-8 bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-[#882f1d] to-[#b8442a] px-6 py-4 flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
-                <p class="text-sm font-semibold text-gray-600">Tidak ada jadwal hari ini</p>
-                <p class="text-xs text-gray-500 mt-1">Ruangan tersedia untuk dipesan</p>
               </div>
+              <div class="min-w-0">
+                <p class="text-white font-semibold text-base leading-tight truncate">{{ user?.full_name || 'Memuat...'
+                  }}
+                </p>
+                <p class="text-red-200 text-xs mt-0.5">Pengguna Aktif</p>
+              </div>
+            </div>
+            <div class="px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div class="flex flex-col sm:flex-row gap-3 sm:gap-6">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 flex-shrink-0">
+                    <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  </span>
+                  <div>
+                    <p class="text-xs text-gray-400 leading-none">Kategori</p>
+                    <p class="text-sm font-medium text-gray-800 mt-0.5">{{ displayUserCategory }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 flex-shrink-0">
+                    <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </span>
+                  <div>
+                    <p class="text-xs text-gray-400 leading-none">Unit</p>
+                    <p class="text-sm font-medium text-gray-800 mt-0.5">{{ user?.unit_name || '–' }}</p>
+                  </div>
+                </div>
+              </div>
+              <button @click="logout"
+                class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 text-sm font-medium w-full sm:w-auto">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                Logout
+              </button>
             </div>
           </div>
 
-          <!-- Desktop View: Table -->
-          <div class="hidden md:block overflow-x-auto w-full table-desktop-only">
-            <table class="w-full bg-white border border-gray-300">
-              <thead>
-                <tr class="bg-gray-50">
-                  <th class="px-4 py-2 border-b text-left">Nama Ruangan</th>
-                  <th class="px-4 py-2 border-b text-left">Kapasitas</th>
-                  <th class="px-4 py-2 border-b text-left">Lokasi</th>
-                  <th class="px-4 py-2 border-b text-left">Fasilitas</th>
-                  <th class="px-4 py-2 border-b text-left">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="room in roomAvailability" :key="room.id" class="hover:bg-gray-50">
-                  <td class="px-4 py-2 border-b font-medium">{{ room.name }}</td>
-                  <td class="px-4 py-2 border-b">{{ room.capacity }} orang</td>
-                  <td class="px-4 py-2 border-b">{{ room.location }}</td>
-                  <td class="px-4 py-2 border-b">
-                    <div v-if="room.facilities" class="text-sm">
-                      {{ parseFacilities(room.facilities).join(', ') }}
-                    </div>
-                    <span v-else class="text-gray-400">-</span>
-                  </td>
-                  <td class="px-4 py-2 border-b">
-                    <div class="flex flex-col">
-                      <span :class="getAvailabilityStatusClass(room.status)" class="font-medium">
-                        {{ room.status }}
-                      </span>
-                      <div v-if="room.statusDetails" class="text-sm text-gray-600 mt-1">
-                        {{ room.statusDetails }}
-                      </div>
-                      <div v-if="room.bookings && room.bookings.length > 0" class="mt-2">
-                        <div class="text-xs text-gray-500 mb-1">Jadwal Hari Ini:</div>
-                        <div v-for="booking in room.bookings.slice(0, 3)" :key="booking.id"
-                          class="text-xs bg-gray-100 p-1 rounded mb-1">
-                          <div class="font-medium">{{ booking.event_name }}</div>
-                          <div class="text-gray-600">
-                            {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
-                            <span :class="getBookingStatusBadgeClass(booking.status)">
-                              ({{ getBookingStatusText(booking.status) }})
-                            </span>
-                          </div>
-                        </div>
-                        <div v-if="room.bookings.length > 3" class="text-xs text-gray-500">
-                          +{{ room.bookings.length - 3 }} lainnya...
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Legend -->
-          <div class="mt-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
-            <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
-              <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <!-- Petunjuk Penggunaan -->
+          <div class="mb-8 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+            <div class="flex items-start">
+              <svg class="w-6 h-6 text-blue-500 mt-1 mr-3 flex-shrink-0" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Keterangan Status:
-            </h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-              <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
-                <span class="w-4 h-4 bg-green-500 rounded-full mr-2.5 flex-shrink-0"></span>
-                <span class="font-medium text-gray-700">Tersedia</span>
-              </div>
-              <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
-                <span class="w-4 h-4 bg-blue-500 rounded-full mr-2.5 flex-shrink-0"></span>
-                <span class="font-medium text-gray-700">Sedang Digunakan</span>
-              </div>
-              <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
-                <span class="w-4 h-4 bg-yellow-500 rounded-full mr-2.5 flex-shrink-0"></span>
-                <span class="font-medium text-gray-700">Sudah Dipesan</span>
-              </div>
-              <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
-                <span class="w-4 h-4 bg-orange-500 rounded-full mr-2.5 flex-shrink-0"></span>
-                <span class="font-medium text-gray-700">Menunggu Persetujuan</span>
+              <div>
+                <h3 class="text-lg font-semibold text-blue-900 mb-3">Cara Pemesanan Ruangan</h3>
+                <ol class="space-y-2 text-blue-800">
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">1.</span>
+                    <span><strong>Pilih Ruangan:</strong> Klik tombol "Pesan" pada ruangan yang tersedia di bawah</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">2.</span>
+                    <span><strong>Isi Detail:</strong> Masukkan nama acara, tanggal, jam mulai, dan jam selesai</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">3.</span>
+                    <span><strong>Konfirmasi:</strong> Klik "Konfirmasi Pemesanan" setelah mengisi semua data</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">4.</span>
+                    <span><strong>Tunggu Persetujuan:</strong> Pemesanan Anda akan diproses oleh admin</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">5.</span>
+                    <span><strong>Batalkan (Opsional):</strong> Anda dapat membatalkan pemesanan selama status masih
+                      <span class="font-semibold">PENDING</span></span>
+                  </li>
+                </ol>
+                <div class="mt-4 pt-4 border-t border-blue-200">
+                  <p class="text-sm text-blue-700">
+                    <strong>Tips:</strong> Lihat pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
+                    berubah menjadi
+                    <span
+                      class="inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-semibold">DISETUJUI</span>
+                    atau
+                    <span
+                      class="inline-block px-2 py-0.5 bg-red-100 text-red-800 rounded text-xs font-semibold">DITOLAK</span>
+                    setelah ditinjau admin.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Divider -->
-        <div class="flex items-center gap-4 my-8">
-          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-[#882f1d]/30 to-[#882f1d]/60"></div>
-          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#882f1d]/30 bg-[#882f1d]/5">
-            <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-            <span class="text-sm font-semibold text-[#882f1d] font-cinzel">Ruangan Tersedia</span>
+          <!-- Divider -->
+          <div class="flex items-center gap-4 my-8">
+            <div class="flex-1 h-px bg-gradient-to-r from-transparent via-[#882f1d]/30 to-[#882f1d]/60"></div>
+            <div class="flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#882f1d]/30 bg-[#882f1d]/5">
+              <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span class="text-sm font-semibold text-[#882f1d] font-cinzel">Peta Pemesanan</span>
+            </div>
+            <div class="flex-1 h-px bg-gradient-to-l from-transparent via-[#882f1d]/30 to-[#882f1d]/60"></div>
           </div>
-          <div class="flex-1 h-px bg-gradient-to-l from-transparent via-[#882f1d]/30 to-[#882f1d]/60"></div>
-        </div>
 
-        <!-- Available Rooms -->
-        <div class="mb-8 w-full overflow-x-hidden">
-          <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-6">Ruangan Tersedia</h2>
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-            <div v-for="room in rooms" :key="room.id"
-              class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-gray-100 w-full max-w-full overflow-hidden">
-              <!-- Room Name -->
-              <h3 class="text-2xl font-bold text-gray-900 mb-6">{{ room.name }}</h3>
+          <!-- Available Rooms -->
+          <div class="mb-8 w-full overflow-x-hidden">
+            <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-6">Ruangan Tersedia</h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+              <div v-for="room in rooms" :key="room.id"
+                class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-gray-100 w-full max-w-full overflow-hidden">
+                <!-- Room Name -->
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">{{ room.name }}</h3>
 
-              <!-- Room Info -->
-              <div class="space-y-3 mb-6">
-                <!-- Capacity -->
-                <div class="flex items-center text-gray-700">
-                  <svg class="w-5 h-5 text-[#882f1d] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <span class="text-base"><strong>{{ room.capacity }}</strong> orang</span>
+                <!-- Room Info -->
+                <div class="space-y-3 mb-6">
+                  <!-- Capacity -->
+                  <div class="flex items-center text-gray-700">
+                    <svg class="w-5 h-5 text-[#882f1d] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span class="text-base"><strong>{{ room.capacity }}</strong> orang</span>
+                  </div>
+
+                  <!-- Location -->
+                  <div class="flex items-center text-gray-700">
+                    <svg class="w-5 h-5 text-[#882f1d] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="text-base">{{ room.location }}</span>
+                  </div>
+
+                  <!-- Facilities -->
+                  <div v-if="room.facilities" class="flex items-start text-gray-700">
+                    <svg class="w-5 h-5 text-[#882f1d] mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-base">{{ parseFacilities(room.facilities).join(', ') }}</span>
+                  </div>
                 </div>
 
-                <!-- Location -->
-                <div class="flex items-center text-gray-700">
-                  <svg class="w-5 h-5 text-[#882f1d] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span class="text-base">{{ room.location }}</span>
+                <!-- Button -->
+                <button @click="selectRoom(room)"
+                  class="w-full bg-[#882f1d] text-white px-6 py-3.5 rounded-xl hover:bg-[#6b2416] transition-colors font-semibold text-base">
+                  Pesan
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking Modal -->
+          <div v-if="selectedRoom"
+            class="fixed top-16 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-10 p-4"
+            @click="closeBookingModal">
+            <div
+              class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
+              @click.stop>
+              <!-- Simple Header -->
+              <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-start">
+                  <div>
+                    <h2 class="text-2xl font-cinzel font-bold text-gray-800">Pesan Ruangan</h2>
+                    <p class="text-sm text-gray-600 mt-1">
+                      {{ selectedRoom.name }} • {{ selectedRoom.capacity }} orang • {{ selectedRoom.location }}
+                    </p>
+                  </div>
+                  <button @click="closeBookingModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <form @submit.prevent="createBooking" class="p-6 space-y-5">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Acara *</label>
+                  <input v-model="bookingForm.event_name" type="text"
+                    placeholder="Contoh: Rapat Komisi, Pertemuan Kelompok"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                    required />
                 </div>
 
-                <!-- Facilities -->
-                <div v-if="room.facilities" class="flex items-start text-gray-700">
-                  <svg class="w-5 h-5 text-[#882f1d] mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Acara *</label>
+                  <input v-model="bookingForm.event_date" type="date" :min="getTodayDate()"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                    required />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Mulai *</label>
+                    <input v-model="bookingForm.start_time" type="time"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                      required />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Selesai *</label>
+                    <input v-model="bookingForm.end_time" type="time"
+                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                      required />
+                  </div>
+                </div>
+
+                <div v-if="bookingMessage"
+                  class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
+                  <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span class="text-base">{{ parseFacilities(room.facilities).join(', ') }}</span>
+                  {{ bookingMessage }}
                 </div>
-              </div>
-
-              <!-- Button -->
-              <button @click="selectRoom(room)"
-                class="w-full bg-[#882f1d] text-white px-6 py-3.5 rounded-xl hover:bg-[#6b2416] transition-colors font-semibold text-base">
-                Pesan
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Booking Modal -->
-        <div v-if="selectedRoom"
-          class="fixed top-16 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-10 p-4"
-          @click="closeBookingModal">
-          <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
-            @click.stop>
-            <!-- Simple Header -->
-            <div class="p-6 border-b border-gray-200">
-              <div class="flex justify-between items-start">
-                <div>
-                  <h2 class="text-2xl font-cinzel font-bold text-gray-800">Pesan Ruangan</h2>
-                  <p class="text-sm text-gray-600 mt-1">
-                    {{ selectedRoom.name }} â€¢ {{ selectedRoom.capacity }} orang â€¢ {{ selectedRoom.location }}
-                  </p>
-                </div>
-                <button @click="closeBookingModal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <form @submit.prevent="createBooking" class="p-6 space-y-5">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Acara *</label>
-                <input v-model="bookingForm.event_name" type="text"
-                  placeholder="Contoh: Rapat Komisi, Pertemuan Kelompok"
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
-                  required />
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Pemesan / Atas Nama *</label>
-                <input v-model="bookingForm.requester_name" type="text" placeholder="Contoh: Ketua Lingkungan Petrus 1"
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
-                  required />
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Acara *</label>
-                <input v-model="bookingForm.event_date" type="date" :min="getTodayDate()" @change="checkAvailability"
-                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
-                  required />
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Mulai *</label>
-                  <input v-model="bookingForm.start_time" type="time" @change="checkAvailability"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
-                    required />
-                </div>
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Selesai *</label>
-                  <input v-model="bookingForm.end_time" type="time" @change="checkAvailability"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
-                    required />
-                </div>
-              </div>
-
-              <!-- Saran 2: Status ketersediaan real-time -->
-              <div v-if="availabilityChecking" class="flex items-center gap-2 text-sm text-gray-500">
-                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Memeriksa ketersediaan...
-              </div>
-              <div v-else-if="availabilityStatus === 'available'"
-                class="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm">
-                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                Waktu tersedia â€” ruangan bebas di jadwal ini
-              </div>
-              <div v-else-if="availabilityStatus === 'conflict'"
-                class="px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-                <div class="flex items-center gap-2 mb-1">
-                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div v-if="bookingError"
+                  class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
+                  <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <strong>Waktu bentrok</strong> dengan {{ availabilityConflicts.length }} pemesanan lain
+                  {{ bookingError }}
                 </div>
-                <ul class="ml-6 space-y-0.5">
-                  <li v-for="c in availabilityConflicts" :key="c.id" class="text-xs">
-                    {{ c.event_name }} ({{ formatTime(c.start_time) }}â€“{{ formatTime(c.end_time) }})
-                  </li>
-                </ul>
-              </div>
 
-              <div v-if="bookingMessage"
-                class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
-                <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ bookingMessage }}
-              </div>
-              <div v-if="bookingError"
-                class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center">
-                <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ bookingError }}
-              </div>
-
-              <div class="flex gap-3 pt-2">
-                <button type="submit" :disabled="bookingLoading"
-                  class="flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all">
-                  {{ bookingLoading ? 'Memproses...' : 'Konfirmasi Pemesanan' }}
-                </button>
-                <button type="button" @click="closeBookingModal"
-                  class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all">
-                  Batal
-                </button>
-              </div>
-            </form>
+                <div class="flex gap-3 pt-2">
+                  <button type="submit" :disabled="bookingLoading"
+                    class="flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all">
+                    {{ bookingLoading ? 'Memproses...' : 'Konfirmasi Pemesanan' }}
+                  </button>
+                  <button type="button" @click="closeBookingModal"
+                    class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all">
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
 
-        <!-- Divider -->
-        <div class="flex items-center gap-4 my-8">
-          <div class="flex-1 h-px bg-gradient-to-r from-transparent via-[#882f1d]/30 to-[#882f1d]/60"></div>
-          <div class="flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#882f1d]/30 bg-[#882f1d]/5">
-            <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <span class="text-sm font-semibold text-[#882f1d] font-cinzel">Pemesanan Saya</span>
-          </div>
-          <div class="flex-1 h-px bg-gradient-to-l from-transparent via-[#882f1d]/30 to-[#882f1d]/60"></div>
-        </div>
+          <!-- My Bookings -->
+          <div class="mb-12 w-full overflow-x-hidden" id="pemesanan-saya">
+            <!-- Header dengan tombol filter -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
+              <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d]">Pemesanan Saya</h2>
 
-        <!-- My Bookings -->
-        <div class="mb-12 w-full overflow-x-hidden" id="pemesanan-saya">
-          <!-- Header dengan tombol filter -->
-          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-            <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d]">Pemesanan Saya</h2>
+              <!-- Toggle Button -->
+              <button @click="toggleHistory" :class="[
+                'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm',
+                showHistory
+                  ? 'bg-gray-600 hover:bg-gray-700 text-white'
+                  : 'bg-[#882f1d] hover:bg-[#6b2416] text-white'
+              ]">
+                <svg v-if="!showHistory" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>{{ showHistory ? 'Kembali ke Aktif' : 'Lihat Riwayat' }}</span>
+              </button>
+            </div>
 
-            <!-- Toggle Button -->
-            <button @click="toggleHistory" :class="[
-              'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 shadow-sm',
-              showHistory
-                ? 'bg-gray-600 hover:bg-gray-700 text-white'
-                : 'bg-[#882f1d] hover:bg-[#6b2416] text-white'
-            ]">
-              <svg v-if="!showHistory" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Info badge -->
+            <div v-if="!showHistory"
+              class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+              <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-sm text-blue-800">
+                Menampilkan pemesanan <strong>aktif dan akan datang</strong>. Klik "Lihat Riwayat" untuk melihat semua
+                pemesanan termasuk yang sudah lewat.
+              </p>
+            </div>
+            <div v-else class="mb-4 bg-gray-50 border border-gray-300 rounded-lg p-3 flex items-start gap-2">
+              <svg class="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-              <span>{{ showHistory ? 'Kembali ke Aktif' : 'Lihat Riwayat' }}</span>
-            </button>
-          </div>
+              <p class="text-sm text-gray-700">
+                Menampilkan <strong>semua riwayat pemesanan</strong> termasuk yang sudah selesai.
+              </p>
+            </div>
 
-          <!-- Saran 5: Badge summary status pemesanan -->
-          <div v-if="myBookings.length > 0" class="flex flex-wrap gap-2 mb-4">
-            <span v-if="bookingSummary.PENDING > 0"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-              <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
-              Menunggu: {{ bookingSummary.PENDING }}
-            </span>
-            <span v-if="bookingSummary.APPROVED > 0"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
-              <span class="w-2 h-2 rounded-full bg-green-500"></span>
-              Disetujui: {{ bookingSummary.APPROVED }}
-            </span>
-            <span v-if="bookingSummary.REJECTED > 0"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-200">
-              <span class="w-2 h-2 rounded-full bg-red-500"></span>
-              Ditolak: {{ bookingSummary.REJECTED }}
-            </span>
-            <span v-if="bookingSummary.CANCELLED > 0"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200">
-              <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-              Dibatalkan: {{ bookingSummary.CANCELLED }}
-            </span>
-            <!-- Notifikasi perubahan status (Saran 1) -->
-            <span v-if="hasNewStatusChange" @click="hasNewStatusChange = false"
-              class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 border border-blue-200 cursor-pointer hover:bg-blue-200 transition-colors">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div v-if="filteredMyBookings.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
+              <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              Ada perubahan status â€” klik untuk tutup
-            </span>
-          </div>
-
-          <!-- Info badge -->
-          <div v-if="!showHistory" class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
-            <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p class="text-sm text-blue-800">
-              Menampilkan pemesanan <strong>aktif dan akan datang</strong>. Klik "Lihat Riwayat" untuk melihat semua
-              pemesanan termasuk yang sudah lewat.
-            </p>
-          </div>
-          <div v-else class="mb-4 bg-gray-50 border border-gray-300 rounded-lg p-3 flex items-start gap-2">
-            <svg class="w-5 h-5 text-gray-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p class="text-sm text-gray-700">
-              Menampilkan <strong>semua riwayat pemesanan</strong> termasuk yang sudah selesai.
-            </p>
-          </div>
-
-          <div v-if="filteredMyBookings.length === 0" class="text-center py-12 bg-gray-50 rounded-lg">
-            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            <p class="text-gray-600 text-lg">
-              {{ emptyStateTitle }}
-            </p>
-            <p class="text-gray-500 text-sm mt-2">
-              {{ emptyStateMessage }}
-            </p>
-          </div>
-          <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-            <div v-for="booking in paginatedBookings" :key="booking.id"
-              class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer w-full max-w-full"
-              @click="viewBookingDetail(booking)">
-              <div class="p-5">
-                <div class="flex justify-between items-start mb-3">
-                  <h3 class="font-bold text-lg text-gray-800 truncate flex-1 mr-2">{{ booking.event_name }}</h3>
-                  <div class="flex flex-col gap-1 items-end">
-                    <span :class="getStatusBadgeClass(booking.status)"
-                      class="px-2.5 py-1 rounded-full text-xs font-semibold">
-                      {{ getStatusText(booking.status, booking.start_time) }}
-                    </span>
-                    <!-- Badge SELESAI untuk booking yang sudah lewat -->
-                    <span v-if="isBookingPassed(booking.end_time) && showHistory"
-                      class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-400 text-white">
-                      SELESAI
-                    </span>
+              <p class="text-gray-600 text-lg">
+                {{ emptyStateTitle }}
+              </p>
+              <p class="text-gray-500 text-sm mt-2">
+                {{ emptyStateMessage }}
+              </p>
+            </div>
+            <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+              <div v-for="booking in paginatedBookings" :key="booking.id"
+                class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer w-full max-w-full"
+                @click="viewBookingDetail(booking)">
+                <div class="p-5">
+                  <div class="flex justify-between items-start mb-3">
+                    <h3 class="font-bold text-lg text-gray-800 truncate flex-1 mr-2">{{ booking.event_name }}</h3>
+                    <div class="flex flex-col gap-1 items-end">
+                      <span :class="getStatusBadgeClass(booking.status)"
+                        class="px-2.5 py-1 rounded-full text-xs font-semibold">
+                        {{ getStatusText(booking.status, booking.start_time) }}
+                      </span>
+                      <!-- Badge SELESAI untuk booking yang sudah lewat -->
+                      <span v-if="isBookingPassed(booking.end_time) && showHistory"
+                        class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-400 text-white">
+                        SELESAI
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                <div class="space-y-2 mb-4">
-                  <div class="flex items-center text-gray-600 text-sm">
-                    <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M5.121 17.804A9 9 0 1118.88 17.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span><strong>Pemesan:</strong> {{ booking.requester_name || booking.user_name || '-' }}</span>
+                  <div class="space-y-2 mb-4">
+                    <div class="flex items-center text-gray-600 text-sm">
+                      <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                      <span>{{ booking.room_name }}</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 text-sm">
+                      <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span>{{ formatBookingTime(booking.start_time, booking.end_time) }}</span>
+                    </div>
                   </div>
-                  <div class="flex items-center text-gray-600 text-sm">
-                    <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    <span>{{ booking.room_name }}</span>
-                  </div>
-                  <div class="flex items-center text-gray-600 text-sm">
-                    <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span>{{ formatBookingTime(booking.start_time, booking.end_time) }}</span>
-                  </div>
-                </div>
 
-                <div v-if="booking.rejection_reason"
-                  class="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded mb-2">
-                  <strong>Alasan penolakan:</strong> {{ booking.rejection_reason }}
-                </div>
+                  <div v-if="booking.rejection_reason"
+                    class="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded mb-2">
+                    <strong>Alasan penolakan:</strong> {{ booking.rejection_reason }}
+                  </div>
 
-                <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                  <button class="text-[#882f1d] text-sm font-medium hover:underline">
-                    Lihat Detail â†’
-                  </button>
-                  <button v-if="booking.status === 'PENDING'" @click.stop="confirmCancelBooking(booking.id)"
-                    class="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-1 rounded transition-colors">
-                    âœ• Batalkan
-                  </button>
+                  <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                    <button class="text-[#882f1d] text-sm font-medium hover:underline">
+                      Lihat Detail →
+                    </button>
+                    <button v-if="booking.status === 'PENDING'" @click.stop="confirmCancelBooking(booking.id)"
+                      class="text-red-600 text-sm font-medium hover:bg-red-50 px-3 py-1 rounded transition-colors">
+                      ✕ Batalkan
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Pagination -->
-          <div v-if="filteredMyBookings.length > 0" class="mt-6 space-y-3">
-            <!-- Pagination Controls - only show if more than 1 page -->
-            <div v-if="totalPages > 1" class="flex justify-center items-center gap-2">
-              <!-- Previous Button -->
-              <button @click="previousPage" :disabled="currentPage === 1"
-                class="px-3 py-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                :class="currentPage === 1 ? 'border-gray-200 text-gray-400' : 'border-gray-300 text-gray-700'">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+            <!-- Pagination -->
+            <div v-if="filteredMyBookings.length > 0" class="mt-6 space-y-3">
+              <!-- Pagination Controls - only show if more than 1 page -->
+              <div v-if="totalPages > 1" class="flex justify-center items-center gap-2">
+                <!-- Previous Button -->
+                <button @click="previousPage" :disabled="currentPage === 1"
+                  class="px-3 py-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                  :class="currentPage === 1 ? 'border-gray-200 text-gray-400' : 'border-gray-300 text-gray-700'">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
 
-              <!-- Page Numbers -->
-              <div class="flex gap-1">
-                <button v-for="page in paginationPages" :key="page" @click="goToPage(page)" :disabled="page === '...'"
-                  class="px-4 py-2 rounded-lg transition-colors font-medium" :class="[
-                    page === currentPage
-                      ? 'bg-[#882f1d] text-white'
-                      : page === '...'
-                        ? 'text-gray-400 cursor-default'
-                        : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
-                  ]">
-                  {{ page }}
+                <!-- Page Numbers -->
+                <div class="flex gap-1">
+                  <button v-for="page in paginationPages" :key="page" @click="goToPage(page)" :disabled="page === '...'"
+                    class="px-4 py-2 rounded-lg transition-colors font-medium" :class="[
+                      page === currentPage
+                        ? 'bg-[#882f1d] text-white'
+                        : page === '...'
+                          ? 'text-gray-400 cursor-default'
+                          : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+                    ]">
+                    {{ page }}
+                  </button>
+                </div>
+
+                <!-- Next Button -->
+                <button @click="nextPage" :disabled="currentPage === totalPages"
+                  class="px-3 py-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                  :class="currentPage === totalPages ? 'border-gray-200 text-gray-400' : 'border-gray-300 text-gray-700'">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
 
-              <!-- Next Button -->
-              <button @click="nextPage" :disabled="currentPage === totalPages"
-                class="px-3 py-2 rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
-                :class="currentPage === totalPages ? 'border-gray-200 text-gray-400' : 'border-gray-300 text-gray-700'">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-
-            <!-- Pagination Info - always show when there are bookings -->
-            <div class="text-center text-sm text-gray-600">
-              <span v-if="totalPages > 1">
-                Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }} -
-                {{ Math.min(currentPage * itemsPerPage, filteredMyBookings.length) }}
-                dari {{ filteredMyBookings.length }} pemesanan
-              </span>
-              <span v-else>
-                Total {{ filteredMyBookings.length }} pemesanan
-              </span>
+              <!-- Pagination Info - always show when there are bookings -->
+              <div class="text-center text-sm text-gray-600">
+                <span v-if="totalPages > 1">
+                  Menampilkan {{ (currentPage - 1) * itemsPerPage + 1 }} -
+                  {{ Math.min(currentPage * itemsPerPage, filteredMyBookings.length) }}
+                  dari {{ filteredMyBookings.length }} pemesanan
+                </span>
+                <span v-else>
+                  Total {{ filteredMyBookings.length }} pemesanan
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Booking Detail Modal -->
-        <div v-if="selectedBookingDetail"
-          class="fixed top-16 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-10 p-4"
-          @click="closeBookingDetail">
-          <div class="bg-white rounded-lg shadow-xl max-w-lg w-full pointer-events-auto" @click.stop>
-            <div class="bg-[#882f1d] text-white p-6 rounded-t-lg">
-              <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-cinzel font-bold">Detail Pemesanan</h2>
-                <button @click.stop="closeBookingDetail" class="text-white hover:text-gray-200">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          <!-- Booking Detail Modal -->
+          <div v-if="selectedBookingDetail"
+            class="fixed top-16 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-10 p-4"
+            @click="closeBookingDetail">
+            <div class="bg-white rounded-lg shadow-xl max-w-lg w-full pointer-events-auto" @click.stop>
+              <div class="bg-[#882f1d] text-white p-6 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                  <h2 class="text-2xl font-cinzel font-bold">Detail Pemesanan</h2>
+                  <button @click.stop="closeBookingDetail" class="text-white hover:text-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="p-6 space-y-5">
+                <div>
+                  <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Nama Acara</label>
+                  <p class="text-lg font-bold text-gray-800 mt-1">{{ selectedBookingDetail.event_name }}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ruangan</label>
+                    <p class="text-gray-800 mt-1">{{ selectedBookingDetail.room_name }}</p>
+                  </div>
+                  <div>
+                    <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Status</label>
+                    <p class="mt-1">
+                      <span :class="getStatusBadgeClass(selectedBookingDetail.status)"
+                        class="inline-block px-3 py-1 rounded-full text-sm font-semibold">
+                        {{ getStatusText(selectedBookingDetail.status, selectedBookingDetail.start_time) }}
+                      </span>
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Tanggal & Waktu</label>
+                  <div class="mt-2 bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center text-gray-700 mb-2">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span class="font-medium">{{ formatDate(selectedBookingDetail.start_time) }}</span>
+                    </div>
+                    <div class="flex items-center text-gray-700">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>{{ formatTime(selectedBookingDetail.start_time) }} - {{
+                        formatTime(selectedBookingDetail.end_time) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-if="selectedBookingDetail.rejection_reason"
+                  class="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <label class="text-sm font-semibold text-red-700 uppercase tracking-wide">Alasan Penolakan</label>
+                  <p class="text-red-800 mt-1">{{ selectedBookingDetail.rejection_reason }}</p>
+                </div>
+
+                <div class="pt-4">
+                  <button @click.stop="closeBookingDetail"
+                    class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Room Availability Table -->
+          <div class="overflow-x-hidden w-full">
+            <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-4">Peta Pemesanan Ruangan</h2>
+
+            <!-- Date Selector -->
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Tanggal</label>
+              <div class="flex items-center gap-2">
+                <button @click="navigateDate(-1)"
+                  class="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+                  title="Hari sebelumnya">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Kemarin
+                </button>
+                <input v-model="selectedDate" type="date" @change="loadRoomAvailability" class="p-2 border rounded" />
+                <button @click="navigateDate(1)"
+                  class="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+                  title="Hari berikutnya">
+                  Besok
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               </div>
             </div>
 
-            <div class="p-6 space-y-5">
-              <div>
-                <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Nama Acara</label>
-                <p class="text-lg font-bold text-gray-800 mt-1">{{ selectedBookingDetail.event_name }}</p>
-              </div>
-
-              <div>
-                <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Pemesan</label>
-                <p class="text-gray-800 mt-1">{{ selectedBookingDetail.requester_name || selectedBookingDetail.user_name
-                  || '-' }}</p>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Ruangan</label>
-                  <p class="text-gray-800 mt-1">{{ selectedBookingDetail.room_name }}</p>
+            <!-- Mobile View: Card Layout -->
+            <div class="md:hidden space-y-4 mb-6 w-full overflow-x-hidden mobile-cards-only">
+              <div v-for="room in roomAvailability" :key="room.id"
+                class="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300 w-full max-w-full overflow-hidden">
+                <!-- Room Name with Icon -->
+                <div class="flex items-center mb-4 pb-3 border-b-2 border-gray-100">
+                  <div class="bg-[#882f1d]/10 p-2 rounded-lg mr-3">
+                    <svg class="w-6 h-6 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                  </div>
+                  <h3 class="text-xl font-bold text-gray-900 truncate flex-1">
+                    {{ room.name }}
+                  </h3>
                 </div>
-                <div>
-                  <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Status</label>
-                  <p class="mt-1">
-                    <span :class="getStatusBadgeClass(selectedBookingDetail.status)"
-                      class="inline-block px-3 py-1 rounded-full text-sm font-semibold">
-                      {{ getStatusText(selectedBookingDetail.status, selectedBookingDetail.start_time) }}
+
+                <!-- Room Info (2-column grid) -->
+                <div class="grid grid-cols-2 gap-3 mb-4 w-full">
+                  <div class="min-w-0 bg-gray-50 p-3 rounded-lg">
+                    <div class="text-xs text-gray-500 uppercase font-semibold mb-2">Kapasitas</div>
+                    <div class="font-bold text-gray-900 flex items-center text-base">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d] flex-shrink-0" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span class="truncate">{{ room.capacity }}</span>
+                    </div>
+                  </div>
+                  <div class="min-w-0 bg-gray-50 p-3 rounded-lg">
+                    <div class="text-xs text-gray-500 uppercase font-semibold mb-2">Lokasi</div>
+                    <div class="font-bold text-gray-900 flex items-center text-base">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d] flex-shrink-0" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      </svg>
+                      <span class="truncate">{{ room.location }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Facilities -->
+                <div v-if="room.facilities" class="mb-4 pb-4 border-b border-gray-200 w-full overflow-hidden">
+                  <div class="text-xs text-gray-500 uppercase font-semibold mb-2 flex items-center">
+                    <svg class="w-4 h-4 mr-1 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Fasilitas
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <span v-for="(facility, index) in parseFacilities(room.facilities)" :key="index"
+                      class="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">
+                      <svg class="w-3 h-3 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="3" />
+                      </svg>
+                      {{ facility }}
                     </span>
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <label class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Tanggal & Waktu</label>
-                <div class="mt-2 bg-gray-50 p-4 rounded-lg">
-                  <div class="flex items-center text-gray-700 mb-2">
-                    <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <span class="font-medium">{{ formatDate(selectedBookingDetail.start_time) }}</span>
-                  </div>
-                  <div class="flex items-center text-gray-700">
-                    <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{{ formatTime(selectedBookingDetail.start_time) }} - {{
-                      formatTime(selectedBookingDetail.end_time) }}</span>
                   </div>
                 </div>
-              </div>
 
-              <div v-if="selectedBookingDetail.rejection_reason" class="bg-red-50 border border-red-200 rounded-lg p-4">
-                <label class="text-sm font-semibold text-red-700 uppercase tracking-wide">Alasan Penolakan</label>
-                <p class="text-red-800 mt-1">{{ selectedBookingDetail.rejection_reason }}</p>
-              </div>
+                <!-- Status Badge -->
+                <div class="mb-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-gray-500 uppercase font-semibold">Status</span>
+                    <span :class="getAvailabilityStatusClass(room.status)"
+                      class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold shadow-sm">
+                      <span class="w-2 h-2 rounded-full mr-2 animate-pulse" :class="{
+                        'bg-green-400': room.status === 'Tersedia',
+                        'bg-blue-400': room.status === 'Sedang Digunakan',
+                        'bg-yellow-400': room.status === 'Sudah Dipesan',
+                        'bg-orange-400': room.status === 'Menunggu Persetujuan'
+                      }"></span>
+                      {{ room.status }}
+                    </span>
+                  </div>
+                  <div v-if="room.statusDetails" class="text-sm text-gray-600 mt-2 italic">
+                    {{ room.statusDetails }}
+                  </div>
+                </div>
 
-              <div class="pt-4">
-                <button @click.stop="closeBookingDetail"
-                  class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors">
-                  Tutup
-                </button>
+                <!-- Bookings Today (Collapsible) -->
+                <div v-if="room.bookings && room.bookings.length > 0" class="border-t-2 border-gray-200 pt-4">
+                  <button @click="toggleRoomBookings(room.id)"
+                    class="flex items-center justify-between w-full text-base font-bold text-gray-800 mb-3 hover:text-[#882f1d] transition-colors bg-gray-50 p-3 rounded-lg">
+                    <span class="flex items-center">
+                      <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      Jadwal Hari Ini
+                      <span class="ml-2 px-2 py-0.5 bg-[#882f1d] text-white rounded-full text-xs font-bold">
+                        {{ room.bookings.length }}
+                      </span>
+                    </span>
+                    <svg class="w-6 h-6 transition-transform duration-300"
+                      :class="{ 'rotate-180': expandedRooms[room.id] }" fill="none" stroke="currentColor"
+                      viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <div v-show="expandedRooms[room.id]" class="space-y-3 mt-2 animate-fade-in w-full">
+                    <div v-for="booking in room.bookings" :key="booking.id"
+                      class="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border-l-4 border-[#882f1d] w-full overflow-hidden shadow-sm">
+                      <div class="font-bold text-base text-gray-900 mb-2 break-words">
+                        {{ booking.event_name }}
+                      </div>
+                      <div class="text-sm text-gray-600 flex items-center mb-3">
+                        <svg class="w-4 h-4 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="font-semibold">{{ formatTime(booking.start_time) }} - {{
+                          formatTime(booking.end_time) }}</span>
+                      </div>
+                      <span :class="getBookingStatusBadgeClass(booking.status)"
+                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm">
+                        {{ getBookingStatusText(booking.status) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- No Bookings Message -->
+                <div v-else class="text-center py-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                  <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p class="text-sm font-semibold text-gray-600">Tidak ada jadwal hari ini</p>
+                  <p class="text-xs text-gray-500 mt-1">Ruangan tersedia untuk dipesan</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Desktop View: Table -->
+            <div class="hidden md:block overflow-x-auto w-full table-desktop-only">
+              <table class="w-full bg-white border border-gray-300">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th class="px-4 py-2 border-b text-left">Nama Ruangan</th>
+                    <th class="px-4 py-2 border-b text-left">Kapasitas</th>
+                    <th class="px-4 py-2 border-b text-left">Lokasi</th>
+                    <th class="px-4 py-2 border-b text-left">Fasilitas</th>
+                    <th class="px-4 py-2 border-b text-left">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="room in roomAvailability" :key="room.id" class="hover:bg-gray-50">
+                    <td class="px-4 py-2 border-b font-medium">{{ room.name }}</td>
+                    <td class="px-4 py-2 border-b">{{ room.capacity }} orang</td>
+                    <td class="px-4 py-2 border-b">{{ room.location }}</td>
+                    <td class="px-4 py-2 border-b">
+                      <div v-if="room.facilities" class="text-sm">
+                        {{ parseFacilities(room.facilities).join(', ') }}
+                      </div>
+                      <span v-else class="text-gray-400">-</span>
+                    </td>
+                    <td class="px-4 py-2 border-b">
+                      <div class="flex flex-col">
+                        <span :class="getAvailabilityStatusClass(room.status)" class="font-medium">
+                          {{ room.status }}
+                        </span>
+                        <div v-if="room.statusDetails" class="text-sm text-gray-600 mt-1">
+                          {{ room.statusDetails }}
+                        </div>
+                        <div v-if="room.bookings && room.bookings.length > 0" class="mt-2">
+                          <div class="text-xs text-gray-500 mb-1">Jadwal Hari Ini:</div>
+                          <div v-for="booking in room.bookings.slice(0, 3)" :key="booking.id"
+                            class="text-xs bg-gray-100 p-1 rounded mb-1">
+                            <div class="font-medium">{{ booking.event_name }}</div>
+                            <div class="text-gray-600">
+                              {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
+                              <span :class="getBookingStatusBadgeClass(booking.status)">
+                                ({{ getBookingStatusText(booking.status) }})
+                              </span>
+                            </div>
+                          </div>
+                          <div v-if="room.bookings.length > 3" class="text-xs text-gray-500">
+                            +{{ room.bookings.length - 3 }} lainnya...
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-4 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg border border-gray-200">
+              <h3 class="font-semibold text-gray-800 mb-3 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Keterangan Status:
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
+                  <span class="w-4 h-4 bg-green-500 rounded-full mr-2.5 flex-shrink-0"></span>
+                  <span class="font-medium text-gray-700">Tersedia</span>
+                </div>
+                <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
+                  <span class="w-4 h-4 bg-blue-500 rounded-full mr-2.5 flex-shrink-0"></span>
+                  <span class="font-medium text-gray-700">Sedang Digunakan</span>
+                </div>
+                <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
+                  <span class="w-4 h-4 bg-yellow-500 rounded-full mr-2.5 flex-shrink-0"></span>
+                  <span class="font-medium text-gray-700">Sudah Dipesan</span>
+                </div>
+                <div class="flex items-center bg-white px-3 py-2 rounded-lg shadow-sm">
+                  <span class="w-4 h-4 bg-orange-500 rounded-full mr-2.5 flex-shrink-0"></span>
+                  <span class="font-medium text-gray-700">Menunggu Persetujuan</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <BackButton position="bottom" />
-    </div>
+        <BackButton position="bottom" />
+      </div>
+    </section>
   </div>
 </template>
 
@@ -978,7 +857,6 @@ const loginForm = ref({
 
 const bookingForm = ref({
   event_name: '',
-  requester_name: '',
   event_date: '',
   start_time: '',
   end_time: ''
@@ -989,16 +867,6 @@ const bookingLoading = ref(false)
 const loginError = ref('')
 const bookingMessage = ref('')
 const bookingError = ref('')
-
-// Availability check state (Saran 2)
-const availabilityChecking = ref(false)
-const availabilityStatus = ref(null) // null | 'available' | 'conflict'
-const availabilityConflicts = ref([])
-
-// Polling state (Saran 1)
-let pollingInterval = null
-const prevPendingCount = ref(0)
-const hasNewStatusChange = ref(false)
 
 // Computed: Empty state messages
 const emptyStateTitle = computed(() =>
@@ -1012,33 +880,6 @@ const emptyStateMessage = computed(() =>
     ? 'Semua pemesanan Anda akan muncul di sini'
     : 'Pilih ruangan di atas untuk membuat pemesanan pertama Anda'
 )
-
-const mapUserCategoryLabel = (value) => {
-  const raw = String(value || '').trim()
-  if (!raw) return 'â€”'
-
-  const categoryMap = {
-    PARISH_COUNCIL: 'Dewan Pastoral Paroki',
-    CATEGORICAL_GROUP: 'Kategorial',
-    REGION: 'Wilayah',
-    COMMUNITY: 'Komunitas',
-    LINGKUNGAN: 'Lingkungan',
-    ADMIN: 'Admin'
-  }
-
-  return categoryMap[raw.toUpperCase()] || raw
-}
-
-const displayUserCategory = computed(() => mapUserCategoryLabel(user.value?.user_category))
-
-// Computed: Summary status pemesanan (Saran 5)
-const bookingSummary = computed(() => {
-  const counts = { PENDING: 0, APPROVED: 0, REJECTED: 0, CANCELLED: 0 }
-  myBookings.value.forEach(b => {
-    if (counts[b.status] !== undefined) counts[b.status]++
-  })
-  return counts
-})
 
 // Toggle room bookings visibility (mobile cards)
 const toggleRoomBookings = (roomId) => {
@@ -1054,7 +895,7 @@ const filteredMyBookings = computed(() => {
     // Hanya tampilkan pemesanan sekarang dan akan datang (tidak termasuk yang sudah lewat)
     const now = new Date()
     return myBookings.value.filter(booking => {
-      const bookingEndTime = toUtcDate(booking.end_time)
+      const bookingEndTime = new Date(booking.end_time)
       return bookingEndTime >= now // Hanya yang belum selesai
     })
   }
@@ -1146,7 +987,7 @@ const nextPage = () => {
 // Check if booking has passed
 const isBookingPassed = (endTime) => {
   const now = new Date()
-  const bookingEndTime = toUtcDate(endTime)
+  const bookingEndTime = new Date(endTime)
   return bookingEndTime < now
 }
 
@@ -1170,24 +1011,14 @@ const closeBookingDetail = async () => {
   console.log('[CLOSE DETAIL] Data reloaded')
 }
 
-// Booking datetimes are stored as UTC in MySQL.
-// With dateStrings:true, they come back as "YYYY-MM-DD HH:MM:SS" (no TZ info).
-// Append 'Z' so browsers treat them correctly as UTC instead of local WIB.
-const toUtcDate = (s) => {
-  if (!s) return new Date(NaN)
-  const str = String(s)
-  if (str.includes('Z') || str.includes('+')) return new Date(str)
-  return new Date(str.replace(' ', 'T') + 'Z')
-}
-
 const formatDate = (dateTime) => {
-  const date = toUtcDate(dateTime)
+  const date = new Date(dateTime)
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
   return date.toLocaleDateString('id-ID', options)
 }
 
 const formatTime = (dateTime) => {
-  const date = toUtcDate(dateTime)
+  const date = new Date(dateTime)
   return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
 }
 
@@ -1228,7 +1059,7 @@ onMounted(async () => {
         }
       });
 
-      console.log('âœ… Horizontal scroll fix applied');
+      console.log('✅ Horizontal scroll fix applied');
     }, 100);
   }
 
@@ -1256,7 +1087,6 @@ onMounted(async () => {
       user.value = response
       isLoggedIn.value = true
       await loadData()
-      startPolling() // Saran 1: mulai polling setelah data dimuat
     } catch (error) {
       console.error('[MOUNTED] Token invalid, removing:', error)
       localStorage.removeItem('auth_token')
@@ -1321,7 +1151,6 @@ const login = async () => {
     user.value = userResponse
     isLoggedIn.value = true
     await loadData()
-    startPolling() // Saran 1: mulai polling setelah login
   } catch (error) {
     console.error('[Booking Login] Error:', error)
     loginError.value = error.data?.statusMessage || 'Login gagal'
@@ -1332,16 +1161,11 @@ const login = async () => {
 
 const logout = () => {
   localStorage.removeItem('auth_token')
-  stopPolling() // Saran 1: hentikan polling saat logout
   isLoggedIn.value = false
   user.value = {}
   rooms.value = []
   myBookings.value = []
 }
-
-onUnmounted(() => {
-  stopPolling()
-})
 
 const confirmCancelBooking = (bookingId) => {
   if (confirm('Apakah Anda yakin ingin membatalkan pemesanan ini?')) {
@@ -1446,89 +1270,6 @@ const loadRoomAvailability = async () => {
 
 const selectRoom = (room) => {
   selectedRoom.value = room
-  // Saran 3: Auto-fill requester_name dari data user yang login
-  bookingForm.value.requester_name = String(user.value?.full_name || '').trim()
-  // Reset availability state
-  availabilityStatus.value = null
-  availabilityConflicts.value = []
-}
-
-// Saran 2: Cek ketersediaan real-time
-const checkAvailability = async () => {
-  if (!selectedRoom.value || !bookingForm.value.event_date || !bookingForm.value.start_time || !bookingForm.value.end_time) {
-    availabilityStatus.value = null
-    return
-  }
-  if (bookingForm.value.start_time >= bookingForm.value.end_time) {
-    availabilityStatus.value = null
-    return
-  }
-  availabilityChecking.value = true
-  try {
-    const startDateTime = new Date(`${bookingForm.value.event_date}T${bookingForm.value.start_time}`).toISOString()
-    const endDateTime = new Date(`${bookingForm.value.event_date}T${bookingForm.value.end_time}`).toISOString()
-    const res = await $fetch('/api/rooms-availability', {
-      params: { date: bookingForm.value.event_date }
-    })
-    const roomData = (res.rooms || []).find(r => r.id === selectedRoom.value.id)
-    if (roomData) {
-      const conflicts = (roomData.bookings || []).filter(b => {
-        if (b.status === 'REJECTED' || b.status === 'CANCELLED') return false
-        const bStart = toUtcDate(b.start_time)
-        const bEnd = toUtcDate(b.end_time)
-        const reqStart = new Date(startDateTime)
-        const reqEnd = new Date(endDateTime)
-        return reqStart < bEnd && reqEnd > bStart
-      })
-      availabilityConflicts.value = conflicts
-      availabilityStatus.value = conflicts.length > 0 ? 'conflict' : 'available'
-    }
-  } catch (e) {
-    availabilityStatus.value = null
-  } finally {
-    availabilityChecking.value = false
-  }
-}
-
-// Saran 6: Navigasi tanggal prev/next
-const navigateDate = (direction) => {
-  const current = new Date(selectedDate.value)
-  current.setDate(current.getDate() + direction)
-  selectedDate.value = current.toISOString().split('T')[0]
-  loadRoomAvailability()
-}
-
-// Saran 1: Polling untuk notifikasi perubahan status PENDING
-const startPolling = () => {
-  if (pollingInterval) return
-  prevPendingCount.value = myBookings.value.filter(b => b.status === 'PENDING').length
-  pollingInterval = setInterval(async () => {
-    if (!isLoggedIn.value) return
-    try {
-      const token = localStorage.getItem('auth_token')
-      const res = await $fetch('/api/bookings', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      if (res.success && res.data) {
-        const newBookings = res.data.sort((a, b) =>
-          new Date(b.created_at || b.start_time) - new Date(a.created_at || a.start_time)
-        )
-        const newPendingCount = newBookings.filter(b => b.status === 'PENDING').length
-        if (prevPendingCount.value > newPendingCount) {
-          hasNewStatusChange.value = true
-          myBookings.value = newBookings
-        }
-        prevPendingCount.value = newPendingCount
-      }
-    } catch { }
-  }, 30000) // poll setiap 30 detik
-}
-
-const stopPolling = () => {
-  if (pollingInterval) {
-    clearInterval(pollingInterval)
-    pollingInterval = null
-  }
 }
 
 const createBooking = async () => {
@@ -1536,7 +1277,7 @@ const createBooking = async () => {
   bookingMessage.value = ''
   bookingError.value = ''
 
-  // Frontend validation (Saran 4)
+  // Frontend validation
   const eventDate = new Date(bookingForm.value.event_date)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
@@ -1583,7 +1324,6 @@ const createBooking = async () => {
     console.log('[CREATE BOOKING] Token exists:', !!token)
     console.log('[CREATE BOOKING] Request:', {
       event_name: bookingForm.value.event_name,
-      requester_name: bookingForm.value.requester_name,
       start_time: startDateTime.toISOString(),
       end_time: endDateTime.toISOString(),
       room_id: selectedRoom.value.id
@@ -1594,7 +1334,6 @@ const createBooking = async () => {
       headers: { Authorization: `Bearer ${token}` },
       body: {
         event_name: bookingForm.value.event_name,
-        requester_name: bookingForm.value.requester_name,
         start_time: startDateTime.toISOString(),
         end_time: endDateTime.toISOString(),
         room_id: selectedRoom.value.id
@@ -1605,16 +1344,12 @@ const createBooking = async () => {
     // Refresh data immediately after successful booking
     await loadData()
 
-    // Saran 7: Close modal, reset form, scroll ke #pemesanan-saya
-    setTimeout(async () => {
+    // Close modal and reset form after showing success message
+    setTimeout(() => {
       selectedRoom.value = null
-      bookingForm.value = { event_name: '', requester_name: '', event_date: '', start_time: '', end_time: '' }
-      availabilityStatus.value = null
-      availabilityConflicts.value = []
+      bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
       bookingMessage.value = ''
-      await nextTick()
-      document.getElementById('pemesanan-saya')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 1500)
+    }, 2500)
 
   } catch (error) {
     bookingError.value = error.data?.statusMessage || 'Pemesanan gagal'
@@ -1625,11 +1360,9 @@ const createBooking = async () => {
 
 const closeBookingModal = () => {
   selectedRoom.value = null
-  bookingForm.value = { event_name: '', requester_name: '', event_date: '', start_time: '', end_time: '' }
+  bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
   bookingMessage.value = ''
   bookingError.value = ''
-  availabilityStatus.value = null
-  availabilityConflicts.value = []
 }
 
 const getStatusClass = (status) => {
@@ -1644,7 +1377,7 @@ const getStatusClass = (status) => {
 
 const getStatusText = (status, startTime) => {
   const now = new Date()
-  const eventStart = toUtcDate(startTime)
+  const eventStart = new Date(startTime)
 
   if (status === 'APPROVED' && eventStart < now) {
     return 'Selesai Digunakan'
@@ -1690,8 +1423,8 @@ const getBookingStatusText = (status) => {
 }
 
 const formatBookingTime = (startTime, endTime) => {
-  const start = toUtcDate(startTime)
-  const end = toUtcDate(endTime)
+  const start = new Date(startTime)
+  const end = new Date(endTime)
 
   const options = {
     weekday: 'long',
