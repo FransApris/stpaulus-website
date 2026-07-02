@@ -1,8 +1,10 @@
 // Admin API: Delete kronik entry
 import { runQuery, getQuery as getOne } from '~/server/database/db'
 import { getRouterParam } from 'h3'
+import { requireAuth } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
+  requireAuth(event)
   const id = getRouterParam(event, 'id')
 
   if (!id) {

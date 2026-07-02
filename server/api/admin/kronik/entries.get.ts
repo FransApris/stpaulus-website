@@ -1,11 +1,10 @@
 // Admin API: Get all kronik entries for admin
 import { allQuery, getQuery as getOne } from '~/server/database/db'
 import { getQuery } from 'h3'
+import { requireAuth } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  // TODO: Add authentication middleware
-  // const user = event.context.user
-  // if (!user) throw createError({ statusCode: 401, message: 'Unauthorized' })
+  requireAuth(event)
 
   const queryParams = getQuery(event)
   const page = parseInt(queryParams.page as string) || 1

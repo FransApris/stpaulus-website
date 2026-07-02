@@ -1,12 +1,9 @@
 // Admin API: Create new kronik section
 import { runQuery, getQuery as getOne } from '~/server/database/db'
+import { requireAuth } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  // TODO: Add authentication middleware
-  // const user = event.context.user
-  // if (!user || !['super-admin', 'admin-paroki'].includes(user.role)) {
-  //   throw createError({ statusCode: 403, message: 'Forbidden' })
-  // }
+  requireAuth(event)
 
   try {
     const body = await readBody(event)

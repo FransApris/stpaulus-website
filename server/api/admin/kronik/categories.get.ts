@@ -1,7 +1,9 @@
 // Admin API: Get all categories (with entries count)
 import { allQuery } from '~/server/database/db'
+import { requireAuth } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
+  requireAuth(event)
   try {
     const categories = await allQuery(`
       SELECT 

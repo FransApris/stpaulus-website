@@ -1,8 +1,10 @@
 // Admin API: Get all sections
 import { allQuery } from '~/server/database/db'
 import { getQuery } from 'h3'
+import { requireAuth } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
+  requireAuth(event)
   const queryParams = getQuery(event)
   const categoryId = queryParams.category_id
 

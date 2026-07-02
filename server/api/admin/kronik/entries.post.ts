@@ -1,10 +1,9 @@
 // Admin API: Create new kronik entry
 import { runQuery, getQuery as getOne } from '~/server/database/db'
+import { requireAuth } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  // TODO: Add authentication middleware
-  // const user = event.context.user
-  // if (!user) throw createError({ statusCode: 401, message: 'Unauthorized' })
+  requireAuth(event)
 
   const body = await readBody(event)
 

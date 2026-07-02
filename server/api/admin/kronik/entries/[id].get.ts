@@ -1,6 +1,7 @@
 // Admin API: Get single kronik entry
 import { getQuery as getOne } from '~/server/database/db'
 import { getRouterParam } from 'h3'
+import { requireAuth } from '~/server/utils/auth'
 
 const normalizeImagePath = (value: unknown): string | null => {
   const text = String(value || '').trim()
@@ -38,6 +39,7 @@ const parseJsonMaybeNested = (value: any) => {
 }
 
 export default defineEventHandler(async (event) => {
+  requireAuth(event)
   const id = getRouterParam(event, 'id')
 
   if (!id) {
