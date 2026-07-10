@@ -111,7 +111,7 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const user = userRole[0]
+        const user = userRole[0]!
         console.log('[User Bookings API] User info:', {
             id: user.id,
             name: user.full_name,
@@ -187,6 +187,12 @@ export default defineEventHandler(async (event) => {
         console.log('[User Bookings API] Status summary:', statusSummary)
 
         // Format response
+        // Helper: normalize DB datetime strings (stored as UTC) by appending 'Z'
+        // so that browsers parse them as UTC instead of local time.
+        // Without 'Z', new Date("2026-07-10 07:00:00") is treated as local (WIB)
+        // causing a 7-hour discrepancy for UTC-stored values.
+        const toUTC = (s: any) => s ? String(s).replace(' ', 'T') + 'Z' : null
+
         const formattedBookings = bookings.map((booking: any) => ({
             id: booking.id,
             room_id: booking.room_id,
@@ -194,13 +200,13 @@ export default defineEventHandler(async (event) => {
             room_location: booking.room_location,
             event_name: booking.event_name,
             requester_name: booking.requester_name,
-            start_time: booking.start_time,
-            end_time: booking.end_time,
+            start_time: toUTC(booking.start_time),
+            end_time: toUTC(booking.end_time),
             status: booking.status,
             rejection_reason: booking.rejection_reason,
             cancellation_reason: booking.cancellation_reason,
-            created_at: booking.created_at,
-            updated_at: booking.updated_at,
+            created_at: toUTC(booking.created_at),
+            updated_at: toUTC(booking.updated_at),
             user_name: booking.user_name,
             user_email: booking.user_email,
             user_phone: booking.user_phone,

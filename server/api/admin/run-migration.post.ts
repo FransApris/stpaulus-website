@@ -65,6 +65,14 @@ const MIGRATIONS: Record<string, string[]> = {
     `INSERT IGNORE INTO kronik_sections (category_id, name, slug, description, order_index, is_active) SELECT id, 'Lingkungan Vincentius a Paulo 1', 'lingkungan-vincentius-a-paulo-1', 'Lingkungan Vincentius a Paulo 1', 801, TRUE FROM kronik_categories WHERE slug = 'lingkungan'`,
     `INSERT IGNORE INTO kronik_sections (category_id, name, slug, description, order_index, is_active) SELECT id, 'Lingkungan Vincentius a Paulo 2', 'lingkungan-vincentius-a-paulo-2', 'Lingkungan Vincentius a Paulo 2', 802, TRUE FROM kronik_categories WHERE slug = 'lingkungan'`,
     `INSERT IGNORE INTO kronik_sections (category_id, name, slug, description, order_index, is_active) SELECT id, 'Lingkungan Vincentius a Paulo 3', 'lingkungan-vincentius-a-paulo-3', 'Lingkungan Vincentius a Paulo 3', 803, TRUE FROM kronik_categories WHERE slug = 'lingkungan'`
+  ],
+  '040_add_news_organization_filters': [
+    `CREATE TABLE IF NOT EXISTS seksi (id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT, nama VARCHAR(100) NOT NULL, bidang VARCHAR(100) NULL, is_active TINYINT(1) DEFAULT 1, display_order INT DEFAULT 0, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`,
+    `INSERT IGNORE INTO seksi (nama, bidang, display_order) VALUES ('Keluarga','Pembinaan',1),('BIAK','Pembinaan',2),('REKAT','Pembinaan',3),('OMK','Pembinaan',4),('Lansia','Pembinaan',5),('Katekese','Sumber',6),('Kerasulan Kitab Suci','Sumber',7),('Liturgi','Sumber',8),('Karya Misioner','Kerasulan Khusus',9),('Pendidikan','Kerasulan Khusus',10),('Komunikasi Sosial','Kerasulan Khusus',11),('PHUBB','Kerasulan Umum',12),('Komisi PSE','Kerasulan Umum',13)`,
+    `CREATE TABLE IF NOT EXISTS news_wilayah_relations (news_id INT NOT NULL, wilayah_id INT UNSIGNED NOT NULL, PRIMARY KEY (news_id, wilayah_id), FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE, FOREIGN KEY (wilayah_id) REFERENCES wilayah(id) ON DELETE CASCADE)`,
+    `CREATE TABLE IF NOT EXISTS news_lingkungan_relations (news_id INT NOT NULL, lingkungan_id INT UNSIGNED NOT NULL, PRIMARY KEY (news_id, lingkungan_id), FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE, FOREIGN KEY (lingkungan_id) REFERENCES lingkungan(id) ON DELETE CASCADE)`,
+    `CREATE TABLE IF NOT EXISTS news_seksi_relations (news_id INT NOT NULL, seksi_id INT UNSIGNED NOT NULL, PRIMARY KEY (news_id, seksi_id), FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE, FOREIGN KEY (seksi_id) REFERENCES seksi(id) ON DELETE CASCADE)`,
+    `ALTER TABLE news ADD COLUMN is_bgkp TINYINT(1) DEFAULT 0`
   ]
 }
 

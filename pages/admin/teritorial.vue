@@ -2,8 +2,8 @@
     <div class="p-6">
         <!-- Header -->
         <div class="mb-6">
-            <h1 class="text-2xl font-bold text-gray-800 mb-1">Wilayah & Lingkungan</h1>
-            <p class="text-gray-600">Kelola data wilayah dan lingkungan Paroki St. Paulus</p>
+            <h1 class="text-2xl font-bold text-gray-800 mb-1">Wilayah, Lingkungan & Seksi</h1>
+            <p class="text-gray-600">Kelola data wilayah, lingkungan, dan seksi Paroki St. Paulus</p>
         </div>
 
         <!-- Tabs -->
@@ -26,6 +26,14 @@
                     ]">
                         🗺️ Wilayah
                     </button>
+                    <button @click="activeTab = 'seksi'" :class="[
+                        'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors',
+                        activeTab === 'seksi'
+                            ? 'border-[#882f1d] text-[#882f1d]'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ]">
+                        👥 Seksi
+                    </button>
                 </nav>
             </div>
         </div>
@@ -38,6 +46,11 @@
         <!-- Wilayah Tab Content -->
         <div v-if="activeTab === 'wilayah'">
             <WilayahManager />
+        </div>
+
+        <!-- Seksi Tab Content -->
+        <div v-if="activeTab === 'seksi'">
+            <SeksiManager />
         </div>
     </div>
 </template>

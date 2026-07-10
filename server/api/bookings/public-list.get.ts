@@ -30,9 +30,8 @@ export default defineEventHandler(async (event) => {
           b.requester_name,
           u.username,
           u.full_name as user_name,
-          DATE(b.start_time) as event_date,
-          TIME(b.start_time) as start_time,
-          TIME(b.end_time) as end_time,
+          b.start_time,
+          b.end_time,
           b.status,
           b.created_at
         FROM bookings b
@@ -62,9 +61,8 @@ export default defineEventHandler(async (event) => {
           NULL as requester_name,
           u.username,
           u.full_name as user_name,
-          DATE(b.start_time) as event_date,
-          TIME(b.start_time) as start_time,
-          TIME(b.end_time) as end_time,
+          b.start_time,
+          b.end_time,
           b.status,
           b.created_at
         FROM bookings b
@@ -85,20 +83,43 @@ export default defineEventHandler(async (event) => {
   // Apply limit in JavaScript to avoid SQL injection
   const limitedBookings = bookings.slice(0, limit)
 
+  // Helper: normalize DB datetime strings (stored as UTC) by appending 'Z'
+  // so that browsers parse them as UTC instead of local time.
+  // This is consistent with how booking.vue and index.get.ts process datetime values.
+  const toUTC = (s: any) => s ? String(s).replace(' ', 'T') + 'Z' : null
+
   // Format the response
   const formattedBookings = limitedBookings.map((booking: any) => {
-    // Ensure event_date is in YYYY-MM-DD format (not ISO timestamp)
-    let eventDateStr = booking.event_date
-    if (booking.event_date instanceof Date) {
-      const year = booking.event_date.getFullYear()
-      const month = String(booking.event_date.getMonth() + 1).padStart(2, '0')
-      const day = String(booking.event_date.getDate()).padStart(2, '0')
-      eventDateStr = `${year}-${month}-${day}`
-    } else if (typeof booking.event_date === 'string' && booking.event_date.includes('T')) {
-      // If it's ISO format, extract date part only
-      eventDateStr = booking.event_date.split('T')[0]
+    const startTimeUTC = toUTC(booking.start_time)
+    const endTimeUTC = toUTC(booking.end_time)
+
+    // Extract date part in Jakarta timezone for display
+    let eventDateStr = ''
+    if (startTimeUTC) {
+      const startDate = new Date(startTimeUTC)
+      // Format as YYYY-MM-DD in WIB (Asia/Jakarta = UTC+7)
+      const dateInJakarta = startDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+      eventDateStr = dateInJakarta
     }
-    
+
+    // Extract time strings in Jakarta timezone for display
+    let startTimeStr = ''
+    let endTimeStr = ''
+    if (startTimeUTC) {
+      startTimeStr = new Date(startTimeUTC).toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta'
+      }).replace('.', ':')
+    }
+    if (endTimeUTC) {
+      endTimeStr = new Date(endTimeUTC).toLocaleTimeString('id-ID', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Jakarta'
+      }).replace('.', ':')
+    }
+
     return {
       id: booking.id,
       room_name: booking.room_name,
@@ -108,8 +129,11 @@ export default defineEventHandler(async (event) => {
       username: booking.username,
       user_name: booking.user_name,
       event_date: eventDateStr,
-      start_time: booking.start_time,
-      end_time: booking.end_time,
+      start_time: startTimeStr,
+      end_time: endTimeStr,
+      // Also include full UTC ISO strings for accurate client-side filtering
+      start_time_utc: startTimeUTC,
+      end_time_utc: endTimeUTC,
       status: booking.status,
       created_at: booking.created_at
     }

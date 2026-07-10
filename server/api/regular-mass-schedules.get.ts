@@ -5,6 +5,7 @@ export default defineEventHandler(async (event) => {
     const schedules = await allQuery(`
       SELECT id, day_of_week, time, mass_type, is_active, created_at, updated_at
       FROM regular_mass_schedules
+      WHERE is_active = 1 OR is_active = TRUE
       ORDER BY
         CASE day_of_week
           WHEN 'Minggu' THEN 1

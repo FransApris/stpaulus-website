@@ -28,9 +28,9 @@ export default defineEventHandler(async (event) => {
     }
 
     // Update the regular mass schedule
-    runQuery(
+    await runQuery(
       'UPDATE regular_mass_schedules SET day_of_week = ?, time = ?, mass_type = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [day_of_week, time, mass_type, is_active !== undefined ? is_active : true, id]
+      [day_of_week, time, mass_type, is_active ? 1 : 0, id]
     )
 
     return {
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event) => {
       day_of_week,
       time,
       mass_type,
-      is_active: is_active !== undefined ? is_active : true,
+      is_active: is_active ? 1 : 0,
       updated_at: new Date().toISOString()
     }
   } catch (error: any) {

@@ -2,22 +2,49 @@ import { allQuery } from '../database/db'
 
 export default defineEventHandler(async (event) => {
   try {
+    const query = getQuery(event)
+    const wilayah_id = query.wilayah_id ? parseInt(query.wilayah_id as string) : null
+    const lingkungan_id = query.lingkungan_id ? parseInt(query.lingkungan_id as string) : null
+    const seksi_id = query.seksi_id ? parseInt(query.seksi_id as string) : null
+    const is_bgkp = query.is_bgkp === '1' || query.is_bgkp === 'true'
+
+    const conditions: string[] = ["n.status = 'published'"]
+    const params: any[] = []
+
+    if (wilayah_id) {
+      conditions.push('EXISTS (SELECT 1 FROM news_wilayah_relations nwr WHERE nwr.news_id = n.id AND nwr.wilayah_id = ?)')
+      params.push(wilayah_id)
+    }
+    if (lingkungan_id) {
+      conditions.push('EXISTS (SELECT 1 FROM news_lingkungan_relations nlr WHERE nlr.news_id = n.id AND nlr.lingkungan_id = ?)')
+      params.push(lingkungan_id)
+    }
+    if (seksi_id) {
+      conditions.push('EXISTS (SELECT 1 FROM news_seksi_relations nsr WHERE nsr.news_id = n.id AND nsr.seksi_id = ?)')
+      params.push(seksi_id)
+    }
+    if (is_bgkp) {
+      conditions.push('n.is_bgkp = 1')
+    }
+
+    const whereClause = `WHERE ${conditions.join(' AND ')}`
+
     // Fetch news with categories
     const sql = `
       SELECT
         n.*,
-        GROUP_CONCAT(ac.name) as category_names,
-        GROUP_CONCAT(ac.id) as category_ids,
-        GROUP_CONCAT(ac.slug) as category_slugs
+        GROUP_CONCAT(DISTINCT ac.name) as category_names,
+        GROUP_CONCAT(DISTINCT ac.id) as category_ids,
+        GROUP_CONCAT(DISTINCT ac.slug) as category_slugs
       FROM news n
       LEFT JOIN news_category_relations ncr ON n.id = ncr.news_id
       LEFT JOIN article_categories ac ON ncr.category_id = ac.id
-      WHERE n.status = 'published'
+      ${whereClause}
       GROUP BY n.id
       ORDER BY n.published_at DESC, n.created_at DESC
-    `;
+    `
 
-    const newsList = await allQuery(sql);
+    const newsList = await allQuery(sql, params);
 
     // Process categories for each news item
     const processedNews = newsList.map((news: any) => {
@@ -57,6 +84,7 @@ export default defineEventHandler(async (event) => {
         }),
         image: news.image || '/images/default-news.jpg',
         categories: categories,
+        is_bgkp: !!news.is_bgkp,
         likes_count: news.likes_count || 0,
         shares_count: news.shares_count || 0,
         views_count: news.views_count || 0

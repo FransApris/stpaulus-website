@@ -73,7 +73,7 @@
               </div>
               <div class="min-w-0">
                 <p class="text-white font-semibold text-base leading-tight truncate">{{ user?.full_name || 'Memuat...'
-                  }}
+                }}
                 </p>
                 <p class="text-red-200 text-xs mt-0.5">Pengguna Aktif</p>
               </div>
@@ -994,7 +994,10 @@ const isBookingPassed = (endTime) => {
 // Helper functions
 const getTodayDate = () => {
   const today = new Date()
-  return today.toISOString().split('T')[0]
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 const viewBookingDetail = (booking) => {
@@ -1013,13 +1016,17 @@ const closeBookingDetail = async () => {
 
 const formatDate = (dateTime) => {
   const date = new Date(dateTime)
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' }
   return date.toLocaleDateString('id-ID', options)
 }
 
 const formatTime = (dateTime) => {
   const date = new Date(dateTime)
-  return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+  return date.toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Jakarta'
+  }).replace('.', ':')
 }
 
 const getStatusBadgeClass = (status) => {
@@ -1305,9 +1312,11 @@ const createBooking = async () => {
   }
 
   // Validasi tidak boleh waktu yang sudah lewat hari ini (Saran 4)
-  const isToday = bookingForm.value.event_date === new Date().toISOString().split('T')[0]
+  const isToday = bookingForm.value.event_date === getTodayDate()
   if (isToday) {
-    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes()
+    const now = new Date()
+    // Pastikan mengambil jam dan menit lokal, bukan UTC
+    const nowMinutes = now.getHours() * 60 + now.getMinutes()
     if (startMinutes < nowMinutes) {
       bookingError.value = 'Waktu mulai tidak boleh di masa lalu'
       bookingLoading.value = false
@@ -1426,16 +1435,23 @@ const formatBookingTime = (startTime, endTime) => {
   const start = new Date(startTime)
   const end = new Date(endTime)
 
-  const options = {
+  const dateOptions = {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
+    timeZone: 'Asia/Jakarta'
   }
 
-  const dateStr = start.toLocaleDateString('id-ID', options)
-  const startTimeStr = start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
-  const endTimeStr = end.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+  const timeOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Jakarta'
+  }
+
+  const dateStr = start.toLocaleDateString('id-ID', dateOptions)
+  const startTimeStr = start.toLocaleTimeString('id-ID', timeOptions).replace('.', ':')
+  const endTimeStr = end.toLocaleTimeString('id-ID', timeOptions).replace('.', ':')
 
   return `${dateStr} (${startTimeStr} - ${endTimeStr})`
 }

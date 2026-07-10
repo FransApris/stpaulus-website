@@ -870,9 +870,23 @@ const publicBookings = computed(() => {
 
   // Filter: hanya tampilkan booking yang belum selesai (end_time >= now)
   const now = new Date();
-  const filtered = bookings.filter(booking => {
+  const filtered = bookings.filter((booking) => {
     try {
-      // Handle different date formats
+      // Gunakan end_time_utc (full ISO UTC string) jika tersedia untuk perbandingan yang akurat
+      // Ini konsisten dengan cara halaman booking.vue memproses data
+      if (booking.end_time_utc) {
+        const bookingEndDate = new Date(booking.end_time_utc);
+        console.log('[Homepage] Checking booking (UTC):', {
+          id: booking.id,
+          event: booking.event_name,
+          endDate: bookingEndDate.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+          now: now.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
+          isVisible: bookingEndDate >= now
+        });
+        return bookingEndDate >= now;
+      }
+
+      // Fallback: parse dari event_date + end_time (format lama)
       let eventDateStr = booking.event_date;
 
       // If event_date is a Date object, convert to string
@@ -894,7 +908,7 @@ const publicBookings = computed(() => {
       // Create date in local timezone with end time
       const bookingEndDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
 
-      console.log('[Homepage] Checking booking:', {
+      console.log('[Homepage] Checking booking (fallback):', {
         id: booking.id,
         event: booking.event_name,
         endDate: bookingEndDate.toLocaleString(),

@@ -62,7 +62,17 @@ export default defineEventHandler(async (event) => {
   }
 
   // Get bookings for the target date
-  const bookings = await getBookingsForDate()
+  const rawBookings = await getBookingsForDate()
+
+  // Helper: normalize DB datetime strings (stored as UTC) by appending 'Z'
+  // so that browsers parse them as UTC instead of local time.
+  const toUTC = (s: any) => s ? String(s).replace(' ', 'T') + 'Z' : null
+
+  const bookings = rawBookings.map((b: any) => ({
+    ...b,
+    start_time: toUTC(b.start_time),
+    end_time: toUTC(b.end_time)
+  }))
 
   // Group bookings by room
   const bookingsByRoom: Record<number, any[]> = {}
@@ -104,7 +114,9 @@ export default defineEventHandler(async (event) => {
           const startTime = new Date(upcomingBooking.start_time)
           const endTime = new Date(upcomingBooking.end_time)
           status = 'Sudah Dipesan'
-          statusDetails = `${upcomingBooking.event_name} pada ${startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} (${upcomingBooking.requester_name || upcomingBooking.user_name})`
+          const startStr = startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
+          const endStr = endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
+          statusDetails = `${upcomingBooking.event_name} pada ${startStr} - ${endStr} (${upcomingBooking.requester_name || upcomingBooking.user_name})`
         } else {
           // Check for pending bookings
           const pendingBooking = roomBookings.find((booking: any) => booking.status === 'PENDING')

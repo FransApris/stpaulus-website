@@ -17,7 +17,7 @@ export default defineEventHandler(async () => {
       lt.color as liturgy_type_color
     FROM liturgy_schedules ls
     LEFT JOIN liturgy_types lt ON ls.liturgy_type_id = lt.id
-    WHERE ls.status = 'active'
+    WHERE ls.status = 'active' AND ls.date >= CURDATE()
     ORDER BY ls.date ASC, ls.time ASC
   `)
 

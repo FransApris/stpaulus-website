@@ -34,8 +34,7 @@
           <div class="text-sm text-gray-500 mt-0.5">{{ m.description }}</div>
           <!-- Result -->
           <div v-if="m.result" class="mt-3 space-y-1">
-            <div v-for="(r, i) in m.result.results" :key="i"
-              class="text-xs font-mono px-2 py-1 rounded"
+            <div v-for="(r, i) in m.result.results" :key="i" class="text-xs font-mono px-2 py-1 rounded"
               :class="r.status === 'ok' ? 'bg-green-50 text-green-800' : r.status.startsWith('skipped') ? 'bg-yellow-50 text-yellow-800' : 'bg-red-50 text-red-800'">
               <span class="font-semibold">[{{ r.status }}]</span> {{ r.statement }}
             </div>
@@ -45,8 +44,7 @@
           </div>
         </div>
         <button @click="run(m)" :disabled="m.running || m.done"
-          class="px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap"
-          :class="m.done
+          class="px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" :class="m.done
             ? 'bg-green-100 text-green-700 cursor-default'
             : m.running
               ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
@@ -94,6 +92,14 @@ const migrations = ref<Migration[]>([
     key: '009_add_liturgy_types_permission_to_sekretariat',
     label: '009 - Tambah permission manage_liturgy_types ke Admin Sekretariat',
     description: 'Memberikan permission manage_liturgy_types ke role admin_sekretariat agar bisa mengakses dan mengelola jenis liturgi (diperlukan untuk halaman jadwal misa).',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
+    key: '040_add_news_organization_filters',
+    label: '040 - Tambah filter organisasi untuk berita (Wilayah, Lingkungan, Seksi, BGKP)',
+    description: 'Membuat tabel seksi, news_wilayah_relations, news_lingkungan_relations, news_seksi_relations, dan menambah kolom is_bgkp di tabel news. Diperlukan untuk fitur kategorisasi dan filtering berita berdasarkan organisasi paroki.',
     running: false,
     done: false,
     result: null

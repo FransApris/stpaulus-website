@@ -66,14 +66,17 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Validate time format (HH:MM)
-    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
+    // Validate time format (HH:MM or HH:MM:SS)
+    const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/
     if (!timeRegex.test(time)) {
       throw createError({
         statusCode: 400,
         statusMessage: 'Format waktu tidak valid (gunakan format HH:MM)'
       })
     }
+
+    // Format date for MySQL (YYYY-MM-DD)
+    const formattedDate = dateObj.toISOString().split('T')[0]
 
     // Update liturgy schedule
     const sql = `
@@ -85,7 +88,7 @@ export default defineEventHandler(async (event) => {
     `
 
     await runQuery(sql, [
-      title, date, time, liturgy_type_id, language || 'Indonesia',
+      title, formattedDate, time, liturgy_type_id, language || 'Indonesia',
       priest_name || null, location || 'Gereja Utama', notes || null,
       is_recurring ? 1 : 0, status || 'active', id
     ])

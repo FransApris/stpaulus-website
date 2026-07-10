@@ -23,17 +23,15 @@
       <section class="mb-12 max-w-7xl mx-auto">
         <h2 class="text-2xl font-bold text-gray-900 mb-6">Kategori Kronik</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div
-            v-for="category in categories"
-            :key="category.id"
+          <div v-for="category in categories" :key="category.id"
             class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border-l-4 border-[#c58229] transform hover:-translate-y-1 cursor-pointer"
-            @click="() => navigateTo('/kronik/' + category.slug)"
-          >
+            @click="() => navigateTo('/kronik/' + category.slug)">
             <div class="p-6">
               <div class="flex items-center mb-4">
                 <div class="w-12 h-12 bg-[#c58229]/10 rounded-lg flex items-center justify-center mr-4">
                   <svg class="w-6 h-6 text-[#c58229]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                   </svg>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-900">{{ category.name }}</h2>
@@ -43,7 +41,10 @@
                 <span class="text-gray-500">
                   <span class="font-semibold text-[#882f1d]">{{ category.entries_count || 0 }}</span> Kronik
                 </span>
-                <span class="text-[#c58229] font-medium flex items-center">Lihat Detail <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></span>
+                <span class="text-[#c58229] font-medium flex items-center">Lihat Detail <svg class="w-4 h-4 ml-1"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg></span>
               </div>
             </div>
           </div>
@@ -59,32 +60,32 @@
       <section class="mb-12 max-w-7xl mx-auto">
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold text-gray-900">Semua Kronik Terbaru</h2>
-          
+
           <!-- Export Buttons -->
           <div class="flex gap-3">
-            <button
-              @click="exportToPDF"
+            <button @click="exportToPDF"
               class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors shadow-sm"
-              title="Export ke PDF"
-            >
+              title="Export ke PDF">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
               </svg>
               Export PDF
             </button>
-            <button
-              @click="printTable"
+            <button @click="printTable"
               class="inline-flex items-center px-4 py-2 bg-[#882f1d] text-white rounded-md hover:bg-[#6b2416] transition-colors shadow-sm"
-              title="Cetak Tabel"
-            >
+              title="Cetak Tabel">
               <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                </path>
               </svg>
               Cetak
             </button>
           </div>
         </div>
-        
+
         <!-- Loading -->
         <div v-if="loadingEntries" class="text-center py-8">
           <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#882f1d] mx-auto"></div>
@@ -115,7 +116,8 @@
                     <div class="text-gray-500 line-clamp-1">{{ stripHtml(entry.what_description) }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#c58229]/10 text-[#882f1d]">
+                    <span
+                      class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#c58229]/10 text-[#882f1d]">
                       {{ entry.category_name }}
                     </span>
                   </td>
@@ -126,10 +128,8 @@
                     {{ entry.where_location || '-' }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <NuxtLink 
-                      :to="`/kronik/${entry.category_slug}/${entry.id}`"
-                      class="text-[#c58229] hover:text-[#882f1d] font-medium"
-                    >
+                    <NuxtLink :to="`/kronik/${entry.category_slug}/${entry.id}`"
+                      class="text-[#c58229] hover:text-[#882f1d] font-medium">
                       Lihat Detail
                     </NuxtLink>
                   </td>
@@ -141,38 +141,29 @@
           <!-- Pagination -->
           <div class="bg-gray-50 px-6 py-4 border-t flex items-center justify-between">
             <div class="text-sm text-gray-700">
-              Menampilkan <span class="font-medium">{{ ((currentPage - 1) * pageSize) + 1 }}</span> 
-              sampai <span class="font-medium">{{ Math.min(currentPage * pageSize, totalEntries) }}</span> 
+              Menampilkan <span class="font-medium">{{ ((currentPage - 1) * pageSize) + 1 }}</span>
+              sampai <span class="font-medium">{{ Math.min(currentPage * pageSize, totalEntries) }}</span>
               dari <span class="font-medium">{{ totalEntries }}</span> kronik
             </div>
             <div class="flex items-center space-x-2">
-              <button
-                @click="goToPage(currentPage - 1)"
-                :disabled="currentPage === 1"
+              <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
                 class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'"
-              >
+                :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'">
                 Sebelumnya
               </button>
-              
+
               <template v-for="page in visiblePages" :key="page">
-                <button
-                  v-if="page !== '...'"
-                  @click="goToPage(page)"
+                <button v-if="page !== '...'" @click="goToPage(page)"
                   class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                  :class="page === currentPage ? 'bg-[#882f1d] text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'"
-                >
+                  :class="page === currentPage ? 'bg-[#882f1d] text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'">
                   {{ page }}
                 </button>
                 <span v-else class="px-2 text-gray-500">...</span>
               </template>
 
-              <button
-                @click="goToPage(currentPage + 1)"
-                :disabled="currentPage === totalPages"
+              <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
                 class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'"
-              >
+                :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'">
                 Selanjutnya
               </button>
             </div>
@@ -182,7 +173,8 @@
         <!-- Empty State -->
         <div v-else class="text-center py-12 bg-white rounded-lg shadow-md">
           <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
           <p class="text-gray-500 text-lg">Belum ada kronik yang dipublikasikan</p>
         </div>
@@ -234,7 +226,7 @@ const visiblePages = computed(() => {
       pages.push(total)
     }
   }
-  
+
   return pages
 })
 
@@ -249,10 +241,10 @@ const goToPage = (page) => {
 const formatDate = (dateString) => {
   if (!dateString) return '-'
   const date = new Date(dateString)
-  return date.toLocaleDateString('id-ID', { 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
+  return date.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
   })
 }
 
@@ -280,7 +272,7 @@ const exportToPDF = () => {
 
     const tableContent = document.getElementById('kronik-table-container')?.innerHTML || ''
     const currentDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    
+
     const styles = [
       'body { font-family: Arial, sans-serif; padding: 20px; font-size: 12px; }',
       'h1 { color: #882f1d; text-align: center; margin-bottom: 10px; font-size: 20px; }',
@@ -292,7 +284,7 @@ const exportToPDF = () => {
       '.badge { display: inline-block; padding: 2px 8px; border-radius: 12px; background-color: #fef3e8; color: #882f1d; font-size: 9px; font-weight: 600; }',
       '.footer { margin-top: 20px; text-align: center; font-size: 9px; color: #666; }'
     ].join('')
-    
+
     const htmlParts = [
       '<!DOCTYPE html><html><head>',
       '<title>Kronik Paroki St. Paulus Juanda</title>',
@@ -304,10 +296,10 @@ const exportToPDF = () => {
       '<div class="footer"><p>Paroki St. Paulus Juanda Sidoarjo | Jl. Pahlawan No. 1, Sidoarjo</p></div>',
       '</body></html>'
     ]
-    
+
     printWindow.document.write(htmlParts.join(''))
     printWindow.document.close()
-    
+
     setTimeout(() => {
       printWindow.print()
     }, 250)
@@ -322,7 +314,7 @@ const printTable = () => {
 
     const tableContent = document.getElementById('kronik-table-container')?.innerHTML || ''
     const currentDate = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-    
+
     const styles = [
       '@media print { body { margin: 0; } .no-print { display: none; } }',
       'body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }',
@@ -335,10 +327,10 @@ const printTable = () => {
       '.badge { display: inline-block; padding: 2px 6px; border-radius: 10px; background-color: #fef3e8; color: #882f1d; font-size: 8px; font-weight: 600; }',
       '.footer { margin-top: 20px; text-align: center; font-size: 9px; color: #666; page-break-after: avoid; }'
     ].join('')
-    
+
     const scriptTag = document.createElement('script')
     scriptTag.textContent = 'window.onload = function() { window.print(); }'
-    
+
     const htmlParts = [
       '<!DOCTYPE html><html><head>',
       '<title>Kronik Paroki St. Paulus Juanda</title>',
@@ -350,7 +342,7 @@ const printTable = () => {
       '<div class="footer"><p>Paroki St. Paulus Juanda Sidoarjo | Jl. Pahlawan No. 1, Sidoarjo</p></div>',
       '</body></html>'
     ]
-    
+
     printWindow.document.write(htmlParts.join(''))
     printWindow.document.head.appendChild(scriptTag)
     printWindow.document.close()
@@ -360,9 +352,9 @@ const printTable = () => {
 useHead({
   title: 'Kronik Paroki - Paroki St. Paulus Juanda',
   meta: [
-    { 
-      name: 'description', 
-      content: 'Catatan kegiatan dan peristiwa penting di Paroki St. Paulus Juanda Sidoarjo' 
+    {
+      name: 'description',
+      content: 'Catatan kegiatan dan peristiwa penting di Paroki St. Paulus Juanda Sidoarjo'
     }
   ]
 })

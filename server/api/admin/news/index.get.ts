@@ -39,12 +39,24 @@ export default defineEventHandler(async (event) => {
     const sql = `
       SELECT
         n.*,
-        GROUP_CONCAT(ac.name) as category_names,
-        GROUP_CONCAT(ac.id) as category_ids,
-        GROUP_CONCAT(ac.slug) as category_slugs
+        GROUP_CONCAT(DISTINCT ac.name) as category_names,
+        GROUP_CONCAT(DISTINCT ac.id) as category_ids,
+        GROUP_CONCAT(DISTINCT ac.slug) as category_slugs,
+        GROUP_CONCAT(DISTINCT w.id) as wilayah_ids_val,
+        GROUP_CONCAT(DISTINCT w.nama) as wilayah_names,
+        GROUP_CONCAT(DISTINCT l.id) as lingkungan_ids_val,
+        GROUP_CONCAT(DISTINCT l.nama) as lingkungan_names,
+        GROUP_CONCAT(DISTINCT s.id) as seksi_ids_val,
+        GROUP_CONCAT(DISTINCT s.nama) as seksi_names
       FROM news n
       LEFT JOIN news_category_relations ncr ON n.id = ncr.news_id
       LEFT JOIN article_categories ac ON ncr.category_id = ac.id
+      LEFT JOIN news_wilayah_relations nwr ON n.id = nwr.news_id
+      LEFT JOIN wilayah w ON nwr.wilayah_id = w.id
+      LEFT JOIN news_lingkungan_relations nlr ON n.id = nlr.news_id
+      LEFT JOIN lingkungan l ON nlr.lingkungan_id = l.id
+      LEFT JOIN news_seksi_relations nsr ON n.id = nsr.news_id
+      LEFT JOIN seksi s ON nsr.seksi_id = s.id
       ${whereClause}
       GROUP BY n.id
       ORDER BY n.created_at DESC
@@ -81,10 +93,17 @@ export default defineEventHandler(async (event) => {
         author: news.author || '',
         image: news.image || null,
         status: news.status,
+        is_bgkp: !!news.is_bgkp,
         published_at: news.published_at,
         created_at: news.created_at,
         updated_at: news.updated_at,
-        categories: categories
+        categories: categories,
+        wilayah_ids: news.wilayah_ids_val ? news.wilayah_ids_val.split(',').map(Number) : [],
+        wilayah_names: news.wilayah_names ? news.wilayah_names.split(',') : [],
+        lingkungan_ids: news.lingkungan_ids_val ? news.lingkungan_ids_val.split(',').map(Number) : [],
+        lingkungan_names: news.lingkungan_names ? news.lingkungan_names.split(',') : [],
+        seksi_ids: news.seksi_ids_val ? news.seksi_ids_val.split(',').map(Number) : [],
+        seksi_names: news.seksi_names ? news.seksi_names.split(',') : [],
       };
     });
 

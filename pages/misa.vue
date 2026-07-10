@@ -311,9 +311,15 @@ const groupedSchedules = computed(() => {
       display_time: formatTime(devotionItem.time),
       display_title: devotionItem.title,
       type_name: devotionItem.type_name,
-      sort_key: getSortKey(devotionItem.day_of_week, devotionItem.time)
+      sort_key: getSortKey(devotionItem.day_of_week, devotionItem.time),
+      display_order: devotionItem.display_order || 0
     }))
-    .sort((a, b) => a.sort_key - b.sort_key)
+    .sort((a, b) => {
+      if (a.display_order !== b.display_order) {
+        return a.display_order - b.display_order
+      }
+      return a.sort_key - b.sort_key
+    })
 
   return {
     regular,

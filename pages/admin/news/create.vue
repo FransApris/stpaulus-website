@@ -85,6 +85,75 @@
               </p>
             </div>
 
+            <!-- Tag Organisasi -->
+            <div class="border border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+              <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Tag Organisasi <span class="text-xs font-normal text-gray-500">(opsional, untuk filtering)</span>
+              </h3>
+              <div class="space-y-4">
+                <!-- Wilayah -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Wilayah</label>
+                  <div
+                    class="max-h-28 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-white grid grid-cols-2 gap-1">
+                    <label v-for="w in allWilayah" :key="w.id"
+                      class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5">
+                      <input type="checkbox" :value="w.id" v-model="form.wilayah_ids"
+                        class="h-3.5 w-3.5 text-[#882f1d] rounded border-gray-300" />
+                      <span class="text-xs">{{ w.nama }}</span>
+                    </label>
+                    <span v-if="allWilayah.length === 0" class="text-xs text-gray-400 col-span-2 p-1">Memuat...</span>
+                  </div>
+                </div>
+                <!-- Lingkungan -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Lingkungan</label>
+                  <div
+                    class="max-h-28 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-white grid grid-cols-2 gap-1">
+                    <label v-for="l in allLingkungan" :key="l.id"
+                      class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5">
+                      <input type="checkbox" :value="l.id" v-model="form.lingkungan_ids"
+                        class="h-3.5 w-3.5 text-[#882f1d] rounded border-gray-300" />
+                      <span class="text-xs">{{ l.nama }}</span>
+                    </label>
+                    <span v-if="allLingkungan.length === 0"
+                      class="text-xs text-gray-400 col-span-2 p-1">Memuat...</span>
+                  </div>
+                </div>
+                <!-- Seksi -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-600 mb-1">Seksi / Bidang</label>
+                  <div class="max-h-36 overflow-y-auto border border-gray-200 rounded-lg p-2 bg-white space-y-2">
+                    <div v-for="bidang in seksiGrouped" :key="bidang.nama">
+                      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide px-1 mb-0.5">{{ bidang.nama
+                        }}</p>
+                      <div class="grid grid-cols-2 gap-1">
+                        <label v-for="s in bidang.seksi" :key="s.id"
+                          class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5">
+                          <input type="checkbox" :value="s.id" v-model="form.seksi_ids"
+                            class="h-3.5 w-3.5 text-[#882f1d] rounded border-gray-300" />
+                          <span class="text-xs">{{ s.nama }}</span>
+                        </label>
+                      </div>
+                    </div>
+                    <span v-if="seksiGrouped.length === 0" class="text-xs text-gray-400 p-1">Memuat...</span>
+                  </div>
+                </div>
+                <!-- BGKP -->
+                <div>
+                  <label class="flex items-center gap-3 cursor-pointer w-fit">
+                    <input type="checkbox" v-model="form.is_bgkp"
+                      class="h-4 w-4 text-[#882f1d] rounded border-gray-300" />
+                    <span class="text-sm font-medium text-gray-700">Tandai sebagai berita <strong>BGKP</strong></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <!-- Author -->
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -330,11 +399,27 @@ const form = ref({
   why_purpose: '',
   how_process: '',
   ai_generated: false,
-  ai_prompt: ''
+  ai_prompt: '',
+  wilayah_ids: [] as number[],
+  lingkungan_ids: [] as number[],
+  seksi_ids: [] as number[],
+  is_bgkp: false
 })
 
 // State
 const categories = ref<any[]>([])
+const allWilayah = ref<any[]>([])
+const allLingkungan = ref<any[]>([])
+const allSeksi = ref<any[]>([])
+const seksiGrouped = computed(() => {
+  const groups: Record<string, { nama: string, seksi: any[] }> = {}
+  for (const s of allSeksi.value) {
+    const b = s.bidang || 'Lainnya'
+    if (!groups[b]) groups[b] = { nama: b, seksi: [] }
+    groups[b].seksi.push(s)
+  }
+  return Object.values(groups)
+})
 const galleryPreviews = ref<string[]>([])
 const galleryFiles = ref<File[]>([])
 const aiGenerating = ref(false)
@@ -390,6 +475,21 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     errorMessage.value = 'Gagal memuat kategori berita'
+  }
+
+  // Fetch organization data
+  try {
+    const token = sessionStorage.getItem('admin_access_token')
+    const [wilayahRes, lingkunganRes, seksiRes] = await Promise.all([
+      $fetch('/api/admin/wilayah', { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: [] })),
+      $fetch('/api/lingkungan').catch(() => []),
+      $fetch('/api/seksi').catch(() => [])
+    ])
+    allWilayah.value = (wilayahRes as any)?.data || []
+    allLingkungan.value = Array.isArray(lingkunganRes) ? lingkunganRes as any[] : []
+    allSeksi.value = Array.isArray(seksiRes) ? seksiRes as any[] : []
+  } catch (error) {
+    console.error('Failed to fetch organization data:', error)
   }
 })
 

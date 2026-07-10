@@ -21,7 +21,8 @@ export default defineEventHandler(async (event) => {
     const {
       title, slug, excerpt, content, author, status, category_ids, image,
       when_date, when_time, where_location, who_participants, why_purpose, how_process,
-      gallery_images, ai_generated, ai_prompt
+      gallery_images, ai_generated, ai_prompt,
+      wilayah_ids, lingkungan_ids, seksi_ids, is_bgkp
     } = body
 
     console.log('[News Create] Parsed values:', {
@@ -114,6 +115,32 @@ export default defineEventHandler(async (event) => {
     // Auto-sync to kronik if status is published and category is configured
     if (status === 'published' && category_ids && category_ids.length > 0) {
       await handleNewsKronikSync(newsId, status, category_ids)
+    }
+
+    // Update is_bgkp flag
+    if (is_bgkp !== undefined) {
+      await runQuery('UPDATE news SET is_bgkp = ? WHERE id = ?', [is_bgkp ? 1 : 0, newsId])
+    }
+
+    // Insert wilayah relations
+    if (wilayah_ids && Array.isArray(wilayah_ids) && wilayah_ids.length > 0) {
+      await Promise.all(wilayah_ids.map((wid: number) =>
+        runQuery('INSERT IGNORE INTO news_wilayah_relations (news_id, wilayah_id) VALUES (?, ?)', [newsId, wid])
+      ))
+    }
+
+    // Insert lingkungan relations
+    if (lingkungan_ids && Array.isArray(lingkungan_ids) && lingkungan_ids.length > 0) {
+      await Promise.all(lingkungan_ids.map((lid: number) =>
+        runQuery('INSERT IGNORE INTO news_lingkungan_relations (news_id, lingkungan_id) VALUES (?, ?)', [newsId, lid])
+      ))
+    }
+
+    // Insert seksi relations
+    if (seksi_ids && Array.isArray(seksi_ids) && seksi_ids.length > 0) {
+      await Promise.all(seksi_ids.map((sid: number) =>
+        runQuery('INSERT IGNORE INTO news_seksi_relations (news_id, seksi_id) VALUES (?, ?)', [newsId, sid])
+      ))
     }
 
     // Fetch the created news with categories

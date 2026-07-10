@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
         lt.icon as liturgy_type_icon,
         lt.color as liturgy_type_color
       FROM liturgy_schedules ls
-      JOIN liturgy_types lt ON ls.liturgy_type_id = lt.id
+      LEFT JOIN liturgy_types lt ON ls.liturgy_type_id = lt.id
       ORDER BY ls.date DESC, ls.time DESC
       LIMIT ${limit} OFFSET ${offset}
     `

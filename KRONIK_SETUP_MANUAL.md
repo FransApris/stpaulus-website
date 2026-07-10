@@ -75,7 +75,7 @@ Setelah menjalankan migrasi, sistem akan membuat:
 
 - Gereja
 - DPP (Dewan Pengurus Paroki)
-- BGKP (Badan Gotong Royong Karya Paroki)
+- BGKP (Badan Gereja Katolik Paroki)
 - Wilayah
 - Lingkungan
 
