@@ -28,7 +28,8 @@ export default defineEventHandler(async (event) => {
                 body.time,
                 body.location || 'Gereja Utama',
                 body.description || null,
-                body.is_active !== false ? 1 : 0,
+                // PERBAIKAN LOGIKA DISINI
+                (body.is_active === true || body.is_active === 1 || body.is_active === '1') ? 1 : 0,
                 body.display_order || 0
             ]
         )
