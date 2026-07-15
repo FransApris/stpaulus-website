@@ -628,16 +628,23 @@ const generateSlug = () => {
 const submitForm = async () => {
   submitting.value = true;
   try {
+    const token =
+      sessionStorage.getItem("admin_access_token") ||
+      localStorage.getItem("auth_token");
+    const headers = { Authorization: `Bearer ${token}` };
+
     if (editingSection.value) {
       // Update
       await $fetch(`/api/admin/kronik/sections/${editingSection.value.id}`, {
         method: "PUT",
+        headers, // Tambahkan headers
         body: form.value,
       });
     } else {
       // Create
       await $fetch("/api/admin/kronik/sections", {
         method: "POST",
+        headers, // Tambahkan headers
         body: form.value,
       });
     }
@@ -645,7 +652,6 @@ const submitForm = async () => {
     await refreshSections();
     closeModal();
 
-    // Show success message (you can implement toast notification)
     alert(
       editingSection.value
         ? "Section updated successfully!"
@@ -668,8 +674,16 @@ const deleteSection = async () => {
   if (!sectionToDelete.value) return;
 
   try {
+    // Ambil token dari storage (sesuaikan dengan metode yang dipakai di index.vue/create.vue)
+    const token =
+      sessionStorage.getItem("admin_access_token") ||
+      localStorage.getItem("auth_token");
+
     await $fetch(`/api/admin/kronik/sections/${sectionToDelete.value.id}`, {
       method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`, // Tambahkan baris ini
+      },
     });
 
     await refreshSections();
