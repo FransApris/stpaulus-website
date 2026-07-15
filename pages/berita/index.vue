@@ -84,7 +84,7 @@
             >
             <select
               v-model="activeFilter.wilayah_id"
-              @change="applyFilter"
+              @change="onWilayahChange"
               class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#882f1d] focus:border-[#882f1d] outline-none bg-white"
             >
               <option :value="null">Semua Wilayah</option>
@@ -367,42 +367,52 @@ const { data: lingkunganRaw } = await useAsyncData("filter-lingkungan", () =>
   $fetch<any>("/api/lingkungan").catch(() => []),
 );
 
-const lingkunganList = computed(() => {
+// Semua lingkungan yang sudah diformat dengan displayName
+const allLingkunganFormatted = computed(() => {
   const res = lingkunganRaw.value;
   if (!res) return [];
 
-  // Ekstrak array dari respons (bisa langsung array atau dalam { data: [...] })
   const rawArray: any[] = Array.isArray(res) ? res : (res.data || []);
 
   return rawArray.map((l: any) => {
-    // /api/lingkungan sudah menyediakan:
-    //   l.wilayah_display → nama wilayah (dari COALESCE(w.nama, l.wilayah_text))
-    //   l.wilayah_nama    → nama wilayah dari JOIN
-    //   l.no              → nomor lingkungan (angka)
-    //   l.nama            → teks seperti "Lingkungan 1"
-
-    // Ambil nama wilayah dari field yang tersedia, secara berurutan
+    // /api/lingkungan menyediakan: wilayah_display, wilayah_nama, no, nama
     const namaWilayah: string =
       l.wilayah_display ||
       l.wilayah_nama ||
       l.wilayah?.nama ||
       "";
 
-    // Ambil nomor lingkungan: gunakan field `no` jika ada, atau potong dari `nama`
     const nomorLingkungan: string | number =
       l.no != null
         ? l.no
         : String(l.nama ?? "").replace(/^Lingkungan\s*/i, "").trim();
 
-    if (namaWilayah) {
-      // Format: "Simon 1", "Yohanes 3", dst.
-      return { ...l, displayName: `${namaWilayah} ${nomorLingkungan}` };
-    }
-
-    // Fallback: tampilkan nama asli jika wilayah tidak diketahui
-    return { ...l, displayName: l.nama ?? `Lingkungan ${nomorLingkungan}` };
+    return {
+      ...l,
+      displayName: namaWilayah
+        ? `${namaWilayah} ${nomorLingkungan}`
+        : (l.nama ?? `Lingkungan ${nomorLingkungan}`),
+    };
   });
 });
+
+// Dependent dropdown: filter lingkungan berdasarkan wilayah yang dipilih.
+// Jika wilayah_id null → tampilkan semua lingkungan.
+const lingkunganList = computed(() => {
+  const selectedWilayah = activeFilter.value.wilayah_id;
+  if (!selectedWilayah) return allLingkunganFormatted.value;
+  return allLingkunganFormatted.value.filter(
+    (l: any) => l.wilayah_id === selectedWilayah,
+  );
+});
+
+// Handler saat wilayah berubah:
+// 1. Reset lingkungan_id agar tidak ada state tidak valid
+// 2. Terapkan filter ke API
+const onWilayahChange = async () => {
+  activeFilter.value.lingkungan_id = null;
+  await applyFilter();
+};
 
 const { data: allSeksiRaw } = await useAsyncData("filter-seksi", () =>
   $fetch<any>("/api/seksi").catch(() => []),

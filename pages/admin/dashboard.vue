@@ -1,4 +1,6 @@
-﻿<template>
+<template>
+  <!-- Single root wrapper required by Vue/Nuxt <Transition> -->
+  <div>
   <!-- Welcome Header with Role Badge -->
   <div class="mb-6 bg-white shadow rounded-lg p-6">
     <ClientOnly>
@@ -654,6 +656,7 @@
       </div>
     </div>
   </ClientOnly>
+  </div><!-- end single root wrapper -->
 </template>
 
 <script setup>

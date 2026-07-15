@@ -614,52 +614,40 @@
               Tag Organisasi (untuk filtering)
             </h4>
 
-            <!-- Wilayah -->
+            <!-- Wilayah (single select dropdown) -->
             <div class="mb-3">
               <label class="block text-sm font-medium text-gray-700 mb-1"
                 >Wilayah</label
               >
-              <div
-                class="max-h-28 overflow-y-auto border border-gray-200 rounded-md p-2 grid grid-cols-2 gap-1"
+              <select
+                v-model="newsForm.wilayah_id"
+                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#882f1d] focus:border-[#882f1d] outline-none bg-white"
               >
-                <label
-                  v-for="w in allWilayah"
-                  :key="w.id"
-                  class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5"
-                >
-                  <input
-                    type="checkbox"
-                    :value="w.id"
-                    v-model="newsForm.wilayah_ids"
-                    class="h-3.5 w-3.5 text-[#882f1d] rounded border-gray-300"
-                  />
-                  <span class="text-xs text-gray-700">{{ w.nama }}</span>
-                </label>
-              </div>
+                <option :value="null">-- Pilih Wilayah --</option>
+                <option v-for="w in allWilayah" :key="w.id" :value="w.id">
+                  {{ w.nama }}
+                </option>
+              </select>
             </div>
 
-            <!-- Lingkungan -->
+            <!-- Lingkungan (single select, depends on wilayah) -->
             <div class="mb-3">
-              <label class="block text-sm font-medium text-gray-700 mb-1"
-                >Lingkungan</label
+              <label class="block text-sm font-medium text-gray-700 mb-1">
+                Lingkungan
+                <span v-if="!newsForm.wilayah_id" class="text-xs text-gray-400 font-normal">
+                  (pilih wilayah terlebih dahulu)
+                </span>
+              </label>
+              <select
+                v-model="newsForm.lingkungan_id"
+                :disabled="!newsForm.wilayah_id"
+                class="w-full border border-gray-200 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-[#882f1d] focus:border-[#882f1d] outline-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
               >
-              <div
-                class="max-h-28 overflow-y-auto border border-gray-200 rounded-md p-2 grid grid-cols-2 gap-1"
-              >
-                <label
-                  v-for="l in formattedLingkungan"
-                  :key="l.id"
-                  class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5"
-                >
-                  <input
-                    type="checkbox"
-                    :value="l.id"
-                    v-model="newsForm.lingkungan_ids"
-                    class="h-3.5 w-3.5 text-[#882f1d] rounded border-gray-300"
-                  />
-                  <span class="text-xs">{{ l.displayName }}</span>
-                </label>
-              </div>
+                <option :value="null">-- Pilih Lingkungan --</option>
+                <option v-for="l in formattedLingkungan" :key="l.id" :value="l.id">
+                  {{ l.displayName }}
+                </option>
+              </select>
             </div>
 
             <!-- Seksi -->
@@ -806,8 +794,8 @@ const newsForm = ref({
   how_process: "",
   ai_generated: false,
   ai_prompt: "",
-  wilayah_ids: [],
-  lingkungan_ids: [],
+  wilayah_id: null,       // single select (number | null)
+  lingkungan_id: null,    // single select (number | null)
   seksi_ids: [],
   is_bgkp: false,
 });
@@ -815,23 +803,49 @@ const newsForm = ref({
 // Data for organization dropdowns
 const allWilayah = ref([]);
 const allLingkungan = ref([]);
-const formattedLingkungan = computed(() => {
+// Semua lingkungan diformat dengan displayName "NamaWilayah Nomor"
+const allLingkunganFormatted = computed(() => {
   return allLingkungan.value.map((l) => {
-    let namaWilayah = "";
-    if (l.wilayah && l.wilayah.nama) {
-      namaWilayah = l.wilayah.nama;
-    } else if (l.wilayah_id && allWilayah.value.length > 0) {
-      const w = allWilayah.value.find((x) => x.id === l.wilayah_id);
-      if (w) namaWilayah = w.nama;
-    }
+    const namaWilayah =
+      l.wilayah_display ||
+      l.wilayah_nama ||
+      (l.wilayah && l.wilayah.nama) ||
+      (l.wilayah_id && allWilayah.value.length > 0
+        ? (allWilayah.value.find((x) => x.id === l.wilayah_id) || {}).nama || ""
+        : "");
 
-    if (namaWilayah) {
-      const nomorLingkungan = l.nama.replace("Lingkungan ", "");
-      return { ...l, displayName: `${namaWilayah} ${nomorLingkungan}` };
-    }
-    return { ...l, displayName: l.nama };
+    const nomorLingkungan =
+      l.no != null
+        ? l.no
+        : String(l.nama ?? "").replace(/^Lingkungan\s*/i, "").trim();
+
+    return {
+      ...l,
+      displayName: namaWilayah
+        ? `${namaWilayah} ${nomorLingkungan}`
+        : (l.nama ?? `Lingkungan ${nomorLingkungan}`),
+    };
   });
 });
+
+// Dependent dropdown: filter lingkungan berdasarkan wilayah tunggal yang dipilih.
+// Jika wilayah_id null → tampilkan semua lingkungan.
+const formattedLingkungan = computed(() => {
+  const selectedWilayahId = newsForm.value.wilayah_id;
+  if (!selectedWilayahId) return allLingkunganFormatted.value;
+  return allLingkunganFormatted.value.filter(
+    (l) => l.wilayah_id === selectedWilayahId,
+  );
+});
+
+// Watcher: saat wilayah berubah, reset lingkungan_id agar tidak ada
+// state tidak valid (lingkungan dari wilayah lain masih terpilih).
+watch(
+  () => newsForm.value.wilayah_id,
+  () => {
+    newsForm.value.lingkungan_id = null;
+  },
+);
 const allSeksi = ref([]);
 const seksiGrouped = computed(() => {
   const groups = {};
@@ -1123,8 +1137,8 @@ const editNews = (newsItem) => {
     how_process: newsItem.how_process || "",
     ai_generated: newsItem.ai_generated || false,
     ai_prompt: newsItem.ai_prompt || "",
-    wilayah_ids: newsItem.wilayah_ids || [],
-    lingkungan_ids: newsItem.lingkungan_ids || [],
+    wilayah_id: newsItem.wilayah_id ?? newsItem.wilayah_ids?.[0] ?? null,
+    lingkungan_id: newsItem.lingkungan_id ?? newsItem.lingkungan_ids?.[0] ?? null,
     seksi_ids: newsItem.seksi_ids || [],
     is_bgkp: !!newsItem.is_bgkp,
   };
@@ -1231,8 +1245,8 @@ const closeModal = () => {
     how_process: "",
     ai_generated: false,
     ai_prompt: "",
-    wilayah_ids: [],
-    lingkungan_ids: [],
+    wilayah_id: null,
+    lingkungan_id: null,
     seksi_ids: [],
     is_bgkp: false,
   };

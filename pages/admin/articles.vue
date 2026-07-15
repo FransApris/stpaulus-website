@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <!-- Main Content -->
   <div>
     <!-- Add Article Button -->
@@ -117,9 +117,8 @@
 
       </div>
     </div>
-  </div>
 
-  <!-- Add/Edit Article Modal -->
+    <!-- Add/Edit Article Modal -->
   <div v-if="showAddModal || editingArticle"
     class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
     <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
@@ -226,6 +225,7 @@
       </div>
     </div>
   </div>
+  </div><!-- end single root wrapper -->
 </template>
 
 <script setup>
