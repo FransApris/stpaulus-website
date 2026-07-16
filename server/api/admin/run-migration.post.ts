@@ -75,20 +75,20 @@ const MIGRATIONS: Record<string, string[]> = {
     `ALTER TABLE news ADD COLUMN is_bgkp TINYINT(1) DEFAULT 0`
   ],
   '050_create_news_interactions': [
-    // Add missing columns to news table
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS image VARCHAR(1000) NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS gallery_images JSON NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS when_date DATE NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS when_time VARCHAR(50) NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS where_location VARCHAR(500) NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS who_participants TEXT NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS why_purpose TEXT NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS how_process TEXT NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS ai_generated TINYINT(1) DEFAULT 0`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS ai_prompt TEXT NULL`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS likes_count INT DEFAULT 0`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS shares_count INT DEFAULT 0`,
-    `ALTER TABLE news ADD COLUMN IF NOT EXISTS views_count INT DEFAULT 0`,
+    // Add missing columns to news table (runner skips "Duplicate column name" automatically)
+    `ALTER TABLE news ADD COLUMN image VARCHAR(1000) NULL`,
+    `ALTER TABLE news ADD COLUMN gallery_images JSON NULL`,
+    `ALTER TABLE news ADD COLUMN when_date DATE NULL`,
+    `ALTER TABLE news ADD COLUMN when_time VARCHAR(50) NULL`,
+    `ALTER TABLE news ADD COLUMN where_location VARCHAR(500) NULL`,
+    `ALTER TABLE news ADD COLUMN who_participants TEXT NULL`,
+    `ALTER TABLE news ADD COLUMN why_purpose TEXT NULL`,
+    `ALTER TABLE news ADD COLUMN how_process TEXT NULL`,
+    `ALTER TABLE news ADD COLUMN ai_generated TINYINT(1) DEFAULT 0`,
+    `ALTER TABLE news ADD COLUMN ai_prompt TEXT NULL`,
+    `ALTER TABLE news ADD COLUMN likes_count INT DEFAULT 0`,
+    `ALTER TABLE news ADD COLUMN shares_count INT DEFAULT 0`,
+    `ALTER TABLE news ADD COLUMN views_count INT DEFAULT 0`,
     // Create news_interactions table
     `CREATE TABLE IF NOT EXISTS news_interactions (
       id INT PRIMARY KEY AUTO_INCREMENT,
