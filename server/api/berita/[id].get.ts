@@ -54,41 +54,68 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    // Record view (prevent duplicate views from same session)
-    const clientIp = getClientIp(event);
-    const userAgent = getHeader(event, 'user-agent') || '';
-    const userSession = getClientFingerprint(event);
+    // === Interaction Tracking (optional - degrades gracefully if table missing) ===
+    let interactionCounts = { likes_count: 0, shares_count: 0, views_count: 0 };
+    let userLikedResult = false;
 
-    // Check if already viewed in this session
-    const existingView = await getQuery(
-      `SELECT id FROM news_interactions 
-       WHERE news_id = ? AND interaction_type = 'view' 
-       AND user_session = ? AND user_ip = ?
-       AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)`,
-      [news.id, userSession, clientIp]
-    );
+    try {
+      // Record view (prevent duplicate views from same session)
+      const clientIp = getClientIp(event);
+      const userAgent = getHeader(event, 'user-agent') || '';
+      const userSession = getClientFingerprint(event);
 
-    if (!existingView) {
-      // Record new view
-      await runQuery(
-        `INSERT INTO news_interactions 
-         (news_id, interaction_type, user_ip, user_agent, user_session) 
-         VALUES (?, 'view', ?, ?, ?)`,
-        [news.id, clientIp, userAgent, userSession]
+      // Check if already viewed in this session
+      const existingView = await getQuery(
+        `SELECT id FROM news_interactions 
+         WHERE news_id = ? AND interaction_type = 'view' 
+         AND user_session = ? AND user_ip = ?
+         AND created_at > DATE_SUB(NOW(), INTERVAL 1 HOUR)`,
+        [news.id, userSession, clientIp]
       );
 
-      // Increment views_count
-      await runQuery(
-        'UPDATE news SET views_count = views_count + 1 WHERE id = ?',
+      if (!existingView) {
+        // Record new view
+        await runQuery(
+          `INSERT INTO news_interactions 
+           (news_id, interaction_type, user_ip, user_agent, user_session) 
+           VALUES (?, 'view', ?, ?, ?)`,
+          [news.id, clientIp, userAgent, userSession]
+        );
+
+        // Increment views_count
+        await runQuery(
+          'UPDATE news SET views_count = views_count + 1 WHERE id = ?',
+          [news.id]
+        );
+      }
+
+      // Get updated counts
+      const updatedNews = await getQuery(
+        'SELECT likes_count, shares_count, views_count FROM news WHERE id = ?',
         [news.id]
       );
-    }
+      if (updatedNews) {
+        interactionCounts = {
+          likes_count: updatedNews.likes_count || 0,
+          shares_count: updatedNews.shares_count || 0,
+          views_count: updatedNews.views_count || 0,
+        };
+      }
 
-    // Get updated news data with new view count
-    const updatedNews = await getQuery(
-      'SELECT likes_count, shares_count, views_count FROM news WHERE id = ?',
-      [news.id]
-    );
+      // Check if current user has liked this news
+      const userLiked = await getQuery(
+        `SELECT id FROM news_interactions 
+         WHERE news_id = ? AND interaction_type = 'like' 
+         AND user_session = ? AND user_ip = ?`,
+        [news.id, userSession, clientIp]
+      );
+      userLikedResult = !!userLiked;
+
+    } catch (interactionErr: any) {
+      // Interaction tracking failed (e.g. table missing) — log and continue
+      console.warn('[berita/[id]] Interaction tracking unavailable:', interactionErr?.message);
+    }
+    // === End Interaction Tracking ===
 
     // Process categories
     const categories: Array<{ id: number, name: string, slug: string }> = [];
@@ -109,12 +136,7 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if current user has liked this news
-    const userLiked = await getQuery(
-      `SELECT id FROM news_interactions 
-       WHERE news_id = ? AND interaction_type = 'like' 
-       AND user_session = ? AND user_ip = ?`,
-      [news.id, userSession, clientIp]
-    );
+    // (already handled inside the interaction tracking block above)
 
     return {
       id: news.id,
@@ -135,10 +157,10 @@ export default defineEventHandler(async (event) => {
       }),
       image: news.image || '/images/default-news.jpg',
       categories: categories,
-      likes_count: updatedNews?.likes_count || 0,
-      shares_count: updatedNews?.shares_count || 0,
-      views_count: updatedNews?.views_count || 0,
-      user_liked: !!userLiked
+      likes_count: interactionCounts.likes_count,
+      shares_count: interactionCounts.shares_count,
+      views_count: interactionCounts.views_count,
+      user_liked: userLikedResult
     };
   } catch (error: any) {
     console.error('Error fetching news detail:', error);

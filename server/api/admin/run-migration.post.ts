@@ -73,6 +73,36 @@ const MIGRATIONS: Record<string, string[]> = {
     `CREATE TABLE IF NOT EXISTS news_lingkungan_relations (news_id INT NOT NULL, lingkungan_id INT UNSIGNED NOT NULL, PRIMARY KEY (news_id, lingkungan_id), FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE, FOREIGN KEY (lingkungan_id) REFERENCES lingkungan(id) ON DELETE CASCADE)`,
     `CREATE TABLE IF NOT EXISTS news_seksi_relations (news_id INT NOT NULL, seksi_id INT UNSIGNED NOT NULL, PRIMARY KEY (news_id, seksi_id), FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE, FOREIGN KEY (seksi_id) REFERENCES seksi(id) ON DELETE CASCADE)`,
     `ALTER TABLE news ADD COLUMN is_bgkp TINYINT(1) DEFAULT 0`
+  ],
+  '050_create_news_interactions': [
+    // Add missing columns to news table
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS image VARCHAR(1000) NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS gallery_images JSON NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS when_date DATE NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS when_time VARCHAR(50) NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS where_location VARCHAR(500) NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS who_participants TEXT NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS why_purpose TEXT NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS how_process TEXT NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS ai_generated TINYINT(1) DEFAULT 0`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS ai_prompt TEXT NULL`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS likes_count INT DEFAULT 0`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS shares_count INT DEFAULT 0`,
+    `ALTER TABLE news ADD COLUMN IF NOT EXISTS views_count INT DEFAULT 0`,
+    // Create news_interactions table
+    `CREATE TABLE IF NOT EXISTS news_interactions (
+      id INT PRIMARY KEY AUTO_INCREMENT,
+      news_id INT NOT NULL,
+      interaction_type ENUM('view', 'like', 'share') NOT NULL,
+      user_ip VARCHAR(100) NOT NULL DEFAULT '0.0.0.0',
+      user_agent TEXT NULL,
+      user_session VARCHAR(255) NOT NULL DEFAULT '',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_news_interactions_news_id (news_id),
+      INDEX idx_news_interactions_type (interaction_type),
+      INDEX idx_news_interactions_session (user_session(64)),
+      FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE
+    )`
   ]
 }
 
