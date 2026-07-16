@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   // Check permissions using RBAC
   requirePermission('manage_rooms')(event)
 
-  const rooms = allQuery(`
+  const rooms = await allQuery(`
     SELECT id, name, capacity, location, facilities, photo_url, requires_approval, allowed_categories, is_active, created_at
     FROM rooms
     ORDER BY created_at DESC

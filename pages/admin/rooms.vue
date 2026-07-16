@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Add Room Form -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -478,25 +478,32 @@ const editRoom = (room) => {
     allowed_categories: []
   }
 
-  // Parse facilities
+  // Parse facilities (can be JSON string or plain string)
   try {
-    const facilities = room.facilities ? JSON.parse(room.facilities) : [];
-    editingRoom.value.facilities = Array.isArray(facilities) ? facilities.join(', ') : '';
+    const facilities = room.facilities ? JSON.parse(room.facilities) : []
+    editingRoom.value.facilities = Array.isArray(facilities) ? facilities.join(', ') : String(room.facilities || '')
   } catch (e) {
-    // If not JSON, treat as string
-    editingRoom.value.facilities = room.facilities || '';
+    editingRoom.value.facilities = room.facilities || ''
   }
 
-  // Parse allowed_categories
-  try {
-    const categories = room.allowed_categories ? JSON.parse(room.allowed_categories) : []
-    editingRoom.value.allowed_categories = Array.isArray(categories) ? categories : []
-  } catch (e) {
-    editingRoom.value.allowed_categories = []
+  // Parse allowed_categories — robustly handles: JSON string, Array, null, undefined
+  let parsedCategories = []
+  if (Array.isArray(room.allowed_categories)) {
+    // Already an array (e.g. some APIs return parsed JSON)
+    parsedCategories = room.allowed_categories
+  } else if (typeof room.allowed_categories === 'string' && room.allowed_categories.trim() !== '') {
+    try {
+      const parsed = JSON.parse(room.allowed_categories)
+      parsedCategories = Array.isArray(parsed) ? parsed : []
+    } catch (e) {
+      // If not valid JSON, try comma-separated fallback
+      parsedCategories = room.allowed_categories.split(',').map(s => s.trim()).filter(Boolean)
+    }
   }
+  editingRoom.value.allowed_categories = parsedCategories
 
-  // Update selectAllEdit checkbox state
-  selectAllEdit.value = editingRoom.value.allowed_categories.length === userCategories.length
+  // Update "Pilih Semua" checkbox state
+  selectAllEdit.value = parsedCategories.length === userCategories.length
 
   showEditModal.value = true
 }
