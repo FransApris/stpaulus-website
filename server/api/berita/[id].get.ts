@@ -27,7 +27,25 @@ export default defineEventHandler(async (event) => {
       LIMIT 1
     `;
 
-    const news = await getQuery(newsSql, [slug]);
+    let news = await getQuery(newsSql, [slug]);
+
+    // Fallback: if slug lookup fails and param looks numeric, try by ID
+    if (!news && /^\d+$/.test(slug as string)) {
+      const byIdSql = `
+        SELECT
+          n.*,
+          GROUP_CONCAT(ac.name) as category_names,
+          GROUP_CONCAT(ac.id) as category_ids,
+          GROUP_CONCAT(ac.slug) as category_slugs
+        FROM news n
+        LEFT JOIN news_category_relations ncr ON n.id = ncr.news_id
+        LEFT JOIN article_categories ac ON ncr.category_id = ac.id
+        WHERE n.id = ? AND n.status = 'published'
+        GROUP BY n.id
+        LIMIT 1
+      `;
+      news = await getQuery(byIdSql, [parseInt(slug as string)]);
+    }
 
     if (!news) {
       throw createError({

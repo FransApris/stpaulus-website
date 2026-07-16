@@ -65,6 +65,20 @@ export default defineEventHandler(async (event) => {
         });
       }
 
+      // Generate fallback slug from title if slug is missing (matches admin createSlug logic)
+      const effectiveSlug = news.slug ||
+        (news.title
+          ? news.title
+              .toLowerCase()
+              .trim()
+              .replace(/[^\w\s-]/g, '')
+              .replace(/[\s_-]+/g, '-')
+              .replace(/^-+|-+$/g, '')
+          : null);
+
+      // Skip news items with no usable slug
+      if (!effectiveSlug) return null;
+
       return {
         id: news.id,
         title: news.title,
@@ -75,7 +89,7 @@ export default defineEventHandler(async (event) => {
         published_at: news.published_at,
         created_at: news.created_at,
         updated_at: news.updated_at,
-        slug: news.slug,
+        slug: effectiveSlug,
         date: new Date((news.published_at || news.created_at).toString().replace(' ', 'T') + 'Z').toLocaleDateString('id-ID', {
           timeZone: 'Asia/Jakarta',
           year: 'numeric',
@@ -91,7 +105,7 @@ export default defineEventHandler(async (event) => {
       };
     });
 
-    return processedNews;
+    return processedNews.filter(Boolean);
   } catch (error) {
     console.error('Error fetching news:', error);
     throw createError({
