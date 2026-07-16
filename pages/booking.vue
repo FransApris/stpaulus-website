@@ -1455,6 +1455,22 @@ const formatBookingTime = (startTime, endTime) => {
 
   return `${dateStr} (${startTimeStr} - ${endTimeStr})`
 }
+
+// Navigate date by days offset (-1 = kemarin, +1 = besok)
+const navigateDate = (offset) => {
+  const current = selectedDate.value
+    ? new Date(selectedDate.value + 'T00:00:00')
+    : new Date()
+
+  current.setDate(current.getDate() + offset)
+
+  const year = current.getFullYear()
+  const month = String(current.getMonth() + 1).padStart(2, '0')
+  const day = String(current.getDate()).padStart(2, '0')
+
+  selectedDate.value = `${year}-${month}-${day}`
+  loadRoomAvailability()
+}
 </script>
 
 <style scoped>
