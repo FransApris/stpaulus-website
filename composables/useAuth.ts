@@ -1,4 +1,5 @@
-﻿// composables/useAuth.ts
+// composables/useAuth.ts
+
 interface User {
   id: number
   username: string
@@ -9,95 +10,114 @@ interface User {
   organization_id?: number // For linking ketua/pengurus to their section
 }
 
+// In-flight deduplication: store the active promise so concurrent callers
+// share a single network request instead of firing separate ones.
+let _inflightFetch: Promise<{ success: boolean }> | null = null
+
 // Use Nuxt's useState for global reactive state that persists across components
 export const useAuth = () => {
   const user = useState<User | null>('auth-user', () => null)
   const permissions = useState<string[]>('auth-permissions', () => [])
   const loading = useState<boolean>('auth-loading', () => false)
+  // Track which token the cached state belongs to so we can detect token changes
+  const cachedToken = useState<string | null>('auth-cached-token', () => null)
+
   const fetchUserData = async (forceRefresh = false): Promise<{ success: boolean }> => {
-    try {
-      loading.value = true
+    const token = sessionStorage.getItem('admin_access_token')
 
-      // Force clear cache if requested
-      if (forceRefresh) {
-        console.log('[useAuth] Force refresh requested, clearing cache')
-        user.value = null
-        permissions.value = []
-      }
+    if (!token) {
+      user.value = null
+      permissions.value = []
+      cachedToken.value = null
+      return { success: false }
+    }
 
-      const token = sessionStorage.getItem('admin_access_token')
+    // --- Skip guard: data already loaded for this token and no force refresh ---
+    if (!forceRefresh && user.value !== null && cachedToken.value === token) {
+      console.log('[useAuth] User data already cached for current token, skipping fetch')
+      return { success: true }
+    }
 
-      console.log('[useAuth] Fetching user data, token exists:', !!token)
+    // --- In-flight deduplication: if a fetch is already running, reuse it ---
+    if (_inflightFetch) {
+      console.log('[useAuth] Fetch already in-flight, reusing existing promise')
+      return _inflightFetch
+    }
 
-      if (!token) {
-        console.log('[useAuth] No token found')
-        user.value = null
-        permissions.value = []
-        return { success: false }
-      }
+    // Force clear cache if requested
+    if (forceRefresh) {
+      console.log('[useAuth] Force refresh requested, clearing cache')
+      user.value = null
+      permissions.value = []
+      cachedToken.value = null
+    }
 
-      const response = await $fetch('/api/admin/me', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
-        // Force fresh request, no cache
-        cache: 'no-cache'
-      })
+    // Start the actual fetch and store the promise for deduplication
+    _inflightFetch = (async (): Promise<{ success: boolean }> => {
+      try {
+        loading.value = true
+        console.log('[useAuth] Fetching user data from /api/admin/me')
 
-      console.log('[useAuth] API response:', response)
+        const response = await $fetch('/api/admin/me', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          cache: 'no-cache'
+        })
 
-      // Handle both response formats
-      if (response && typeof response === 'object') {
-        if ('user' in response) {
-          // Format 1: {user: {...}, permissions: [...]}
-          user.value = (response as any).user
-          permissions.value = (response as any).permissions || []
-          console.log('[useAuth] User data set (format 1):', user.value)
-          console.log('[useAuth] Permissions set:', permissions.value)
-          return { success: true }
-        } else if ('role' in response) {
-          // Format 2: {role: 'admin_sekretariat', permissions: [...], id, username, etc}
-          // The response IS the user object
-          user.value = response as any
-          permissions.value = (response as any).permissions || []
-          console.log('[useAuth] User data set (format 2):', user.value)
-          console.log('[useAuth] Permissions set:', permissions.value)
+        // Handle both response formats
+        if (response && typeof response === 'object') {
+          if ('user' in response) {
+            // Format 1: {user: {...}, permissions: [...]}
+            user.value = (response as any).user
+            permissions.value = (response as any).permissions || []
+          } else if ('role' in response) {
+            // Format 2: {role: 'admin_sekretariat', permissions: [...], id, username, etc}
+            user.value = response as any
+            permissions.value = (response as any).permissions || []
+          } else {
+            console.log('[useAuth] Response format unexpected:', response)
+            user.value = null
+            permissions.value = []
+            return { success: false }
+          }
+
+          // Mark which token this cache belongs to
+          cachedToken.value = token
+          console.log('[useAuth] User data cached for token. Role:', (user.value as any)?.role, '| Permissions:', permissions.value.length)
           return { success: true }
         } else {
-          console.log('[useAuth] Response format unexpected:', response)
           user.value = null
           permissions.value = []
           return { success: false }
         }
-      } else {
-        console.log('[useAuth] Invalid response:', response)
-        user.value = null
-        permissions.value = []
-        return { success: false }
-      }
-    } catch (error: any) {
-      console.error('[useAuth] Failed to fetch user data:', error)
+      } catch (error: any) {
+        console.error('[useAuth] Failed to fetch user data:', error)
 
-      // If token is invalid or expired, clear it and redirect to login
-      if (error.statusCode === 401 || error.status === 401) {
-        console.log('[useAuth] Token invalid/expired, clearing and redirecting to login')
-        sessionStorage.removeItem('admin_access_token')
-        localStorage.removeItem('admin_refresh_token')
-        user.value = null
-        permissions.value = []
+        if (error.statusCode === 401 || error.status === 401) {
+          console.log('[useAuth] Token invalid/expired, clearing and redirecting to login')
+          sessionStorage.removeItem('admin_access_token')
+          localStorage.removeItem('admin_refresh_token')
+          user.value = null
+          permissions.value = []
+          cachedToken.value = null
 
-        // Only redirect if we're not already on login page
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/admin/login')) {
-          window.location.href = '/admin/login'
+          if (typeof window !== 'undefined' && !window.location.pathname.includes('/admin/login')) {
+            window.location.href = '/admin/login'
+          }
+        } else {
+          user.value = null
+          permissions.value = []
         }
-      } else {
-        user.value = null
-        permissions.value = []
+        return { success: false }
+      } finally {
+        loading.value = false
+        // Always clear the in-flight reference when done (success or failure)
+        _inflightFetch = null
       }
-      return { success: false }
-    } finally {
-      loading.value = false
-    }
+    })()
+
+    return _inflightFetch
   }
 
   const hasPermission = (permission: string): boolean => {
@@ -121,6 +141,8 @@ export const useAuth = () => {
     localStorage.removeItem('admin_refresh_token')
     user.value = null
     permissions.value = []
+    cachedToken.value = null
+    _inflightFetch = null
   }
 
   return {
