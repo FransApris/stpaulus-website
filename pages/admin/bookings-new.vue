@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -32,7 +32,7 @@
           <div class="space-y-4">
             <!-- Filter & Actions -->
             <div class="flex flex-wrap gap-4 items-center justify-between">
-              <div class="flex gap-2">
+              <div class="flex gap-2 flex-wrap items-center">
                 <select v-model="filterStatus" @change="loadBookings"
                   class="border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-blue-500">
                   <option value="">Semua Status</option>
@@ -41,6 +41,29 @@
                   <option value="REJECTED">Rejected</option>
                   <option value="CANCELLED">Cancelled</option>
                 </select>
+
+                <!-- Date range toggle -->
+                <button @click="toggleCustomRange"
+                  :class="useCustomRange ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'"
+                  class="px-3 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition">
+                  📅 {{ useCustomRange ? 'Rentang Kustom Aktif' : 'Perluas Rentang Tanggal' }}
+                </button>
+
+                <template v-if="useCustomRange">
+                  <div class="flex items-center gap-1 text-sm">
+                    <label class="text-gray-600">Dari:</label>
+                    <input v-model="customStartDate" type="date"
+                      class="border border-gray-300 p-1.5 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                      @change="loadBookings" />
+                  </div>
+                  <div class="flex items-center gap-1 text-sm">
+                    <label class="text-gray-600">Sampai:</label>
+                    <input v-model="customEndDate" type="date"
+                      class="border border-gray-300 p-1.5 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                      @change="loadBookings" />
+                  </div>
+                </template>
+
                 <button @click="loadBookings" class="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200">
                   🔄 Refresh
                 </button>
@@ -52,18 +75,27 @@
             </div>
 
             <!-- Info Box: Date Range -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div :class="useCustomRange ? 'bg-yellow-50 border-yellow-300' : 'bg-blue-50 border-blue-200'"
+              class="border rounded-lg p-4">
               <div class="flex items-start gap-3">
                 <div class="text-2xl">📅</div>
                 <div class="flex-1">
-                  <p class="text-sm font-semibold text-blue-900 mb-1">
-                    Rentang Tanggal Pemesanan
-                  </p>
-                  <p class="text-xs text-blue-700 leading-relaxed">
+                  <p :class="useCustomRange ? 'text-yellow-900' : 'text-blue-900'"
+                    class="text-sm font-semibold mb-1">Rentang Tanggal Pemesanan</p>
+                  <p v-if="!useCustomRange" class="text-xs text-blue-700 leading-relaxed">
                     Menampilkan pemesanan dari <strong>30 hari yang lalu</strong> sampai <strong>90 hari ke
                       depan</strong> (termasuk yang sudah selesai).
                     Pemesanan di luar rentang ini tidak akan muncul. Total: <strong>{{ bookings.length }}
                       pemesanan</strong>.
+                    <span class="ml-1 text-blue-600 underline cursor-pointer" @click="toggleCustomRange">
+                      Perluas untuk melihat semua →
+                    </span>
+                  </p>
+                  <p v-else class="text-xs text-yellow-800 leading-relaxed">
+                    Rentang kustom aktif: <strong>{{ customStartDate || '(tidak dibatasi)' }}</strong> s.d.
+                    <strong>{{ customEndDate || '(tidak dibatasi)' }}</strong>.
+                    Total: <strong>{{ bookings.length }} pemesanan</strong>.
+                    ⚠️ Pastikan booking di luar rentang default sudah dicek sebelum approve.
                   </p>
                 </div>
               </div>
@@ -476,6 +508,27 @@ const auditPage = useState('admin-bookings-audit-page', () => 1)
 const deletedPage = useState('admin-bookings-deleted-page', () => 1)
 const pageLimit = 10
 
+// Custom date range state (Fix #4: allow admin to view bookings outside the default window)
+const useCustomRange = ref(false)
+const customStartDate = ref('')
+const customEndDate = ref('')
+
+const toggleCustomRange = () => {
+  useCustomRange.value = !useCustomRange.value
+  if (!useCustomRange.value) {
+    customStartDate.value = ''
+    customEndDate.value = ''
+  } else {
+    // Default custom range: last 6 months to next 6 months as a starting point
+    const now = new Date()
+    const past = new Date(now); past.setMonth(past.getMonth() - 6)
+    const future = new Date(now); future.setMonth(future.getMonth() + 6)
+    customStartDate.value = past.toISOString().split('T')[0]
+    customEndDate.value   = future.toISOString().split('T')[0]
+  }
+  loadBookings()
+}
+
 // Modals
 const showRejectModal = ref(false)
 const showCancelModal = ref(false)
@@ -566,20 +619,32 @@ const goToDeletedPage = (page) => {
 const loadBookings = async () => {
   loading.value = true
   try {
-    const params = filterStatus.value ? `?status=${filterStatus.value}` : ''
+    let params = filterStatus.value ? `?status=${filterStatus.value}` : '?'
+
+    if (useCustomRange.value && customStartDate.value && customEndDate.value) {
+      // Convert custom date range to past_days / future_days params for the API
+      const now = new Date()
+      const start = new Date(customStartDate.value)
+      const end = new Date(customEndDate.value)
+      const pastDays = Math.max(0, Math.ceil((now.getTime() - start.getTime()) / 86400000))
+      const futureDays = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86400000))
+      params += (params.endsWith('?') ? '' : '&') + `past_days=${pastDays}&days=${futureDays}`
+    } else {
+      // Default: 30 days past, 90 days future
+      params += (params.endsWith('?') ? '' : '&') + 'past_days=30&days=90'
+    }
+
     const response = await $fetch(`/api/admin/bookings${params}`, {
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
 
-    // Handle new response structure with metadata
     if (response && typeof response === 'object' && 'bookings' in response) {
       bookings.value = response.bookings
       console.log('[Admin Panel] Date range:', response.date_range)
       console.log('[Admin Panel] Total bookings:', response.total)
     } else {
-      // Fallback for old response format (array)
       bookings.value = response
     }
   } catch (err) {

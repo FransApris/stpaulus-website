@@ -76,9 +76,21 @@ export default defineEventHandler(async (event) => {
 
   console.log('[Admin Bookings API] Executing query with params:', params)
 
-  const bookings = await allQuery(query, params)
+  const rawBookings = await allQuery(query, params)
 
-  console.log('[Admin Bookings API] Found', bookings.length, 'bookings')
+  console.log('[Admin Bookings API] Found', rawBookings.length, 'bookings')
+
+  // Normalize datetime strings: MySQL with dateStrings:true returns "YYYY-MM-DD HH:MM:SS"
+  // (no timezone info). Append 'Z' so browsers treat them as UTC instead of local WIB,
+  // matching the normalization already done in the user-facing /api/bookings endpoint.
+  const toUTC = (s: any) => (s ? String(s).replace(' ', 'T') + 'Z' : null)
+
+  const bookings = rawBookings.map((b: any) => ({
+    ...b,
+    start_time: toUTC(b.start_time),
+    end_time:   toUTC(b.end_time),
+    created_at: toUTC(b.created_at)
+  }))
 
   // Log summary by status
   const statusSummary = bookings.reduce((acc: any, b: any) => {
