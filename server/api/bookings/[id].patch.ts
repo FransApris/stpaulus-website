@@ -1,5 +1,5 @@
-import { getConnection } from '../../database/db'
-import { requireAuth, requirePermission, getUserPermissions, getQuery } from '../../utils/auth'
+import { getConnection, getQuery } from '../../database/db'
+import { requireAuth, requirePermission, getUserPermissions } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   try {
