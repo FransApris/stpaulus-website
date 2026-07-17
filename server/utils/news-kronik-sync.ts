@@ -16,8 +16,6 @@ interface NewsToKronikData {
 
 /**
  * Check if a news article should be synced to kronik based on its categories
- * @param categoryIds Array of article category IDs
- * @returns Object with shouldSync flag and target kronik category ID
  */
 export async function shouldSyncToKronik(categoryIds: number[]): Promise<{
   shouldSync: boolean
@@ -28,7 +26,6 @@ export async function shouldSyncToKronik(categoryIds: number[]): Promise<{
   }
 
   try {
-    // Check if any of the news categories is marked for sync
     const placeholders = categoryIds.map(() => '?').join(',')
     const syncConfig = await getOne(
       `SELECT id, kronik_category_id 
@@ -53,26 +50,59 @@ export async function shouldSyncToKronik(categoryIds: number[]): Promise<{
 }
 
 /**
+ * Helper to get or create a kronik section dynamically based on category and name.
+ * Useful for auto-creating Wilayah or Lingkungan sections.
+ */
+async function getOrCreateSection(categoryId: number, sectionName: string): Promise<number | null> {
+  if (!sectionName) return null;
+  
+  try {
+    const existing = await getOne(
+      'SELECT id FROM kronik_sections WHERE category_id = ? AND name = ?',
+      [categoryId, sectionName]
+    ) as { id: number } | undefined;
+
+    if (existing) return existing.id;
+
+    // Create new section
+    const maxOrderRes = await getOne(
+      'SELECT MAX(order_index) as max_order FROM kronik_sections WHERE category_id = ?',
+      [categoryId]
+    ) as { max_order: number | null } | undefined;
+    
+    const nextOrder = (maxOrderRes?.max_order || 0) + 1;
+
+    const result = await runQuery(
+      'INSERT INTO kronik_sections (category_id, name, order_index, is_active) VALUES (?, ?, ?, TRUE)',
+      [categoryId, sectionName, nextOrder]
+    ) as any;
+
+    return result.insertId;
+  } catch (err) {
+    console.error('[News-Kronik Sync] Error in getOrCreateSection:', err);
+    return null;
+  }
+}
+
+/**
  * Sync news article to kronik entry
- * @param data News article data
- * @param kronikCategoryId Target kronik category ID
- * @returns Created kronik entry ID or null if failed
  */
 export async function syncNewsToKronik(
   data: NewsToKronikData,
-  kronikCategoryId: number
+  kronikCategoryId: number,
+  kronikSectionId: number | null = null
 ): Promise<number | null> {
   try {
-    // Check if this news is already synced
     const existing = await getOne(
       'SELECT id FROM kronik_entries WHERE source_news_id = ?',
       [data.newsId]
     ) as { id: number } | undefined
 
     if (existing) {
-      // Update existing kronik entry
       await runQuery(
         `UPDATE kronik_entries SET
+          category_id = ?,
+          section_id = ?,
           what_title = ?,
           what_description = ?,
           featured_image = ?,
@@ -81,6 +111,8 @@ export async function syncNewsToKronik(
           updated_at = NOW()
         WHERE id = ?`,
         [
+          kronikCategoryId,
+          kronikSectionId,
           data.title,
           data.content || data.excerpt || '',
           data.image || null,
@@ -92,20 +124,15 @@ export async function syncNewsToKronik(
       return existing.id
     }
 
-    // Create new kronik entry
-    // Get author_id from news author name (if exists)
     let authorId: number | null = null
     if (data.author) {
       const user = await getOne(
         'SELECT id FROM users WHERE full_name = ? OR username = ? LIMIT 1',
         [data.author, data.author]
       ) as { id: number } | undefined
-      if (user) {
-        authorId = user.id
-      }
+      if (user) authorId = user.id
     }
 
-    // Default author_id to superadmin (user id = 111) if not found
     if (!authorId) {
       const superadmin = await getOne('SELECT id FROM users WHERE username = ? LIMIT 1', ['superadmin']) as { id: number } | undefined
       authorId = superadmin?.id || 111
@@ -127,9 +154,10 @@ export async function syncNewsToKronik(
         published_at,
         created_at,
         updated_at
-      ) VALUES (?, NULL, ?, ?, ?, ?, 'published', ?, ?, TRUE, NOW(), ?, NOW(), NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, 'published', ?, ?, TRUE, NOW(), ?, NOW(), NOW())`,
       [
         kronikCategoryId,
+        kronikSectionId,
         data.title,
         data.content || data.excerpt || '',
         data.publishedAt,
@@ -149,10 +177,6 @@ export async function syncNewsToKronik(
   }
 }
 
-/**
- * Remove kronik entry when news is unpublished or deleted
- * @param newsId News article ID
- */
 export async function unsyncNewsFromKronik(newsId: number): Promise<void> {
   try {
     const kronikEntry = await getOne(
@@ -161,7 +185,6 @@ export async function unsyncNewsFromKronik(newsId: number): Promise<void> {
     ) as { id: number } | undefined
 
     if (kronikEntry) {
-      // Cascade delete (views, comments will be deleted automatically)
       await runQuery('DELETE FROM kronik_views WHERE entry_id = ?', [kronikEntry.id])
       await runQuery('DELETE FROM kronik_comments WHERE entry_id = ?', [kronikEntry.id])
       await runQuery('DELETE FROM kronik_entries WHERE id = ?', [kronikEntry.id])
@@ -172,10 +195,6 @@ export async function unsyncNewsFromKronik(newsId: number): Promise<void> {
   }
 }
 
-/**
- * Auto-sync handler for news create/update
- * Call this after news is created or updated with status 'published'
- */
 export async function handleNewsKronikSync(
   newsId: number,
   status: string,
@@ -183,20 +202,33 @@ export async function handleNewsKronikSync(
 ): Promise<void> {
   try {
     if (status !== 'published') {
-      // If news is no longer published, remove from kronik
       await unsyncNewsFromKronik(newsId)
       return
     }
 
-    // Check if should sync
-    const { shouldSync, kronikCategoryId } = await shouldSyncToKronik(categoryIds)
+    // Determine target category and section dynamically based on organization tags
+    let targetCategoryId: number | null = null;
+    let targetSectionId: number | null = null;
 
-    if (!shouldSync || !kronikCategoryId) {
-      console.log(`[News-Kronik Sync] News ${newsId} not configured for kronik sync`)
-      return
-    }
+    // Check Lingkungan first (Priority 1)
+    const lingkungan = await getOne(
+      'SELECT l.nama FROM news_lingkungan_relations nlr JOIN lingkungan l ON nlr.lingkungan_id = l.id WHERE nlr.news_id = ? LIMIT 1',
+      [newsId]
+    ) as { nama: string } | undefined;
 
-    // Get news data
+    // Check Wilayah (Priority 2)
+    const wilayah = await getOne(
+      'SELECT w.nama FROM news_wilayah_relations nwr JOIN wilayah w ON nwr.wilayah_id = w.id WHERE nwr.news_id = ? LIMIT 1',
+      [newsId]
+    ) as { nama: string } | undefined;
+
+    // Check Seksi (Priority 3)
+    const seksi = await getOne(
+      'SELECT s.nama FROM news_seksi_relations nsr JOIN seksi s ON nsr.seksi_id = s.id WHERE nsr.news_id = ? LIMIT 1',
+      [newsId]
+    ) as { nama: string } | undefined;
+
+    // Fetch news details to check BGKP and get data
     const news = await getOne(
       `SELECT n.*, 
        GROUP_CONCAT(DISTINCT ncr.category_id) as category_ids
@@ -205,14 +237,53 @@ export async function handleNewsKronikSync(
        WHERE n.id = ?
        GROUP BY n.id`,
       [newsId]
-    ) as any
+    ) as any;
 
     if (!news) {
-      console.error(`[News-Kronik Sync] News ${newsId} not found`)
-      return
+      console.error(`[News-Kronik Sync] News ${newsId} not found`);
+      return;
     }
 
-    // Sync to kronik
+    const isBgkp = news.is_bgkp === 1;
+
+    if (lingkungan) {
+      targetCategoryId = 5; // Lingkungan Category ID
+      targetSectionId = await getOrCreateSection(targetCategoryId, lingkungan.nama);
+    } else if (wilayah) {
+      targetCategoryId = 4; // Wilayah Category ID
+      targetSectionId = await getOrCreateSection(targetCategoryId, wilayah.nama);
+    } else if (seksi) {
+      // Find matching section in kronik_sections (mostly category_id 2 or 3)
+      const existingSection = await getOne(
+        "SELECT id, category_id FROM kronik_sections WHERE name LIKE CONCAT('%', ?, '%') LIMIT 1",
+        [seksi.nama]
+      ) as { id: number, category_id: number } | undefined;
+      
+      if (existingSection) {
+        targetCategoryId = existingSection.category_id;
+        targetSectionId = existingSection.id;
+      } else {
+        // Fallback: create in DPP (category 2)
+        targetCategoryId = 2;
+        targetSectionId = await getOrCreateSection(targetCategoryId, seksi.nama);
+      }
+    } else if (isBgkp) {
+      targetCategoryId = 3; // BGKP
+      targetSectionId = null;
+    } else {
+      // Fallback to legacy article_categories mapping (Gereja/Paroki)
+      const syncCheck = await shouldSyncToKronik(categoryIds);
+      if (syncCheck.shouldSync && syncCheck.kronikCategoryId) {
+        targetCategoryId = syncCheck.kronikCategoryId;
+      } else {
+        // Not configured for sync
+        console.log(`[News-Kronik Sync] News ${newsId} has no tags for kronik sync`);
+        return;
+      }
+    }
+
+    if (!targetCategoryId) return;
+
     await syncNewsToKronik(
       {
         newsId: news.id,
@@ -224,9 +295,11 @@ export async function handleNewsKronikSync(
         publishedAt: news.published_at || new Date().toISOString().slice(0, 19).replace('T', ' '),
         categoryIds: news.category_ids ? news.category_ids.split(',').map(Number) : []
       },
-      kronikCategoryId
-    )
+      targetCategoryId,
+      targetSectionId
+    );
+
   } catch (error) {
-    console.error('[News-Kronik Sync] Error in handleNewsKronikSync:', error)
+    console.error('[News-Kronik Sync] Error in handleNewsKronikSync:', error);
   }
 }
