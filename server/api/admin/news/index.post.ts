@@ -112,10 +112,6 @@ export default defineEventHandler(async (event) => {
       await Promise.all(categoryPromises)
     }
 
-    // Auto-sync to kronik if status is published and category is configured
-    if (status === 'published' && category_ids && category_ids.length > 0) {
-      await handleNewsKronikSync(newsId, status, category_ids)
-    }
 
     // Update is_bgkp flag
     if (is_bgkp !== undefined) {
@@ -141,6 +137,11 @@ export default defineEventHandler(async (event) => {
       await Promise.all(seksi_ids.map((sid: number) =>
         runQuery('INSERT IGNORE INTO news_seksi_relations (news_id, seksi_id) VALUES (?, ?)', [newsId, sid])
       ))
+    }
+
+    // Auto-sync to kronik if status is published
+    if (status === 'published') {
+      await handleNewsKronikSync(newsId, status, category_ids || [])
     }
 
     // Fetch the created news with categories
