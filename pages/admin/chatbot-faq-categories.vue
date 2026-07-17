@@ -213,7 +213,12 @@ const goToPage = (page) => {
 // Load categories
 const loadCategories = async () => {
   try {
-    categories.value = await makeRequest('/api/admin/chatbot-faq-categories')
+    const data = await makeRequest('/api/admin/chatbot-faq-categories')
+    // Normalize is_active from MySQL TINYINT (1/0) to boolean
+    categories.value = (Array.isArray(data) ? data : []).map(cat => ({
+      ...cat,
+      is_active: Boolean(cat.is_active)
+    }))
   } catch (err) {
     console.error('Failed to load categories', err)
   }
@@ -277,7 +282,9 @@ const editCategory = (category) => {
     description: category.description || '',
     color: category.color,
     display_order: category.display_order,
-    is_active: category.is_active
+    // MySQL TINYINT returns 1/0 (integer), must convert to boolean
+    // so that v-model on checkbox works correctly
+    is_active: Boolean(category.is_active)
   }
 }
 
