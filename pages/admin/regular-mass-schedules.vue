@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <!-- Header -->
     <div class="mb-8">
@@ -460,7 +460,11 @@ const fetchRegularSchedules = async () => {
         'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    regularSchedules.value = response
+    // Normalize is_active from MySQL TINYINT (1/0) to boolean
+    regularSchedules.value = (Array.isArray(response) ? response : []).map(s => ({
+      ...s,
+      is_active: Boolean(s.is_active)
+    }))
   } catch (error) {
     console.error('Failed to fetch regular schedules:', error)
   }
@@ -519,7 +523,12 @@ const saveRegularSchedule = async () => {
 }
 
 const editRegularSchedule = (schedule) => {
-  regularForm.value = { ...schedule }
+  regularForm.value = {
+    ...schedule,
+    // MySQL TINYINT returns 1/0 (integer), must convert to boolean
+    // so that v-model on checkbox works correctly
+    is_active: Boolean(schedule.is_active)
+  }
   showEditRegularModal.value = true
 }
 

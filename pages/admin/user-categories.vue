@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Add Category Form -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -165,11 +165,16 @@ const goToPage = (page) => {
 // Load categories
 const loadCategories = async () => {
   try {
-    categories.value = await $fetch('/api/admin/user-categories', {
+    const data = await $fetch('/api/admin/user-categories', {
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
+    // Normalize is_active from MySQL TINYINT (1/0) to boolean
+    categories.value = (Array.isArray(data) ? data : []).map(cat => ({
+      ...cat,
+      is_active: Boolean(cat.is_active)
+    }))
   } catch (err) {
     console.error('Failed to load categories', err)
   }
@@ -227,7 +232,12 @@ const createCategory = async () => {
 }
 
 const editCategory = (category) => {
-  editingCategory.value = { ...category }
+  editingCategory.value = {
+    ...category,
+    // MySQL TINYINT returns 1/0 (integer), must convert to boolean
+    // so that v-model on checkbox works correctly
+    is_active: Boolean(category.is_active)
+  }
   showEditModal.value = true
 }
 

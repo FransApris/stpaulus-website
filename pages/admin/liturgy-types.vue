@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
@@ -241,8 +241,8 @@ const fetchLiturgyTypes = async () => {
         'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    // API now returns array directly
-    liturgyTypes.value = response || []
+    // Normalize is_active from MySQL TINYINT (1/0) to boolean
+    liturgyTypes.value = (response || []).map(t => ({ ...t, is_active: Boolean(t.is_active) }))
   } catch (error) {
     console.error('Failed to fetch liturgy types:', error)
     showToast('Gagal memuat data jenis liturgi', 'error')
@@ -332,7 +332,9 @@ const saveType = async () => {
 
 // Edit type
 const editType = (type) => {
-  Object.assign(form, type)
+  // MySQL TINYINT returns 1/0 (integer), must convert to boolean
+  // so that v-model on checkbox works correctly
+  Object.assign(form, { ...type, is_active: Boolean(type.is_active) })
   showEditModal.value = true
 }
 
