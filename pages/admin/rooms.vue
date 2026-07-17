@@ -467,23 +467,35 @@ const createRoom = async () => {
 }
 
 const editRoom = (room) => {
+  // Normalize facilities to a comma-separated string
+  // regardless of whether the API returns a JSON string, a parsed array, or plain text
+  let facilitiesStr = ''
+  if (room.facilities) {
+    if (Array.isArray(room.facilities)) {
+      // Already a parsed array — join directly
+      facilitiesStr = room.facilities.join(', ')
+    } else if (typeof room.facilities === 'string') {
+      try {
+        const parsed = JSON.parse(room.facilities)
+        facilitiesStr = Array.isArray(parsed) ? parsed.join(', ') : room.facilities
+      } catch (e) {
+        // Not JSON — use as-is (plain comma-separated or single value)
+        facilitiesStr = room.facilities
+      }
+    } else {
+      facilitiesStr = String(room.facilities)
+    }
+  }
+
   // Populate edit form with room data
   editingRoom.value = {
     id: room.id,
     name: room.name || '',
     capacity: room.capacity || '',
     location: room.location || '',
-    facilities: '',
-    requires_approval: Boolean(room.requires_approval), // Convert to boolean
+    facilities: facilitiesStr,           // Always a normalized string now
+    requires_approval: Boolean(room.requires_approval),
     allowed_categories: []
-  }
-
-  // Parse facilities (can be JSON string or plain string)
-  try {
-    const facilities = room.facilities ? JSON.parse(room.facilities) : []
-    editingRoom.value.facilities = Array.isArray(facilities) ? facilities.join(', ') : String(room.facilities || '')
-  } catch (e) {
-    editingRoom.value.facilities = room.facilities || ''
   }
 
   // Parse allowed_categories — robustly handles: JSON string, Array, null, undefined
@@ -517,10 +529,18 @@ const updateRoom = async () => {
   // Optimistic update: Clone form data and close modal
   const roomData = { ...editingRoom.value }
 
-  // Handle facilities - bisa berupa string comma-separated atau null
+  // Handle facilities — always a string at this point (normalized in editRoom)
+  // but guard against any edge-case where it could be an array or other type
   let facilities = null
-  if (roomData.facilities && typeof roomData.facilities === 'string' && roomData.facilities.trim() !== '') {
-    facilities = JSON.stringify(roomData.facilities.split(',').map(f => f.trim()))
+  if (roomData.facilities) {
+    if (Array.isArray(roomData.facilities)) {
+      // Defensive: shouldn't happen, but handle gracefully
+      if (roomData.facilities.length > 0) {
+        facilities = JSON.stringify(roomData.facilities)
+      }
+    } else if (typeof roomData.facilities === 'string' && roomData.facilities.trim() !== '') {
+      facilities = JSON.stringify(roomData.facilities.split(',').map(f => f.trim()).filter(Boolean))
+    }
   }
 
   const allowedCategories = roomData.allowed_categories.length > 0 ? JSON.stringify(roomData.allowed_categories) : null
