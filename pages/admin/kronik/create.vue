@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="p-6 max-w-5xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Tambah Kronik Baru</h1>
 
@@ -44,8 +44,20 @@
       <!-- WHAT: Deskripsi -->
       <div>
         <label class="block text-sm font-medium mb-2">Deskripsi Lengkap *</label>
-        <textarea v-model="form.what_description" required rows="5"
-          placeholder="Jelaskan detail kegiatan yang terjadi..." class="w-full border rounded-lg px-4 py-2"></textarea>
+        <ClientOnly>
+          <LazyCKEditorWrapper
+            v-model="form.what_description"
+            placeholder="Jelaskan detail kegiatan yang terjadi..."
+          />
+          <template #fallback>
+            <div class="mt-1 border border-gray-300 rounded-lg shadow-sm p-3 min-h-[200px] bg-gray-50 flex items-center justify-center">
+              <div class="text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"></div>
+                <p class="mt-2 text-sm text-gray-500">Memuat editor...</p>
+              </div>
+            </div>
+          </template>
+        </ClientOnly>
       </div>
 
       <!-- WHO: Siapa yang Terlibat -->

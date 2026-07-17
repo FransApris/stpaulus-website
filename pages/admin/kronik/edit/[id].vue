@@ -67,8 +67,21 @@
       <!-- WHAT: Deskripsi -->
       <div>
         <label class="block text-sm font-medium mb-2">Deskripsi Lengkap *</label>
-        <textarea v-model="form.what_description" required rows="5"
-          placeholder="Jelaskan detail kegiatan yang terjadi..." class="w-full border rounded-lg px-4 py-2"></textarea>
+        <ClientOnly>
+          <LazyCKEditorWrapper
+            v-model="form.what_description"
+            placeholder="Jelaskan detail kegiatan yang terjadi..."
+            @ready="onEditorReady"
+          />
+          <template #fallback>
+            <div class="mt-1 border border-gray-300 rounded-lg shadow-sm p-3 min-h-[200px] bg-gray-50 flex items-center justify-center">
+              <div class="text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"></div>
+                <p class="mt-2 text-sm text-gray-500">Memuat editor...</p>
+              </div>
+            </div>
+          </template>
+        </ClientOnly>
       </div>
 
       <!-- WHO: Siapa yang Terlibat -->
@@ -443,6 +456,13 @@ const handleSubmit = async () => {
   } finally {
     saving.value = false
   }
+}
+
+// CKEditor ready callback — fired once the editor DOM is initialized.
+// By this point form.what_description already holds the loaded HTML content,
+// and LazyCKEditorWrapper sets it via the v-model binding automatically.
+const onEditorReady = (editorInstance) => {
+  console.log('[Edit Kronik] CKEditor ready, content length:', editorInstance?.getData?.()?.length ?? 0)
 }
 
 // Load entry on mount
