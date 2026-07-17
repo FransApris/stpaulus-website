@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <!-- Header -->
     <div class="mb-6">
@@ -248,7 +248,11 @@ const fetchCategories = async () => {
         'Authorization': `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
-    categories.value = response.categories
+    // Normalize is_active from MySQL TINYINT (1/0) to boolean on load
+    categories.value = (response.categories || []).map(cat => ({
+      ...cat,
+      is_active: Boolean(cat.is_active)
+    }))
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     alert('Gagal memuat kategori')
@@ -283,13 +287,20 @@ const saveCategory = async () => {
     })
 
     // Update state with server result
+    // API PUT returns { success, category }, API POST returns the category object directly
+    const updatedData = result.category ?? result
     if (wasEditing) {
       const index = categories.value.findIndex(c => c.id === editingId)
       if (index !== -1) {
-        categories.value[index] = { ...categories.value[index], ...result }
+        // Normalize is_active to boolean so checkbox binding stays correct
+        categories.value[index] = {
+          ...categories.value[index],
+          ...updatedData,
+          is_active: Boolean(updatedData.is_active)
+        }
       }
     } else {
-      categories.value.push(result)
+      categories.value.push({ ...updatedData, is_active: Boolean(updatedData.is_active) })
       // Sort by display_order setelah insert
       categories.value.sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))
     }
@@ -313,7 +324,9 @@ const editCategory = (category) => {
     description: category.description || '',
     color: category.color,
     display_order: category.display_order,
-    is_active: category.is_active
+    // MySQL TINYINT returns 1/0 (integer), must convert to boolean
+    // so that v-model on checkbox works correctly
+    is_active: Boolean(category.is_active)
   }
   showAddCategoryModal.value = false
 }
