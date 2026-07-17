@@ -206,6 +206,14 @@ export async function handleNewsKronikSync(
       return
     }
 
+    // MASTER SWITCH: Only sync if it has a category marked with sync_to_kronik (e.g. Peristiwa Paroki)
+    const syncCheck = await shouldSyncToKronik(categoryIds);
+    if (!syncCheck.shouldSync) {
+      console.log(`[News-Kronik Sync] News ${newsId} is not marked for kronik sync (checkbox not checked). Unsyncing if exists.`);
+      await unsyncNewsFromKronik(newsId);
+      return;
+    }
+
     // Determine target category and section dynamically based on organization tags
     let targetCategoryId: number | null = null;
     let targetSectionId: number | null = null;
@@ -272,13 +280,10 @@ export async function handleNewsKronikSync(
       targetSectionId = null;
     } else {
       // Fallback to legacy article_categories mapping (Gereja/Paroki)
-      const syncCheck = await shouldSyncToKronik(categoryIds);
-      if (syncCheck.shouldSync && syncCheck.kronikCategoryId) {
+      if (syncCheck.kronikCategoryId) {
         targetCategoryId = syncCheck.kronikCategoryId;
       } else {
-        // Not configured for sync
-        console.log(`[News-Kronik Sync] News ${newsId} has no tags for kronik sync`);
-        return;
+        targetCategoryId = 1; // Default to Gereja
       }
     }
 
