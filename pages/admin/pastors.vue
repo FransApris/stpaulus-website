@@ -423,9 +423,9 @@
         </Teleport>
 
         <!-- Delete Confirmation Modal -->
-        <ConfirmDialog v-if="showDeleteConfirm" title="Hapus Romo"
+        <ConfirmDialog :show="showDeleteConfirm" title="Hapus Romo"
             :message="`Apakah Anda yakin ingin menghapus ${deleteTarget?.name}? Tindakan ini tidak dapat dibatalkan.`"
-            confirm-text="Hapus" cancel-text="Batal" confirm-color="red" @confirm="deletePastor"
+            confirm-text="Hapus" cancel-text="Batal" type="danger" @confirm="deletePastor"
             @cancel="showDeleteConfirm = false" />
 
         <!-- Toast Notification -->

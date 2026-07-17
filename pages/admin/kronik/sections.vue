@@ -412,11 +412,12 @@
 
     <!-- Delete Confirmation -->
     <ConfirmDialog
-      v-if="showDeleteConfirm"
+      :show="showDeleteConfirm"
       :title="`Delete ${sectionToDelete?.name}?`"
       message="Are you sure you want to delete this section? This action cannot be undone."
       confirm-text="Delete"
       cancel-text="Cancel"
+      type="danger"
       @confirm="deleteSection"
       @cancel="showDeleteConfirm = false"
     />

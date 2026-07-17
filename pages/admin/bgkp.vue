@@ -342,9 +342,9 @@
         </Teleport>
 
         <!-- Delete Confirmation Modal -->
-        <ConfirmDialog v-if="showDeleteConfirm" title="Hapus Anggota BGKP?"
+        <ConfirmDialog :show="showDeleteConfirm" title="Hapus Anggota BGKP?"
             :message="`Apakah Anda yakin ingin menghapus ${memberToDelete?.name}? Tindakan ini tidak dapat dibatalkan.`"
-            confirmText="Hapus" @confirm="deleteMember" @cancel="showDeleteConfirm = false" />
+            confirm-text="Hapus" cancel-text="Batal" type="danger" @confirm="deleteMember" @cancel="showDeleteConfirm = false" />
     </div>
 </template>
 
