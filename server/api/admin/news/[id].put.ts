@@ -28,8 +28,12 @@ export default defineEventHandler(async (event) => {
       title, slug, excerpt, content, author, status, category_ids, image,
       when_date, when_time, where_location, who_participants, why_purpose, how_process,
       gallery_images, ai_generated, ai_prompt,
-      wilayah_ids, lingkungan_ids, seksi_ids, is_bgkp
+      wilayah_ids, lingkungan_ids, seksi_ids, is_bgkp,
+      wilayah_id, lingkungan_id
     } = body
+
+    const finalWilayahIds = wilayah_ids ? (Array.isArray(wilayah_ids) ? wilayah_ids : [wilayah_ids]) : (wilayah_id ? [wilayah_id] : [])
+    const finalLingkunganIds = lingkungan_ids ? (Array.isArray(lingkungan_ids) ? lingkungan_ids : [lingkungan_ids]) : (lingkungan_id ? [lingkungan_id] : [])
 
     if (!title || !content) {
       throw createError({
@@ -127,13 +131,13 @@ export default defineEventHandler(async (event) => {
     await runQuery('DELETE FROM news_lingkungan_relations WHERE news_id = ?', [id])
     await runQuery('DELETE FROM news_seksi_relations WHERE news_id = ?', [id])
 
-    if (wilayah_ids && Array.isArray(wilayah_ids) && wilayah_ids.length > 0) {
-      await Promise.all(wilayah_ids.map((wid: number) =>
+    if (finalWilayahIds.length > 0) {
+      await Promise.all(finalWilayahIds.map((wid: number) =>
         runQuery('INSERT INTO news_wilayah_relations (news_id, wilayah_id) VALUES (?, ?)', [id, wid])
       ))
     }
-    if (lingkungan_ids && Array.isArray(lingkungan_ids) && lingkungan_ids.length > 0) {
-      await Promise.all(lingkungan_ids.map((lid: number) =>
+    if (finalLingkunganIds.length > 0) {
+      await Promise.all(finalLingkunganIds.map((lid: number) =>
         runQuery('INSERT INTO news_lingkungan_relations (news_id, lingkungan_id) VALUES (?, ?)', [id, lid])
       ))
     }
