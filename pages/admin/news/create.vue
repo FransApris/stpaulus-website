@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-5xl mx-auto px-4">
       <!-- Header -->
@@ -339,6 +339,7 @@
                 <input
                   v-model="form.when_date"
                   type="date"
+                  :max="maxDate"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -719,6 +720,7 @@ const aiGenerating = ref(false);
 const submitting = ref(false);
 const successMessage = ref("");
 const errorMessage = ref("");
+const maxDate = new Date().toISOString().split('T')[0];
 
 // Refs
 const galleryInput = ref<HTMLInputElement>();
