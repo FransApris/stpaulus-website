@@ -517,7 +517,14 @@ const categories = computed(
 const { data: sectionsData, refresh: refreshSections } = await useFetch(
   "/api/admin/kronik/sections",
 );
-const sections = computed(() => (sectionsData.value?.data as Section[]) || []);
+const sectionsRaw = computed(() => (sectionsData.value?.data as Section[]) || []);
+// Normalize is_active from MySQL TINYINT (1/0) to boolean on every fetch
+const sections = computed(() =>
+  sectionsRaw.value.map((s: Section) => ({
+    ...s,
+    is_active: Boolean(s.is_active),
+  }))
+);
 
 // Computed
 const filteredSections = computed(() => {
@@ -541,7 +548,8 @@ const filteredSections = computed(() => {
 
   if (statusFilter.value) {
     const isActive = statusFilter.value === "active";
-    filtered = filtered.filter((s: Section) => s.is_active === isActive);
+    // Use Boolean() on both sides — is_active may still be 1/0 from raw API data
+    filtered = filtered.filter((s: Section) => Boolean(s.is_active) === isActive);
   }
 
   return filtered;
@@ -606,7 +614,9 @@ const openEditModal = (section: Section) => {
     slug: section.slug,
     description: section.description || "",
     order_index: section.order_index || 0,
-    is_active: section.is_active,
+    // MySQL TINYINT returns 1/0 (integer), must convert to boolean
+    // so that v-model on checkbox works correctly
+    is_active: Boolean(section.is_active),
   };
   showModal.value = true;
 };
