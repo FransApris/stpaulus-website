@@ -11,9 +11,11 @@ export default defineEventHandler(async (event) => {
   const queryParams = getQuery(event)
   const status = queryParams.status as string | undefined
 
-  // Get date range from query params (extended range for better coverage)
-  const days = parseInt(queryParams.days as string) || 90 // Show bookings for next 90 days (increased from 30)
-  const pastDays = parseInt(queryParams.past_days as string) || 30 // Include past 30 days (increased from 7)
+  // Get date range from query params.
+  // Default: 365 hari ke depan (dari 90) agar booking jauh ke depan tidak luput dari pandangan admin.
+  // Fix: booking di luar 90 hari tersimpan di DB tapi tidak terlihat → admin mengira slot kosong.
+  const days = parseInt(queryParams.days as string) || 365
+  const pastDays = parseInt(queryParams.past_days as string) || 30
 
   // Calculate date range
   const now = new Date()
@@ -100,6 +102,9 @@ export default defineEventHandler(async (event) => {
   console.log('[Admin Bookings API] Status summary:', statusSummary)
   console.log('[Admin Bookings API] Date range applied:', { start: startDateStr, end: endDateStr })
 
+  // Peringatan jika admin menggunakan range yang lebih sempit dari default baru (365 hari)
+  const hasOutOfRangeWarning = days < 365
+
   return {
     bookings,
     date_range: {
@@ -109,6 +114,8 @@ export default defineEventHandler(async (event) => {
       future_days: days
     },
     total: bookings.length,
-    status_summary: statusSummary
+    status_summary: statusSummary,
+    // Jika true, ada kemungkinan booking di luar rentang ini tidak ditampilkan
+    has_out_of_range_warning: hasOutOfRangeWarning
   }
 })

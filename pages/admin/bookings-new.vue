@@ -83,12 +83,12 @@
                   <p :class="useCustomRange ? 'text-yellow-900' : 'text-blue-900'"
                     class="text-sm font-semibold mb-1">Rentang Tanggal Pemesanan</p>
                   <p v-if="!useCustomRange" class="text-xs text-blue-700 leading-relaxed">
-                    Menampilkan pemesanan dari <strong>30 hari yang lalu</strong> sampai <strong>90 hari ke
+                    Menampilkan pemesanan dari <strong>30 hari yang lalu</strong> sampai <strong>365 hari ke
                       depan</strong> (termasuk yang sudah selesai).
                     Pemesanan di luar rentang ini tidak akan muncul. Total: <strong>{{ bookings.length }}
                       pemesanan</strong>.
                     <span class="ml-1 text-blue-600 underline cursor-pointer" @click="toggleCustomRange">
-                      Perluas untuk melihat semua →
+                      Perluas untuk rentang kustom →
                     </span>
                   </p>
                   <p v-else class="text-xs text-yellow-800 leading-relaxed">
@@ -519,10 +519,10 @@ const toggleCustomRange = () => {
     customStartDate.value = ''
     customEndDate.value = ''
   } else {
-    // Default custom range: last 6 months to next 6 months as a starting point
+    // Default custom range: last 12 months to next 12 months
     const now = new Date()
-    const past = new Date(now); past.setMonth(past.getMonth() - 6)
-    const future = new Date(now); future.setMonth(future.getMonth() + 6)
+    const past = new Date(now); past.setMonth(past.getMonth() - 12)
+    const future = new Date(now); future.setMonth(future.getMonth() + 12)
     customStartDate.value = past.toISOString().split('T')[0]
     customEndDate.value   = future.toISOString().split('T')[0]
   }
@@ -630,8 +630,8 @@ const loadBookings = async () => {
       const futureDays = Math.max(0, Math.ceil((end.getTime() - now.getTime()) / 86400000))
       params += (params.endsWith('?') ? '' : '&') + `past_days=${pastDays}&days=${futureDays}`
     } else {
-      // Default: 30 days past, 90 days future
-      params += (params.endsWith('?') ? '' : '&') + 'past_days=30&days=90'
+      // Default: 30 days past, 365 days future (agar booking jauh ke depan tetap terlihat)
+      params += (params.endsWith('?') ? '' : '&') + 'past_days=30&days=365'
     }
 
     const response = await $fetch(`/api/admin/bookings${params}`, {
@@ -742,19 +742,20 @@ const viewHistory = async (booking) => {
 
 // Action Functions
 const approveBooking = async (booking) => {
-  // Optimistic update: Langsung update UI
+  // Catat ID dan status asli sebelum optimistic update
+  const targetId = booking.id
   const originalStatus = booking.status
-  const index = bookings.value.findIndex(b => b.id === booking.id)
 
-  if (index !== -1) {
-    bookings.value[index].status = 'APPROVED'
-    // Update stats secara optimistic
+  // Optimistic update: Langsung update UI menggunakan objek (bukan index)
+  const targetBooking = bookings.value.find(b => b.id === targetId)
+  if (targetBooking) {
+    targetBooking.status = 'APPROVED'
     stats.value.pending--
     stats.value.approved++
   }
 
   try {
-    await $fetch(`/api/bookings/${booking.id}`, {
+    await $fetch(`/api/bookings/${targetId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
@@ -764,9 +765,10 @@ const approveBooking = async (booking) => {
     showToast('Pemesanan berhasil disetujui!')
   } catch (err) {
     console.error('Failed to approve booking', err)
-    // Rollback on error
-    if (index !== -1) {
-      bookings.value[index].status = originalStatus
+    // Rollback by ID — aman meskipun list sudah berubah urutan
+    const rollbackTarget = bookings.value.find(b => b.id === targetId)
+    if (rollbackTarget) {
+      rollbackTarget.status = originalStatus
       stats.value.pending++
       stats.value.approved--
     }
@@ -786,14 +788,16 @@ const confirmReject = async () => {
     return
   }
 
-  // Optimistic update
+  // Catat ID dan status asli sebelum update & menutup modal
+  const targetId = selectedBooking.value.id
   const originalStatus = selectedBooking.value.status
-  const index = bookings.value.findIndex(b => b.id === selectedBooking.value.id)
+  const reasonSnapshot = rejectionReason.value
 
-  if (index !== -1) {
-    bookings.value[index].status = 'REJECTED'
-    bookings.value[index].rejection_reason = rejectionReason.value
-    // Update stats
+  // Optimistic update menggunakan referensi objek (bukan index)
+  const targetBooking = bookings.value.find(b => b.id === targetId)
+  if (targetBooking) {
+    targetBooking.status = 'REJECTED'
+    targetBooking.rejection_reason = reasonSnapshot
     if (originalStatus === 'PENDING') stats.value.pending--
     stats.value.rejected++
   }
@@ -801,24 +805,25 @@ const confirmReject = async () => {
   showRejectModal.value = false
 
   try {
-    await $fetch(`/api/bookings/${selectedBooking.value.id}`, {
+    await $fetch(`/api/bookings/${targetId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         status: 'REJECTED',
-        rejection_reason: rejectionReason.value
+        rejection_reason: reasonSnapshot
       }
     })
 
     showToast('Pemesanan berhasil ditolak')
   } catch (err) {
     console.error('Failed to reject booking', err)
-    // Rollback on error
-    if (index !== -1) {
-      bookings.value[index].status = originalStatus
-      bookings.value[index].rejection_reason = null
+    // Rollback by ID — aman meskipun list sudah berubah urutan
+    const rollbackTarget = bookings.value.find(b => b.id === targetId)
+    if (rollbackTarget) {
+      rollbackTarget.status = originalStatus
+      rollbackTarget.rejection_reason = null
       if (originalStatus === 'PENDING') stats.value.pending++
       stats.value.rejected--
     }
@@ -833,14 +838,16 @@ const cancelBooking = (booking) => {
 }
 
 const confirmCancel = async () => {
-  // Optimistic update
+  // Catat ID dan status asli sebelum update & menutup modal
+  const targetId = selectedBooking.value.id
   const originalStatus = selectedBooking.value.status
-  const index = bookings.value.findIndex(b => b.id === selectedBooking.value.id)
+  const reasonSnapshot = cancellationReason.value || 'Dibatalkan oleh admin'
 
-  if (index !== -1) {
-    bookings.value[index].status = 'CANCELLED'
-    bookings.value[index].cancellation_reason = cancellationReason.value || 'Dibatalkan oleh admin'
-    // Update stats
+  // Optimistic update menggunakan referensi objek (bukan index)
+  const targetBooking = bookings.value.find(b => b.id === targetId)
+  if (targetBooking) {
+    targetBooking.status = 'CANCELLED'
+    targetBooking.cancellation_reason = reasonSnapshot
     if (originalStatus === 'PENDING') stats.value.pending--
     else if (originalStatus === 'APPROVED') stats.value.approved--
     stats.value.cancelled++
@@ -849,24 +856,25 @@ const confirmCancel = async () => {
   showCancelModal.value = false
 
   try {
-    await $fetch(`/api/bookings/${selectedBooking.value.id}`, {
+    await $fetch(`/api/bookings/${targetId}`, {
       method: 'PATCH',
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       },
       body: {
         status: 'CANCELLED',
-        cancellation_reason: cancellationReason.value || 'Dibatalkan oleh admin'
+        cancellation_reason: reasonSnapshot
       }
     })
 
     showToast('Pemesanan berhasil dibatalkan')
   } catch (err) {
     console.error('Failed to cancel booking', err)
-    // Rollback on error
-    if (index !== -1) {
-      bookings.value[index].status = originalStatus
-      bookings.value[index].cancellation_reason = null
+    // Rollback by ID — aman meskipun list sudah berubah urutan
+    const rollbackTarget = bookings.value.find(b => b.id === targetId)
+    if (rollbackTarget) {
+      rollbackTarget.status = originalStatus
+      rollbackTarget.cancellation_reason = null
       if (originalStatus === 'PENDING') stats.value.pending++
       else if (originalStatus === 'APPROVED') stats.value.approved++
       stats.value.cancelled--
@@ -881,8 +889,11 @@ const confirmDeleteBooking = (booking) => {
 }
 
 const deleteBooking = async () => {
+  // Catat ID sebelum optimistic update
+  const targetId = selectedBooking.value.id
+
   // Optimistic update: Hapus dari list dan tambahkan ke deleted
-  const index = bookings.value.findIndex(b => b.id === selectedBooking.value.id)
+  const index = bookings.value.findIndex(b => b.id === targetId)
   let removedBooking = null
 
   if (index !== -1) {
@@ -908,7 +919,7 @@ const deleteBooking = async () => {
   showDeleteModal.value = false
 
   try {
-    await $fetch(`/api/bookings/${selectedBooking.value.id}`, {
+    await $fetch(`/api/bookings/${targetId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
@@ -918,9 +929,11 @@ const deleteBooking = async () => {
     showToast('Pemesanan berhasil dihapus (soft delete)')
   } catch (err) {
     console.error('Failed to delete booking', err)
-    // Rollback on error
+    // Rollback on error: kembalikan ke posisi semula
     if (removedBooking) {
-      bookings.value.splice(index, 0, removedBooking)
+      // Sisipkan kembali di posisi asal (jika masih valid) atau di atas
+      const insertIdx = Math.min(index, bookings.value.length)
+      bookings.value.splice(insertIdx, 0, removedBooking)
       if (removedBooking.status === 'PENDING') stats.value.pending++
       else if (removedBooking.status === 'APPROVED') stats.value.approved++
       else if (removedBooking.status === 'REJECTED') stats.value.rejected++
@@ -928,10 +941,10 @@ const deleteBooking = async () => {
       stats.value.total++
       stats.value.deleted--
 
-      // Hapus dari deleted bookings
-      const deletedIndex = deletedBookings.value.findIndex(b => b.id === selectedBooking.value.id)
-      if (deletedIndex !== -1) {
-        deletedBookings.value.splice(deletedIndex, 1)
+      // Hapus dari deleted bookings menggunakan ID
+      const deletedIdx = deletedBookings.value.findIndex(b => b.id === targetId)
+      if (deletedIdx !== -1) {
+        deletedBookings.value.splice(deletedIdx, 1)
       }
     }
     showToast('Gagal menghapus pemesanan', 'error')

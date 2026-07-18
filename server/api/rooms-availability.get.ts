@@ -17,7 +17,16 @@ export default defineEventHandler(async (event) => {
   `)
 
   const getBookingsForDate = async () => {
+    // Hitung awal dan akhir hari yang diminta (UTC midnight-to-midnight)
+    // karena data disimpan sebagai UTC di database.
+    const dayStart = dateStr + ' 00:00:00'
+    const dayEnd   = dateStr + ' 23:59:59'
+
     try {
+      // Fix: query lama hanya cek date(start_time) = ? — tidak mendeteksi
+      // booking lintas tengah malam (misal: mulai 22:00 selesai 02:00 besok).
+      // Sekarang menggunakan kondisi overlap standar:
+      // sebuah booking tumpang-tindih dengan hari ini jika start_time <= akhir_hari AND end_time >= awal_hari
       return await allQuery(`
         SELECT
           b.room_id,
@@ -30,9 +39,11 @@ export default defineEventHandler(async (event) => {
         FROM bookings b
         LEFT JOIN users u ON b.user_id = u.id
         WHERE b.status IN ('APPROVED', 'PENDING')
-        AND date(b.start_time) = ?
+          AND b.deleted_at IS NULL
+          AND b.start_time <= ?
+          AND b.end_time   >= ?
         ORDER BY b.start_time ASC
-      `, [dateStr])
+      `, [dayEnd, dayStart])
     } catch (error: any) {
       const message = String(error?.message || '')
       const isMissingRequesterName = message.includes('Unknown column') && message.includes('requester_name')
@@ -55,9 +66,11 @@ export default defineEventHandler(async (event) => {
         FROM bookings b
         LEFT JOIN users u ON b.user_id = u.id
         WHERE b.status IN ('APPROVED', 'PENDING')
-        AND date(b.start_time) = ?
+          AND b.deleted_at IS NULL
+          AND b.start_time <= ?
+          AND b.end_time   >= ?
         ORDER BY b.start_time ASC
-      `, [dateStr])
+      `, [dayEnd, dayStart])
     }
   }
 
