@@ -57,10 +57,10 @@
             <!-- Sticky Header -->
             <thead class="sticky top-0 z-10 bg-gray-950 border-b border-gray-700">
               <tr>
-                <th class="p-6 portrait:p-3 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[22%] portrait:w-[25%]">Waktu</th>
-                <th class="p-6 portrait:p-3 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[48%] portrait:w-[45%]">Kegiatan</th>
-                <th class="p-6 portrait:p-3 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[20%] portrait:w-[20%]">Ruangan</th>
-                <th class="p-6 portrait:p-3 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[10%] portrait:w-[10%] text-center">Status</th>
+                <th class="p-6 portrait:p-5 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[22%] portrait:w-[25%]">Waktu</th>
+                <th class="p-6 portrait:p-5 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[48%] portrait:w-[45%]">Kegiatan</th>
+                <th class="p-6 portrait:p-5 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[20%] portrait:w-[20%]">Ruangan</th>
+                <th class="p-6 portrait:p-5 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[10%] portrait:w-[10%] text-center">Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-700/60">
@@ -71,43 +71,43 @@
                 :class="isOngoing(booking) ? 'bg-blue-900/20' : ''"
               >
                 <!-- Kolom Waktu -->
-                <td class="p-6 portrait:p-3 align-top w-[22%] portrait:w-[25%]">
-                  <div class="flex flex-col gap-1">
-                    <span class="text-xl portrait:text-base text-gray-400 font-medium">
+                <td class="p-6 portrait:p-5 align-top w-[22%] portrait:w-[25%]">
+                  <div class="flex flex-col gap-1 portrait:gap-3">
+                    <span class="text-xl portrait:text-base text-gray-400 font-medium leading-tight">
                       {{ formatDateOnly(booking.start_time) }}
                     </span>
-                    <span class="text-3xl portrait:text-xl text-blue-300 font-bold font-mono tabular-nums">
+                    <span class="text-3xl portrait:text-2xl text-blue-300 font-bold font-mono tabular-nums leading-tight mt-1">
                       {{ formatTimeRange(booking.start_time, booking.end_time) }}
                     </span>
                     <span v-if="isOngoing(booking)"
-                      class="mt-1 inline-flex items-center gap-1.5 text-base portrait:text-xs text-green-400 font-semibold">
-                      <span class="animate-pulse h-2 w-2 bg-green-400 rounded-full inline-block"></span>
+                      class="mt-1 inline-flex items-center gap-1.5 text-base portrait:text-sm text-green-400 font-semibold">
+                      <span class="animate-pulse h-2 w-2 portrait:h-3 portrait:w-3 bg-green-400 rounded-full inline-block"></span>
                       Berlangsung
                     </span>
                   </div>
                 </td>
 
                 <!-- Kolom Kegiatan -->
-                <td class="p-6 portrait:p-3 align-top w-[48%] portrait:w-[45%]">
-                  <span class="text-3xl portrait:text-xl font-bold text-white leading-snug line-clamp-4 block">
+                <td class="p-6 portrait:p-5 align-top w-[48%] portrait:w-[45%]">
+                  <span class="text-3xl portrait:text-xl font-bold text-white leading-normal line-clamp-4 block">
                     {{ booking.event_name }}
                   </span>
                 </td>
 
                 <!-- Kolom Ruangan -->
-                <td class="p-6 portrait:p-3 align-top w-[20%] portrait:w-[20%]">
-                  <div class="flex items-start gap-2">
-                    <span class="text-3xl portrait:text-xl mt-0.5">🏢</span>
-                    <span class="text-2xl portrait:text-lg text-blue-200 font-semibold leading-snug">
+                <td class="p-6 portrait:p-5 align-top w-[20%] portrait:w-[20%]">
+                  <div class="flex items-start gap-2 portrait:gap-3">
+                    <span class="text-3xl portrait:text-2xl mt-0.5">🏢</span>
+                    <span class="text-2xl portrait:text-xl text-blue-200 font-semibold leading-normal">
                       {{ booking.room_name }}
                     </span>
                   </div>
                 </td>
 
                 <!-- Kolom Status -->
-                <td class="p-6 portrait:p-3 align-top w-[10%] portrait:w-[10%] text-center">
+                <td class="p-6 portrait:p-5 align-top w-[10%] portrait:w-[10%] text-center">
                   <div
-                    class="inline-flex items-center justify-center px-4 py-2 portrait:px-2 portrait:py-1 rounded-full font-bold text-lg portrait:text-xs uppercase tracking-wider border-2 whitespace-nowrap"
+                    class="inline-flex items-center justify-center px-4 py-2 portrait:px-3 portrait:py-2 rounded-full font-bold text-lg portrait:text-xs uppercase tracking-wider border-2 whitespace-nowrap"
                     :class="getStatusClasses(booking.status)"
                   >
                     {{ getStatusText(booking.status) }}
