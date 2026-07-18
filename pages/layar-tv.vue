@@ -2,20 +2,20 @@
   <div class="min-h-screen bg-gray-900 text-white flex flex-col font-sans p-6 select-none">
 
     <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <header class="flex justify-between items-center border-b border-gray-700 pb-6 mb-6 flex-shrink-0">
+    <header class="flex flex-col portrait:flex-col landscape:flex-row justify-between items-center portrait:text-center portrait:gap-6 border-b border-gray-700 pb-6 mb-6 flex-shrink-0">
       <div>
-        <h1 class="text-5xl font-bold tracking-wider text-blue-400 leading-tight">
+        <h1 class="text-5xl portrait:text-4xl font-bold tracking-wider text-blue-400 leading-tight">
           JADWAL PEMESANAN RUANGAN
         </h1>
-        <p class="text-2xl text-gray-400 mt-2 tracking-wide uppercase">
+        <p class="text-2xl portrait:text-xl text-gray-400 mt-2 tracking-wide uppercase">
           Paroki Santo Paulus Juanda
         </p>
       </div>
-      <div class="text-right flex flex-col items-end">
-        <div class="text-6xl font-bold font-mono text-white tracking-widest tabular-nums">
+      <div class="text-right portrait:text-center flex flex-col items-end portrait:items-center">
+        <div class="text-6xl portrait:text-5xl font-bold font-mono text-white tracking-widest tabular-nums">
           {{ currentTime }}
         </div>
-        <div class="text-2xl text-gray-400 mt-2 font-medium tracking-wide capitalize">
+        <div class="text-2xl portrait:text-xl text-gray-400 mt-2 font-medium tracking-wide capitalize">
           {{ currentDate }}
         </div>
       </div>
@@ -57,10 +57,10 @@
             <!-- Sticky Header -->
             <thead class="sticky top-0 z-10 bg-gray-950 border-b border-gray-700">
               <tr>
-                <th class="p-6 text-xl font-bold uppercase tracking-wider text-gray-300 w-[22%]">Waktu</th>
-                <th class="p-6 text-xl font-bold uppercase tracking-wider text-gray-300 w-[48%]">Kegiatan</th>
-                <th class="p-6 text-xl font-bold uppercase tracking-wider text-gray-300 w-[20%]">Ruangan</th>
-                <th class="p-6 text-xl font-bold uppercase tracking-wider text-gray-300 w-[10%]">Status</th>
+                <th class="p-6 portrait:p-3 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[22%] portrait:w-[25%]">Waktu</th>
+                <th class="p-6 portrait:p-3 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[48%] portrait:w-[45%]">Kegiatan</th>
+                <th class="p-6 portrait:p-3 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[20%] portrait:w-[20%]">Ruangan</th>
+                <th class="p-6 portrait:p-3 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[10%] portrait:w-[10%] text-center">Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-700/60">
@@ -71,43 +71,43 @@
                 :class="isOngoing(booking) ? 'bg-blue-900/20' : ''"
               >
                 <!-- Kolom Waktu -->
-                <td class="p-6 align-top w-[22%]">
+                <td class="p-6 portrait:p-3 align-top w-[22%] portrait:w-[25%]">
                   <div class="flex flex-col gap-1">
-                    <span class="text-xl text-gray-400 font-medium">
+                    <span class="text-xl portrait:text-base text-gray-400 font-medium">
                       {{ formatDateOnly(booking.start_time) }}
                     </span>
-                    <span class="text-3xl text-blue-300 font-bold font-mono tabular-nums">
+                    <span class="text-3xl portrait:text-xl text-blue-300 font-bold font-mono tabular-nums">
                       {{ formatTimeRange(booking.start_time, booking.end_time) }}
                     </span>
                     <span v-if="isOngoing(booking)"
-                      class="mt-1 inline-flex items-center gap-1.5 text-base text-green-400 font-semibold">
+                      class="mt-1 inline-flex items-center gap-1.5 text-base portrait:text-xs text-green-400 font-semibold">
                       <span class="animate-pulse h-2 w-2 bg-green-400 rounded-full inline-block"></span>
-                      Sedang Berlangsung
+                      Berlangsung
                     </span>
                   </div>
                 </td>
 
                 <!-- Kolom Kegiatan -->
-                <td class="p-6 align-top w-[48%]">
-                  <span class="text-3xl font-bold text-white leading-snug line-clamp-3 block">
+                <td class="p-6 portrait:p-3 align-top w-[48%] portrait:w-[45%]">
+                  <span class="text-3xl portrait:text-xl font-bold text-white leading-snug line-clamp-4 block">
                     {{ booking.event_name }}
                   </span>
                 </td>
 
                 <!-- Kolom Ruangan -->
-                <td class="p-6 align-top w-[20%]">
-                  <div class="flex items-start gap-3">
-                    <span class="text-3xl mt-0.5">🏢</span>
-                    <span class="text-2xl text-blue-200 font-semibold leading-snug">
+                <td class="p-6 portrait:p-3 align-top w-[20%] portrait:w-[20%]">
+                  <div class="flex items-start gap-2">
+                    <span class="text-3xl portrait:text-xl mt-0.5">🏢</span>
+                    <span class="text-2xl portrait:text-lg text-blue-200 font-semibold leading-snug">
                       {{ booking.room_name }}
                     </span>
                   </div>
                 </td>
 
                 <!-- Kolom Status -->
-                <td class="p-6 align-top w-[10%]">
+                <td class="p-6 portrait:p-3 align-top w-[10%] portrait:w-[10%] text-center">
                   <div
-                    class="inline-flex items-center justify-center px-4 py-2 rounded-full font-bold text-lg uppercase tracking-wider border-2 whitespace-nowrap"
+                    class="inline-flex items-center justify-center px-4 py-2 portrait:px-2 portrait:py-1 rounded-full font-bold text-lg portrait:text-xs uppercase tracking-wider border-2 whitespace-nowrap"
                     :class="getStatusClasses(booking.status)"
                   >
                     {{ getStatusText(booking.status) }}
@@ -121,7 +121,7 @@
     </main>
 
     <!-- ── Footer ─────────────────────────────────────────────────────────── -->
-    <footer class="mt-6 pt-4 border-t border-gray-700 flex justify-between items-center text-gray-500 text-xl flex-shrink-0">
+    <footer class="mt-6 pt-4 border-t border-gray-700 flex flex-col portrait:flex-col landscape:flex-row justify-between items-center text-gray-500 text-xl portrait:text-sm flex-shrink-0 portrait:gap-2">
       <div class="flex items-center gap-3">
         <span
           class="h-3 w-3 rounded-full inline-block"
@@ -131,7 +131,7 @@
           {{ fetchError ? 'Sistem Tidak Aktif' : 'Live System Berjalan' }}
         </span>
       </div>
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-6 portrait:gap-3">
         <span>{{ bookings.length }} jadwal ditampilkan</span>
         <span>Diperbarui: <strong class="text-gray-300 font-mono">{{ lastUpdate || '—' }}</strong></span>
       </div>
