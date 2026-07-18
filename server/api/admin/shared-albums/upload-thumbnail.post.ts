@@ -3,6 +3,7 @@ import { join } from 'path'
 import { existsSync } from 'fs'
 import { readMultipartFormData } from 'h3'
 import { uploadToCloudinary, isCloudinaryEnabled } from '../../../utils/cloudinary'
+import { validateAndGetImageExtension } from '../../../utils/fileValidator'
 
 /**
  * Upload thumbnail for shared albums
@@ -54,19 +55,13 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    if (!file.type || !file.type.startsWith('image/')) {
-      console.error('[Thumbnail Upload] Invalid file type:', file.type)
-      throw createError({
-        statusCode: 400,
-        message: 'File must be an image'
-      })
-    }
+    // Validate Magic Bytes and get safe extension
+    const safeExt = validateAndGetImageExtension(file.data)
 
     // Generate unique filename
     const timestamp = Date.now()
     const randomString = Math.random().toString(36).substring(2, 8)
-    const extension = file.filename?.split('.').pop() || 'jpg'
-    const filename = `album-${timestamp}-${randomString}.${extension}`
+    const filename = `album-${timestamp}-${randomString}.${safeExt}`
 
     console.log('[Thumbnail Upload] Saving file:', filename)
 

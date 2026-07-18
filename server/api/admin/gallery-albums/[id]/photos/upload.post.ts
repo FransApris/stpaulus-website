@@ -3,7 +3,7 @@ import { requirePermission } from '../../../../../utils/auth'
 import { promises as fs } from 'fs'
 import path from 'path'
 import { isCloudinaryEnabled, uploadToCloudinary } from '../../../../../utils/cloudinary'
-
+import { validateAndGetImageExtension } from '../../../../../utils/fileValidator'
 export default defineEventHandler(async (event) => {
   // Check permissions
   requirePermission('manage_gallery')(event)
@@ -44,14 +44,8 @@ export default defineEventHandler(async (event) => {
 
   const originalFilename = file.filename
 
-  // Validate file type
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-  if (!allowedTypes.includes(file.type)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'
-    })
-  }
+  // Validate Magic Bytes and get safe extension
+  const safeExt = validateAndGetImageExtension(file.data)
 
   // Validate file size (max 10MB)
   const maxSize = 10 * 1024 * 1024
@@ -62,9 +56,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Generate unique filename
-  const ext = path.extname(originalFilename)
-  const filename = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}${ext}`
+  // Generate unique filename with safe extension
+  const filename = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${safeExt}`
 
   let photoPath: string
 
@@ -73,7 +66,7 @@ export default defineEventHandler(async (event) => {
     photoPath = await uploadToCloudinary(
       Buffer.from(file.data),
       'gallery',
-      originalFilename
+      filename
     )
   } else {
     // Fallback: save to local disk

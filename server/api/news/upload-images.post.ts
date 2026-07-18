@@ -1,6 +1,7 @@
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
+import { validateAndGetImageExtension } from '~/server/utils/fileValidator'
 
 export default defineEventHandler(async (event) => {
     console.log('[News Upload] Request received')
@@ -42,8 +43,15 @@ export default defineEventHandler(async (event) => {
         // Process each file
         for (const file of formData) {
             if (file.filename && file.data) {
-                const ext = file.filename.split('.').pop()
-                const fileName = `news-${Date.now()}-${Math.random().toString(36).substr(2, 6)}.${ext}`
+                // Validate Magic Bytes and get safe extension
+                const safeExt = validateAndGetImageExtension(file.data)
+                
+                // 5MB Limit
+                if (file.data.length > 5 * 1024 * 1024) {
+                    throw createError({ statusCode: 400, message: 'File too large (Max 5MB)' })
+                }
+
+                const fileName = `news-${Date.now()}-${Math.random().toString(36).substr(2, 6)}.${safeExt}`
                 const filePath = join(uploadDir, fileName)
 
                 console.log('[News Upload] Processing:', file.filename, '→', fileName)

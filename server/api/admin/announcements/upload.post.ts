@@ -6,6 +6,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { requireAuth, requirePermission } from '~/server/utils/auth'
+import { validateAndGetImageExtension } from '~/server/utils/fileValidator'
 import { isCloudinaryEnabled, uploadToCloudinary } from '~/server/utils/cloudinary'
 
 export default defineEventHandler(async (event) => {
@@ -29,14 +30,8 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
-        if (!allowedTypes.includes(file.type || '')) {
-            throw createError({
-                statusCode: 400,
-                statusMessage: 'File type not allowed. Only JPEG, PNG, WEBP, and GIF are allowed.'
-            })
-        }
+        // Validate file type via Magic Bytes
+        const safeExt = validateAndGetImageExtension(file.data)
 
         // Validate file size (max 5MB)
         const maxSize = 5 * 1024 * 1024 // 5MB
@@ -55,15 +50,14 @@ export default defineEventHandler(async (event) => {
             publicUrl = await uploadToCloudinary(
                 Buffer.from(file.data),
                 'announcements',
-                file.filename
+                `announcement-${Date.now()}.${safeExt}`
             )
             console.log('[Announcement Upload] Cloudinary success:', publicUrl)
         } else {
             // Fallback: save to local disk
             const timestamp = Date.now()
             const randomString = Math.random().toString(36).substring(2, 8)
-            const ext = file.filename.split('.').pop()
-            const filename = `announcement-${timestamp}-${randomString}.${ext}`
+            const filename = `announcement-${timestamp}-${randomString}.${safeExt}`
 
             const uploadDir = join(process.cwd(), 'public', 'uploads', 'announcements')
             if (!existsSync(uploadDir)) {

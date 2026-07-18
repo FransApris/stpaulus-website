@@ -6,6 +6,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 import { requireAuth } from '~/server/utils/auth'
+import { validateAndGetImageExtension } from '~/server/utils/fileValidator'
 import { isCloudinaryEnabled, uploadToCloudinary } from '~/server/utils/cloudinary'
 
 export default defineEventHandler(async (event) => {
@@ -34,14 +35,8 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        // Validate file type
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
-        if (!allowedTypes.includes(fileData.type || '')) {
-            throw createError({
-                statusCode: 400,
-                message: 'Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.'
-            })
-        }
+        // Validate Magic Bytes and get safe extension
+        const safeExt = validateAndGetImageExtension(fileData.data)
 
         // Validate file size (max 5MB)
         const maxSize = 5 * 1024 * 1024
@@ -54,13 +49,15 @@ export default defineEventHandler(async (event) => {
 
         let publicUrl: string
 
+        const filename = `pastors-${Date.now()}-${Math.random().toString(36).substring(7)}.${safeExt}`
+
         if (isCloudinaryEnabled()) {
             // Upload to Cloudinary — persists across redeploys
             console.log('[Pastor Photo Upload] Uploading to Cloudinary...')
             publicUrl = await uploadToCloudinary(
                 Buffer.from(fileData.data),
                 'pastors',
-                fileData.filename
+                filename
             )
             console.log('[Pastor Photo Upload] Cloudinary success:', publicUrl)
         } else {
@@ -71,8 +68,6 @@ export default defineEventHandler(async (event) => {
                 console.log('[Pastor Photo Upload] Directory created:', uploadDir)
             }
 
-            const ext = fileData.filename.split('.').pop()
-            const filename = `pastors-${Date.now()}-${Math.random().toString(36).substring(7)}.${ext}`
             const filepath = join(uploadDir, filename)
 
             await writeFile(filepath, fileData.data)

@@ -4,6 +4,7 @@ import { existsSync } from 'fs'
 import { readMultipartFormData } from 'h3'
 import { requireAuth } from '~/server/utils/auth'
 import { requireKronikUserAccess } from '~/server/utils/kronik-auth'
+import { validateAndGetImageExtension } from '~/server/utils/fileValidator'
 
 const ADMIN_ROLES = new Set(['super_admin', 'admin_komsos', 'admin_sekretariat'])
 
@@ -58,12 +59,14 @@ export default defineEventHandler(async (event) => {
     for (const file of form) {
       console.log('[Kronik Upload] Processing file:', file.filename, 'type:', file.type)
 
-      if (file.type && file.type.startsWith('image/')) {
+      // Validate Magic Bytes and get safe extension
+      try {
+        const safeExt = validateAndGetImageExtension(file.data)
+
         // Generate unique filename
         const timestamp = Date.now()
         const randomString = Math.random().toString(36).substring(2, 8)
-        const extension = file.filename?.split('.').pop() || 'jpg'
-        const filename = `kronik-${timestamp}-${randomString}.${extension}`
+        const filename = `kronik-${timestamp}-${randomString}.${safeExt}`
 
         console.log('[Kronik Upload] Saving as:', filename)
 
@@ -75,6 +78,8 @@ export default defineEventHandler(async (event) => {
 
         // Return API media URL so files stay accessible in production runtime/volume.
         uploadedFiles.push(`/api/kronik/media/${encodeURIComponent(filename)}`)
+      } catch (validationError) {
+        console.error('[Kronik Upload] Validation failed for file:', file.filename, validationError)
       }
     }
 
