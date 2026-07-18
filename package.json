@@ -28,7 +28,6 @@
     "google-photos:migrate": "powershell -ExecutionPolicy Bypass -File scripts/run-google-photos-migration-simple.ps1"
   },
   "dependencies": {
-    "ckeditor5": "^48.3.1",
     "@ckeditor/ckeditor5-vue": "7.3.0",
     "@google/generative-ai": "^0.24.1",
     "@nuxt/image": "^2.0.0",
@@ -39,9 +38,11 @@
     "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
+    "ckeditor5": "^48.3.1",
     "cloudinary": "^2.9.0",
     "date-fns": "^4.1.0",
     "groq-sdk": "^1.1.1",
+    "isomorphic-dompurify": "^3.19.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.15.3",
     "nodemailer": "^8.0.5",

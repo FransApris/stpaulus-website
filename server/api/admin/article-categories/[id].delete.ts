@@ -1,9 +1,10 @@
 import { runQuery, allQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
 
 export default defineEventHandler(async (event) => {
-  // Check authentication
+  // Bug #3 Fix: Tambahkan requirePermission — sebelumnya TIDAK ADA
   requireAuth(event)
+  requirePermission('manage_article_categories')(event)
 
   try {
     const id = getRouterParam(event, 'id')

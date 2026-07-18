@@ -1,5 +1,31 @@
 import { runQuery, getQuery as getDbQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
+import DOMPurify from 'isomorphic-dompurify'
+
+// Bug #5 Fix: Konfigurasi sanitasi HTML — izinkan tag/atribut aman untuk konten artikel WYSIWYG
+// Tag berbahaya seperti <script>, event handler (onerror, onload, onclick) otomatis diblokir.
+const ALLOWED_TAGS = [
+  'p', 'br', 'strong', 'em', 'u', 's', 'b', 'i',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
+  'a', 'img', 'figure', 'figcaption',
+  'table', 'thead', 'tbody', 'tr', 'th', 'td',
+  'hr', 'div', 'span'
+]
+const ALLOWED_ATTR = ['href', 'src', 'alt', 'title', 'class', 'target', 'rel', 'width', 'height', 'colspan', 'rowspan']
+
+function sanitizeHtml(dirty: string): string {
+  return DOMPurify.sanitize(dirty, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+    FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick', 'onmouseover', 'onfocus'],
+    KEEP_CONTENT: true
+  })
+}
+
+// Bug #4 Fix: Whitelist status yang valid
+const ALLOWED_STATUSES = ['draft', 'published', 'archived'] as const
+type ArticleStatus = typeof ALLOWED_STATUSES[number]
 
 function createSlug(text: string): string {
   return text
@@ -11,8 +37,9 @@ function createSlug(text: string): string {
 }
 
 export default defineEventHandler(async (event) => {
-  // Check authentication using JWT
+  // Bug #1 Fix: Tambahkan requirePermission — sebelumnya TIDAK ADA
   requireAuth(event)
+  requirePermission('manage_articles')(event)
 
   try {
     const body = await readBody(event)
@@ -26,11 +53,21 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Ensure all values are defined (not undefined)
+    // Bug #4 Fix: Validasi whitelist untuk status
+    const safeStatus: ArticleStatus = ALLOWED_STATUSES.includes(status) ? status : 'draft'
+    if (status !== undefined && !ALLOWED_STATUSES.includes(status)) {
+      console.warn(`[Article Create] Status tidak valid '${status}' dibuang, diganti 'draft'`)
+    }
+
     const safeExcerpt = excerpt !== undefined ? excerpt : null
-    const safeAuthor = author !== undefined ? author : null
-    const safeStatus = status !== undefined ? status : 'draft'
-    const safeImage = image !== undefined ? image : null
+    const safeAuthor  = author  !== undefined ? author  : null
+    const safeImage   = image   !== undefined ? image   : null
+
+    // Bug #5 Fix: Sanitasi konten HTML dari WYSIWYG editor sebelum disimpan ke DB
+    const safeContent = sanitizeHtml(content)
+
+    // Juga sanitasi excerpt jika ada HTML di dalamnya
+    const safeExcerptSanitized = safeExcerpt ? DOMPurify.sanitize(safeExcerpt, { ALLOWED_TAGS: [], KEEP_CONTENT: true }) : null
 
     // Generate slug if not provided
     const finalSlug = slug || createSlug(title)
@@ -58,12 +95,12 @@ export default defineEventHandler(async (event) => {
     }
 
     // Insert article
-    const publishedAt = status === 'published' ? new Date().toISOString().slice(0, 19).replace('T', ' ') : null
+    const publishedAt = safeStatus === 'published' ? new Date().toISOString().slice(0, 19).replace('T', ' ') : null
 
     const result: any = await runQuery(
       `INSERT INTO articles (title, slug, content, excerpt, author, status, image, published_at, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-      [title, finalSlug, content, excerpt || '', author || '', status || 'draft', safeImage, publishedAt]
+      [title, finalSlug, safeContent, safeExcerptSanitized || '', safeAuthor || '', safeStatus, safeImage, publishedAt]
     )
 
     // Handle different database result formats
@@ -85,19 +122,21 @@ export default defineEventHandler(async (event) => {
       id: articleId,
       title,
       slug: finalSlug,
-      content,
-      excerpt: excerpt || '',
-      author: author || '',
-      status: status || 'draft',
+      content: safeContent,
+      excerpt: safeExcerptSanitized || '',
+      author: safeAuthor || '',
+      status: safeStatus,
       image: safeImage,
       published_at: publishedAt,
       message: 'Article created successfully'
     }
-  } catch (error) {
-    console.error('Error creating article:', error)
+  } catch (error: any) {
+    console.error('[Article Create] Error:', error)
+    // Re-throw createError as-is (sudah memiliki statusCode)
+    if (error.statusCode) throw error
     throw createError({
       statusCode: 500,
-      statusMessage: 'Internal server error'
+      statusMessage: 'Gagal membuat artikel. Silakan coba lagi.'
     })
   }
 })

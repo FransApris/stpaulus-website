@@ -1,5 +1,30 @@
 import { runQuery, getQuery as getDbQuery } from '../../../database/db'
-import { requireAuth } from '../../../utils/auth'
+import { requireAuth, requirePermission } from '../../../utils/auth'
+import DOMPurify from 'isomorphic-dompurify'
+
+// Bug #5 Fix: Konfigurasi sanitasi HTML — sama dengan index.post.ts
+const ALLOWED_TAGS = [
+  'p', 'br', 'strong', 'em', 'u', 's', 'b', 'i',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'ul', 'ol', 'li', 'blockquote', 'pre', 'code',
+  'a', 'img', 'figure', 'figcaption',
+  'table', 'thead', 'tbody', 'tr', 'th', 'td',
+  'hr', 'div', 'span'
+]
+const ALLOWED_ATTR = ['href', 'src', 'alt', 'title', 'class', 'target', 'rel', 'width', 'height', 'colspan', 'rowspan']
+
+function sanitizeHtml(dirty: string): string {
+  return DOMPurify.sanitize(dirty, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+    FORBID_ATTR: ['style', 'onerror', 'onload', 'onclick', 'onmouseover', 'onfocus'],
+    KEEP_CONTENT: true
+  })
+}
+
+// Bug #4 Fix: Whitelist status yang valid
+const ALLOWED_STATUSES = ['draft', 'published', 'archived'] as const
+type ArticleStatus = typeof ALLOWED_STATUSES[number]
 
 function createSlug(text: string): string {
   return text
@@ -11,8 +36,9 @@ function createSlug(text: string): string {
 }
 
 export default defineEventHandler(async (event) => {
-  // Check authentication using JWT
+  // Bug #2 Fix: Tambahkan requirePermission — sebelumnya TIDAK ADA
   requireAuth(event)
+  requirePermission('manage_articles')(event)
 
   try {
     const id = getRouterParam(event, 'id')
@@ -35,12 +61,26 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const finalTitle = title ?? existingArticle.title
-    const finalContent = content ?? existingArticle.content
+    const finalTitle   = title   ?? existingArticle.title
     const finalExcerpt = excerpt ?? existingArticle.excerpt ?? ''
-    const finalAuthor = author ?? existingArticle.author ?? ''
-    const finalStatus = status ?? existingArticle.status ?? 'draft'
-    const finalImage = image ?? existingArticle.image ?? null
+    const finalAuthor  = author  ?? existingArticle.author  ?? ''
+    const finalImage   = image   ?? existingArticle.image   ?? null
+
+    // Bug #4 Fix: Validasi whitelist untuk status
+    const rawStatus = status ?? existingArticle.status ?? 'draft'
+    const finalStatus: ArticleStatus = ALLOWED_STATUSES.includes(rawStatus) ? rawStatus : 'draft'
+    if (status !== undefined && !ALLOWED_STATUSES.includes(status)) {
+      console.warn(`[Article Update] Status tidak valid '${status}' dibuang, diganti '${finalStatus}'`)
+    }
+
+    // Bug #5 Fix: Sanitasi konten HTML dari WYSIWYG sebelum disimpan
+    const rawContent   = content ?? existingArticle.content
+    const finalContent = sanitizeHtml(rawContent)
+
+    // Sanitasi excerpt juga (strip semua HTML di excerpt)
+    const finalExcerptSanitized = finalExcerpt
+      ? DOMPurify.sanitize(finalExcerpt, { ALLOWED_TAGS: [], KEEP_CONTENT: true })
+      : ''
 
     // Validation (supports partial updates by falling back to existing values)
     if (!finalTitle || !finalContent) {
@@ -78,59 +118,36 @@ export default defineEventHandler(async (event) => {
     // Update published_at based on status
     let publishedAt = null
     if (finalStatus === 'published') {
-      // Check current status
       const currentArticle = await getDbQuery('SELECT status, published_at FROM articles WHERE id = ?', [id]) as { status: string, published_at: string | null } | undefined
       if (currentArticle && currentArticle.status !== 'published') {
-        // First time publishing
         publishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
       } else if (currentArticle && currentArticle.published_at) {
-        // Keep existing published date
         publishedAt = currentArticle.published_at
       } else {
-        // Fallback: set current time
         publishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
       }
     }
 
     console.log('[Article Update] Update data:', { id, title: finalTitle, status: finalStatus, publishedAt })
-    console.log('[Article Update] Image value type:', typeof image)
-    console.log('[Article Update] Image value length:', image ? image.length : 0)
-    console.log('[Article Update] Image value preview:', image ? image.substring(0, 100) + '...' : 'null')
 
     // Update article
-    let result
     try {
-      result = await runQuery(
+      await runQuery(
         `UPDATE articles SET title = ?, slug = ?, content = ?, excerpt = ?, author = ?, status = ?, image = ?, published_at = ?, updated_at = NOW() WHERE id = ?`,
-        [finalTitle, finalSlug, finalContent, finalExcerpt, finalAuthor, finalStatus, finalImage, publishedAt, id]
+        [finalTitle, finalSlug, finalContent, finalExcerptSanitized, finalAuthor, finalStatus, finalImage, publishedAt, id]
       )
-      console.log('[Article Update] Query result:', result)
     } catch (queryError: any) {
-      console.error('[Article Update] Query error:', queryError)
+      // Bug #6 Fix: Log detail ke server, kirim pesan generik ke client (jangan bocorkan queryError.message)
+      console.error('[Article Update] DB query error:', queryError.message, '| Article ID:', id)
       throw createError({
         statusCode: 500,
-        statusMessage: `Database error: ${queryError.message}`
+        statusMessage: 'Gagal memperbarui artikel. Silakan coba lagi.'
       })
     }
 
-    if ((result as any).affectedRows === 0) {
-      // Check if article still exists (in case it was deleted concurrently)
-      const check = await getDbQuery('SELECT id FROM articles WHERE id = ?', [id])
-      if (!check) {
-        throw createError({
-          statusCode: 404,
-          statusMessage: 'Article not found'
-        })
-      }
-      // If exists but no changes, still success
-    }
-
     // Update category relations
-    // First, remove existing relations
     if (category_ids !== undefined) {
       await runQuery('DELETE FROM article_category_relations WHERE article_id = ?', [id])
-
-      // Then, insert new relations if provided
       if (Array.isArray(category_ids) && category_ids.length > 0) {
         for (const categoryId of category_ids) {
           await runQuery(
@@ -143,13 +160,12 @@ export default defineEventHandler(async (event) => {
 
     console.log('[Article Update] Successfully updated article:', id)
 
-    // Return complete article data for optimistic update
     return {
       id: parseInt(id),
       title: finalTitle,
       slug: finalSlug,
       content: finalContent,
-      excerpt: finalExcerpt,
+      excerpt: finalExcerptSanitized,
       author: finalAuthor,
       status: finalStatus,
       published_at: publishedAt,
@@ -157,22 +173,13 @@ export default defineEventHandler(async (event) => {
       message: 'Article updated successfully'
     }
   } catch (error: any) {
-    console.error('[Article Update] Error updating article:', error)
-    console.error('[Article Update] Error details:', {
-      message: error.message,
-      stack: error.stack,
-      statusCode: error.statusCode
-    })
-
-    // If it's already a createError, rethrow it
-    if (error.statusCode) {
-      throw error
-    }
-
-    // Otherwise, create a generic error
+    console.error('[Article Update] Error:', error.message)
+    // Re-throw createError as-is (sudah memiliki statusCode dan pesan yang aman)
+    if (error.statusCode) throw error
+    // Bug #6 Fix: Jangan bocorkan error.message internal ke client
     throw createError({
       statusCode: 500,
-      statusMessage: `Internal server error: ${error.message}`
+      statusMessage: 'Gagal memperbarui artikel. Silakan coba lagi.'
     })
   }
 })
