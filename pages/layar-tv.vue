@@ -59,7 +59,7 @@
               <tr>
                 <th class="p-6 portrait:p-5 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[70%] portrait:w-[65%]">Informasi Kegiatan</th>
                 <th class="p-6 portrait:p-5 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[20%] portrait:w-[20%]">Ruangan</th>
-                <th class="p-6 portrait:p-5 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[10%] portrait:w-[15%] text-center">Status</th>
+                <th class="p-6 portrait:p-5 portrait:pr-8 text-xl portrait:text-sm font-bold uppercase tracking-wider text-gray-300 w-[10%] portrait:w-[15%] text-center">Status</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-700/60">
@@ -102,7 +102,7 @@
                 </td>
 
                 <!-- Kolom Status -->
-                <td class="p-6 portrait:p-5 align-top w-[10%] portrait:w-[15%] text-center">
+                <td class="p-6 portrait:p-5 portrait:pr-8 align-top w-[10%] portrait:w-[15%] text-center">
                   <div
                     class="inline-flex items-center justify-center px-4 py-2 portrait:px-3 portrait:py-2 rounded-full font-bold text-lg portrait:text-xs uppercase tracking-wider border-2 whitespace-nowrap"
                     :class="getStatusClasses(booking.status)"
