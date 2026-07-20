@@ -3,10 +3,8 @@
  * ─────────────────────────────────────────────────────────────
  * Sistem Maintenance Terpusat - Paroki St. Paulus Juanda
  *
- * CARA PAKAI:
- * 1. Tambahkan entry halaman di MAINTENANCE_CONFIG di bawah
- * 2. Setel `active: true` untuk mengaktifkan mode maintenance
- * 3. Setel kembali `active: false` (atau hapus entry) untuk menonaktifkan
+ * Status maintenance dibaca dari API server (/api/maintenance)
+ * dan dapat dikendalikan melalui halaman Admin → Maintenance.
  *
  * Di halaman Vue mana pun, cukup tambahkan:
  *
@@ -14,83 +12,73 @@
  *
  * lalu di template:
  *
- *   <PageMaintenance v-if="isInMaintenance" v-bind="maintenanceInfo" />
+ *   <PageMaintenance v-if="isInMaintenance && maintenanceInfo" v-bind="maintenanceInfo" />
  *   <div v-else> ... konten asli ... </div>
  * ─────────────────────────────────────────────────────────────
  */
 
 export interface MaintenancePageConfig {
-  /** Apakah halaman sedang dalam mode maintenance */
   active: boolean
-  /** Judul halaman (ditampilkan di header & kartu) */
   pageTitle: string
-  /** Deskripsi singkat di bawah judul header */
   pageSubtitle?: string
-  /** Pesan utama yang ditampilkan di kartu maintenance */
   message?: string
-  /** Pesan kedua / permintaan maaf */
   subMessage?: string
 }
 
 /**
- * ═══════════════════════════════════════════════════════════════
- *  KONFIGURASI MAINTENANCE — EDIT DI SINI
- * ═══════════════════════════════════════════════════════════════
- *
- *  Key  : path halaman (sesuai nama route Nuxt, tanpa leading slash)
- *         Contoh: 'sejarah', 'dpp-paroki', 'data-statistika-paroki'
- *
- *  Value: objek MaintenancePageConfig
- *         - active: true  → halaman tampil maintenance
- *         - active: false → halaman tampil normal
- * ═══════════════════════════════════════════════════════════════
+ * Metadata statis per halaman (judul, subtitle)
+ * Status aktif/nonaktif diambil dari API server secara dinamis
  */
-const MAINTENANCE_CONFIG: Record<string, MaintenancePageConfig> = {
-
-  sejarah: {
-    active: true,
+const PAGE_META: Record<string, Omit<MaintenancePageConfig, 'active'>> = {
+  'sejarah': {
     pageTitle: 'Sejarah Paroki',
     pageSubtitle: 'Sebuah perjalanan iman yang unik, dari pengadaan lahan hingga menjadi komunitas Paroki yang mandiri',
   },
-
-  // ─── Contoh halaman lain (nonaktif) ─────────────────────────
-  // 'data-statistika-paroki': {
-  //   active: false,
-  //   pageTitle: 'Data Statistika Paroki',
-  //   pageSubtitle: 'Statistik dan data kependudukan umat Paroki St. Paulus Juanda',
-  // },
-
-  // 'dpp-paroki': {
-  //   active: false,
-  //   pageTitle: 'DPP Paroki',
-  //   pageSubtitle: 'Dewan Pastoral Paroki St. Paulus Juanda',
-  // },
-
-  // 'bgkp-paroki': {
-  //   active: false,
-  //   pageTitle: 'BGKP Paroki',
-  //   pageSubtitle: 'Badan Gereja Katolik Paroki',
-  // },
-
-  // 'jadwal-misa': {
-  //   active: false,
-  //   pageTitle: 'Jadwal Misa',
-  //   pageSubtitle: 'Jadwal Perayaan Ekaristi Paroki St. Paulus Juanda',
-  // },
-
-  // 'dokumen-paroki': {
-  //   active: false,
-  //   pageTitle: 'Dokumen Paroki',
-  //   pageSubtitle: 'Arsip dan dokumen resmi Paroki St. Paulus Juanda',
-  // },
-
-  // 'teritorial-paroki': {
-  //   active: false,
-  //   pageTitle: 'Teritorial Paroki',
-  //   pageSubtitle: 'Peta wilayah dan teritorial Paroki St. Paulus Juanda',
-  // },
-
-} // ← Tambahkan halaman baru di atas baris ini
+  'dpp-paroki': {
+    pageTitle: 'DPP Paroki',
+    pageSubtitle: 'Dewan Pastoral Paroki St. Paulus Juanda',
+  },
+  'bgkp-paroki': {
+    pageTitle: 'BGKP Paroki',
+    pageSubtitle: 'Badan Gereja Katolik Paroki',
+  },
+  'data-statistika-paroki': {
+    pageTitle: 'Data Statistika Paroki',
+    pageSubtitle: 'Statistik dan data kependudukan umat Paroki St. Paulus Juanda',
+  },
+  'jadwal-misa': {
+    pageTitle: 'Jadwal Misa',
+    pageSubtitle: 'Jadwal Perayaan Ekaristi Paroki St. Paulus Juanda',
+  },
+  'dokumen-paroki': {
+    pageTitle: 'Dokumen Paroki',
+    pageSubtitle: 'Arsip dan dokumen resmi Paroki St. Paulus Juanda',
+  },
+  'teritorial-paroki': {
+    pageTitle: 'Teritorial Paroki',
+    pageSubtitle: 'Peta wilayah dan teritorial Paroki St. Paulus Juanda',
+  },
+  'romo-bertugas': {
+    pageTitle: 'Romo Bertugas',
+    pageSubtitle: 'Jadwal tugas Pastor Paroki St. Paulus Juanda',
+  },
+  'kronik-gereja': {
+    pageTitle: 'Kronik Gereja',
+    pageSubtitle: 'Catatan perjalanan dan peristiwa Gereja',
+  },
+  'agenda': {
+    pageTitle: 'Agenda Paroki',
+    pageSubtitle: 'Kegiatan dan agenda Paroki St. Paulus Juanda',
+  },
+  'galeri': {
+    pageTitle: 'Galeri Foto',
+    pageSubtitle: 'Dokumentasi kegiatan Paroki St. Paulus Juanda',
+  },
+  'kontak': {
+    pageTitle: 'Kontak & Sekretariat',
+    pageSubtitle: 'Hubungi paroki untuk informasi lebih lanjut',
+  },
+}
 
 /**
  * Composable utama — gunakan di dalam <script setup> halaman Nuxt
@@ -101,20 +89,31 @@ const MAINTENANCE_CONFIG: Record<string, MaintenancePageConfig> = {
 export function useMaintenance() {
   const route = useRoute()
 
-  // Ambil key dari route path (hilangkan leading slash)
+  // Ambil key dari route path (hilangkan leading/trailing slash)
   const routeKey = computed(() => {
     return route.path.replace(/^\//, '').replace(/\/$/, '') || 'index'
   })
 
-  // Cek apakah halaman ini terdaftar & aktif maintenance
+  // Fetch status dari API server (di-cache per halaman)
+  const { data: maintenanceStatus } = useAsyncData(
+    'maintenance-status',
+    () => $fetch<Record<string, boolean>>('/api/maintenance'),
+    { default: () => ({}) as Record<string, boolean> }
+  )
+
+  // Cek apakah halaman ini sedang maintenance
   const isInMaintenance = computed(() => {
-    const config = MAINTENANCE_CONFIG[routeKey.value]
-    return config?.active === true
+    return maintenanceStatus.value?.[routeKey.value] === true
   })
 
-  // Info yang dioper ke komponen PageMaintenance
-  const maintenanceInfo = computed(() => {
-    return MAINTENANCE_CONFIG[routeKey.value] ?? null
+  // Gabungkan metadata statis + status dinamis dari server
+  const maintenanceInfo = computed((): MaintenancePageConfig | null => {
+    const meta = PAGE_META[routeKey.value]
+    if (!meta) return null
+    return {
+      ...meta,
+      active: isInMaintenance.value,
+    }
   })
 
   return {
