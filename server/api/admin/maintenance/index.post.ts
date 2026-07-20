@@ -4,7 +4,7 @@
  * Body: { key: string, active: boolean }
  */
 import { requireAuth } from '../../../utils/auth'
-import { MANAGED_PAGES, readMaintenanceConfig, saveMaintenanceConfig } from '../../utils/maintenance'
+import { MANAGED_PAGES, readMaintenanceConfig, saveMaintenanceConfig } from '../../../utils/maintenance'
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)
