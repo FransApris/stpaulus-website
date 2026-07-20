@@ -326,18 +326,7 @@
                   </svg>
                   Kelola Pemesanan
                 </NuxtLink>
-                <!-- Digital Signage — hanya super_admin & admin_sekretariat, buka di tab baru -->
-                <a v-if="menuVisibility.signage" href="/admin/signage/pemesanan-ruangan" target="_blank" rel="noopener"
-                  class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 text-gray-600 hover:bg-gray-100 hover:text-gray-900 group">
-                  <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  Digital Signage
-                  <svg class="w-3 h-3 ml-auto opacity-50 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
+
                 <NuxtLink v-if="menuVisibility.bookingReport" to="/admin/bookings-report"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/bookings-report' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
