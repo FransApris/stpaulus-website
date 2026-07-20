@@ -41,6 +41,7 @@ export const MANAGED_PAGES = [
 
   // 6. Multimedia & Lainnya
   { key: 'galeri',                label: 'Galeri Foto',             path: '/galeri' },
+  { key: 'layar-tv',              label: 'Layar TV / Signage',      path: '/layar-tv' },
   { key: 'search',                label: 'Pencarian / Search',      path: '/search' },
 ]
 
