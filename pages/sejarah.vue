@@ -1,5 +1,17 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <!-- ════════════════════════════════════════════════════════════
+       MODE MAINTENANCE: dikendalikan dari composables/useMaintenance.ts
+       Ubah  active: true → false  di MAINTENANCE_CONFIG untuk menonaktifkan
+       ════════════════════════════════════════════════════════════ -->
+  <PageMaintenance
+    v-if="isInMaintenance && maintenanceInfo"
+    v-bind="maintenanceInfo"
+  />
+
+  <!-- ════════════════════════════════════════════════════════════
+       KONTEN ASLI HALAMAN — Tampil ketika maintenance nonaktif
+       ════════════════════════════════════════════════════════════ -->
+  <div v-else class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-[#882f1d] text-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -18,45 +30,48 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Content Sejarah -->
+      <div class="w-full md:max-w-[85%] lg:max-w-[75%] mx-auto">
+        <TimelineSejarahParoki />
+      </div>
 
-        <!-- Content Sejarah -->
-        <div class="w-full md:max-w-[85%] lg:max-w-[75%] mx-auto">
-          <TimelineSejarahParoki />
-        </div>
-
-        <!-- Back Button -->
-        <div class="mt-8 md:mt-12">
-          <BackButton position="bottom" />
-        </div>
+      <!-- Back Button -->
+      <div class="mt-8 md:mt-12">
+        <BackButton position="bottom" />
+      </div>
     </div>
   </div>
 </template>
 
-// Page meta
+<script setup>
+// ── Page meta ─────────────────────────────────────────────────
 definePageMeta({
-title: 'Sejarah Paroki - St. Paulus'
+  title: 'Sejarah Paroki - St. Paulus Juanda'
 })
 
-// Dynamic import for TimelineSejarahParoki component (only loaded when needed)
-const TimelineSejarahParoki = defineAsyncComponent(() => import('~/components/TimelineSejarahParoki.vue'))
+useSeoMeta({
+  title: 'Sejarah Paroki - St. Paulus Juanda',
+  description: 'Sejarah perjalanan iman Paroki St. Paulus Juanda, dari pengadaan lahan hingga menjadi komunitas Paroki yang mandiri.'
+})
+
+// ── Sistem Maintenance Terpusat ───────────────────────────────
+// Status dikendalikan dari: composables/useMaintenance.ts
+const { isInMaintenance, maintenanceInfo } = useMaintenance()
+
+// ── Komponen konten asli (lazy-load) ─────────────────────────
+const TimelineSejarahParoki = defineAsyncComponent(
+  () => import('~/components/TimelineSejarahParoki.vue')
+)
+</script>
 
 <style scoped>
-.prose {
-  color: #374151;
-}
-
-.prose h2 {
-  color: #882f1d;
-}
+.prose { color: #374151; }
+.prose h2 { color: #882f1d; }
 
 @media print {
-  .timeline-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  button,
-  nav {
-    display: none !important;
-  }
+  .timeline-grid { grid-template-columns: 1fr !important; }
+  button, nav { display: none !important; }
 }
 </style>
+
+
