@@ -1,20 +1,10 @@
 /**
  * POST /api/admin/maintenance
- * Toggle status maintenance untuk satu atau semua halaman
+ * Toggle status maintenance untuk satu halaman
  * Body: { key: string, active: boolean }
  */
 import { requireAuth } from '../../../utils/auth'
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join, dirname } from 'path'
-import { readMaintenanceConfig, MANAGED_PAGES } from './index.get'
-
-const CONFIG_PATH = join(process.cwd(), 'server', 'data', 'maintenance.json')
-
-function saveMaintenanceConfig(config: Record<string, boolean>) {
-  const dir = dirname(CONFIG_PATH)
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
-  writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8')
-}
+import { MANAGED_PAGES, readMaintenanceConfig, saveMaintenanceConfig } from '../../utils/maintenance'
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)
