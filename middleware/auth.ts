@@ -79,6 +79,14 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 
     const requiredPermissions = matchedRoute ? routePermissions[matchedRoute] : []
 
+    // Hardcode restriction for maintenance route
+    if (cleanPath === '/admin/maintenance' || cleanPath.startsWith('/admin/maintenance/')) {
+      if (auth.user.value?.role_name !== 'super_admin') {
+        console.log(`[AUTH DENY] ❌ ${cleanPath} → redirecting to dashboard (not super_admin)`)
+        return navigateTo('/admin/dashboard')
+      }
+    }
+
     const hasAccess =
       requiredPermissions.length === 0 ||
       requiredPermissions.some((perm: string) => userPermissions.includes(perm))

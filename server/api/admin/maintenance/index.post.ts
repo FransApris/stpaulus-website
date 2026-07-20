@@ -7,7 +7,10 @@ import { requireAuth } from '../../../utils/auth'
 import { MANAGED_PAGES, readMaintenanceConfig, saveMaintenanceConfig } from '~/server/utils/maintenance'
 
 export default defineEventHandler(async (event) => {
-  requireAuth(event)
+  const user = requireAuth(event)
+  if (user.role !== 'super_admin') {
+    throw createError({ statusCode: 403, statusMessage: 'Forbidden: Only super admin can access maintenance settings' })
+  }
 
   const body = await readBody(event)
   const { key, active } = body

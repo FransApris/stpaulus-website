@@ -491,7 +491,7 @@
                   Pengaturan Footer
                 </NuxtLink>
                 <!-- Maintenance Halaman -->
-                <NuxtLink to="/admin/maintenance"
+                <NuxtLink v-if="user?.role_name === 'super_admin'" to="/admin/maintenance"
                   class="flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200"
                   :class="$route.path === '/admin/maintenance' ? 'bg-[#882f1d] text-white' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'">
                   <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
