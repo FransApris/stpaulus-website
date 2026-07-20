@@ -12,7 +12,7 @@
         <p class="text-white/80 text-sm">Data terkini Paroki kami</p>
       </div>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
         <!-- Stat 1: Jumlah Umat -->
         <div
           class="bg-white/95 backdrop-blur rounded-xl p-6 text-center transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl"
@@ -69,8 +69,8 @@
           <div class="text-xs text-gray-400 mt-1">Per bulan</div>
         </div>
 
-        <!-- Stat 4: Sakramen Tahun Ini -->
-        <div
+        <!-- Stat 4: Sakramen Tahun Ini (Disembunyikan sementara) -->
+        <div v-if="false"
           class="bg-white/95 backdrop-blur rounded-xl p-6 text-center transform hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl"
           :class="{ 'animate-fade-in-up': isVisible }" style="animation-delay: 0.3s">
           <div class="mb-3">
