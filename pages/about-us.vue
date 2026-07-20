@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Tentang Kami" />
+    <div v-else>
   <div class="min-h-screen pt-16 bg-gray-50">
     <section class="py-16 bg-white">
       <div class="container mx-auto px-4 max-w-4xl">
@@ -102,9 +105,12 @@
       </div>
     </section>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('about-us')
 // Page meta
 useHead({
   title: 'Tentang Kami - Paroki St. Paulus Juanda',

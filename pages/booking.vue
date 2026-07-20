@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Pemesanan Ruangan" />
+    <div v-else>
   <div class="min-h-screen pt-16 bg-gray-50"
     style="overflow-x: hidden !important; max-width: 100vw !important; box-sizing: border-box;">
     <section class="py-16 bg-white"
@@ -812,9 +815,12 @@
       </div>
     </section>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('booking')
 // Use composable to prevent horizontal scroll
 usePreventHorizontalScroll();
 

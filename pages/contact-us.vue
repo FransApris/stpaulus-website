@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Contact Us" />
+    <div v-else>
   <div class="min-h-screen pt-16 bg-gray-50">
     <section class="py-16 bg-white">
       <div class="container mx-auto px-4">
@@ -60,9 +63,12 @@
       </div>
     </section>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('contact-us')
 const form = ref({
   name: '',
   email: '',

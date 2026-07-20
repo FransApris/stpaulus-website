@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="DPP Paroki" />
+    <div v-else>
     <div class="min-h-screen bg-gray-50">
         <!-- Header -->
         <div class="bg-[#882f1d] text-white">
@@ -243,9 +246,12 @@
                 </div>
         </div>
     </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+const { isMaintenance } = useMaintenance('dpp-paroki')
 import { ref, computed, onMounted } from '#imports'
 
 // SEO

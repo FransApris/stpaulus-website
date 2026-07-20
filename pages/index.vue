@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Beranda / Home" />
+    <div v-else>
   <div class="min-h-screen pt-4 bg-gray-50">
     <!-- HeroSection (Dynamic based on active theme) - FULL WIDTH -->
     <HeroSection :show-hero="true" title="Selamat Datang di Paroki St. Paulus Juanda"
@@ -653,9 +656,12 @@
     <!-- Section 9: QR Persembahan - Sebelum Footer -->
     <QRPersembahan />
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('beranda')
 // DIAGNOSTIC: Temporarily disable SSR to test IPC crash
 definePageMeta({ ssr: false })
 

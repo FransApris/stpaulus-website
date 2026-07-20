@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Artikel Paroki" />
+    <div v-else>
   <div class="min-h-screen bg-gray-50">
     <!-- Pull to Refresh Indicator -->
     <div
@@ -183,9 +186,12 @@
       </div>
     </div>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('artikel')
 const currentPage = useState('public-articles-page', () => 1)
 const pageLimit = 10
 

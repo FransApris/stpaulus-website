@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Artikel Paroki" />
+    <div v-else>
   <div class="min-h-screen pt-16 bg-gray-50">
     <!-- Loading -->
     <div v-if="pending" class="container mx-auto px-4 py-20 text-center">
@@ -193,9 +196,12 @@
       </div>
     </Transition>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('artikel')
 const route = useRoute();
 const slug = route.params.id;
 

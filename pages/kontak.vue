@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Kontak & Sekretariat" />
+    <div v-else>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-[#882f1d] text-white">
@@ -88,9 +91,12 @@
         <BackButton position="bottom" />
       </div>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('kontak')
 const form = ref({
   name: '',
   email: '',

@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Kronik Gereja" />
+    <div v-else>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-[#882f1d] text-white">
@@ -106,9 +109,12 @@
         </div>
       </div>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('kronik-gereja')
 // Page meta
 definePageMeta({
   title: 'Kronik Gereja - St. Paulus'

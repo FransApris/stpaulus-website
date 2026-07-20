@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Layar TV / Signage" />
+    <div v-else>
   <div class="min-h-screen bg-gray-900 text-white flex flex-col font-sans p-6 select-none">
 
     <!-- ── Header ─────────────────────────────────────────────────────────── -->
@@ -134,9 +137,12 @@
       </div>
     </footer>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('layar-tv')
 import { ref, onMounted, onUnmounted } from 'vue'
 
 definePageMeta({

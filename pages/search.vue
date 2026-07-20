@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Pencarian / Search" />
+    <div v-else>
   <div class="min-h-screen pt-20 bg-gray-50">
     <div class="container mx-auto px-4 py-8">
       <!-- Breadcrumb -->
@@ -301,9 +304,12 @@
       </div>
     </div>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+const { isMaintenance } = useMaintenance('search')
 import { useSearch } from '~/composables/useSearch'
 
 // Get search query from URL

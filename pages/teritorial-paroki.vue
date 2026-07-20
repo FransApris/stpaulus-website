@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Teritorial Paroki" />
+    <div v-else>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-[#882f1d] text-white">
@@ -383,9 +386,12 @@
         <BackButton position="bottom" />
       </div>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('teritorial-paroki')
 import { ref, computed } from '#imports'
 
 // Page meta

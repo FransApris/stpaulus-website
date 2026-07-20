@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Jadwal Misa" />
+    <div v-else>
   <div class="flex min-h-screen bg-gray-50">
     <!-- Sidebar -->
     <div class="w-64 bg-white shadow-lg">
@@ -236,9 +239,12 @@
       </main>
     </div>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('jadwal-misa')
 const liturgyTypes = ref([])
 const schedules = ref([])
 const regularSchedules = ref([])

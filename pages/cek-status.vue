@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Cek Status Pesanan" />
+    <div v-else>
   <div class="min-h-screen bg-gray-50 py-8">
     <div class="max-w-md mx-auto px-4">
 
@@ -82,9 +85,12 @@
 
     </div>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
+const { isMaintenance } = useMaintenance('cek-status')
 definePageMeta({ layout: 'default' })
 
 useHead({

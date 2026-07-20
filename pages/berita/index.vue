@@ -1,4 +1,7 @@
 <template>
+  <div>
+    <PageMaintenance v-if="isMaintenance" title="Berita Paroki" />
+    <div v-else>
   <div class="min-h-screen bg-gray-50">
     <!-- Pull to Refresh Indicator -->
     <div
@@ -304,9 +307,12 @@
       </div>
     </div>
   </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+const { isMaintenance } = useMaintenance('berita')
 import { ref, computed, watch, onMounted } from "vue";
 
 // 1. Definisikan Cetak Biru (Interface) agar TypeScript mengenali properti data Anda
