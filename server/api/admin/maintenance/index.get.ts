@@ -3,7 +3,7 @@
  * Membaca status maintenance semua halaman
  */
 import { requireAuth } from '../../../utils/auth'
-import { MANAGED_PAGES, readMaintenanceConfig } from '../../../utils/maintenance'
+import { MANAGED_PAGES, readMaintenanceConfig } from '~/server/utils/maintenance'
 
 export default defineEventHandler(async (event) => {
   requireAuth(event)
