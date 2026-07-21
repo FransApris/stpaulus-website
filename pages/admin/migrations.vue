@@ -105,6 +105,14 @@ const migrations = ref<Migration[]>([
     result: null
   },
   {
+    key: '032_add_force_password_reset',
+    label: '032 - Tambah kolom requires_password_reset',
+    description: 'Menambahkan fitur paksaan reset password pada tabel users (Clean Slate).',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
     key: '040_add_news_organization_filters',
     label: '040 - Tambah filter organisasi untuk berita (Wilayah, Lingkungan, Seksi, BGKP)',
     description: 'Membuat tabel seksi, news_wilayah_relations, news_lingkungan_relations, news_seksi_relations, dan menambah kolom is_bgkp di tabel news. Diperlukan untuk fitur kategorisasi dan filtering berita berdasarkan organisasi paroki.',

@@ -30,6 +30,9 @@ const MIGRATIONS: Record<string, string[]> = {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
     `INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES ('maintenance_config', '{}')`
   ],
+  '032_add_force_password_reset': [
+    `ALTER TABLE users ADD COLUMN requires_password_reset TINYINT(1) DEFAULT 0`
+  ],
   '030_add_kronik_sections_wilayah_lingkungan': [
     // Wilayah sections
     `INSERT IGNORE INTO kronik_sections (category_id, name, slug, description, order_index, is_active) SELECT id, 'Wilayah Petrus', 'wilayah-petrus', 'Kronik kegiatan Wilayah Petrus', 1, TRUE FROM kronik_categories WHERE slug = 'wilayah'`,

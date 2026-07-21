@@ -34,10 +34,21 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Check if user has admin role (RBAC: check if user has role_id assigned)
-    const userDetails = await getQuery('SELECT role_id, role FROM users WHERE id = ?', [result.user.id]) as { role_id?: number; role?: string } | undefined
+    // Check if user has admin role and if they require password reset
+    const userDetails = await getQuery('SELECT role_id, role, requires_password_reset FROM users WHERE id = ?', [result.user.id]) as { role_id?: number; role?: string; requires_password_reset?: number } | undefined
 
     console.log('[Admin Login] User details:', userDetails)
+
+    // Check if password reset is forced (Clean Slate policy)
+    if (userDetails && userDetails.requires_password_reset === 1) {
+      console.log('[Admin Login] Access denied - Password reset required for:', username)
+      logger.logUnauthorizedAccess('/api/admin/login', ip, result.user.id)
+      logger.security('User attempted login but requires password reset', { username, ip, userId: result.user.id })
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Demi keamanan paska-insiden, akun Anda diwajibkan untuk melakukan reset password. Silakan hubungi Super Admin Sekretariat.'
+      })
+    }
 
     // Admin must have role_id (assigned to roles table)
     // Users with only 'user' role (role_id = NULL or 0) cannot access admin panel
