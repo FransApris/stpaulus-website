@@ -97,6 +97,14 @@ const migrations = ref<Migration[]>([
     result: null
   },
   {
+    key: '031_create_app_settings',
+    label: '031 - Buat tabel app_settings',
+    description: 'Membuat tabel app_settings untuk menyimpan konfigurasi aplikasi yang persisten (termasuk status maintenance).',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
     key: '040_add_news_organization_filters',
     label: '040 - Tambah filter organisasi untuk berita (Wilayah, Lingkungan, Seksi, BGKP)',
     description: 'Membuat tabel seksi, news_wilayah_relations, news_lingkungan_relations, news_seksi_relations, dan menambah kolom is_bgkp di tabel news. Diperlukan untuk fitur kategorisasi dan filtering berita berdasarkan organisasi paroki.',

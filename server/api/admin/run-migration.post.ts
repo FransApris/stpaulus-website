@@ -19,6 +19,17 @@ const MIGRATIONS: Record<string, string[]> = {
   '009_add_liturgy_types_permission_to_sekretariat': [
     `INSERT IGNORE INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r JOIN permissions p ON p.name = 'manage_liturgy_types' WHERE r.name = 'admin_sekretariat'`
   ],
+  '031_create_app_settings': [
+    `CREATE TABLE IF NOT EXISTS app_settings (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      setting_key VARCHAR(100) UNIQUE NOT NULL,
+      setting_value JSON,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_setting_key (setting_key)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+    `INSERT IGNORE INTO app_settings (setting_key, setting_value) VALUES ('maintenance_config', '{}')`
+  ],
   '030_add_kronik_sections_wilayah_lingkungan': [
     // Wilayah sections
     `INSERT IGNORE INTO kronik_sections (category_id, name, slug, description, order_index, is_active) SELECT id, 'Wilayah Petrus', 'wilayah-petrus', 'Kronik kegiatan Wilayah Petrus', 1, TRUE FROM kronik_categories WHERE slug = 'wilayah'`,
