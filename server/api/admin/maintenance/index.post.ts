@@ -2,14 +2,26 @@
  * POST /api/admin/maintenance
  * Toggle status maintenance untuk satu halaman
  * Body: { key: string, active: boolean }
+ * 
+ * SECURITY NOTES (Audit):
+ * 1. CSRF Protection: Aplikasi ini menggunakan pola Token-Based Auth (Bearer JWT) 
+ *    di mana token disimpan dalam sessionStorage, bukan Cookie otomatis.
+ *    Oleh karena itu, endpoint ini secara bawaan aman dari serangan CSRF.
+ * 2. BFLA (Broken Function Level Authorization): Role secara eksplisit dicek
+ *    di level fungsi ini. Hanya 'super_admin' yang diizinkan memutasi state.
  */
 import { requireAuth } from '../../../utils/auth'
 import { MANAGED_PAGES, readMaintenanceConfig, saveMaintenanceConfig } from '~/server/utils/maintenance'
 
 export default defineEventHandler(async (event) => {
+  // BFLA: Autentikasi dan Otorisasi secara eksplisit (Server-side)
   const user = requireAuth(event)
   if (user.role !== 'super_admin') {
-    throw createError({ statusCode: 403, statusMessage: 'Forbidden: Only super admin can access maintenance settings' })
+    throw createError({ 
+      statusCode: 403, 
+      statusMessage: 'Forbidden: Only super admin can access maintenance settings',
+      data: { error: 'forbidden', message: 'Akses ditolak.' }
+    })
   }
 
   const body = await readBody(event)
