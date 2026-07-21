@@ -14,44 +14,76 @@ import { requireAuth } from '../../../utils/auth'
 import { MANAGED_PAGES, readMaintenanceConfig, saveMaintenanceConfig } from '~/server/utils/maintenance'
 
 export default defineEventHandler(async (event) => {
-  // BFLA: Autentikasi dan Otorisasi secara eksplisit (Server-side)
-  const user = requireAuth(event)
-  if (user.role !== 'super_admin') {
-    throw createError({ 
-      statusCode: 403, 
-      statusMessage: 'Forbidden: Only super admin can access maintenance settings',
-      data: { error: 'forbidden', message: 'Akses ditolak.' }
-    })
-  }
+  try {
+    // BFLA: Autentikasi dan Otorisasi secara eksplisit (Server-side)
+    const user = requireAuth(event)
+    if (user.role !== 'super_admin') {
+      throw createError({ 
+        statusCode: 403, 
+        statusMessage: 'Forbidden: Only super admin can access maintenance settings',
+        data: { error: 'forbidden', message: 'Akses ditolak.' }
+      })
+    }
 
-  const body = await readBody(event)
-  const { key, active } = body
+    let body
+    try {
+      body = await readBody(event)
+    } catch (parseError) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Invalid JSON Payload',
+        data: { error: 'invalid_payload', message: 'Format payload tidak valid.' }
+      })
+    }
 
-  if (!key || typeof active !== 'boolean') {
+    const { key, active } = body
+
+    if (!key || typeof active !== 'boolean') {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'Parameter "key" dan "active" (boolean) wajib diisi'
+      })
+    }
+
+    const validKeys = MANAGED_PAGES.map(p => p.key)
+    if (!validKeys.includes(key)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: `Halaman "${key}" tidak dikenal`
+      })
+    }
+
+    const config = await readMaintenanceConfig()
+    config[key] = active
+    await saveMaintenanceConfig(config)
+
+    return {
+      success: true,
+      key,
+      active,
+      message: active
+        ? `Mode maintenance halaman "${key}" diaktifkan`
+        : `Mode maintenance halaman "${key}" dinonaktifkan`
+    }
+  } catch (error: any) {
+    // Log error di console server untuk keperluan debugging (Permission denied, DB error, dll)
+    console.error('[API Error] /api/admin/maintenance POST:', error)
+
+    // Jika error sudah merupakan instance dari H3Error (createError), lempar kembali
+    if (error.statusCode) {
+      throw error
+    }
+
+    // Jika terjadi error tidak terduga (misal: tabel DB belum di-migrate, gagal tulis file)
     throw createError({
-      statusCode: 400,
-      statusMessage: 'Parameter "key" dan "active" (boolean) wajib diisi'
+      statusCode: 500,
+      statusMessage: 'Internal Server Error',
+      data: {
+        error: 'internal_server_error',
+        message: 'Gagal memperbarui status maintenance. Pastikan migrasi database sudah dijalankan atau periksa log server untuk detailnya.',
+        // Hindari membocorkan stack trace ke publik di production
+        detail: process.env.NODE_ENV === 'development' ? error.message : undefined
+      }
     })
-  }
-
-  const validKeys = MANAGED_PAGES.map(p => p.key)
-  if (!validKeys.includes(key)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: `Halaman "${key}" tidak dikenal`
-    })
-  }
-
-  const config = await readMaintenanceConfig()
-  config[key] = active
-  await saveMaintenanceConfig(config)
-
-  return {
-    success: true,
-    key,
-    active,
-    message: active
-      ? `Mode maintenance halaman "${key}" diaktifkan`
-      : `Mode maintenance halaman "${key}" dinonaktifkan`
   }
 })
