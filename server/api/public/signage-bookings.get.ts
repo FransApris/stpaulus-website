@@ -1,6 +1,6 @@
 import { allQuery } from '~/server/database/db'
 
-export default defineEventHandler(async (event) => {
+export default defineCachedEventHandler(async (event) => {
   // Public Endpoint: No authentication required
   // Data Privacy: Only fetches event_name, room_name, and time. No user personal data.
 
@@ -68,4 +68,8 @@ export default defineEventHandler(async (event) => {
       message: 'Failed to fetch public signage data'
     })
   }
+}, {
+  maxAge: 30,
+  name: 'public-signage-bookings',
+  getKey: () => 'all'
 })
