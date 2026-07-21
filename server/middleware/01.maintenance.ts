@@ -8,7 +8,7 @@ import { readMaintenanceConfig, MANAGED_PAGES } from '~/server/utils/maintenance
 import { verifyToken } from '~/server/utils/auth'
 import { getHeader } from 'h3'
 
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   // Ambil path request tanpa trailing slash (gunakan fallback untuk mencegah TS error strict mode)
   const basePath = (event.path || '').split('?')[0] || ''
   const path = basePath.replace(/\/$/, '') || '/'
@@ -18,7 +18,8 @@ export default defineEventHandler((event) => {
     return
   }
 
-  const config = readMaintenanceConfig()
+  const config = await readMaintenanceConfig()
+
 
   // Periksa apakah path saat ini merupakan salah satu halaman yang dimanage
   const matchedPage = MANAGED_PAGES.find(p => p.path === path || (p.path !== '/' && path.startsWith(p.path + '/')))

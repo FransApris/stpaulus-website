@@ -42,9 +42,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const config = readMaintenanceConfig()
+  const config = await readMaintenanceConfig()
   config[key] = active
-  saveMaintenanceConfig(config)
+  await saveMaintenanceConfig(config)
 
   return {
     success: true,

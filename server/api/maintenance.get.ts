@@ -6,5 +6,5 @@
 import { readMaintenanceConfig } from '~/server/utils/maintenance'
 
 export default defineEventHandler(async (_event) => {
-  return readMaintenanceConfig()
+  return await readMaintenanceConfig()
 })

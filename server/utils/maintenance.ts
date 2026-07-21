@@ -2,8 +2,7 @@
  * server/utils/maintenance.ts
  * Shared utility untuk sistem maintenance — digunakan oleh API routes
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
-import { join, dirname } from 'path'
+// fs and path imports removed (using DB now)
 
 // Daftar semua halaman yang bisa dikelola maintenance-nya
 export const MANAGED_PAGES = [
@@ -45,19 +44,36 @@ export const MANAGED_PAGES = [
   { key: 'search',                label: 'Pencarian / Search',      path: '/search' },
 ]
 
-const CONFIG_PATH = join(process.cwd(), 'server', 'data', 'maintenance.json')
+import { getQuery, runQuery } from '../database/db'
 
-export function readMaintenanceConfig(): Record<string, boolean> {
-  if (!existsSync(CONFIG_PATH)) return {}
+export async function readMaintenanceConfig(): Promise<Record<string, boolean>> {
   try {
-    return JSON.parse(readFileSync(CONFIG_PATH, 'utf-8'))
-  } catch {
-    return {}
+    const result = await getQuery(
+      'SELECT setting_value FROM app_settings WHERE setting_key = ?',
+      ['maintenance_config']
+    )
+    if (result && result.setting_value) {
+      // Depending on mysql2 version, JSON columns might be returned as parsed objects or strings
+      return typeof result.setting_value === 'string' 
+        ? JSON.parse(result.setting_value) 
+        : result.setting_value
+    }
+  } catch (error) {
+    console.error('Error reading maintenance config from DB:', error)
   }
+  return {}
 }
 
-export function saveMaintenanceConfig(config: Record<string, boolean>) {
-  const dir = dirname(CONFIG_PATH)
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
-  writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2), 'utf-8')
+export async function saveMaintenanceConfig(config: Record<string, boolean>) {
+  try {
+    await runQuery(
+      `INSERT INTO app_settings (setting_key, setting_value) 
+       VALUES ('maintenance_config', ?) 
+       ON DUPLICATE KEY UPDATE setting_value = ?`,
+      [JSON.stringify(config), JSON.stringify(config)]
+    )
+  } catch (error) {
+    console.error('Error saving maintenance config to DB:', error)
+    throw new Error('Gagal menyimpan konfigurasi maintenance ke database')
+  }
 }

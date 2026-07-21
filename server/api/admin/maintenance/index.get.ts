@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'Forbidden: Only super admin can access maintenance settings' })
   }
 
-  const config = readMaintenanceConfig()
+  const config = await readMaintenanceConfig()
 
   const pages = MANAGED_PAGES.map(page => ({
     ...page,
