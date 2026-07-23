@@ -46,9 +46,13 @@ const dbConfig = {
   // Fail fast on connect timeout instead of hanging
   connectTimeout: 10000,
   // Return DATE/DATETIME/TIME columns as raw strings to avoid timezone shifting
-  // (e.g. DATE "2026-04-07" stays "2026-04-07", not "2026-04-06T17:00:00.000Z")
-  dateStrings: true
+  dateStrings: true,
+  // SSL/TLS Encryption Support for production database connections
+  ssl: (process.env.MYSQL_SSL === 'true' || (process.env.NODE_ENV === 'production' && process.env.MYSQL_SSL !== 'false'))
+    ? { rejectUnauthorized: process.env.MYSQL_SSL_REJECT_UNAUTHORIZED === 'true' }
+    : undefined
 }
+
 
 // Initialize database connection pool
 let pool: mysql.Pool | null = null

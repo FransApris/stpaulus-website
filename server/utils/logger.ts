@@ -3,6 +3,8 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
+import { sanitizeLogMeta } from './cryptoField'
+
 
 export enum LogLevel {
     INFO = 'INFO',
@@ -61,11 +63,12 @@ class SecurityLogger {
             timestamp: new Date().toISOString(),
             level,
             message,
-            meta,
+            meta: meta ? sanitizeLogMeta(meta) : undefined,
             pid: process.pid,
             environment: process.env.NODE_ENV || 'development'
         }
     }
+
 
     info(message: string, meta?: any) {
         const entry = this.createLogEntry(LogLevel.INFO, message, meta)
