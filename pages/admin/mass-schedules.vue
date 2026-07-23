@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <!-- Header -->
     <div class="mb-8">
@@ -687,18 +687,27 @@
               <label class="ml-2 block text-sm text-gray-900">Aktif</label>
             </div>
 
-            <div class="flex justify-end space-x-3 pt-4">
+            <div class="flex justify-end space-x-2 pt-4">
               <button
                 type="button"
                 @click="closeSpecialModal"
-                class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                class="px-3 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 text-sm"
               >
                 Batal
               </button>
               <button
+                v-if="!showEditSpecialModal"
+                type="button"
+                @click="saveSpecialScheduleAndAddAnother"
+                :disabled="saving"
+                class="px-3 py-2 bg-amber-700 text-white rounded-md hover:bg-amber-800 disabled:opacity-50 text-xs font-semibold"
+              >
+                Simpan & Tambah Jam Lain
+              </button>
+              <button
                 type="submit"
                 :disabled="saving"
-                class="px-4 py-2 bg-[#882f1d] text-white rounded-md hover:bg-[#6b2416] disabled:opacity-50"
+                class="px-4 py-2 bg-[#882f1d] text-white rounded-md hover:bg-[#6b2416] disabled:opacity-50 text-sm font-semibold"
               >
                 {{ saving ? "Menyimpan..." : "Simpan" }}
               </button>
@@ -707,6 +716,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- Add/Edit Devotion Modal -->
     <div
@@ -1125,7 +1135,33 @@ const deleteRegularSchedule = async (schedule) => {
 };
 
 // Special schedule functions
+const saveSpecialScheduleAndAddAnother = async () => {
+  const currentTitle = specialForm.value.title;
+  const currentDate = specialForm.value.date;
+  const currentLiturgy = specialForm.value.liturgy_type_id;
+  const currentLocation = specialForm.value.location;
+  const currentPriest = specialForm.value.priest_name;
+
+  await saveSpecialSchedule();
+
+  setTimeout(() => {
+    showAddSpecialModal.value = true;
+    specialForm.value = {
+      id: null,
+      title: currentTitle,
+      date: currentDate,
+      time: "",
+      liturgy_type_id: currentLiturgy,
+      location: currentLocation,
+      priest_name: currentPriest,
+      notes: "",
+      isActive: true,
+    };
+  }, 200);
+};
+
 const saveSpecialSchedule = async () => {
+
   // Optimistic update: Clone form data before closing modal
   const formData = { ...specialForm.value };
   const wasEditing = !!formData.id;

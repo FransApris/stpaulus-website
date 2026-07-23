@@ -187,8 +187,15 @@
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
               <div v-for="room in rooms" :key="room.id"
                 class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-gray-100 w-full max-w-full overflow-hidden">
-                <!-- Room Name -->
-                <h3 class="text-2xl font-bold text-gray-900 mb-6">{{ room.name }}</h3>
+                <!-- Room Name & Status Badge -->
+                <div class="flex items-start justify-between mb-4">
+                  <h3 class="text-2xl font-bold text-gray-900">{{ room.name }}</h3>
+                  <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex-shrink-0 ml-2">
+                    <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                    Siap Dipesan
+                  </span>
+                </div>
+
 
                 <!-- Room Info -->
                 <div class="space-y-3 mb-6">

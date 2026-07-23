@@ -196,9 +196,10 @@ const isOngoing = (booking) => {
 
 // ── Helpers: Status ────────────────────────────────────────────────────────
 const getStatusClasses = (status) => ({
-  'APPROVED': 'bg-green-900/40 text-green-400 border-green-500/50',
-  'PENDING':  'bg-yellow-900/40 text-yellow-400 border-yellow-500/50'
-}[status] || 'bg-gray-800 text-gray-400 border-gray-600')
+  'APPROVED': 'bg-green-600 text-white border-green-300 font-extrabold shadow-lg shadow-green-900/50',
+  'PENDING':  'bg-amber-600 text-white border-amber-300 font-extrabold shadow-lg shadow-amber-900/50'
+}[status] || 'bg-gray-700 text-white border-gray-500')
+
 
 const getStatusText = (status) =>
   ({ 'APPROVED': 'Disetujui', 'PENDING': 'Menunggu' }[status] || status)
