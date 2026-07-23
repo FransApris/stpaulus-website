@@ -687,19 +687,10 @@ useHead({
     {
       rel: 'canonical',
       href: 'https://stpaulusjuanda.org/'
-    },
-    {
-      rel: 'preconnect',
-      href: 'https://www.google.com',
-      crossorigin: 'anonymous'
-    },
-    {
-      rel: 'preconnect',
-      href: 'https://maps.googleapis.com',
-      crossorigin: 'anonymous'
     }
   ]
 })
+
 
 // Fetch latest album data from Google Shared Albums
 const { data: galleryData, pending, error } = await useAsyncData('homepage-gallery',
