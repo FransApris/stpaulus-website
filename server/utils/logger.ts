@@ -25,6 +25,7 @@ class SecurityLogger {
     private logDir: string
     private securityLogFile: string
     private errorLogFile: string
+    private accessLogFile: string
 
     constructor() {
         // Use relative path from project root
@@ -32,6 +33,7 @@ class SecurityLogger {
         this.logDir = path.join(projectRoot, 'logs').replace(/\\/g, '/')
         this.securityLogFile = path.join(this.logDir, 'security.log').replace(/\\/g, '/')
         this.errorLogFile = path.join(this.logDir, 'error.log').replace(/\\/g, '/')
+        this.accessLogFile = path.join(this.logDir, 'access.log').replace(/\\/g, '/')
 
         // Create logs directory if it doesn't exist
         if (!fs.existsSync(this.logDir)) {
@@ -67,11 +69,15 @@ class SecurityLogger {
 
     info(message: string, meta?: any) {
         const entry = this.createLogEntry(LogLevel.INFO, message, meta)
+        // Tulis ke access.log DAN console
+        this.writeToFile(this.accessLogFile, entry)
         console.log(`ℹ️ [${entry.level}] ${message}`, meta || '')
     }
 
     warn(message: string, meta?: any) {
         const entry = this.createLogEntry(LogLevel.WARN, message, meta)
+        // Tulis ke security.log DAN console (WARN = anomali potensial)
+        this.writeToFile(this.securityLogFile, entry)
         console.warn(`⚠️ [${entry.level}] ${message}`, meta || '')
     }
 
@@ -149,6 +155,27 @@ class SecurityLogger {
             userId,
             resource,
             action,
+            timestamp: new Date().toISOString()
+        })
+    }
+
+    // ── Rate Limiter Events ──────────────────────────────────────────────────
+
+    logBruteForce(ip: string, username: string, attempts: number, blockedUntil: string) {
+        this.critical('Brute force attack detected — IP blocked', {
+            event: 'BRUTE_FORCE_DETECTED',
+            ip,
+            username,
+            attempts,
+            blockedUntil,
+            timestamp: new Date().toISOString()
+        })
+    }
+
+    logBlockedAttempt(ip: string) {
+        this.security('Login attempt from blocked IP', {
+            event: 'BLOCKED_IP_ATTEMPT',
+            ip,
             timestamp: new Date().toISOString()
         })
     }
