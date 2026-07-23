@@ -29,8 +29,10 @@
     "db:backup:list": "node scripts/backup-database.mjs list",
     "db:info": "node scripts/test-db-connection.js",
     "google-photos:test": "node scripts/test-google-photos.mjs",
-    "google-photos:migrate": "powershell -ExecutionPolicy Bypass -File scripts/run-google-photos-migration-simple.ps1"
+    "google-photos:migrate": "powershell -ExecutionPolicy Bypass -File scripts/run-google-photos-migration-simple.ps1",
+    "security:audit": "npm audit --audit-level=high"
   },
+
   "dependencies": {
     "@ckeditor/ckeditor5-vue": "7.3.0",
     "@google/generative-ai": "^0.24.1",
