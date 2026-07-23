@@ -1,2 +1,10 @@
 User-Agent: *
-Disallow:
+Allow: /
+
+# Admin routes restriction for search engine crawlers
+Disallow: /admin/
+Disallow: /api/admin/
+Disallow: /api/private/
+
+# Sitemap location
+Sitemap: https://stpaulusjuanda.org/sitemap.xml

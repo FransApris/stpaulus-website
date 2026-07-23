@@ -102,8 +102,36 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: 'https://maps.google.com' },
         // Font Awesome for footer social icons
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css' }
+      ],
+      script: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CatholicChurch',
+            'name': 'Paroki St. Paulus Juanda',
+            'alternateName': 'Gereja Katolik St. Paulus Juanda Sidoarjo',
+            'url': 'https://stpaulusjuanda.org',
+            'logo': 'https://stpaulusjuanda.org/images/logo-paulus-juanda.png',
+            'image': 'https://stpaulusjuanda.org/images/logo-paulus-juanda.png',
+            'description': 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik',
+            'address': {
+              '@type': 'PostalAddress',
+              'streetAddress': 'Jl. Juanda',
+              'addressLocality': 'Sidoarjo',
+              'addressRegion': 'Jawa Timur',
+              'addressCountry': 'ID'
+            },
+            'geo': {
+              '@type': 'GeoCoordinates',
+              'latitude': '-7.3826',
+              'longitude': '112.7667'
+            }
+          })
+        }
       ]
     },
+
     // Keep previous page visible while the next page resolves auth/data.
     pageTransition: { name: 'page', mode: 'in-out' }
   },
