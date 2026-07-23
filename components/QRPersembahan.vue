@@ -28,7 +28,7 @@
             <!-- QR Code Display -->
             <div class="bg-white border-4 border-blue-100 rounded-xl p-3 mb-4 hover:border-blue-200 transition-colors">
               <div class="w-full aspect-square bg-white rounded flex items-center justify-center">
-                <img src="/images/qr/qr-pemeliharaan.png" alt="QR Code BCA 2588671122"
+                <img src="/images/qr/qr-pemeliharaan.webp" alt="QR Code BCA 2588671122"
                   class="w-full h-full object-contain" />
               </div>
             </div>
@@ -74,7 +74,8 @@
             <div
               class="bg-white border-4 border-yellow-100 rounded-xl p-3 mb-4 hover:border-yellow-200 transition-colors">
               <div class="w-full aspect-square bg-white rounded flex items-center justify-center">
-                <img src="/images/qr/qr-sosial.png" alt="QR Code BCA 2588561122" class="w-full h-full object-contain" />
+                <img src="/images/qr/qr-sosial.webp" alt="QR Code BCA 2588561122" class="w-full h-full object-contain" />
+
               </div>
             </div>
 

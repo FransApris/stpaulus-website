@@ -30,8 +30,9 @@
 const props = defineProps({
   logoSrc: {
     type: String,
-    default: '/images/logo-paulus-juanda.png'
+    default: '/images/logo-paulus-juanda.webp'
   },
+
   titleText: {
     type: String,
     default: 'PAROKI ST.PAULUS'
