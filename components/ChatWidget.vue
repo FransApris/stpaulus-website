@@ -2,8 +2,10 @@
   <div class="chat-widget fixed bottom-20 md:bottom-6 z-50" style="right: 5%">
     <!-- Chat Button -->
     <button @click="toggleChat"
+      aria-label="Buka Chatbot AI Paroki St. Paulus Juanda"
       class="bg-paulus-blue hover:bg-blue-700 text-white rounded-full w-16 h-16 md:w-20 md:h-20 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
       :class="{ 'rotate-45': isOpen }">
+
       <svg v-if="!isOpen" class="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
@@ -52,7 +54,9 @@
               class="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-paulus-blue"
               :disabled="isTyping" />
             <button type="submit" :disabled="!newMessage.trim() || isTyping"
+              aria-label="Kirim Pesan Chatbot"
               class="bg-paulus-blue hover:bg-blue-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
