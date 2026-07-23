@@ -15,15 +15,16 @@
     <!-- Footer: Always Bottom -->
     <Footer />
 
-    <!-- Mobile Bottom Navigation -->
+    <!-- Mobile Bottom Navigation (Lazy Loaded) -->
     <ClientOnly>
-      <MobileBottomNav />
+      <LazyMobileBottomNav />
     </ClientOnly>
 
-    <!-- Chat Widget -->
+    <!-- Chat Widget (Lazy Loaded) -->
     <ClientOnly>
-      <ChatWidget />
+      <LazyChatWidget />
     </ClientOnly>
+
   </div>
 </template>
 
