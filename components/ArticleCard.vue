@@ -99,15 +99,17 @@ const props = defineProps({
   },
 });
 
-const imageSrc = ref(props.image || "/images/default-article.jpg");
+const { optimizeImageUrl } = useOptimizedImage();
+const imageSrc = ref(optimizeImageUrl(props.image || "/images/default-article.jpg", 600));
 
 watch(
   () => props.image,
   (newImage) => {
-    imageSrc.value = newImage || "/images/default-article.jpg";
+    imageSrc.value = optimizeImageUrl(newImage || "/images/default-article.jpg", 600);
   },
   { immediate: true },
 );
+
 
 const handleImageError = () => {
   console.log(
