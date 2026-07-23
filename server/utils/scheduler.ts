@@ -20,6 +20,7 @@ import { fileURLToPath } from 'url'
 import mysql from 'mysql2/promise'
 import crypto from 'crypto'
 import { logger } from './logger'
+import { uploadFileToOffsiteS3 } from './offsiteStorage'
 
 // ─── Konfigurasi ──────────────────────────────────────────────────────────────
 
@@ -202,6 +203,11 @@ export async function runScheduledBackup(): Promise<{
       notes: 'Scheduled auto-backup',
       type: 'auto'
     })
+
+    // Upload ke S3-compatible offsite storage (3-2-1 rule Compliance)
+    const yearMonth = new Date().toISOString().slice(0, 7)
+    uploadFileToOffsiteS3(filepath, `backups/${yearMonth}/${filename}`).catch(() => {})
+    uploadFileToOffsiteS3(filepath + '.sha256', `backups/${yearMonth}/${filename}.sha256`).catch(() => {})
 
     logger.info('[Scheduler] Backup otomatis selesai', {
       event: 'SCHEDULED_BACKUP_SUCCESS',

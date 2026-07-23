@@ -109,6 +109,75 @@ function addToManifest(entry) {
 }
 
 /**
+ * Upload file ke S3-compatible offsite storage (SigV4).
+ */
+async function uploadOffsiteS3(localFilePath, targetKey) {
+  const accessKeyId = process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID
+  const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY
+  const bucket = process.env.S3_BUCKET || process.env.AWS_S3_BUCKET
+  const region = process.env.S3_REGION || process.env.AWS_REGION || 'us-east-1'
+  const endpoint = process.env.S3_ENDPOINT || `s3.${region}.amazonaws.com`
+
+  if (!accessKeyId || !secretAccessKey || !bucket) {
+    return false
+  }
+
+  try {
+    const fileBuffer = fs.readFileSync(localFilePath)
+    const payloadHash = crypto.createHash('sha256').update(fileBuffer).digest('hex')
+
+    const now = new Date()
+    const amzDate = now.toISOString().replace(/[:-]/g, '').slice(0, 15) + 'Z'
+    const dateStr = amzDate.slice(0, 8)
+
+    const cleanHost = endpoint.replace(/^https?:\/\//, '').replace(/\/$/, '')
+    const cleanKey = targetKey.replace(/^\//, '')
+    const requestPath = `/${bucket}/${cleanKey}`
+
+    const hostHeader = cleanHost
+    const canonicalHeaders = `host:${hostHeader}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`
+    const signedHeaders = 'host;x-amz-content-sha256;x-amz-date'
+
+    const canonicalRequest = ['PUT', requestPath, '', canonicalHeaders, signedHeaders, payloadHash].join('\n')
+
+    const credentialScope = `${dateStr}/${region}/s3/aws4_request`
+    const stringToSign = ['AWS4-HMAC-SHA256', amzDate, credentialScope, crypto.createHash('sha256').update(canonicalRequest).digest('hex')].join('\n')
+
+    const hmac = (key, data) => crypto.createHmac('sha256', key).update(data, 'utf8').digest()
+    const kDate = hmac('AWS4' + secretAccessKey, dateStr)
+    const kRegion = hmac(kDate, region)
+    const kService = hmac(kRegion, 's3')
+    const kSigning = hmac(kService, 'aws4_request')
+    const signature = crypto.createHmac('sha256', kSigning).update(stringToSign, 'utf8').digest('hex')
+
+    const authorizationHeader = `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`
+    const uploadUrl = `https://${cleanHost}${requestPath}`
+
+    const res = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Host': hostHeader,
+        'x-amz-date': amzDate,
+        'x-amz-content-sha256': payloadHash,
+        'Authorization': authorizationHeader,
+        'Content-Type': 'application/octet-stream'
+      },
+      body: fileBuffer
+    })
+
+    if (!res.ok) {
+      const text = await res.text()
+      throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`)
+    }
+    return true
+  } catch (err) {
+    console.error('      Offsite upload error:', err.message)
+    return false
+  }
+}
+
+
+/**
  * Update status integritas entry di manifest berdasarkan filename.
  * @param {string} filename - Nama file backup.
  * @param {string} status - Status baru (VERIFIED, REVERIFIED, HASH_MISMATCH, dll).
@@ -269,10 +338,24 @@ async function backupDatabase() {
     const totalBackups = readManifest().length
     console.log(`      manifest.json: ${totalBackups} backup(s) on record`)
 
+    // ─────────────────────────────────────────────
+    // [6/6] OFFSITE UPLOAD (3-2-1 Rule)
+    // ─────────────────────────────────────────────
+    console.log('\n[6/6] Checking offsite S3 configuration...')
+    const yearMonth = new Date().toISOString().slice(0, 7)
+    const s3Result = await uploadOffsiteS3(filepath, `backups/${yearMonth}/${filename}`)
+    if (s3Result) {
+      await uploadOffsiteS3(filepath + '.sha256', `backups/${yearMonth}/${filename}.sha256`)
+      console.log('      ✅ Offsite S3 upload completed successfully.')
+    } else {
+      console.log('      ℹ️ Offsite S3 storage not configured (skipping). Set S3_BUCKET & S3_ACCESS_KEY_ID in .env to enable.')
+    }
+
     // Summary
     console.log('\n==================================================')
     console.log(' BACKUP SELESAI & TERVERIFIKASI')
     console.log('==================================================')
+
     console.log(` File    : ${filename}`)
     console.log(` Hash    : ${filename}.sha256`)
     console.log(` Ukuran  : ${sizeMB} MB`)
