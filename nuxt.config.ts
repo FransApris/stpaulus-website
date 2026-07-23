@@ -63,7 +63,11 @@ export default defineNuxtConfig({
   // Performance optimization for Google Maps
   app: {
     head: {
+      htmlAttrs: {
+        lang: 'id'
+      },
       title: 'Paroki St. Paulus - Juanda, Sidoarjo',
+
       titleTemplate: '%s - Paroki St. Paulus Juanda',
       meta: [
         { charset: 'utf-8' },
