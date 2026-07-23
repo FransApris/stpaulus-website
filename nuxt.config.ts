@@ -108,11 +108,12 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
         // Preload Hero Image for instant mobile & desktop LCP
         { rel: 'preload', as: 'image', href: '/images/gereja-stpaulus-hero.jpg', fetchpriority: 'high' },
-        // Non-blocking Google Fonts (Cinzel, Lora, Barlow Condensed) for 0ms render-blocking
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&family=Barlow+Condensed:wght@400;600;700&display=swap', media: 'print', onload: "this.media='all'" },
-        // Non-blocking Font Awesome stylesheet for social icons
-        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', media: 'print', onload: "this.media='all'" }
+        // Google Fonts (Cinzel, Lora, Barlow Condensed)
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&family=Barlow+Condensed:wght@100;200;300;400;500;600;700&display=swap' },
+        // Font Awesome stylesheet for social icons
+        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css' }
       ],
+
 
 
 

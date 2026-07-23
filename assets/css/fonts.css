@@ -1,6 +1,11 @@
-/* assets/css/fonts.css - Global fonts untuk gereja (Cinzel title, Lora body) */
+/* Import Cinzel untuk title (bold serif klasik) */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap");
 
-/* Fonts imported asynchronously in nuxt.config.ts for 0ms render-blocking performance */
+/* Import Lora untuk subtitle/body (serif readable) */
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500&display=swap");
+
+/* Import Barlow Condensed untuk navbar (modern, condensed, clean) */
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@100;200;300;400;500;600;700&display=swap");
 
 
 /* Optional: Custom variables untuk paulus-blue */
