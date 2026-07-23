@@ -80,9 +80,25 @@ export default defineNitroPlugin(async () => {
       WHERE r.name = 'admin_sekretariat'
         AND (p.name LIKE 'kronik.wilayah.%' OR p.name LIKE 'kronik.lingkungan.%')
     `)
-    console.log('✅ Permission migrations applied (manage_liturgy_types + kronik.bgkp.* + kronik.wilayah.* + kronik.lingkungan.* -> admin_sekretariat)')
+    // 7. Migrasi 2FA (TOTP) untuk tabel users
+    const checkTotpColumn = await runQuery(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'totp_secret'
+    `) as any
+    if (!checkTotpColumn || checkTotpColumn.length === 0) {
+      await runQuery(`
+        ALTER TABLE users
+        ADD COLUMN totp_secret VARCHAR(255) NULL,
+        ADD COLUMN totp_enabled TINYINT(1) NOT NULL DEFAULT 0,
+        ADD COLUMN totp_backup_codes TEXT NULL
+      `)
+      console.log('✅ Migration 033: Added TOTP 2FA columns to users table')
+    }
+
+    console.log('✅ Database migrations checked & applied successfully')
   } catch (e: any) {
     // Non-critical: lanjutkan meskipun gagal (tabel mungkin belum ada)
     console.warn('Permission migration skipped:', e.message)
   }
 })
+

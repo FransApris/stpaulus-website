@@ -1,7 +1,8 @@
 import { authenticateUser } from '../../utils/auth'
-import { getQuery } from '../../database/db'
+import { getQuery, runQuery } from '../../database/db'
 import { logger } from '../../utils/logger'
 import { isBlocked, recordFailedAttempt, resetAttempts } from '../../utils/rateLimiter'
+import { verifyTotpToken, checkBackupCode } from '../../utils/totp'
 import { getRequestHeader } from 'h3'
 
 export default defineEventHandler(async (event) => {
@@ -27,7 +28,8 @@ export default defineEventHandler(async (event) => {
   try {
     const body = await readBody(event)
 
-    const { username, password } = body
+    const { username, password, totp_code, backup_code } = body
+
 
     if (!username || !password) {
       logger.security('Admin login attempt with missing credentials', { ip })
@@ -67,8 +69,18 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Check if user has admin role and if they require password reset
-    const userDetails = await getQuery('SELECT role_id, role, requires_password_reset FROM users WHERE id = ?', [result.user.id]) as { role_id?: number; role?: string; requires_password_reset?: number } | undefined
+    // Check if user has admin role, password reset flag, and 2FA status
+    const userDetails = await getQuery(
+      'SELECT role_id, role, requires_password_reset, totp_enabled, totp_secret, totp_backup_codes FROM users WHERE id = ?',
+      [result.user.id]
+    ) as {
+      role_id?: number
+      role?: string
+      requires_password_reset?: number
+      totp_enabled?: number
+      totp_secret?: string
+      totp_backup_codes?: string
+    } | undefined
 
     console.log('[Admin Login] User details:', userDetails)
 
@@ -94,6 +106,65 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Akses ditolak. Anda tidak memiliki akses ke panel admin. Silakan gunakan halaman pemesanan ruangan.'
       })
     }
+
+    // ── [2FA / MFA ENFORCEMENT] ───────────────────────────────────────────────
+    if (userDetails.totp_enabled === 1 && userDetails.totp_secret) {
+      if (!totp_code && !backup_code) {
+        // Minta kode 2FA dari frontend (jangan berikan JWT token dulu)
+        return {
+          requires2FA: true,
+          username: result.user.username,
+          message: 'Akun Anda dilindungi 2FA. Silakan masukkan kode 6-digit dari aplikasi authenticator Anda.'
+        }
+      }
+
+      let is2FAValid = false
+
+      if (totp_code) {
+        is2FAValid = verifyTotpToken(userDetails.totp_secret, String(totp_code).trim())
+      } else if (backup_code) {
+        let storedHashedCodes: string[] = []
+        try {
+          storedHashedCodes = userDetails.totp_backup_codes ? JSON.parse(userDetails.totp_backup_codes) : []
+        } catch { /* ignore */ }
+
+        const matchedIndex = checkBackupCode(String(backup_code).trim(), storedHashedCodes)
+        if (matchedIndex !== -1) {
+          is2FAValid = true
+          // Hapus backup code yang sudah terpakai agar tidak bisa digunakan ulang
+          storedHashedCodes.splice(matchedIndex, 1)
+          await runQuery('UPDATE users SET totp_backup_codes = ? WHERE id = ?', [JSON.stringify(storedHashedCodes), result.user.id])
+          logger.security('User logged in using a 2FA backup recovery code', {
+            event: '2FA_BACKUP_CODE_USED',
+            userId: result.user.id,
+            username: result.user.username,
+            remainingBackupCodes: storedHashedCodes.length
+          })
+        }
+      }
+
+      if (!is2FAValid) {
+        recordFailedAttempt(ip, username)
+        logger.security('Invalid 2FA code presented during admin login', {
+          event: '2FA_VERIFICATION_FAILED',
+          userId: result.user.id,
+          username: result.user.username,
+          ip
+        })
+        throw createError({
+          statusCode: 401,
+          statusMessage: 'Kode 2FA atau Backup Code salah. Pastikan jam perangkat Anda akurat.'
+        })
+      }
+
+      logger.security('2FA verification successful during admin login', {
+        event: '2FA_VERIFICATION_SUCCESS',
+        userId: result.user.id,
+        username: result.user.username
+      })
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
 
     console.log('[Admin Login] Login successful for admin:', username)
     logger.logSuccessfulLogin(username, ip, result.user.id)
