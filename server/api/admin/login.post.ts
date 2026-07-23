@@ -1,9 +1,10 @@
-import { authenticateUser } from '../../utils/auth'
+import { authenticateUser, setAuthCookies } from '../../utils/auth'
 import { getQuery, runQuery } from '../../database/db'
 import { logger } from '../../utils/logger'
 import { isBlocked, recordFailedAttempt, resetAttempts } from '../../utils/rateLimiter'
 import { verifyTotpToken, checkBackupCode } from '../../utils/totp'
 import { getRequestHeader } from 'h3'
+
 
 export default defineEventHandler(async (event) => {
   const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0].trim()
@@ -167,13 +168,13 @@ export default defineEventHandler(async (event) => {
 
 
     console.log('[Admin Login] Login successful for admin:', username)
-    logger.logSuccessfulLogin(username, ip, result.user.id)
-
-    // ── [RATE LIMITER] Reset counter setelah login berhasil ───────────────
+    // ── [RATE LIMITER & COOKIE] Reset counter & Set HttpOnly Cookies ─────
     resetAttempts(ip)
+    setAuthCookies(event, result.accessToken, result.refreshToken)
     // ─────────────────────────────────────────────────────────────────────
 
     return result
+
   } catch (error: any) {
     console.error('[Admin Login] Error:', error)
     throw error

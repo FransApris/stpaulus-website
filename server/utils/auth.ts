@@ -1,7 +1,8 @@
 import * as bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { getHeader, getRouterParam } from 'h3'
+import { getHeader, getCookie, setCookie, deleteCookie, getRouterParam, type H3Event } from 'h3'
 import db, { getQuery, allQuery } from '../database/db'
+
 
 // JWT_SECRET will be retrieved at runtime inside functions
 
@@ -91,26 +92,86 @@ export const verifyToken = (token: string): any => {
 
 // Authentication middleware for API routes
 export const requireAuth = (event: any) => {
+  let token: string | undefined
+
+  // 1. Cek Authorization Header terlebih dahulu (Bearer <token>)
   const authHeader = getHeader(event, 'authorization')
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.substring(7)
+  }
+
+  // 2. Fallback ke Secure HttpOnly Cookie
+  if (!token) {
+    token = getCookie(event, 'auth_token') || getCookie(event, 'accessToken')
+  }
+
+  if (!token) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Unauthorized'
+      statusMessage: 'Unauthorized — Token autentikasi tidak ditemukan'
     })
   }
 
-  const token = authHeader.substring(7)
   const decoded = verifyToken(token)
 
   if (!decoded) {
     throw createError({
       statusCode: 401,
-      statusMessage: 'Invalid token'
+      statusMessage: 'Invalid token — Token tidak valid atau telah kadaluarsa'
     })
   }
 
   return decoded
 }
+
+// ─── Secure HttpOnly Cookie Helpers ──────────────────────────────────────────
+
+/**
+ * Menyetel HttpOnly, Secure, SameSite=Lax cookie untuk token autentikasi.
+ * Mencegah token diekstrak melalui JavaScript (perlindungan XSS).
+ */
+export const setAuthCookies = (event: any, accessToken: string, refreshToken?: string) => {
+  const isProduction = process.env.NODE_ENV === 'production'
+
+  // Access Token Cookie (8 jam)
+  setCookie(event, 'auth_token', accessToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 8, // 8 jam
+    path: '/'
+  })
+
+  // Alias cookie nama 'accessToken' untuk kompatibilitas
+  setCookie(event, 'accessToken', accessToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 8,
+    path: '/'
+  })
+
+  // Refresh Token Cookie (7 hari)
+  if (refreshToken) {
+    setCookie(event, 'refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7, // 7 hari
+      path: '/'
+    })
+  }
+}
+
+/**
+ * Membersihkan semua cookie autentikasi saat logout.
+ */
+export const clearAuthCookies = (event: any) => {
+  deleteCookie(event, 'auth_token', { path: '/' })
+  deleteCookie(event, 'accessToken', { path: '/' })
+  deleteCookie(event, 'refreshToken', { path: '/' })
+}
+
 
 // User authentication functions
 export const authenticateUser = async (username: string, password: string): Promise<AuthResult | null> => {
