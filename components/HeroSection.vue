@@ -38,10 +38,14 @@ const props = defineProps({
   className: { type: String, default: '' }
 })
 
-// Computed Image (Safe - No Logs/Checks Complex)
+const { optimizeImageUrl } = useOptimizedImage()
+
+// Computed Image with Cloudinary WebP optimization
 const resolvedHeroImage = computed(() => {
-  return props.heroImage || 'https://via.placeholder.com/1920x1080/4B5563/FFFFFF?text=Hero+Gereja+St.+Paulus'
+  const img = props.heroImage || '/images/gereja-stpaulus-hero.jpg'
+  return optimizeImageUrl(img, 1200)
 })
+
 
 // No onMounted/Events - Pure Statics
 </script>
