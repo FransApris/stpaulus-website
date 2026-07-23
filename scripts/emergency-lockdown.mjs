@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
@@ -8,20 +9,38 @@ import dotenv from 'dotenv';
 // Muat variabel environment
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const manifestPath = join(__dirname, '..', 'backups', 'manifest.json');
+
 console.log('==================================================');
 console.log('⚠️  EMERGENCY LOCKDOWN INITIATED ⚠️');
 console.log('==================================================');
 
 async function runLockdown() {
-  // 1. DATABASE BACKUP (Forensic Evidence)
-  console.log('\n[1/3] Memulai snapshot database darurat...');
+  // 1. DATABASE BACKUP (Forensic Evidence) + Integrity Hash
+  console.log('\n[1/3] Memulai snapshot database darurat + integrity hash...');
   try {
-    // Memanggil skrip backup yang sudah ada
-    console.log('Menjalankan utilitas backup-database...');
+    // backup-database.mjs v2: otomatis generate .sha256 dan update manifest
     execSync('node scripts/backup-database.mjs', { stdio: 'inherit' });
-    console.log('✅ Snapshot database berhasil diambil.');
+    console.log('✅ Snapshot database berhasil diambil dan di-hash.');
+
+    // Baca manifest untuk konfirmasi hash tercatat
+    if (existsSync(manifestPath)) {
+      const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+      const latest = manifest[0]; // Entry terbaru selalu di index 0
+      if (latest) {
+        console.log('\n   FORENSIC RECORD (simpan untuk laporan RCA):');
+        console.log(`   File    : ${latest.filename}`);
+        console.log(`   SHA-256 : ${latest.hash}`);
+        console.log(`   Dibuat  : ${latest.createdAt}`);
+        console.log(`   Status  : ${latest.integrityStatus}`);
+        console.log('   Hash file: ' + latest.hashFile);
+      }
+    }
   } catch (err) {
     console.error('❌ Gagal membuat snapshot database. Melanjutkan prosedur...', err.message);
+    console.error('   PENTING: Lakukan backup manual segera untuk forensik!');
   }
 
   // 2. ENABLE GLOBAL MAINTENANCE MODE (Containment)
