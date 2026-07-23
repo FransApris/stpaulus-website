@@ -98,16 +98,64 @@ class SecurityLogger {
         this.writeToFile(this.securityLogFile, entry)
         this.writeToFile(this.errorLogFile, entry)
         console.error(`🚨 [${entry.level}] ${message}`, meta || '')
-
-        // TODO: Add alert mechanism (email, Slack, etc.)
         this.sendAlert(entry)
     }
 
+    private alertCooldowns = new Map<string, number>()
+
+
     private sendAlert(entry: LogEntry) {
-        // TODO: Implement email/Slack/SMS notification for critical events
-        // For now, just log to console
-        console.error('🚨 CRITICAL ALERT:', entry)
+        console.error('🚨 CRITICAL ALERT DETECTED:', entry)
+
+        const cooldownKey = `${entry.message}:${JSON.stringify(entry.meta?.event || '')}`
+        const now = Date.now()
+        const lastAlertTime = this.alertCooldowns.get(cooldownKey) || 0
+
+        // Throttling: Maksimal 1 alert per 5 menit untuk jenis kejadian yang sama
+        if (now - lastAlertTime < 5 * 60 * 1000) {
+            console.warn(`[Alert] Skipping email alert due to 5-min cooldown for key: ${cooldownKey}`)
+            return
+        }
+
+        this.alertCooldowns.set(cooldownKey, now)
+
+        // 1. Dispatch Email Alert (Async, non-blocking)
+        import('./email')
+            .then(({ sendSecurityAlertEmail }) => {
+                sendSecurityAlertEmail({
+                    level: entry.level,
+                    message: entry.message,
+                    meta: entry.meta,
+                    timestamp: entry.timestamp
+                }).catch(err => console.error('[Alert] Email dispatch failed:', err))
+            })
+            .catch(err => console.error('[Alert] Could not load email module:', err))
+
+        // 2. Dispatch Webhook Alert (Optional: Discord/Slack/Custom HTTP Webhook)
+        this.sendWebhookAlert(entry).catch(err => console.error('[Alert] Webhook dispatch failed:', err))
     }
+
+    private async sendWebhookAlert(entry: LogEntry) {
+        const webhookUrl = process.env.SECURITY_ALERT_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL
+        if (!webhookUrl) return
+
+        try {
+            const payload = {
+                content: `🚨 **[SECURITY ALERT] ${entry.level}**\n**Pesan:** ${entry.message}\n**Waktu:** ${entry.timestamp}\n\`\`\`json\n${JSON.stringify(entry.meta || {}, null, 2)}\n\`\`\``
+            }
+
+            if (typeof fetch !== 'undefined') {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+            }
+        } catch (err) {
+            console.error('[Alert] Webhook request error:', err)
+        }
+    }
+
 
     // Security-specific logging methods
     logFailedLogin(username: string, ip: string, reason: string) {

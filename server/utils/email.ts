@@ -162,13 +162,60 @@ export async function sendPasswordResetEmail(params: {
         </a>
       </div>
       <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 14px; margin: 20px 0;">
-        <p style="margin: 0; color: #713f12; font-size: 13px;">
-          ⏰ Link ini hanya berlaku selama <strong>1 jam</strong>.
-        </p>
-      </div>
-      <p style="color: #9ca3af; font-size: 13px;">
+        <p style="color: #9ca3af; font-size: 13px;">
         Jika Anda tidak meminta reset password, abaikan email ini. Akun Anda tetap aman.
       </p>
     `)
   })
 }
+
+/**
+ * Send real-time security alert email to admins when a CRITICAL security event occurs.
+ */
+export async function sendSecurityAlertEmail(params: {
+  level: string
+  message: string
+  meta?: any
+  timestamp: string
+}): Promise<boolean> {
+  const alertRecipient = process.env.SECURITY_ALERT_EMAIL || process.env.ADMIN_EMAIL || process.env.RESEND_FROM
+  if (!alertRecipient) {
+    console.warn('[Email] SECURITY_ALERT_EMAIL not configured — skipping security alert email')
+    return false
+  }
+
+  const metaJson = params.meta ? JSON.stringify(params.meta, null, 2) : 'Tidak ada metadata'
+  const metaHtml = `<pre style="background: #1e293b; color: #38bdf8; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap;">${metaJson}</pre>`
+
+  return sendMail({
+    to: alertRecipient,
+    subject: `🚨 [SECURITY ALERT] ${params.level}: ${params.message}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; background: #f8fafc; padding: 24px;">
+        <div style="background: #dc2626; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 20px;">🚨 CRITICAL SECURITY ALERT</h1>
+          <p style="color: #fca5a5; margin: 4px 0 0 0; font-size: 13px;">Paroki St. Paulus Juanda — Security Monitoring System</p>
+        </div>
+        <div style="background: white; padding: 28px; border-radius: 0 0 8px 8px; border: 1px solid #e2e8f0; border-top: none;">
+          <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 20px;">
+            <strong style="color: #991b1b; font-size: 16px;">${params.message}</strong>
+            <p style="margin: 6px 0 0 0; color: #7f1d1d; font-size: 13px;">Waktu Kejadian: ${params.timestamp}</p>
+          </div>
+          
+          <h3 style="color: #334155; margin-top: 20px; font-size: 14px;">Detail Metadata Insiden:</h3>
+          ${metaHtml}
+
+          <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+            <p style="margin: 0; color: #64748b; font-size: 12px;">
+              💡 <strong>Tindakan yang Direkomendasikan:</strong><br/>
+              1. Cek status rate limiter: <code>/api/admin/security/rate-limiter</code><br/>
+              2. Cek status backup: <code>/api/admin/security/scheduler</code><br/>
+              3. Eksekusi lockdown jika ada serangan aktif: <code>npm run lockdown</code>
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  })
+}
+
