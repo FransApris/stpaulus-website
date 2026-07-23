@@ -14,9 +14,10 @@
         <h1 class="mb-4 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-cinzel drop-shadow-lg">
           {{ title }}
         </h1>
-        <h3 class="mb-8 text-lg md:text-xl lg:text-2xl leading-relaxed max-w-3xl font-lora drop-shadow-md">
+        <p class="mb-8 text-lg md:text-xl lg:text-2xl leading-relaxed max-w-3xl font-lora drop-shadow-md">
           {{ subtitle }}
-        </h3>
+        </p>
+
         <NuxtLink v-if="ctaTo" :to="ctaTo"
           class="inline-block rounded-full border-2 border-white px-8 py-3 text-base font-medium uppercase leading-normal text-white transition-all duration-300 ease-in-out hover:border-paulus-blue hover:text-paulus-blue hover:bg-white/20 focus:border-paulus-blue focus:text-paulus-blue focus:outline-none focus:ring-2 focus:ring-paulus-blue ring-0 active:border-paulus-blue active:text-paulus-blue shadow-lg hover:shadow-xl drop-shadow-md">
           {{ ctaText }}

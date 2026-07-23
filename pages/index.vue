@@ -274,9 +274,10 @@
               <!-- Upload Date and Action Buttons Row -->
               <div class="flex items-center justify-between">
                 <!-- Upload Date -->
-                <div class="text-xs text-gray-400">
+                <div class="text-xs text-gray-600">
                   Diunggah: {{ formatDate(doc.created_at) }}
                 </div>
+
 
                 <!-- Action Buttons -->
                 <div class="flex space-x-1">
