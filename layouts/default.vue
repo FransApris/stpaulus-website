@@ -31,7 +31,41 @@
 // Route check (SSR-safe, auto-available)
 const route = useRoute()
 const isHomePage = computed(() => route.path === '/')
+
+// Schema.org Structured Data (JSON-LD) for Search Engine Rich Results
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'CatholicChurch',
+        'name': 'Paroki St. Paulus Juanda',
+        'alternateName': 'Gereja Katolik St. Paulus Juanda Sidoarjo',
+        'url': 'https://stpaulusjuanda.org',
+        'logo': 'https://stpaulusjuanda.org/images/logo-paulus-juanda.png',
+        'image': 'https://stpaulusjuanda.org/images/logo-paulus-juanda.png',
+        'description': 'Website resmi Paroki St. Paulus Juanda Sidoarjo - Informasi jadwal misa, berita gereja, kegiatan paroki, dan pelayanan umat Katolik',
+        'address': {
+          '@type': 'PostalAddress',
+          'streetAddress': 'Jl. Juanda No. 10',
+          'addressLocality': 'Sidoarjo',
+          'addressRegion': 'Jawa Timur',
+          'postalCode': '61253',
+          'addressCountry': 'ID'
+        },
+        'geo': {
+          '@type': 'GeoCoordinates',
+          'latitude': -7.3826,
+          'longitude': 112.7667
+        },
+        'telephone': '+62-31-8557854'
+      })
+    }
+  ]
+})
 </script>
+
 
 <style scoped>
 /* Minimal - No overrides */
