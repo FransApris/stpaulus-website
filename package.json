@@ -24,7 +24,9 @@
     "prepare:nuxt": "nuxt prepare",
     "db:test": "node scripts/test-db-connection.js",
     "db:migrate": "node scripts/run-migrations.js",
-    "db:backup": "node scripts/backup-database.js",
+    "db:backup": "node scripts/backup-database.mjs",
+    "db:backup:verify": "node scripts/backup-database.mjs verify",
+    "db:backup:list": "node scripts/backup-database.mjs list",
     "db:info": "node scripts/test-db-connection.js",
     "google-photos:test": "node scripts/test-google-photos.mjs",
     "google-photos:migrate": "powershell -ExecutionPolicy Bypass -File scripts/run-google-photos-migration-simple.ps1"
