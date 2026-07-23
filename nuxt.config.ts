@@ -98,17 +98,18 @@ export default defineNuxtConfig({
         // Favicon - Logo Paroki St. Paulus
         { rel: 'icon', type: 'image/png', href: '/images/logo-paulus-juanda.png' },
         { rel: 'apple-touch-icon', href: '/images/logo-paulus-juanda.png' },
-        // Preconnect to Google Maps for faster loading
-        { rel: 'preconnect', href: 'https://www.google.com' },
-        { rel: 'preconnect', href: 'https://maps.google.com' },
-        { rel: 'preconnect', href: 'https://maps.googleapis.com' },
-        { rel: 'dns-prefetch', href: 'https://www.google.com' },
-        { rel: 'dns-prefetch', href: 'https://maps.google.com' },
+        // Preconnect to CDNs for fast font & icon loading
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
+        { rel: 'preconnect', href: 'https://cdnjs.cloudflare.com', crossorigin: 'anonymous' },
+        { rel: 'dns-prefetch', href: 'https://fonts.gstatic.com' },
+        { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
         // Preload Hero Image for instant mobile & desktop LCP
         { rel: 'preload', as: 'image', href: '/images/gereja-stpaulus-hero.jpg', fetchpriority: 'high' },
-        // Font Awesome for footer social icons
-        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css' }
+        // Non-blocking Font Awesome stylesheet for social icons
+        { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css', media: 'print', onload: "this.media='all'" }
       ],
+
 
       script: [
         {

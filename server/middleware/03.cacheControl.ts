@@ -18,7 +18,7 @@ export default defineEventHandler((event) => {
     path.endsWith('.svg') ||
     path.endsWith('.ico')
   ) {
-    setHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
+    setResponseHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
   }
 
   // Cache static font files for 1 year
@@ -28,6 +28,7 @@ export default defineEventHandler((event) => {
     path.endsWith('.woff') ||
     path.endsWith('.ttf')
   ) {
-    setHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
+    setResponseHeader(event, 'Cache-Control', 'public, max-age=31536000, immutable')
   }
 })
+
