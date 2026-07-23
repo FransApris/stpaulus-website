@@ -38,8 +38,10 @@ export default defineNuxtConfig({
 
   // Disable dev-server-logs for SSR warnings (development only)
   experimental: {
-    devLogs: false
+    devLogs: false,
+    inlineSSRStyles: true
   },
+
 
   // Disable client-side rendering of SSR logs
   hooks: {
