@@ -100,13 +100,16 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://maps.googleapis.com' },
         { rel: 'dns-prefetch', href: 'https://www.google.com' },
         { rel: 'dns-prefetch', href: 'https://maps.google.com' },
+        // Preload Hero Image for instant mobile & desktop LCP
+        { rel: 'preload', as: 'image', href: '/images/gereja-stpaulus-hero.jpg', fetchpriority: 'high' },
         // Font Awesome for footer social icons
         { rel: 'stylesheet', href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css' }
       ],
+
       script: [
         {
           type: 'application/ld+json',
-          children: JSON.stringify({
+          innerHTML: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'CatholicChurch',
             'name': 'Paroki St. Paulus Juanda',
@@ -130,6 +133,7 @@ export default defineNuxtConfig({
           })
         }
       ]
+
     },
 
     // Keep previous page visible while the next page resolves auth/data.

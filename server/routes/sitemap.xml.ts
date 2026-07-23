@@ -84,8 +84,9 @@ export default defineEventHandler(async (event) => {
 ${xmlUrls}
 </urlset>`
 
-  setHeader(event, 'Content-Type', 'application/xml; charset=utf-8')
-  setHeader(event, 'Cache-Control', 'public, max-age=3600, s-maxage=14400')
+  setResponseHeader(event, 'Content-Type', 'application/xml; charset=utf-8')
+  setResponseHeader(event, 'Cache-Control', 'public, max-age=3600, s-maxage=14400')
 
-  return xmlContent
+  return send(event, xmlContent, 'application/xml')
 })
+

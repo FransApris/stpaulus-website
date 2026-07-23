@@ -1,12 +1,15 @@
 <template>
   <!-- No ClientOnly - Direct Render (SSR + Client Safe) -->
   <div v-if="props.showHero"
-    class="relative min-h-screen overflow-hidden bg-cover bg-center bg-no-repeat hero-container z-0" :class="className"
-    :style="{ backgroundImage: `url(${resolvedHeroImage})` }">
-    <!-- No Hidden Img - Use CSS Bg Only (No Events) -->
+    class="relative min-h-screen overflow-hidden hero-container z-0" :class="className">
+    <!-- Eager-loaded LCP Hero Image for Instant Parsing & Fast LCP -->
+    <img :src="resolvedHeroImage" alt="Hero Paroki St. Paulus Juanda"
+      fetchpriority="high" loading="eager" decoding="async"
+      class="absolute inset-0 w-full h-full object-cover object-center z-0" />
 
     <!-- Absolute Center Content -->
-    <div class="absolute inset-0 flex items-center justify-center z-10 bg-black/20">
+    <div class="absolute inset-0 flex items-center justify-center z-10 bg-black/40">
+
       <div class="px-6 text-center text-white md:px-12 w-full max-w-4xl mx-auto">
         <h1 class="mb-4 text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-cinzel drop-shadow-lg">
           {{ title }}
