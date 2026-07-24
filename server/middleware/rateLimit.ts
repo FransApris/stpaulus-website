@@ -1,5 +1,12 @@
 // 🔒 Rate Limiting Middleware for Login Endpoints
 // Prevents brute force attacks
+//
+// ⚠️  CATATAN ARSITEKTUR:
+// Middleware ini HANYA menjaga /api/auth/login (login publik/umat).
+// Endpoint /api/admin/login memiliki rate limiter INTERNAL sendiri
+// yang lebih canggih di server/utils/rateLimiter.ts (berbasis IP+username,
+// bisa manual block/unblock via admin panel).
+// Jangan tambahkan /api/admin/login di sini untuk menghindari konflik.
 
 import { defineEventHandler, getRequestHeader, createError } from 'h3'
 
@@ -31,8 +38,9 @@ setInterval(() => {
 export default defineEventHandler((event) => {
     const path = event.path
 
-    // Only apply rate limiting to login endpoints
-    if (path !== '/api/auth/login' && path !== '/api/admin/login') {
+    // Hanya terapkan rate limiting untuk login endpoint publik.
+    // /api/admin/login DIKECUALIKAN — sudah ditangani oleh rateLimiter.ts internal.
+    if (path !== '/api/auth/login') {
         return // Skip rate limiting for other routes
     }
 

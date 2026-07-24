@@ -16,16 +16,37 @@
 
 import { logger } from './logger'
 
-// ─── Konfigurasi ──────────────────────────────────────────────────────────────
+// ─── Konfigurasi ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Konfigurasi rate limiter dibedakan berdasarkan environment.
+ * - DEVELOPMENT: Threshold longgar agar developer tidak frustrasi saat testing.
+ * - PRODUCTION : Threshold ketat untuk mencegah serangan brute-force nyata.
+ */
+const IS_DEV = process.env.NODE_ENV === 'development'
 
 /** Jumlah maksimal kegagalan login sebelum IP diblokir */
-const MAX_ATTEMPTS = 5
+const MAX_ATTEMPTS = IS_DEV ? 50 : 5
 
-/** Window waktu pencatatan kegagalan (15 menit) */
-const WINDOW_MS = 15 * 60 * 1000
+/** Window waktu pencatatan kegagalan */
+const WINDOW_MS = IS_DEV
+  ? 5 * 60 * 1000   // DEV: 5 menit
+  : 15 * 60 * 1000  // PROD: 15 menit
 
-/** Durasi pemblokiran setelah melewati MAX_ATTEMPTS (30 menit) */
-const BLOCK_DURATION_MS = 30 * 60 * 1000
+/** Durasi pemblokiran setelah melewati MAX_ATTEMPTS */
+const BLOCK_DURATION_MS = IS_DEV
+  ? 2 * 60 * 1000   // DEV: 2 menit (cepat pulih)
+  : 30 * 60 * 1000  // PROD: 30 menit
+
+if (IS_DEV) {
+  console.info(
+    '[RateLimiter] 🛠️  MODE DEVELOPMENT — Threshold longgar aktif:\n' +
+    `  MAX_ATTEMPTS   : ${MAX_ATTEMPTS}x percobaan\n` +
+    `  WINDOW         : ${WINDOW_MS / 60000} menit\n` +
+    `  BLOCK_DURATION : ${BLOCK_DURATION_MS / 60000} menit\n` +
+    '  Untuk mengubah nilai ini, lihat server/utils/rateLimiter.ts'
+  )
+}
 
 /** Interval pembersihan entry kadaluarsa dari Map (setiap 10 menit) */
 const CLEANUP_INTERVAL_MS = 10 * 60 * 1000

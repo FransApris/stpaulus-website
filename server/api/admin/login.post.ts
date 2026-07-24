@@ -7,6 +7,20 @@ import { getRequestHeader } from 'h3'
 
 
 export default defineEventHandler(async (event) => {
+  // ── [PRE-CHECK] Validasi environment sebelum proses apapun ──────────────
+  const config = useRuntimeConfig()
+  if (!config.jwtSecret || config.jwtSecret.length < 32) {
+    logger.critical('[Admin Login] FATAL: JWT_SECRET tidak dikonfigurasi atau terlalu pendek (< 32 karakter). Periksa file .env server.', {
+      event: 'JWT_SECRET_MISSING',
+      action: 'Tambahkan JWT_SECRET ke .env dengan nilai minimal 32 karakter'
+    })
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Konfigurasi server tidak lengkap. Hubungi Tim IT Paroki.'
+    })
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0].trim()
     || getRequestHeader(event, 'x-real-ip')
     || 'unknown'
@@ -176,8 +190,27 @@ export default defineEventHandler(async (event) => {
     return result
 
   } catch (error: any) {
-    console.error('[Admin Login] Error:', error)
-    throw error
+    // Bedakan H3Error (error terstruktur: 400/401/403/429) dari error sistem mentah (500)
+    const isH3Error = error?.statusCode && error.statusCode < 500
+
+    if (isH3Error) {
+      // Error terstruktur — langsung lempar ulang tanpa noise di log
+      throw error
+    }
+
+    // Error sistem / tak terduga — log detail untuk debugging
+    logger.critical('[Admin Login] UNEXPECTED SERVER ERROR (HTTP 500)', {
+      event: 'LOGIN_500_ERROR',
+      errorMessage: error?.message || String(error),
+      errorName: error?.name,
+      stack: error?.stack?.split('\n').slice(0, 5).join(' | '), // 5 baris pertama stack
+      ip
+    })
+    console.error('[Admin Login] 500 Error Detail:', error)
+
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Terjadi kesalahan sistem pada server. Tim IT Paroki telah menerima notifikasi. Coba beberapa saat lagi.'
+    })
   }
 })
-
