@@ -90,7 +90,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from '#imports'
+import { ref, computed, onMounted } from '#imports'
 
 const isVisible = ref(true)
 const loading = ref(true)
@@ -98,148 +98,102 @@ const error = ref(false)
 const scheduleData = ref([])
 const specialSchedules = ref([])
 const devotions = ref([])
-const widgetRef = ref(null)
 
-const now = new Date()
-const dayOfWeek = now.getDay()
+// Nama hari — diisi setelah mount agar tidak SSR-mismatch
 const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+const todayDayIndex = ref(0)   // 0 = Minggu
+const todayDateStr = ref('')   // 'YYYY-MM-DD' dalam WIB
 
-const currentDay = computed(() => dayNames[dayOfWeek])
+// currentDay ditampilkan di header widget
+const currentDay = computed(() => dayNames[todayDayIndex.value])
 
-// Computed: jadwal misa untuk hari ini dari database (regular + special)
-const todaySchedule = computed(() => {
-  const currentDate = new Date()
-  const dayOfMonth = currentDate.getDate()
-  const today = dayNames[dayOfWeek]
-  const todayDateString = currentDate.toISOString().split('T')[0] // YYYY-MM-DD
-
-  // Cek apakah hari ini adalah minggu pertama (tanggal 1-7)
-  const isFirstWeek = dayOfMonth >= 1 && dayOfMonth <= 7
-
-  // Filter regular schedules
-  const regularToday = scheduleData.value
-    .filter(s => {
-      // Filter by day and active status
-      if (s.day_of_week !== today || !s.is_active) return false
-
-      // Special handling: Misa Jumat Pertama hanya di minggu pertama
-      if (s.mass_type && s.mass_type.includes('Jumat Pertama')) {
-        return isFirstWeek // Hanya tampil jika minggu pertama
-      }
-
-      return true
-    })
-    .map(s => ({
-      label: getTimeLabel(s.time),
-      time: formatTime(s.time),
-      type: s.mass_type || 'Misa',
-      source: 'regular'
-    }))
-
-  // Filter special schedules untuk hari ini
-  console.log('=== SPECIAL SCHEDULES DEBUG ===')
-  console.log('Today date string (todayDateString):', todayDateString)
-  console.log('All special schedules raw:', specialSchedules.value)
-
-  const specialToday = specialSchedules.value
-    .filter(s => {
-      console.log('Checking special schedule:', {
-        title: s.title,
-        date: s.date,
-        dateType: typeof s.date,
-        dateRaw: s.date,
-        status: s.status,
-        matches: s.date === todayDateString,
-        statusOK: s.status === 'active'
-      })
-
-      if (!s.date || s.status !== 'active') return false
-      // Handle both date string formats: 'YYYY-MM-DD' or 'YYYY-MM-DDTHH:mm:ss.sssZ'
-      const scheduleDate = typeof s.date === 'string' && s.date.includes('T')
-        ? s.date.split('T')[0]  // ISO format with time
-        : s.date                 // Plain YYYY-MM-DD format
-      return scheduleDate === todayDateString
-    })
-    .map(s => ({
-      label: s.title || getTimeLabel(s.time),
-      time: formatTime(s.time),
-      type: s.liturgy_type_name || 'Misa Khusus',
-      source: 'special',
-      isSpecial: true
-    }))
-
-  console.log('Filtered special schedules for today:', specialToday)
-  console.log('================================')
-
-  // Filter devotions untuk hari ini
-  console.log('All devotions:', devotions.value)
-  console.log('Today day name:', today)
-
-  const devotionsToday = devotions.value
-    .filter(d => {
-      console.log('Checking devotion:', {
-        title: d.title,
-        day: d.day_of_week,
-        is_active: d.is_active,
-        type_of_is_active: typeof d.is_active,
-        matches_day: d.day_of_week === today
-      })
-      // API already filters for is_active=1, so we don't need to check it again
-      // Just filter by day
-      return d.day_of_week === today
-    })
-    .map(d => ({
-      label: d.title,
-      time: formatTime(d.time),
-      type: d.type_name || 'Devosi',
-      source: 'devotion',
-      isDevotion: true
-    }))
-
-  console.log('Filtered devotions for today:', devotionsToday)
-
-  // Gabungkan dan sort by time
-  const combined = [...regularToday, ...specialToday, ...devotionsToday]
-    .sort((a, b) => a.time.localeCompare(b.time))
-
-  console.log('Widget - Regular schedules today:', regularToday.length)
-  console.log('Widget - Special schedules today:', specialToday.length)
-  console.log('Widget - Devotions today:', devotionsToday.length)
-  console.log('Widget - Combined schedules:', combined)
-
-  return combined
-})
-
-// Helper: Format time to HH:MM
+// Helper: Format time ke "HH:MM" dari berbagai format DB
 const formatTime = (timeString) => {
   if (!timeString) return ''
-
-  // Handle different time formats
-  // Could be: "9:00", "09:00", "9:00:00", "09:00:00"
-  const timeMatch = timeString.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/)
-  
-  if (!timeMatch) return timeString // Return original if format not recognized
-
-  const hours = timeMatch[1].padStart(2, '0')
-  const minutes = timeMatch[2]
-
-  return `${hours}:${minutes}`
+  const match = String(timeString).match(/(\d{1,2}):(\d{2})/)
+  if (!match) return String(timeString)
+  return `${match[1].padStart(2, '0')}:${match[2]}`
 }
 
-// Helper: Generate label dari waktu (Pagi/Siang/Sore)
+// Helper: Label Pagi/Siang/Sore/Malam — aman terhadap null
 const getTimeLabel = (time) => {
-  const hour = parseInt(time.split(':')[0])
+  if (!time) return 'Misa'
+  const hour = parseInt(String(time).split(':')[0])
+  if (isNaN(hour)) return 'Misa'
   if (hour < 12) return 'Pagi'
   if (hour < 15) return 'Siang'
   if (hour < 18) return 'Sore'
   return 'Malam'
 }
 
+// Computed jadwal misa hari ini — hanya dijalankan di client
+const todaySchedule = computed(() => {
+  // Pastikan data sudah diisi dan tanggal sudah diset (client-only)
+  if (!todayDateStr.value) return []
+
+  const today = dayNames[todayDayIndex.value]
+  const dayOfMonth = new Date(todayDateStr.value).getDate()
+  const isFirstWeek = dayOfMonth >= 1 && dayOfMonth <= 7
+
+  // Regular schedules hari ini
+  const regularToday = scheduleData.value
+    .filter(s => {
+      if (s.day_of_week !== today || !s.is_active) return false
+      if (s.mass_type && s.mass_type.includes('Jumat Pertama')) return isFirstWeek
+      return true
+    })
+    .map(s => ({
+      label: getTimeLabel(s.time),
+      time: formatTime(s.time),
+      rawTime: String(s.time || ''),   // untuk sorting akurat
+      type: s.mass_type || 'Misa',
+      source: 'regular',
+      isSpecial: false,
+      isDevotion: false
+    }))
+
+  // Special / liturgy schedules hari ini
+  const specialToday = specialSchedules.value
+    .filter(s => {
+      if (!s.date || s.status !== 'active') return false
+      // Normalize: bisa 'YYYY-MM-DD' atau ISO string
+      const scheduleDate = typeof s.date === 'string' && s.date.includes('T')
+        ? s.date.split('T')[0]
+        : String(s.date).slice(0, 10)
+      return scheduleDate === todayDateStr.value
+    })
+    .map(s => ({
+      label: s.title || getTimeLabel(s.time),
+      time: formatTime(s.time),
+      rawTime: String(s.time || ''),
+      type: s.liturgy_type_name || 'Misa Khusus',
+      source: 'special',
+      isSpecial: true,
+      isDevotion: false
+    }))
+
+  // Devotions hari ini
+  const devotionsToday = devotions.value
+    .filter(d => d.day_of_week === today)
+    .map(d => ({
+      label: d.title,
+      time: formatTime(d.time),
+      rawTime: String(d.time || ''),
+      type: d.type_name || 'Devosi',
+      source: 'devotion',
+      isSpecial: false,
+      isDevotion: true
+    }))
+
+  // Gabung dan sort berdasarkan rawTime (format DB asli, lebih akurat)
+  return [...regularToday, ...specialToday, ...devotionsToday]
+    .sort((a, b) => a.rawTime.localeCompare(b.rawTime))
+})
+
 const fetchSchedule = async () => {
   loading.value = true
   error.value = false
   try {
-    // Fetch regular mass schedules, special schedules, dan devotions secara parallel
     const [regularData, specialData, devotionData] = await Promise.all([
       $fetch('/api/regular-mass-schedules').catch(() => []),
       $fetch('/api/liturgy-schedules').catch(() => ({ schedules: [] })),
@@ -247,25 +201,11 @@ const fetchSchedule = async () => {
     ])
 
     scheduleData.value = regularData || []
-    specialSchedules.value = specialData.schedules || specialData || []
-    devotions.value = devotionData.data || devotionData || []
+    specialSchedules.value = specialData?.schedules || (Array.isArray(specialData) ? specialData : [])
+    devotions.value = devotionData?.data || (Array.isArray(devotionData) ? devotionData : [])
 
-    // Debug: Log data yang diterima
-    const currentDate = new Date()
-    const dayOfMonth = currentDate.getDate()
-    const isFirstWeek = dayOfMonth >= 1 && dayOfMonth <= 7
-
-    console.log('=== WIDGET DEBUG ===')
-    console.log('Total regular schedules:', scheduleData.value.length)
-    console.log('Total special schedules:', specialSchedules.value.length)
-    console.log('Total devotions:', devotions.value.length)
-    console.log('Today:', dayNames[dayOfWeek])
-    console.log('Date:', dayOfMonth, '/', currentDate.getMonth() + 1)
-    console.log('Is First Week:', isFirstWeek ? 'YES (Jumat Pertama shown)' : 'NO (Jumat Pertama hidden)')
-    console.log('Today schedules:', todaySchedule.value)
-    console.log('===================')
   } catch (err) {
-    console.error('Error fetching schedule:', err)
+    console.error('[MisaWidget] Error fetching schedule:', err)
     error.value = true
     scheduleData.value = []
     specialSchedules.value = []
@@ -286,15 +226,18 @@ const openWidget = () => {
 }
 
 onMounted(() => {
+  // Inisialisasi tanggal & hari di client (bukan SSR) agar timezone WIB akurat
+  // Menggunakan 'sv-SE' locale untuk mendapatkan format YYYY-MM-DD yang konsisten
+  const now = new Date()
+  todayDayIndex.value = now.getDay()
+  todayDateStr.value = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+
   if (process.client) {
     const wasClosed = localStorage.getItem('misaWidgetClosed')
     if (wasClosed === 'true') isVisible.value = false
   }
-  fetchSchedule()
-})
 
-onUnmounted(() => {
-  // Cleanup if needed
+  fetchSchedule()
 })
 </script>
 
