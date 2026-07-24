@@ -843,21 +843,24 @@ const activeTheme = computed(() => {
 })
 
 // ── Preload Hero Image (hanya di halaman beranda) ──────────────────────────
-// Memindahkan preload dari nuxt.config.ts (global) ke sini agar:
-// 1. Tag <link rel="preload"> hanya dikirim di halaman ini saja.
-// 2. URL preload mengikuti tema hero aktif (reaktif), bukan hardcode.
-// 3. Menghilangkan browser warning: "preloaded but not used" di halaman
-//    lain seperti /admin/login yang tidak memiliki HeroSection.
-useHead(computed(() => ({
-  link: [
-    {
-      rel: 'preload',
-      as: 'image',
-      href: activeTheme.value?.image_path || '/images/gereja-stpaulus-hero.jpg',
-      fetchpriority: 'high'
+// Menggunakan onMounted + useHead untuk menghindari hydration mismatch:
+// SSR tidak mengirim preload untuk gambar Cloudinary (karena URL belum diketahui),
+// preload baru ditambahkan setelah client mount + data tema selesai di-fetch.
+// Ini mencegah warning "preloaded but not used" untuk gambar Cloudinary.
+if (process.client) {
+  watch(activeTheme, (theme) => {
+    if (theme?.image_path) {
+      useHead({
+        link: [{
+          rel: 'preload',
+          as: 'image',
+          href: theme.image_path,
+          fetchpriority: 'high'
+        }]
+      })
     }
-  ]
-})))
+  }, { immediate: true })
+}
 // ──────────────────────────────────────────────────────────────────────────
 
 // Get latest news (first 3)
@@ -887,56 +890,63 @@ const publicBookings = computed(() => {
   console.log('[Homepage] Total bookings from API:', bookings.length);
   console.log('[Homepage] Sample booking data:', bookings[0]);
 
-  // Filter: hanya tampilkan booking yang belum selesai (end_time >= now)
+  // Guard hydration: di SSR tidak ada jam lokal yang akurat,
+  // kembalikan array kosong dan biarkan client-side yang melakukan filter.
+  if (!process.client) return [];
+
+  // Gunakan waktu client (WIB) untuk perbandingan
   const now = new Date();
+
   const filtered = bookings.filter((booking) => {
     try {
-      // Gunakan end_time_utc (full ISO UTC string) jika tersedia untuk perbandingan yang akurat
-      // Ini konsisten dengan cara halaman booking.vue memproses data
-      if (booking.end_time_utc) {
-        const bookingEndDate = new Date(booking.end_time_utc);
-        console.log('[Homepage] Checking booking (UTC):', {
+      // ── Prioritas 1: gunakan start_time_utc (ISO string murni dari server) ──
+      // end_time_utc telah diformat ulang sebagai "HH:MM" (string waktu tampilan),
+      // bukan ISO string. Gunakan start_time_utc untuk deteksi booking masa depan.
+      // Booking yang sudah dimulai hari ini juga tetap ditampilkan.
+      const utcString = booking.start_time_utc || booking.end_time_utc;
+      if (utcString && utcString.includes('T') && utcString.includes('Z')) {
+        const bookingStart = new Date(utcString);
+        // Tampilkan jika booking hari ini (sama tanggal WIB) atau masa depan
+        const todayWIB = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
+        const bookingDateWIB = bookingStart.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
+        const isToday = bookingDateWIB === todayWIB;
+        const isFuture = bookingStart >= now;
+
+        console.log('[Homepage] Checking booking (UTC ISO):', {
           id: booking.id,
           event: booking.event_name,
-          endDate: bookingEndDate.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
-          now: now.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }),
-          isVisible: bookingEndDate >= now
+          bookingDateWIB,
+          todayWIB,
+          isToday,
+          isFuture,
+          isVisible: isToday || isFuture
         });
-        return bookingEndDate >= now;
+        return isToday || isFuture;
       }
 
-      // Fallback: parse dari event_date + end_time (format lama)
+      // ── Fallback: parse dari event_date + start_time (format lokal) ──
       let eventDateStr = booking.event_date;
-
-      // If event_date is a Date object, convert to string
       if (eventDateStr instanceof Date) {
-        const year = eventDateStr.getFullYear();
-        const month = String(eventDateStr.getMonth() + 1).padStart(2, '0');
-        const day = String(eventDateStr.getDate()).padStart(2, '0');
-        eventDateStr = `${year}-${month}-${day}`;
+        const yr = eventDateStr.getFullYear();
+        const mo = String(eventDateStr.getMonth() + 1).padStart(2, '0');
+        const dy = String(eventDateStr.getDate()).padStart(2, '0');
+        eventDateStr = `${yr}-${mo}-${dy}`;
       }
 
-      // MySQL returns date as "YYYY-MM-DD" string
-      const [year, month, day] = eventDateStr.split('-').map(Number);
+      // Bandingkan hanya tanggal (YYYY-MM-DD) untuk menentukan hari ini/masa depan
+      const todayStr = now.toLocaleDateString('sv-SE');
+      const bookingDateStr = String(eventDateStr || '').slice(0, 10);
+      const isVisible = bookingDateStr >= todayStr;
 
-      // Parse end_time dari string "HH:MM" or "HH:MM:SS"
-      const endTimeStr = booking.end_time.split(':');
-      const hours = Number(endTimeStr[0]);
-      const minutes = Number(endTimeStr[1]);
-
-      // Create date in local timezone with end time
-      const bookingEndDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
-
-      console.log('[Homepage] Checking booking (fallback):', {
+      console.log('[Homepage] Checking booking (fallback date):', {
         id: booking.id,
         event: booking.event_name,
-        endDate: bookingEndDate.toLocaleString(),
-        now: now.toLocaleString(),
-        isVisible: bookingEndDate >= now
+        bookingDateStr,
+        todayStr,
+        isVisible
       });
 
-      // Hanya tampilkan jika booking belum selesai
-      return bookingEndDate >= now;
+      return isVisible;
     } catch (error) {
       console.error('[Homepage] Error parsing booking date:', error, booking);
       return false;
