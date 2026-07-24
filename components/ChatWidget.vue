@@ -52,7 +52,7 @@
           <form @submit.prevent="sendMessage" class="flex space-x-2">
             <input v-model="newMessage" type="text" placeholder="Ketik pesan Anda..."
               class="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-paulus-blue"
-              :disabled="isTyping" />
+              :disabled="isTyping" maxlength="500" autocomplete="off" />
             <button type="submit" :disabled="!newMessage.trim() || isTyping"
               aria-label="Kirim Pesan Chatbot"
               class="bg-paulus-blue hover:bg-blue-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
@@ -167,6 +167,12 @@ const sendMessage = async () => {
     if (error.name === 'AbortError') {
       errorMessage = 'Permintaan timeout. Silakan coba pertanyaan yang lebih sederhana atau hubungi kantor paroki.'
       console.error('[ChatWidget] Request timeout')
+    } else if (error?.status === 429 || error?.statusCode === 429) {
+      errorMessage = 'Terlalu banyak pesan dalam waktu singkat. Mohon tunggu sebentar.'
+      console.warn('[ChatWidget] Rate limited')
+    } else if (error?.status >= 500 || error?.statusCode >= 500) {
+      errorMessage = 'Server sedang bermasalah. Silakan coba beberapa saat lagi.'
+      console.error('[ChatWidget] Server error:', error?.status || error?.statusCode)
     } else {
       console.error('[ChatWidget] Error:', error)
     }
