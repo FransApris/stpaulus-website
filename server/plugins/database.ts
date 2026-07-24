@@ -1,7 +1,95 @@
-import { initDatabase, runQuery } from '../database/db'
+﻿import { initDatabase, runQuery } from '../database/db'
+
+// =============================================================================
+// SCHEMA MIGRATION RUNNER
+// =============================================================================
+//
+// Sistem ini memastikan semua perubahan skema database (ALTER TABLE, dll.)
+// diterapkan secara otomatis ke production saat server restart/deploy.
+//
+// Cara kerja:
+//   1. Saat server start, plugin ini membuat tabel schema_migrations jika belum ada.
+//   2. Setiap migrasi didaftarkan dengan ID unik (migration_id).
+//   3. Sistem mengecek apakah migration_id sudah ada di tabel tersebut.
+//   4. Jika BELUM ada - jalankan SQL migrasi - catat ke tabel sebagai selesai.
+//   5. Jika SUDAH ada - lewati (idempotent, aman dijalankan berulang kali).
+//
+// ATURAN WAJIB untuk developer:
+//   Setiap kali menambah kolom/tabel baru ke skema database, WAJIB mendaftarkan
+//   migrasinya di array STRUCTURAL_MIGRATIONS di bawah ini dengan ID unik.
+//   Format ID: 'NNN_nama_deskriptif' (sesuai nama file .sql)
+// =============================================================================
+
+interface Migration {
+  id: string
+  description: string
+  statements: string[]
+}
+
+const STRUCTURAL_MIGRATIONS: Migration[] = [
+  {
+    id: '031_create_app_settings',
+    description: 'Create app_settings table for maintenance mode and global config',
+    statements: [
+      `CREATE TABLE IF NOT EXISTS app_settings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        setting_key VARCHAR(100) NOT NULL UNIQUE,
+        setting_value TEXT,
+        description VARCHAR(255),
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`
+    ]
+  },
+  {
+    id: '032_add_force_password_reset',
+    description: 'Add requires_password_reset column to users table (Clean Slate security policy)',
+    statements: [
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS requires_password_reset TINYINT(1) NOT NULL DEFAULT 0`
+    ]
+  },
+  {
+    id: '033_add_totp_2fa_to_users',
+    description: 'Add TOTP 2FA fields to users table',
+    statements: [
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(255) NULL`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled TINYINT(1) NOT NULL DEFAULT 0`,
+      `ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_backup_codes TEXT NULL`
+    ]
+  },
+  // Tambahkan migrasi baru di sini menggunakan template:
+  // {
+  //   id: '034_nama_migrasi',
+  //   description: 'Deskripsi singkat',
+  //   statements: [
+  //     `ALTER TABLE nama_tabel ADD COLUMN IF NOT EXISTS nama_kolom TINYINT(1) NOT NULL DEFAULT 0`
+  //   ]
+  // },
+]
+
+const PERMISSION_SEEDS = [
+  { name: 'manage_liturgy_types', display_name: 'Kelola Jenis Liturgi', description: 'Manage liturgy types for mass schedules' },
+  { name: 'kronik.bgkp.view', display_name: 'View Kronik BGKP', description: 'Melihat data BGKP' },
+  { name: 'kronik.bgkp.create', display_name: 'Create Kronik BGKP', description: 'Membuat data BGKP' },
+  { name: 'kronik.bgkp.edit', display_name: 'Edit Kronik BGKP', description: 'Mengedit data BGKP' },
+  { name: 'kronik.bgkp.delete', display_name: 'Delete Kronik BGKP', description: 'Menghapus data BGKP' },
+  { name: 'kronik.bgkp.publish', display_name: 'Publish Kronik BGKP', description: 'Mempublikasi data BGKP' },
+  { name: 'kronik.wilayah.view', display_name: 'View Kronik Wilayah', description: 'Melihat data wilayah' },
+  { name: 'kronik.wilayah.create', display_name: 'Create Kronik Wilayah', description: 'Membuat data wilayah' },
+  { name: 'kronik.wilayah.edit', display_name: 'Edit Kronik Wilayah', description: 'Mengedit data wilayah' },
+  { name: 'kronik.wilayah.delete', display_name: 'Delete Kronik Wilayah', description: 'Menghapus data wilayah' },
+  { name: 'kronik.wilayah.publish', display_name: 'Publish Kronik Wilayah', description: 'Mempublikasi data wilayah' },
+  { name: 'kronik.lingkungan.view', display_name: 'View Kronik Lingkungan', description: 'Melihat data lingkungan' },
+  { name: 'kronik.lingkungan.create', display_name: 'Create Kronik Lingkungan', description: 'Membuat data lingkungan' },
+  { name: 'kronik.lingkungan.edit', display_name: 'Edit Kronik Lingkungan', description: 'Mengedit data lingkungan' },
+  { name: 'kronik.lingkungan.delete', display_name: 'Delete Kronik Lingkungan', description: 'Menghapus data lingkungan' },
+  { name: 'kronik.lingkungan.publish', display_name: 'Publish Kronik Lingkungan', description: 'Mempublikasi data lingkungan' },
+]
+
+// =============================================================================
+// PLUGIN ENTRY POINT
+// =============================================================================
 
 export default defineNitroPlugin(async () => {
-  // Initialize database on server start
   try {
     await initDatabase()
     console.log('Database initialized successfully')
@@ -10,114 +98,94 @@ export default defineNitroPlugin(async () => {
     return
   }
 
-  // Idempotent permission migrations (INSERT IGNORE = aman dijalankan berulang kali)
+  await runMigrations()
+  await seedPermissions()
+})
+
+// =============================================================================
+// MIGRATION RUNNER
+// =============================================================================
+
+async function runMigrations(): Promise<void> {
   try {
-    // 1. Pastikan permission manage_liturgy_types ada di tabel permissions
     await runQuery(`
-      INSERT IGNORE INTO permissions (name, display_name, description)
-      VALUES ('manage_liturgy_types', 'Kelola Jenis Liturgi', 'Manage liturgy types for mass schedules')
+      CREATE TABLE IF NOT EXISTS schema_migrations (
+        migration_id  VARCHAR(100) NOT NULL PRIMARY KEY,
+        description   TEXT,
+        applied_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        environment   VARCHAR(20) DEFAULT 'production'
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `)
 
-    // 2. Assign manage_liturgy_types ke role admin_sekretariat
-    await runQuery(`
-      INSERT IGNORE INTO role_permissions (role_id, permission_id)
-      SELECT r.id, p.id
-      FROM roles r
-      CROSS JOIN permissions p
-      WHERE r.name = 'admin_sekretariat' AND p.name = 'manage_liturgy_types'
-    `)
+    let applied = 0
+    let skipped = 0
 
-    // 3. Pastikan semua permission kronik.bgkp.* ada di tabel permissions
-    const bgkpPermissions = [
-      ['kronik.bgkp.view', 'View Kronik BGKP', 'Melihat data BGKP'],
-      ['kronik.bgkp.create', 'Create Kronik BGKP', 'Membuat data BGKP'],
-      ['kronik.bgkp.edit', 'Edit Kronik BGKP', 'Mengedit data BGKP'],
-      ['kronik.bgkp.delete', 'Delete Kronik BGKP', 'Menghapus data BGKP'],
-      ['kronik.bgkp.publish', 'Publish Kronik BGKP', 'Mempublikasi data BGKP']
-    ]
-    for (const [name, display, desc] of bgkpPermissions) {
-      await runQuery(`
-        INSERT IGNORE INTO permissions (name, display_name, description)
-        VALUES (?, ?, ?)
-      `, [name, display, desc])
+    for (const migration of STRUCTURAL_MIGRATIONS) {
+      try {
+        const existing = await runQuery(
+          'SELECT migration_id FROM schema_migrations WHERE migration_id = ?',
+          [migration.id]
+        ) as any
+
+        if (existing) {
+          skipped++
+          continue
+        }
+
+        for (const sql of migration.statements) {
+          await runQuery(sql)
+        }
+
+        await runQuery(
+          'INSERT INTO schema_migrations (migration_id, description, environment) VALUES (?, ?, ?)',
+          [migration.id, migration.description, process.env.NODE_ENV || 'production']
+        )
+
+        console.log(`OK Migration applied: [${migration.id}] ${migration.description}`)
+        applied++
+
+      } catch (migrationError: any) {
+        console.error(`FAIL Migration failed: [${migration.id}]`, migrationError.message)
+      }
     }
 
-    // 4. Assign semua kronik.bgkp.* ke role admin_sekretariat
-    await runQuery(`
-      INSERT IGNORE INTO role_permissions (role_id, permission_id)
-      SELECT r.id, p.id
-      FROM roles r
-      CROSS JOIN permissions p
-      WHERE r.name = 'admin_sekretariat' AND p.name LIKE 'kronik.bgkp.%'
-    `)
-
-    // 5. Pastikan permission kronik.wilayah.* dan kronik.lingkungan.* ada
-    const teritorialPermissions = [
-      ['kronik.wilayah.view', 'View Kronik Wilayah', 'Melihat data wilayah'],
-      ['kronik.wilayah.create', 'Create Kronik Wilayah', 'Membuat data wilayah'],
-      ['kronik.wilayah.edit', 'Edit Kronik Wilayah', 'Mengedit data wilayah'],
-      ['kronik.wilayah.delete', 'Delete Kronik Wilayah', 'Menghapus data wilayah'],
-      ['kronik.wilayah.publish', 'Publish Kronik Wilayah', 'Mempublikasi data wilayah'],
-      ['kronik.lingkungan.view', 'View Kronik Lingkungan', 'Melihat data lingkungan'],
-      ['kronik.lingkungan.create', 'Create Kronik Lingkungan', 'Membuat data lingkungan'],
-      ['kronik.lingkungan.edit', 'Edit Kronik Lingkungan', 'Mengedit data lingkungan'],
-      ['kronik.lingkungan.delete', 'Delete Kronik Lingkungan', 'Menghapus data lingkungan'],
-      ['kronik.lingkungan.publish', 'Publish Kronik Lingkungan', 'Mempublikasi data lingkungan']
-    ]
-    for (const [name, display, desc] of teritorialPermissions) {
-      await runQuery(`
-        INSERT IGNORE INTO permissions (name, display_name, description)
-        VALUES (?, ?, ?)
-      `, [name, display, desc])
+    if (applied > 0) {
+      console.log(`OK Schema migrations: ${applied} applied, ${skipped} already up-to-date`)
+    } else {
+      console.log(`OK Database migrations checked & applied successfully (all ${skipped} up-to-date)`)
     }
 
-    // 6. Assign kronik.wilayah.* dan kronik.lingkungan.* ke role admin_sekretariat
+  } catch (e: any) {
+    console.error('FAIL Migration runner error:', e.message)
+  }
+}
+
+// =============================================================================
+// PERMISSION SEEDER
+// =============================================================================
+
+async function seedPermissions(): Promise<void> {
+  try {
+    for (const perm of PERMISSION_SEEDS) {
+      await runQuery(
+        'INSERT IGNORE INTO permissions (name, display_name, description) VALUES (?, ?, ?)',
+        [perm.name, perm.display_name, perm.description]
+      )
+    }
+
+    const placeholders = PERMISSION_SEEDS.map(() => '?').join(',')
     await runQuery(`
       INSERT IGNORE INTO role_permissions (role_id, permission_id)
       SELECT r.id, p.id
       FROM roles r
       CROSS JOIN permissions p
       WHERE r.name = 'admin_sekretariat'
-        AND (p.name LIKE 'kronik.wilayah.%' OR p.name LIKE 'kronik.lingkungan.%')
-    `)
-    // 7. Migrasi requires_password_reset (Migration 032) — penting untuk login!
-    // Kolom ini digunakan di /api/admin/login untuk memaksa reset password pasca insiden.
-    const checkPasswordResetColumn = await runQuery(`
-      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'users'
-        AND COLUMN_NAME = 'requires_password_reset'
-    `) as any
-    if (!checkPasswordResetColumn || checkPasswordResetColumn.length === 0) {
-      await runQuery(`
-        ALTER TABLE users
-        ADD COLUMN requires_password_reset TINYINT(1) NOT NULL DEFAULT 0
-      `)
-      console.log('✅ Migration 032: Added requires_password_reset column to users table')
-    }
+        AND p.name IN (${placeholders})
+    `, PERMISSION_SEEDS.map(p => p.name))
 
-    // 8. Migrasi 2FA (TOTP) untuk tabel users (Migration 033)
+    console.log(`OK Permission seeds checked (${PERMISSION_SEEDS.length} permissions)`)
 
-    const checkTotpColumn = await runQuery(`
-      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'users'
-        AND COLUMN_NAME = 'totp_secret'
-    `) as any
-    if (!checkTotpColumn || checkTotpColumn.length === 0) {
-      await runQuery(`
-        ALTER TABLE users
-        ADD COLUMN totp_secret VARCHAR(255) NULL,
-        ADD COLUMN totp_enabled TINYINT(1) NOT NULL DEFAULT 0,
-        ADD COLUMN totp_backup_codes TEXT NULL
-      `)
-      console.log('✅ Migration 033: Added TOTP 2FA columns to users table')
-    }
-
-    console.log('✅ Database migrations checked & applied successfully')
   } catch (e: any) {
-    // Non-critical: lanjutkan meskipun gagal (tabel mungkin belum ada)
-    console.warn('Permission migration skipped:', e.message)
+    console.warn('Permission seed skipped:', e.message)
   }
-})
-
+}
