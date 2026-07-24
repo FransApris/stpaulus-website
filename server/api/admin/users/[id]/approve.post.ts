@@ -55,7 +55,7 @@ export default defineEventHandler(async (event) => {
 
     console.log(`[User Approval] User ${targetUser.username} ${action}d by admin ${adminId}`)
 
-    // Send email notification (non-blocking — failure doesn't affect the response)
+    // Kirim notifikasi email (non-blocking — kegagalan email tidak membatalkan proses approval)
     if (targetUser.email) {
       const emailParams = {
         to: targetUser.email,
@@ -63,9 +63,13 @@ export default defineEventHandler(async (event) => {
         fullName: targetUser.full_name || targetUser.username
       }
       if (action === 'approve') {
-        sendAccountApprovedEmail(emailParams).catch(() => {})
+        sendAccountApprovedEmail(emailParams).catch((err) => {
+          console.error('[User Approval] Failed to send approval email to:', targetUser.email, err?.message || err)
+        })
       } else {
-        sendAccountRejectedEmail(emailParams).catch(() => {})
+        sendAccountRejectedEmail(emailParams).catch((err) => {
+          console.error('[User Approval] Failed to send rejection email to:', targetUser.email, err?.message || err)
+        })
       }
     }
 

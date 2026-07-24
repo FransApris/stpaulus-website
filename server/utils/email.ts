@@ -46,7 +46,7 @@ function baseTemplate(body: string) {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; padding: 24px;">
       <div style="background: #166534; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 20px;">Paroki Santo Paulus Sinaboi</h1>
+        <h1 style="color: white; margin: 0; font-size: 20px;">Paroki Santo Paulus Juanda</h1>
       </div>
       <div style="background: white; padding: 28px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none;">
         ${body}
@@ -162,9 +162,11 @@ export async function sendPasswordResetEmail(params: {
         </a>
       </div>
       <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 14px; margin: 20px 0;">
-        <p style="color: #9ca3af; font-size: 13px;">
-        Jika Anda tidak meminta reset password, abaikan email ini. Akun Anda tetap aman.
-      </p>
+        <p style="margin: 0; color: #713f12; font-size: 13px;">
+          ⚠️ Jika Anda tidak meminta reset password, abaikan email ini. Akun Anda tetap aman.
+        </p>
+      </div>
+      <p style="color: #9ca3af; font-size: 12px;">Link reset password berlaku selama 1 jam.</p>
     `)
   })
 }

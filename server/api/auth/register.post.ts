@@ -94,14 +94,17 @@ export default defineEventHandler(async (event) => {
 
     console.log('[Register] New user registered, awaiting approval:', username)
 
-    // Send confirmation email (non-blocking)
+    // Kirim email konfirmasi (non-blocking — kegagalan email tidak membatalkan registrasi)
     const emailAddr = email.trim().toLowerCase()
     if (emailAddr) {
       sendRegistrationPendingEmail({
         to: emailAddr,
         username: username.trim(),
         fullName: full_name.trim()
-      }).catch(() => {})
+      }).catch((err) => {
+        // Log error tapi jangan batalkan registrasi — user sudah berhasil terdaftar
+        console.error('[Register] Failed to send confirmation email to:', emailAddr, err?.message || err)
+      })
     }
 
     return {
