@@ -198,6 +198,32 @@ export default defineEventHandler(async (event) => {
       throw error
     }
 
+    // ── Deteksi error koneksi database ────────────────────────────────────
+    const isDbError =
+      error?.message?.includes('Database connection pool is not available') ||
+      error?.message?.includes('ECONNREFUSED') ||
+      error?.message?.includes('ETIMEDOUT') ||
+      error?.message?.includes('ENOTFOUND') ||
+      error?.code === 'ECONNREFUSED' ||
+      error?.code === 'ETIMEDOUT' ||
+      error?.code === 'ER_ACCESS_DENIED_ERROR' ||
+      error?.code === 'ENOTFOUND'
+
+    if (isDbError) {
+      logger.critical('[Admin Login] DATABASE CONNECTION FAILED — tidak bisa melakukan query login', {
+        event: 'LOGIN_DB_CONNECTION_ERROR',
+        errorMessage: error?.message,
+        errorCode: error?.code,
+        ip,
+        hint: 'Periksa variabel MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE di Railway Variables'
+      })
+      throw createError({
+        statusCode: 503,
+        statusMessage: 'Server sedang tidak dapat terhubung ke database. Coba beberapa saat lagi atau hubungi Tim IT Paroki.'
+      })
+    }
+    // ─────────────────────────────────────────────────────────────────────
+
     // Error sistem / tak terduga — log detail untuk debugging
     logger.critical('[Admin Login] UNEXPECTED SERVER ERROR (HTTP 500)', {
       event: 'LOGIN_500_ERROR',
