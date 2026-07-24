@@ -367,7 +367,12 @@ const handleLogin = async () => {
     loginForm.value.password = ''
   } catch (error) {
     console.error('[LoginModal] Login error:', error)
-    errorMessage.value = error.data?.statusMessage || 'Login gagal. Periksa username dan password Anda.'
+    errorMessage.value =
+      error?.data?.statusMessage ||
+      error?.data?.message ||
+      error?.statusMessage ||
+      error?.message ||
+      'Login gagal. Periksa username dan password Anda.'
   } finally {
     loading.value = false
   }

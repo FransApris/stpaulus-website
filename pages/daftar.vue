@@ -108,12 +108,16 @@
                         </label>
                         <select v-model="form.user_category"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white"
+                            :class="{ 'border-red-400': categoriesError }"
                             required>
                             <option value="">-- Pilih Kategori --</option>
                             <option v-for="cat in categories" :key="cat.id" :value="cat.name">
                                 {{ cat.display_name }}
                             </option>
                         </select>
+                        <p v-if="categoriesError" class="mt-1 text-xs text-red-600">
+                            ⚠️ Gagal memuat daftar kategori. Coba muat ulang halaman atau hubungi sekretariat paroki.
+                        </p>
                     </div>
 
                     <!-- Nama Unit / Kelompok -->
@@ -181,14 +185,19 @@ const form = ref({
 const categories = ref([])
 const loading = ref(false)
 const errorMsg = ref('')
+const categoriesError = ref(false)
 const success = ref(false)
 
 // Load categories on mount
 onMounted(async () => {
     try {
         categories.value = await $fetch('/api/user-categories')
+        if (!categories.value || categories.value.length === 0) {
+            categoriesError.value = true
+        }
     } catch (err) {
         console.error('Failed to load categories', err)
+        categoriesError.value = true
     }
 })
 
@@ -218,7 +227,12 @@ const handleRegister = async () => {
         success.value = true
         window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (err) {
-        errorMsg.value = err?.data?.statusMessage || err?.statusMessage || 'Gagal mendaftar. Silakan coba lagi.'
+        errorMsg.value =
+            err?.data?.statusMessage ||
+            err?.data?.message ||
+            err?.statusMessage ||
+            err?.message ||
+            'Gagal mendaftar. Silakan coba lagi.'
     } finally {
         loading.value = false
     }
