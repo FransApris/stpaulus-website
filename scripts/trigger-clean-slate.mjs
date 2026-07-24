@@ -44,7 +44,7 @@ rl.question('Apakah Anda yakin ingin melanjutkan? (Ketik YES untuk lanjut): ', a
     );
 
     console.log('\n✅ BERHASIL: Proses Clean Slate telah diterapkan!');
-    console.log(`Jumlah akun yang dibekukan / diwajibkan reset password: ${(result as any).affectedRows}`);
+    console.log(`Jumlah akun yang dibekukan / diwajibkan reset password: ${result?.affectedRows || 0}`);
     console.log('\nSeluruh pengguna yang terdampak kini akan ditolak saat login dan diinstruksikan untuk menghubungi Anda.');
     
     await connection.end();
