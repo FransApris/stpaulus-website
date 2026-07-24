@@ -80,10 +80,29 @@ export default defineNitroPlugin(async () => {
       WHERE r.name = 'admin_sekretariat'
         AND (p.name LIKE 'kronik.wilayah.%' OR p.name LIKE 'kronik.lingkungan.%')
     `)
-    // 7. Migrasi 2FA (TOTP) untuk tabel users
+    // 7. Migrasi requires_password_reset (Migration 032) — penting untuk login!
+    // Kolom ini digunakan di /api/admin/login untuk memaksa reset password pasca insiden.
+    const checkPasswordResetColumn = await runQuery(`
+      SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'users'
+        AND COLUMN_NAME = 'requires_password_reset'
+    `) as any
+    if (!checkPasswordResetColumn || checkPasswordResetColumn.length === 0) {
+      await runQuery(`
+        ALTER TABLE users
+        ADD COLUMN requires_password_reset TINYINT(1) NOT NULL DEFAULT 0
+      `)
+      console.log('✅ Migration 032: Added requires_password_reset column to users table')
+    }
+
+    // 8. Migrasi 2FA (TOTP) untuk tabel users (Migration 033)
+
     const checkTotpColumn = await runQuery(`
       SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-      WHERE TABLE_NAME = 'users' AND COLUMN_NAME = 'totp_secret'
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'users'
+        AND COLUMN_NAME = 'totp_secret'
     `) as any
     if (!checkTotpColumn || checkTotpColumn.length === 0) {
       await runQuery(`
