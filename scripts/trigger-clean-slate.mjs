@@ -27,10 +27,11 @@ rl.question('Apakah Anda yakin ingin melanjutkan? (Ketik YES untuk lanjut): ', a
 
   try {
     const connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'stpaulus'
+      host: process.env.MYSQL_HOST || process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.MYSQL_PORT || process.env.DB_PORT || '3306'),
+      user: process.env.MYSQL_USER || process.env.DB_USER || 'root',
+      password: process.env.MYSQL_PASSWORD || process.env.DB_PASSWORD || '',
+      database: process.env.MYSQL_DATABASE || process.env.DB_NAME || 'stpaulus_cms_db'
     });
 
     // Menandai seluruh user yang memiliki role_id (admin panel users) kecuali yang role-nya super_admin
