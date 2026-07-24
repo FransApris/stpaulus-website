@@ -842,6 +842,24 @@ const activeTheme = computed(() => {
   return activeThemeData.value
 })
 
+// ── Preload Hero Image (hanya di halaman beranda) ──────────────────────────
+// Memindahkan preload dari nuxt.config.ts (global) ke sini agar:
+// 1. Tag <link rel="preload"> hanya dikirim di halaman ini saja.
+// 2. URL preload mengikuti tema hero aktif (reaktif), bukan hardcode.
+// 3. Menghilangkan browser warning: "preloaded but not used" di halaman
+//    lain seperti /admin/login yang tidak memiliki HeroSection.
+useHead(computed(() => ({
+  link: [
+    {
+      rel: 'preload',
+      as: 'image',
+      href: activeTheme.value?.image_path || '/images/gereja-stpaulus-hero.jpg',
+      fetchpriority: 'high'
+    }
+  ]
+})))
+// ──────────────────────────────────────────────────────────────────────────
+
 // Get latest news (first 3)
 const latestNews = computed(() => {
   return newsData.value?.slice(0, 3) || [];

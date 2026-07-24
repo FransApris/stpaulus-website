@@ -230,7 +230,17 @@ const handleLogin = async () => {
 
     await navigateTo('/admin/dashboard')
   } catch (err) {
-    error.value = err.data?.message || err.message || 'Login gagal'
+    // Nuxt $fetch membungkus H3Error dalam err.data:
+    //   err.data?.statusMessage → pesan dari createError({ statusMessage: '...' })
+    //   err.data?.message      → format error lain
+    //   err.statusMessage      → fallback langsung di object error
+    //   err.message            → error JavaScript standar
+    error.value =
+      err.data?.statusMessage ||
+      err.data?.message ||
+      err.statusMessage ||
+      err.message ||
+      'Login gagal. Periksa koneksi atau hubungi Tim IT Paroki.'
     if (!requires2FA.value) {
       sessionStorage.removeItem('admin_access_token')
       localStorage.removeItem('admin_refresh_token')

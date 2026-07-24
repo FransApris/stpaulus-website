@@ -106,8 +106,9 @@ export default defineNuxtConfig({
         { rel: 'preconnect', href: 'https://cdnjs.cloudflare.com', crossorigin: 'anonymous' },
         { rel: 'dns-prefetch', href: 'https://fonts.gstatic.com' },
         { rel: 'dns-prefetch', href: 'https://cdnjs.cloudflare.com' },
-        // Preload Hero Image for instant mobile & desktop LCP
-        { rel: 'preload', as: 'image', href: '/images/gereja-stpaulus-hero.jpg', fetchpriority: 'high' },
+        // Preload Hero Image: TIDAK di-set secara global.
+        // Preload hanya aktif di pages/index.vue via useHead() reaktif
+        // agar tidak memicu warning 'preloaded but not used' di halaman lain.
         // Google Fonts (Cinzel, Lora, Barlow Condensed)
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lora:wght@400;500&family=Barlow+Condensed:wght@100;200;300;400;500;600;700&display=swap' },
         // Font Awesome stylesheet for social icons
