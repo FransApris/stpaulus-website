@@ -1897,7 +1897,7 @@ const selectRoom = (room) => {
   // Reset form dan pesan error/sukses agar tidak terbawa dari ruangan sebelumnya
   bookingError.value = ''
   bookingMessage.value = ''
-  bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
+  bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '', is_recurring: false, recurrence_pattern: 'WEEKLY', repeat_until: '' }
   // Reset slot availability check
   slotCheckResult.value = null
   slotChecking.value = false
@@ -1927,6 +1927,20 @@ const createBooking = async () => {
     bookingError.value = 'Waktu selesai harus lebih besar dari waktu mulai'
     bookingLoading.value = false
     return
+  }
+
+  // Validasi pemesanan berulang
+  if (bookingForm.value.is_recurring) {
+    if (!bookingForm.value.repeat_until) {
+      bookingError.value = 'Batas tanggal pengulangan wajib diisi untuk pemesanan rutin'
+      bookingLoading.value = false
+      return
+    }
+    if (bookingForm.value.repeat_until <= bookingForm.value.event_date) {
+      bookingError.value = 'Batas tanggal pengulangan harus setelah tanggal acara pertama'
+      bookingLoading.value = false
+      return
+    }
   }
 
   // Validasi durasi minimum 30 menit (Saran 4)
@@ -1963,7 +1977,10 @@ const createBooking = async () => {
       event_name: bookingForm.value.event_name,
       start_time: startDateTime.toISOString(),
       end_time: endDateTime.toISOString(),
-      room_id: selectedRoom.value.id
+      room_id: selectedRoom.value.id,
+      is_recurring: bookingForm.value.is_recurring,
+      recurrence_pattern: bookingForm.value.recurrence_pattern,
+      repeat_until: bookingForm.value.repeat_until
     })
 
     const response = await $fetch('/api/bookings', {
@@ -1973,18 +1990,21 @@ const createBooking = async () => {
         event_name: bookingForm.value.event_name,
         start_time: startDateTime.toISOString(),
         end_time: endDateTime.toISOString(),
-        room_id: selectedRoom.value.id
+        room_id: selectedRoom.value.id,
+        is_recurring: bookingForm.value.is_recurring,
+        recurrence_pattern: bookingForm.value.recurrence_pattern,
+        repeat_until: bookingForm.value.repeat_until
       }
     })
     bookingMessage.value = response.message
 
-    // Refresh data immediately after successful booking
-    await loadData()
+    // Refresh data and weekly schedule immediately after successful booking
+    await Promise.all([loadData(), loadWeeklySchedule()])
 
     // Close modal and reset form after showing success message
     setTimeout(() => {
       selectedRoom.value = null
-      bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
+      bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '', is_recurring: false, recurrence_pattern: 'WEEKLY', repeat_until: '' }
       bookingMessage.value = ''
     }, 2500)
 
@@ -1997,7 +2017,7 @@ const createBooking = async () => {
 
 const closeBookingModal = () => {
   selectedRoom.value = null
-  bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
+  bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '', is_recurring: false, recurrence_pattern: 'WEEKLY', repeat_until: '' }
   bookingMessage.value = ''
   bookingError.value = ''
   // Reset slot check state
