@@ -1,6 +1,7 @@
 import { runQuery, getQuery, getConnection } from '../database/db'
 import { requireAuth } from '../utils/auth'
 import { getHeader } from 'h3'
+import { sendBookingCreatedEmail } from '../utils/email'
 
 const isMissingColumnError = (error: any, columnName: string) => {
   const message = String(error?.message || '')
@@ -180,10 +181,32 @@ export default defineEventHandler(async (event) => {
       // Room has no restrictions, allow booking
     }
 
+    // ── Cek kuota maks pemesanan aktif per user ───────────────────────────────
+    const MAX_ACTIVE_BOOKINGS = 3
+    const quotaResult = await getQuery(`
+      SELECT COUNT(*) AS count
+      FROM bookings
+      WHERE user_id = ?
+        AND status IN ('PENDING', 'APPROVED')
+        AND end_time > NOW()
+        AND deleted_at IS NULL
+    `, [userId]) as any
+
+    const activeCount = Number(quotaResult?.count ?? 0)
+    if (activeCount >= MAX_ACTIVE_BOOKINGS) {
+      throw createError({
+        statusCode: 429,
+        statusMessage: `Anda sudah memiliki ${activeCount} pemesanan aktif. Maksimal ${MAX_ACTIVE_BOOKINGS} pemesanan aktif diperbolehkan. Selesaikan atau batalkan pemesanan yang ada terlebih dahulu.`
+      })
+    }
+
+    console.log('[CREATE BOOKING] Quota check passed:', { activeCount, max: MAX_ACTIVE_BOOKINGS })
+
     // Serialize booking creation per room to prevent race-condition double booking.
     const lockName = `booking_room_${room_id}`
     const connection = await getConnection()
     let lockAcquired = false
+
 
     try {
       const [lockRows] = await connection.query('SELECT GET_LOCK(?, 10) AS locked', [lockName]) as any
@@ -268,6 +291,42 @@ export default defineEventHandler(async (event) => {
       }
 
       console.log('[CREATE BOOKING] Success:', { insertId: result.insertId, status })
+
+      // ── Fire-and-forget: Notifikasi email ke admin jika status PENDING ───────────
+      if (status === 'PENDING') {
+        const adminEmail = process.env.ADMIN_BOOKING_EMAIL ||
+          process.env.SECURITY_ALERT_EMAIL ||
+          process.env.RESEND_FROM
+
+        if (adminEmail) {
+          setImmediate(async () => {
+            try {
+              const toUTCStr = (s: any) =>
+                s ? String(s).replace(' ', 'T') + (String(s).endsWith('Z') ? '' : 'Z') : null
+
+              const fmtTime = (raw: any) => new Date(toUTCStr(raw) as string)
+                .toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false })
+                .replace(':', '.')
+
+              const fmtDate = (raw: any) => new Date(toUTCStr(raw) as string)
+                .toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' })
+
+              await sendBookingCreatedEmail({
+                adminEmail,
+                requesterName: normalizedRequesterName,
+                eventName: event_name,
+                roomName: room.name,
+                startFormatted: fmtTime(mysqlStart),
+                endFormatted: fmtTime(mysqlEnd),
+                dateFormatted: fmtDate(mysqlStart),
+                bookingId: result.insertId
+              })
+            } catch (emailErr) {
+              console.error('[CREATE BOOKING] Admin email notification failed (non-critical):', emailErr)
+            }
+          })
+        }
+      }
 
       return {
         id: result.insertId,

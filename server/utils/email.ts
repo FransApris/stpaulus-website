@@ -221,3 +221,124 @@ export async function sendSecurityAlertEmail(params: {
   })
 }
 
+// ─── Booking Notification Emails ─────────────────────────────────────────────
+
+/**
+ * Notify admin when a new booking is submitted (status PENDING).
+ * Recipient: ADMIN_BOOKING_EMAIL env var (falls back to SECURITY_ALERT_EMAIL).
+ */
+export async function sendBookingCreatedEmail(params: {
+  adminEmail: string
+  requesterName: string
+  eventName: string
+  roomName: string
+  startFormatted: string
+  endFormatted: string
+  dateFormatted: string
+  bookingId: number | string
+}): Promise<boolean> {
+  const adminUrl = `${SITE_URL}/admin/bookings-new`
+  return sendMail({
+    to: params.adminEmail,
+    subject: `📋 Pemesanan Ruangan Baru: "${params.eventName}"`,
+    html: baseTemplate(`
+      <h2 style="color: #1f2937;">Pemesanan Ruangan Baru</h2>
+      <p style="color: #374151;">Ada pemesanan ruangan baru yang menunggu persetujuan Anda.</p>
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1e3a5f;">
+          <tr><td style="padding: 6px 0; font-weight: bold; width: 140px;">Nama Acara</td><td>${params.eventName}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Pemohon</td><td>${params.requesterName}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Ruangan</td><td>${params.roomName}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Tanggal</td><td>${params.dateFormatted}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Waktu</td><td>${params.startFormatted} – ${params.endFormatted} WIB</td></tr>
+        </table>
+      </div>
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="${adminUrl}"
+           style="display: inline-block; background: #882f1d; color: white; padding: 12px 28px;
+                  border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 15px;">
+          Tinjau &amp; Setujui Pemesanan
+        </a>
+      </div>
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">ID Pemesanan: #${params.bookingId}</p>
+    `)
+  })
+}
+
+/**
+ * Notify user that their booking has been APPROVED.
+ */
+export async function sendBookingApprovedEmail(params: {
+  to: string
+  fullName: string
+  eventName: string
+  roomName: string
+  startFormatted: string
+  endFormatted: string
+  dateFormatted: string
+}): Promise<boolean> {
+  return sendMail({
+    to: params.to,
+    subject: `✅ Pemesanan Ruangan Disetujui: "${params.eventName}"`,
+    html: baseTemplate(`
+      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <p style="color: #374151;">Kabar baik! Pemesanan ruangan Anda telah <strong>disetujui</strong> oleh admin paroki.</p>
+      <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <p style="margin: 0 0 12px 0; color: #14532d; font-weight: bold; font-size: 15px;">✅ Pemesanan Dikonfirmasi</p>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #14532d;">
+          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${params.eventName}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${params.roomName}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${params.dateFormatted}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${params.startFormatted} – ${params.endFormatted} WIB</td></tr>
+        </table>
+      </div>
+      <p style="color: #374151; font-size: 14px;">
+        Harap tiba tepat waktu dan tinggalkan ruangan dalam kondisi bersih setelah selesai.
+        Untuk pembatalan, silakan hubungi sekretariat atau batalkan melalui
+        <a href="${SITE_URL}/booking" style="color: #882f1d;">halaman pemesanan</a>.
+      </p>
+    `)
+  })
+}
+
+/**
+ * Notify user that their booking has been REJECTED.
+ */
+export async function sendBookingRejectedEmail(params: {
+  to: string
+  fullName: string
+  eventName: string
+  roomName: string
+  startFormatted: string
+  endFormatted: string
+  dateFormatted: string
+  rejectionReason?: string
+}): Promise<boolean> {
+  const reasonHtml = params.rejectionReason
+    ? `<div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 6px; padding: 14px; margin: 16px 0;">
+         <p style="margin: 0; color: #713f12; font-size: 14px;"><strong>Alasan:</strong> ${params.rejectionReason}</p>
+       </div>`
+    : ''
+
+  return sendMail({
+    to: params.to,
+    subject: `❌ Pemesanan Ruangan Tidak Disetujui: "${params.eventName}"`,
+    html: baseTemplate(`
+      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <p style="color: #374151;">Mohon maaf, pemesanan ruangan Anda <strong>tidak dapat disetujui</strong>.</p>
+      <div style="background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #7f1d1d;">
+          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${params.eventName}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${params.roomName}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${params.dateFormatted}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${params.startFormatted} – ${params.endFormatted} WIB</td></tr>
+        </table>
+      </div>
+      ${reasonHtml}
+      <p style="color: #374151; font-size: 14px;">
+        Untuk pertanyaan, hubungi sekretariat paroki atau buat pemesanan baru di
+        <a href="${SITE_URL}/booking" style="color: #882f1d;">halaman pemesanan</a>.
+      </p>
+    `)
+  })
+}

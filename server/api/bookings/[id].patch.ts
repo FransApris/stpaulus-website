@@ -1,5 +1,6 @@
 import { getConnection, getQuery } from '../../database/db'
 import { requireAuth, requirePermission, getUserPermissions } from '../../utils/auth'
+import { sendBookingApprovedEmail, sendBookingRejectedEmail } from '../../utils/email'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -182,6 +183,57 @@ export default defineEventHandler(async (event) => {
       APPROVED: 'disetujui',
       REJECTED: 'ditolak',
       CANCELLED: 'dibatalkan'
+    }
+
+    // ── Fire-and-forget email notifications ──────────────────────────────────
+    // Fetch booking + user details outside the transaction (already committed)
+    if (status === 'APPROVED' || status === 'REJECTED') {
+      setImmediate(async () => {
+        try {
+          const bookingData = await getQuery(`
+            SELECT b.id, b.event_name, b.start_time, b.end_time,
+                   b.rejection_reason, r.name AS room_name,
+                   u.email, u.full_name
+            FROM bookings b
+            JOIN rooms r ON b.room_id = r.id
+            JOIN users u ON b.user_id = u.id
+            WHERE b.id = ?
+          `, [bookingId]) as any
+
+          if (!bookingData?.email) return
+
+          const toUTCStr = (s: any) =>
+            s ? String(s).replace(' ', 'T') + (String(s).endsWith('Z') ? '' : 'Z') : null
+
+          const fmtTime = (raw: any) => new Date(toUTCStr(raw) as string)
+            .toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false })
+            .replace(':', '.')
+
+          const fmtDate = (raw: any) => new Date(toUTCStr(raw) as string)
+            .toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' })
+
+          const emailParams = {
+            to: bookingData.email,
+            fullName: bookingData.full_name,
+            eventName: bookingData.event_name,
+            roomName: bookingData.room_name,
+            startFormatted: fmtTime(bookingData.start_time),
+            endFormatted: fmtTime(bookingData.end_time),
+            dateFormatted: fmtDate(bookingData.start_time)
+          }
+
+          if (status === 'APPROVED') {
+            await sendBookingApprovedEmail(emailParams)
+          } else {
+            await sendBookingRejectedEmail({
+              ...emailParams,
+              rejectionReason: bookingData.rejection_reason || undefined
+            })
+          }
+        } catch (emailErr) {
+          console.error('[PATCH BOOKING] Email notification failed (non-critical):', emailErr)
+        }
+      })
     }
 
     return { message: `Pemesanan ${statusMessages[status as BookingStatus]}` }

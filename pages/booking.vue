@@ -107,6 +107,22 @@
                     <p class="text-sm font-medium text-gray-800 mt-0.5">{{ user?.unit_name || '–' }}</p>
                   </div>
                 </div>
+                <!-- Kuota Pemesanan -->
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 flex-shrink-0">
+                    <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </span>
+                  <div>
+                    <p class="text-xs text-gray-400 leading-none">Kuota Aktif</p>
+                    <p class="text-sm font-medium mt-0.5"
+                      :class="userQuota && userQuota.active_count >= userQuota.max_allowed ? 'text-red-600 font-bold' : 'text-gray-800'">
+                      {{ userQuota ? `${userQuota.active_count} / ${userQuota.max_allowed}` : '–' }}
+                    </p>
+                  </div>
+                </div>
               </div>
               <button @click="logout"
                 class="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200 text-sm font-medium w-full sm:w-auto">
@@ -153,6 +169,15 @@
                   </li>
                 </ol>
                 <div class="mt-4 pt-4 border-t border-blue-200">
+                  <!-- Kuota warning jika mendekati batas -->
+                  <div v-if="userQuota && userQuota.active_count >= userQuota.max_allowed"
+                    class="mb-3 flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span><strong>Kuota penuh!</strong> Anda sudah memiliki {{ userQuota.active_count }} pemesanan aktif (maks. {{ userQuota.max_allowed }}). Batalkan pemesanan yang ada untuk memesan baru.</span>
+                  </div>
                   <p class="text-sm text-blue-700">
                     <strong>Tips:</strong> Lihat pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
                     berubah menjadi
@@ -167,6 +192,116 @@
               </div>
             </div>
           </div>
+
+          <!-- ── Kalender Mingguan ──────────────────────────────────────────── -->
+          <div class="mb-10">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <h2 class="text-xl font-bold text-gray-800">📅 Jadwal Mingguan Ruangan</h2>
+              <div class="flex items-center gap-2">
+                <button @click="navigateWeek(-1)"
+                  class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-all" title="Minggu sebelumnya">
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <span class="text-sm font-medium text-gray-700 min-w-max">
+                  {{ weeklyData ? `${formatShortDate(weeklyData.week_start)} – ${formatShortDate(weeklyData.week_end)}` : 'Memuat...' }}
+                </span>
+                <button @click="navigateWeek(1)"
+                  class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-all" title="Minggu depan">
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+                <button @click="navigateWeek(0)"
+                  class="text-xs px-3 py-1.5 rounded-lg bg-[#882f1d] text-white hover:bg-[#6b2416] transition-all">
+                  Minggu Ini
+                </button>
+              </div>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="weeklyLoading" class="flex items-center justify-center py-10 text-gray-400">
+              <svg class="w-5 h-5 animate-spin mr-2 text-[#882f1d]" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+              </svg>
+              Memuat jadwal...
+            </div>
+
+            <!-- Calendar Grid (Desktop) -->
+            <div v-else-if="weeklyData" class="overflow-x-auto rounded-xl border border-gray-200 hidden md:block">
+              <table class="w-full text-xs border-collapse">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th class="text-left px-3 py-3 text-gray-500 font-semibold border-b border-gray-200 min-w-[120px]">Ruangan</th>
+                    <th v-for="day in weeklyData.days" :key="day"
+                      class="px-2 py-3 text-center text-gray-600 font-semibold border-b border-gray-200 min-w-[100px]"
+                      :class="isToday(day) ? 'bg-orange-50 text-[#882f1d]' : ''">
+                      <div>{{ getDayName(day) }}</div>
+                      <div class="text-xs font-normal text-gray-400">{{ formatShortDate(day) }}</div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="room in weeklyData.rooms" :key="room.id" class="border-b border-gray-100 hover:bg-gray-50/50">
+                    <td class="px-3 py-2 font-medium text-gray-700 align-top">{{ room.name }}</td>
+                    <td v-for="day in weeklyData.days" :key="day"
+                      class="px-1 py-1 align-top border-l border-gray-100"
+                      :class="isToday(day) ? 'bg-orange-50/30' : ''">
+                      <div class="space-y-1">
+                        <div v-for="b in getBookingsForCell(room.id, day)" :key="b.id"
+                          :class="b.status === 'APPROVED' ? 'bg-green-100 border-green-300 text-green-800' : 'bg-yellow-100 border-yellow-300 text-yellow-800'"
+                          class="border rounded px-1.5 py-1"
+                          :title="`${b.event_name} — ${b.requester_name} (${b.start_formatted}–${b.end_formatted})`">
+                          <div class="font-semibold truncate max-w-[90px]">{{ b.event_name }}</div>
+                          <div class="text-xs opacity-75">{{ b.start_formatted }}–{{ b.end_formatted }}</div>
+                        </div>
+                        <div v-if="getBookingsForCell(room.id, day).length === 0"
+                          class="text-gray-300 text-center py-1 text-xs">—</div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Mobile: list per-day -->
+            <div v-else-if="weeklyData" class="md:hidden space-y-3">
+              <div v-for="day in weeklyData.days" :key="day" class="rounded-xl border border-gray-200 overflow-hidden">
+                <div class="px-4 py-2 font-semibold text-sm"
+                  :class="isToday(day) ? 'bg-[#882f1d] text-white' : 'bg-gray-50 text-gray-700'">
+                  {{ getDayName(day) }}, {{ formatShortDate(day) }}
+                </div>
+                <div class="divide-y divide-gray-100">
+                  <template v-for="room in weeklyData.rooms" :key="room.id">
+                    <div v-if="getBookingsForCell(room.id, day).length > 0" class="px-4 py-2">
+                      <p class="text-xs font-semibold text-gray-500 mb-1">{{ room.name }}</p>
+                      <div v-for="b in getBookingsForCell(room.id, day)" :key="b.id"
+                        :class="b.status === 'APPROVED' ? 'bg-green-50 text-green-800' : 'bg-yellow-50 text-yellow-800'"
+                        class="rounded px-2 py-1 text-xs mb-1">
+                        <span class="font-semibold">{{ b.event_name }}</span>
+                        <span class="text-xs opacity-75 ml-1">({{ b.start_formatted }}–{{ b.end_formatted }})</span>
+                      </div>
+                    </div>
+                  </template>
+                  <div v-if="weeklyData.rooms && !weeklyData.rooms.some(r => getBookingsForCell(r.id, day).length > 0)"
+                    class="px-4 py-3 text-sm text-gray-400 text-center">Tidak ada pemesanan</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded bg-green-200 border border-green-300 inline-block"></span> Disetujui
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded bg-yellow-200 border border-yellow-300 inline-block"></span> Menunggu
+              </div>
+            </div>
+          </div>
+          <!-- ── End Kalender Mingguan ─────────────────────────────────────── -->
 
           <!-- Divider -->
           <div class="flex items-center gap-4 my-8">
@@ -937,6 +1072,87 @@ const roomAvailability = ref([])
 const selectedDate = ref('')
 const expandedRooms = ref({}) // For mobile card collapse/expand
 
+// \u2500\u2500 Kuota pemesanan user \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const userQuota = ref(null) // { active_count, max_allowed, remaining, can_book }
+
+const loadUserQuota = async () => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) return
+    const result = await $fetch('/api/bookings/my-quota', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    userQuota.value = result
+  } catch (err) {
+    console.warn('[QUOTA] Failed to load quota:', err)
+    userQuota.value = null
+  }
+}
+
+// \u2500\u2500 Kalender Mingguan \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+const weeklyData  = ref(null)
+const weeklyLoading = ref(false)
+const currentWeekStart = ref('') // YYYY-MM-DD of the Monday being displayed
+
+const loadWeeklySchedule = async (startDate = '') => {
+  weeklyLoading.value = true
+  try {
+    const params = startDate ? { start_date: startDate } : {}
+    const data = await $fetch('/api/bookings/weekly-schedule', { query: params })
+    weeklyData.value = data
+    currentWeekStart.value = data.week_start
+  } catch (err) {
+    console.error('[WEEKLY SCHEDULE] Failed:', err)
+    weeklyData.value = null
+  } finally {
+    weeklyLoading.value = false
+  }
+}
+
+// Navigate week: direction -1 = prev, 0 = current, 1 = next
+const navigateWeek = (direction: number) => {
+  if (direction === 0) {
+    loadWeeklySchedule('')
+    return
+  }
+  const base = currentWeekStart.value
+    ? new Date(`${currentWeekStart.value}T00:00:00`)
+    : new Date()
+  base.setDate(base.getDate() + direction * 7)
+  const y = base.getFullYear()
+  const m = String(base.getMonth() + 1).padStart(2, '0')
+  const d = String(base.getDate()).padStart(2, '0')
+  loadWeeklySchedule(`${y}-${m}-${d}`)
+}
+
+// Get all bookings for a specific room + date cell
+const getBookingsForCell = (roomId: number, dateKey: string) => {
+  if (!weeklyData.value?.bookings) return []
+  return weeklyData.value.bookings.filter(
+    (b: any) => b.room_id === roomId && b.date_key === dateKey
+  )
+}
+
+// Format YYYY-MM-DD to "Sen 28 Jul"
+const formatShortDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  const d = new Date(`${dateStr}T00:00:00`)
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })
+}
+
+// Day name for header
+const getDayName = (dateStr: string) => {
+  if (!dateStr) return ''
+  const d = new Date(`${dateStr}T00:00:00`)
+  return d.toLocaleDateString('id-ID', { weekday: 'short', timeZone: 'Asia/Jakarta' })
+}
+
+// Check if a date string equals today
+const isToday = (dateStr: string) => {
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
+  return dateStr === today
+}
+
 // Pagination state
 const currentPage = ref(1)
 const itemsPerPage = ref(6) // Show 6 bookings per page (2 rows of 3 cards)
@@ -1255,7 +1471,12 @@ onMounted(async () => {
 
       user.value = response
       isLoggedIn.value = true
-      await loadData()
+      // Load booking data, quota, and weekly calendar in parallel
+      await Promise.all([
+        loadData(),
+        loadUserQuota(),
+        loadWeeklySchedule()
+      ])
     } catch (error) {
       console.error('[MOUNTED] Token invalid, removing:', error)
       localStorage.removeItem('auth_token')
@@ -1319,7 +1540,11 @@ const login = async () => {
 
     user.value = userResponse
     isLoggedIn.value = true
-    await loadData()
+    await Promise.all([
+      loadData(),
+      loadUserQuota(),
+      loadWeeklySchedule()
+    ])
   } catch (error) {
     console.error('[Booking Login] Error:', error)
     loginError.value = error.data?.statusMessage || 'Login gagal'
