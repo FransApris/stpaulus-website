@@ -860,27 +860,28 @@
           </div>
 
           <!-- Room Availability Table -->
-          <div class="overflow-x-hidden w-full">
-            <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-4">Peta Pemesanan Ruangan</h2>
+          <div class="w-full max-w-full overflow-x-hidden">
+            <h2 class="text-xl sm:text-2xl font-cinzel font-semibold text-[#882f1d] mb-4 break-words">Peta Pemesanan Ruangan</h2>
 
             <!-- Date Selector -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Tanggal</label>
-              <div class="flex items-center gap-2">
+            <div class="mb-4 w-full">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Pilih Tanggal</label>
+              <div class="flex items-center justify-between gap-1.5 sm:gap-2 w-full max-w-full">
                 <button @click="navigateDate(-1)"
-                  class="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+                  class="flex items-center justify-center gap-1 px-2.5 py-2 sm:px-3.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium flex-shrink-0"
                   title="Hari sebelumnya">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                   </svg>
-                  Kemarin
+                  <span>Kemarin</span>
                 </button>
-                <input v-model="selectedDate" type="date" @change="loadRoomAvailability" class="p-2 border rounded" />
+                <input v-model="selectedDate" type="date" @change="loadRoomAvailability"
+                  class="p-2 border rounded-lg text-xs sm:text-sm font-semibold text-center text-gray-800 bg-white border-gray-300 min-w-0 flex-1 focus:ring-2 focus:ring-[#882f1d]" />
                 <button @click="navigateDate(1)"
-                  class="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-sm font-medium"
+                  class="flex items-center justify-center gap-1 px-2.5 py-2 sm:px-3.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium flex-shrink-0"
                   title="Hari berikutnya">
-                  Besok
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span>Besok</span>
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
@@ -888,9 +889,9 @@
             </div>
 
             <!-- Mobile View: Card Layout -->
-            <div class="md:hidden space-y-4 mb-6 w-full overflow-x-hidden mobile-cards-only">
+            <div class="md:hidden space-y-4 mb-6 w-full max-w-full overflow-x-hidden mobile-cards-only">
               <div v-for="room in roomAvailability" :key="room.id"
-                class="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300 w-full max-w-full overflow-hidden">
+                class="bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300 w-full max-w-full overflow-hidden">
                 <!-- Room Name with Icon -->
                 <div class="flex items-center mb-4 pb-3 border-b-2 border-gray-100">
                   <div class="bg-[#882f1d]/10 p-2 rounded-lg mr-3">
