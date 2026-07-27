@@ -6,6 +6,7 @@ type BookingQueryFeatures = {
     hasRejectionReason: boolean
     hasCancellationReason: boolean
     hasUserPhone: boolean
+    hasRecurrencePattern: boolean
 }
 
 const buildBookingsQuery = (canManageAllBookings: boolean, features: BookingQueryFeatures) => {
@@ -13,6 +14,7 @@ const buildBookingsQuery = (canManageAllBookings: boolean, features: BookingQuer
     const rejectionReasonSelect = features.hasRejectionReason ? 'b.rejection_reason' : 'NULL as rejection_reason'
     const cancellationReasonSelect = features.hasCancellationReason ? 'b.cancellation_reason' : 'NULL as cancellation_reason'
     const userPhoneSelect = features.hasUserPhone ? 'u.contact_phone as user_phone' : 'NULL as user_phone'
+    const recurrenceSelect = features.hasRecurrencePattern ? 'b.recurrence_pattern, b.parent_booking_id' : 'NULL as recurrence_pattern, NULL as parent_booking_id'
 
     let sql = `
       SELECT 
@@ -26,6 +28,7 @@ const buildBookingsQuery = (canManageAllBookings: boolean, features: BookingQuer
         b.status,
         ${rejectionReasonSelect},
         ${cancellationReasonSelect},
+        ${recurrenceSelect},
         b.created_at,
         b.updated_at,
         r.name as room_name,
@@ -67,6 +70,9 @@ const getMissingColumnFeature = (error: any): keyof BookingQueryFeatures | null 
     }
     if (message.includes('contact_phone')) {
         return 'hasUserPhone'
+    }
+    if (message.includes('recurrence_pattern') || message.includes('parent_booking_id')) {
+        return 'hasRecurrencePattern'
     }
 
     return null
@@ -151,7 +157,8 @@ export default defineEventHandler(async (event) => {
             hasRequesterName: true,
             hasRejectionReason: true,
             hasCancellationReason: true,
-            hasUserPhone: true
+            hasUserPhone: true,
+            hasRecurrencePattern: true
         }
 
         let bookings: any[] = []

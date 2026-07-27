@@ -42,6 +42,8 @@ export default defineEventHandler(async (event) => {
       b.status,
       b.rejection_reason,
       b.cancellation_reason,
+      b.recurrence_pattern,
+      b.parent_booking_id,
       b.created_at,
       b.deleted_at,
       r.name as room_name,

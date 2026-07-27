@@ -723,6 +723,14 @@
                         class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-400 text-white">
                         SELESAI
                       </span>
+                      <!-- Badge Pemesanan Berulang / Rutin -->
+                      <span v-if="booking.recurrence_pattern"
+                        class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-purple-100 text-purple-800 flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        {{ getRecurrenceLabel(booking.recurrence_pattern) }}
+                      </span>
                     </div>
                   </div>
 
@@ -868,6 +876,23 @@
                       <span>{{ formatTime(selectedBookingDetail.start_time) }} - {{
                         formatTime(selectedBookingDetail.end_time) }}</span>
                     </div>
+                  </div>
+                </div>
+
+                <!-- Info Pemesanan Berulang / Rutin -->
+                <div v-if="selectedBookingDetail.recurrence_pattern || selectedBookingDetail.parent_booking_id">
+                  <label class="text-sm font-semibold text-purple-800 uppercase tracking-wide">Tipe Pemesanan</label>
+                  <div class="mt-1 bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-center justify-between">
+                    <div class="flex items-center text-purple-900 text-sm font-medium">
+                      <svg class="w-4 h-4 mr-2 text-purple-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span>{{ getRecurrenceLabel(selectedBookingDetail.recurrence_pattern) }}</span>
+                    </div>
+                    <span class="text-xs text-purple-700 bg-purple-100 px-2 py-0.5 rounded font-semibold">
+                      {{ selectedBookingDetail.parent_booking_id ? 'Jadwal Seri' : 'Jadwal Utama' }}
+                    </span>
                   </div>
                 </div>
 
@@ -1627,6 +1652,13 @@ const formatTime = (dateTime) => {
     minute: '2-digit',
     timeZone: 'Asia/Jakarta'
   }).replace('.', ':')
+}
+
+const getRecurrenceLabel = (pattern) => {
+  if (pattern === 'WEEKLY') return 'Rutin (Mingguan)'
+  if (pattern === 'BIWEEKLY') return 'Rutin (2-Mingguan)'
+  if (pattern === 'MONTHLY') return 'Rutin (Bulanan)'
+  return 'Pemesanan Rutin'
 }
 
 const getStatusBadgeClass = (status) => {

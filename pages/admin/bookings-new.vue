@@ -123,6 +123,10 @@
                       <p>⏰ Waktu: <span class="font-medium">{{ formatBookingTime(booking.start_time, booking.end_time)
                           }}</span></p>
                       <p>📊 Status: <span :class="getStatusClass(booking.status)">{{ booking.status }}</span></p>
+                      <p v-if="booking.recurrence_pattern || booking.parent_booking_id" class="text-purple-700 font-semibold flex items-center gap-1">
+                        🔄 Rutin: <span>{{ getRecurrenceLabel(booking.recurrence_pattern) }}</span>
+                        <span class="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-medium">{{ booking.parent_booking_id ? 'Jadwal Seri' : 'Jadwal Utama' }}</span>
+                      </p>
                       <p v-if="booking.rejection_reason" class="text-red-600">❌ Alasan Penolakan: {{
                         booking.rejection_reason }}</p>
                       <p v-if="booking.cancellation_reason" class="text-orange-600">🚫 Alasan Pembatalan: {{
@@ -1071,6 +1075,13 @@ const toUtcDate = (s) => {
   const str = String(s)
   if (str.includes('Z') || str.includes('+')) return new Date(str)
   return new Date(str.replace(' ', 'T') + 'Z')
+}
+
+const getRecurrenceLabel = (pattern) => {
+  if (pattern === 'WEEKLY') return 'Mingguan'
+  if (pattern === 'BIWEEKLY') return '2-Mingguan'
+  if (pattern === 'MONTHLY') return 'Bulanan'
+  return 'Rutin'
 }
 
 const formatBookingDate = (startTime) => {
