@@ -1091,7 +1091,7 @@ const roomAvailability = ref([])
 const selectedDate = ref('')
 const expandedRooms = ref({}) // For mobile card collapse/expand
 
-// \u2500\u2500 Kuota pemesanan user \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// --- Kuota pemesanan user ---------------------------------------------
 const userQuota = ref(null) // { active_count, max_allowed, remaining, can_book }
 
 const loadUserQuota = async () => {
@@ -1108,7 +1108,7 @@ const loadUserQuota = async () => {
   }
 }
 
-// \u2500\u2500 Kalender Mingguan \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// --- Kalender Mingguan ------------------------------------------------
 const weeklyData  = ref(null)
 const weeklyLoading = ref(false)
 const currentWeekStart = ref('') // YYYY-MM-DD of the Monday being displayed
