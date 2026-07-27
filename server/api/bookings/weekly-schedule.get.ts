@@ -89,8 +89,15 @@ export default defineEventHandler(async (event) => {
     const endBuffer = new Date(weekEnd)
     endBuffer.setDate(endBuffer.getDate() + 1)
 
-    const mysqlStart = startBuffer.toISOString().slice(0, 19).replace('T', ' ')
-    const mysqlEnd   = endBuffer.toISOString().slice(0, 19).replace('T', ' ')
+    const formatLocalDateStr = (d: Date) => {
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${y}-${m}-${day}`
+    }
+
+    const mysqlStart = `${formatLocalDateStr(startBuffer)} 00:00:00`
+    const mysqlEnd   = `${formatLocalDateStr(endBuffer)} 23:59:59`
 
     let bookings: any[] = []
     try {
@@ -137,12 +144,23 @@ export default defineEventHandler(async (event) => {
     }
 
     // ── 4. Format booking times safely ───────────────────────────────────────
-    const toUTCStr = (s: any): string =>
-      s ? String(s).replace(' ', 'T') + (String(s).endsWith('Z') ? '' : 'Z') : ''
+    const toUTCStr = (s: any): string => {
+      if (!s) return ''
+      if (s instanceof Date) return s.toISOString()
+      const str = String(s).trim()
+      return str.replace(' ', 'T') + (str.endsWith('Z') ? '' : '')
+    }
 
     const fmtTime = (raw: any) => {
       if (!raw) return ''
-      const d = new Date(toUTCStr(raw))
+      if (typeof raw === 'string') {
+        const parts = raw.split(' ')
+        if (parts.length >= 2) {
+          const timePart = parts[1].slice(0, 5)
+          if (timePart.includes(':')) return timePart.replace(':', '.')
+        }
+      }
+      const d = raw instanceof Date ? raw : new Date(raw)
       if (isNaN(d.getTime())) return ''
       return d.toLocaleTimeString('id-ID', {
         hour: '2-digit', minute: '2-digit',
@@ -152,7 +170,14 @@ export default defineEventHandler(async (event) => {
 
     const fmtDateKey = (raw: any): string => {
       if (!raw) return ''
-      const d = new Date(toUTCStr(raw))
+      if (typeof raw === 'string') {
+        const str = raw.trim()
+        const datePart = str.split(' ')[0].split('T')[0]
+        if (datePart.length === 10 && datePart.charAt(4) === '-' && datePart.charAt(7) === '-') {
+          return datePart
+        }
+      }
+      const d = raw instanceof Date ? raw : new Date(raw)
       if (isNaN(d.getTime())) return ''
       return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
     }
