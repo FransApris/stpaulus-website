@@ -116,11 +116,16 @@
                     </svg>
                   </span>
                   <div>
-                    <p class="text-xs text-gray-400 leading-none">Kuota Aktif</p>
+                    <p class="text-xs text-gray-400 leading-none">Kuota Bulan Ini</p>
                     <p class="text-sm font-medium mt-0.5"
-                      :class="userQuota && userQuota.active_count >= userQuota.max_allowed ? 'text-red-600 font-bold' : 'text-gray-800'">
-                      {{ userQuota ? `${userQuota.active_count} / ${userQuota.max_allowed}` : '–' }}
+                      :class="userQuota && !userQuota.is_unlimited && userQuota.monthly_count >= userQuota.max_allowed
+                        ? 'text-red-600 font-bold'
+                        : userQuota && userQuota.is_unlimited ? 'text-green-600' : 'text-gray-800'">
+                      <template v-if="!userQuota">–</template>
+                      <template v-else-if="userQuota.is_unlimited">∞ Tidak Terbatas</template>
+                      <template v-else>{{ userQuota.monthly_count }} / {{ userQuota.max_allowed }}</template>
                     </p>
+                    <p v-if="userQuota && userQuota.period" class="text-xs text-gray-400">{{ userQuota.period }}</p>
                   </div>
                 </div>
               </div>
@@ -169,14 +174,28 @@
                   </li>
                 </ol>
                 <div class="mt-4 pt-4 border-t border-blue-200">
-                  <!-- Kuota warning jika mendekati batas -->
-                  <div v-if="userQuota && userQuota.active_count >= userQuota.max_allowed"
+                  <!-- Peringatan kuota penuh -->
+                  <div v-if="userQuota && !userQuota.is_unlimited && userQuota.monthly_count >= userQuota.max_allowed"
                     class="mb-3 flex items-center gap-2 text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-sm">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span><strong>Kuota penuh!</strong> Anda sudah memiliki {{ userQuota.active_count }} pemesanan aktif (maks. {{ userQuota.max_allowed }}). Batalkan pemesanan yang ada untuk memesan baru.</span>
+                    <span>
+                      <strong>Kuota bulan ini penuh!</strong>
+                      Anda sudah memiliki {{ userQuota.monthly_count }} dari {{ userQuota.max_allowed }} pemesanan
+                      di bulan <strong>{{ userQuota.period }}</strong>.
+                      Kuota akan direset bulan depan.
+                    </span>
+                  </div>
+                  <!-- Info kuota tidak terbatas untuk DPP/BGKP -->
+                  <div v-else-if="userQuota && userQuota.is_unlimited"
+                    class="mb-3 flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Akun Anda (DPP/BGKP) tidak memiliki batas pemesanan bulanan.</span>
                   </div>
                   <p class="text-sm text-blue-700">
                     <strong>Tips:</strong> Lihat pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan

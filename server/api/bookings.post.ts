@@ -181,26 +181,50 @@ export default defineEventHandler(async (event) => {
       // Room has no restrictions, allow booking
     }
 
-    // ── Cek kuota maks pemesanan aktif per user ───────────────────────────────
-    const MAX_ACTIVE_BOOKINGS = 3
-    const quotaResult = await getQuery(`
-      SELECT COUNT(*) AS count
-      FROM bookings
-      WHERE user_id = ?
-        AND status IN ('PENDING', 'APPROVED')
-        AND end_time > NOW()
-        AND deleted_at IS NULL
-    `, [userId]) as any
+    // ── Cek kuota pemesanan bulanan per user ──────────────────────────────────
+    // DPP (PARISH_COUNCIL) dan BGKP (CATEGORICAL_GROUP) tidak terkena batas.
+    // User lain dibatasi MAX_MONTHLY_BOOKINGS per bulan kalender.
+    const UNLIMITED_CATEGORIES = ['PARISH_COUNCIL', 'CATEGORICAL_GROUP']
+    const MAX_MONTHLY_BOOKINGS = 3
 
-    const activeCount = Number(quotaResult?.count ?? 0)
-    if (activeCount >= MAX_ACTIVE_BOOKINGS) {
-      throw createError({
-        statusCode: 429,
-        statusMessage: `Anda sudah memiliki ${activeCount} pemesanan aktif. Maksimal ${MAX_ACTIVE_BOOKINGS} pemesanan aktif diperbolehkan. Selesaikan atau batalkan pemesanan yang ada terlebih dahulu.`
-      })
+    const userCategoryRaw = String(user.user_category || '').toUpperCase()
+    const isUnlimited = UNLIMITED_CATEGORIES.includes(userCategoryRaw)
+
+    if (!isUnlimited) {
+      // Hitung pemesanan bulan ini (UTC boundaries)
+      const now = new Date()
+      const firstDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0))
+        .toISOString().slice(0, 19).replace('T', ' ')
+      const lastDay  = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0, 23, 59, 59))
+        .toISOString().slice(0, 19).replace('T', ' ')
+
+      const quotaResult = await getQuery(`
+        SELECT COUNT(*) AS count
+        FROM bookings
+        WHERE user_id = ?
+          AND status IN ('PENDING', 'APPROVED')
+          AND start_time >= ?
+          AND start_time <= ?
+          AND deleted_at IS NULL
+      `, [userId, firstDay, lastDay]) as any
+
+      const monthlyCount = Number(quotaResult?.count ?? 0)
+
+      if (monthlyCount >= MAX_MONTHLY_BOOKINGS) {
+        const monthLabel = now.toLocaleDateString('id-ID', {
+          month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta'
+        })
+        throw createError({
+          statusCode: 429,
+          statusMessage: `Anda sudah memiliki ${monthlyCount} pemesanan di bulan ${monthLabel}. ` +
+            `Maksimal ${MAX_MONTHLY_BOOKINGS} pemesanan per bulan untuk kategori Anda.`
+        })
+      }
+
+      console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, max: MAX_MONTHLY_BOOKINGS })
+    } else {
+      console.log('[CREATE BOOKING] Quota check skipped — unlimited category:', userCategoryRaw)
     }
-
-    console.log('[CREATE BOOKING] Quota check passed:', { activeCount, max: MAX_ACTIVE_BOOKINGS })
 
     // Serialize booking creation per room to prevent race-condition double booking.
     const lockName = `booking_room_${room_id}`
