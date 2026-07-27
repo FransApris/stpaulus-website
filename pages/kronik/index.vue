@@ -142,30 +142,30 @@
           </div>
 
           <!-- Pagination -->
-          <div class="bg-gray-50 px-6 py-4 border-t flex items-center justify-between">
-            <div class="text-sm text-gray-700">
+          <div class="bg-gray-50 px-4 sm:px-6 py-4 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
               Menampilkan <span class="font-medium">{{ ((currentPage - 1) * pageSize) + 1 }}</span>
               sampai <span class="font-medium">{{ Math.min(currentPage * pageSize, totalEntries) }}</span>
               dari <span class="font-medium">{{ totalEntries }}</span> kronik
             </div>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center justify-center space-x-1.5 sm:space-x-2">
               <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-                class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors"
                 :class="currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'">
                 Sebelumnya
               </button>
 
               <template v-for="page in visiblePages" :key="page">
                 <button v-if="page !== '...'" @click="goToPage(page)"
-                  class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors"
                   :class="page === currentPage ? 'bg-[#882f1d] text-white' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'">
                   {{ page }}
                 </button>
-                <span v-else class="px-2 text-gray-500">...</span>
+                <span v-else class="px-1.5 text-gray-500 text-xs sm:text-sm">...</span>
               </template>
 
               <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-                class="px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                class="px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-colors"
                 :class="currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'">
                 Selanjutnya
               </button>
