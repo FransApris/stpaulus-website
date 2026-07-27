@@ -395,7 +395,7 @@
                     <div class="flex flex-col gap-1 items-end">
                       <span :class="getStatusBadgeClass(booking.status)"
                         class="px-2.5 py-1 rounded-full text-xs font-semibold">
-                        {{ getStatusText(booking.status, booking.start_time) }}
+                        {{ getStatusText(booking.status, booking.start_time, booking.end_time) }}
                       </span>
                       <!-- Badge SELESAI untuk booking yang sudah lewat -->
                       <span v-if="isBookingPassed(booking.end_time) && showHistory"
@@ -523,7 +523,7 @@
                     <p class="mt-1">
                       <span :class="getStatusBadgeClass(selectedBookingDetail.status)"
                         class="inline-block px-3 py-1 rounded-full text-sm font-semibold">
-                        {{ getStatusText(selectedBookingDetail.status, selectedBookingDetail.start_time) }}
+                        {{ getStatusText(selectedBookingDetail.status, selectedBookingDetail.start_time, selectedBookingDetail.end_time) }}
                       </span>
                     </p>
                   </div>
@@ -881,6 +881,17 @@ const loginError = ref('')
 const bookingMessage = ref('')
 const bookingError = ref('')
 
+// Computed: Menampilkan kategori user dengan format yang mudah dibaca
+const displayUserCategory = computed(() => {
+  const cat = user.value?.user_category
+  if (!cat) return '–'
+  // Capitalize first letter of each word
+  return String(cat)
+    .split(/[_\s]+/)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(' ')
+})
+
 // Computed: Empty state messages
 const emptyStateTitle = computed(() =>
   showHistory.value
@@ -1018,13 +1029,11 @@ const viewBookingDetail = (booking) => {
   selectedBookingDetail.value = booking
 }
 
-const closeBookingDetail = async () => {
+const closeBookingDetail = () => {
   console.log('[CLOSE DETAIL] Closing booking detail modal')
   selectedBookingDetail.value = null
-  // Reload data to get latest status
-  console.log('[CLOSE DETAIL] Reloading booking data...')
-  await loadData()
-  console.log('[CLOSE DETAIL] Data reloaded')
+  // NOTE: tidak perlu reload data hanya karena modal detail ditutup;
+  // reload hanya dilakukan setelah tindakan yang mengubah data (booking baru, cancel, dll.)
 }
 
 const formatDate = (dateTime) => {
@@ -1093,10 +1102,10 @@ onMounted(async () => {
       console.log('[MOUNTED] User data loaded:', response)
 
       // Check if user is admin - redirect to admin panel
+      // Only redirect confirmed admin roles (NOT generic role_id check which is too broad)
       const isAdmin = response.role === 'super_admin' ||
         response.role === 'admin_komsos' ||
-        response.role === 'admin_sekretariat' ||
-        response.role_id !== null
+        response.role === 'admin_sekretariat'
 
       if (isAdmin) {
         console.log('[MOUNTED] Admin user detected, redirecting to admin panel...')
@@ -1157,10 +1166,10 @@ const login = async () => {
     console.log('[Booking Login] User response:', userResponse)
 
     // Check if user is admin - redirect to admin panel
+    // Only redirect confirmed admin roles (NOT generic role_id check which is too broad)
     const isAdmin = userResponse.role === 'super_admin' ||
       userResponse.role === 'admin_komsos' ||
-      userResponse.role === 'admin_sekretariat' ||
-      userResponse.role_id !== null
+      userResponse.role === 'admin_sekretariat'
 
     if (isAdmin) {
       console.log('[Booking Login] Admin user detected, redirecting to admin panel...')
@@ -1290,6 +1299,10 @@ const loadRoomAvailability = async () => {
 
 const selectRoom = (room) => {
   selectedRoom.value = room
+  // Reset form dan pesan error/sukses agar tidak terbawa dari ruangan sebelumnya
+  bookingError.value = ''
+  bookingMessage.value = ''
+  bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
 }
 
 const createBooking = async () => {
@@ -1397,11 +1410,13 @@ const getStatusClass = (status) => {
   }
 }
 
-const getStatusText = (status, startTime) => {
+// BUG FIX: Gunakan end_time (bukan start_time) untuk menentukan apakah acara sudah selesai.
+// Sebelumnya menggunakan start_time sehingga status "Selesai" muncul saat acara masih berjalan.
+const getStatusText = (status, startTime, endTime) => {
   const now = new Date()
-  const eventStart = new Date(startTime)
+  const eventEnd = endTime ? new Date(endTime) : new Date(startTime)
 
-  if (status === 'APPROVED' && eventStart < now) {
+  if (status === 'APPROVED' && eventEnd < now) {
     return 'Selesai Digunakan'
   }
 
@@ -1492,13 +1507,16 @@ const navigateDate = (offset) => {
   animation: fadeIn 0.2s ease-out;
 }
 
+/* Unified fadeIn: fade in with slight upward movement */
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(-10px);
   }
 
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -1506,22 +1524,11 @@ const navigateDate = (offset) => {
   animation: slideUp 0.3s ease-out;
 }
 
+/* slideUp: used for modal inner panel and mobile cards */
 @keyframes slideUp {
   from {
+    opacity: 0;
     transform: translateY(20px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
   }
 
   to {
@@ -1535,18 +1542,6 @@ const navigateDate = (offset) => {
 }
 
 /* Mobile card animations */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .mobile-cards-only>* {
   animation: slideUp 0.4s ease-out backwards;
 }

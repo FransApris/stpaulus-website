@@ -61,4 +61,4 @@ Jangan panik. Ikuti langkah 1, 2, dan 3 di bawah ini secara berurutan.
 
 ---
 
-*(Dokumen ini bersifat sangat konfidensial dan hanya boleh diakses oleh Pastor Kepala, Ketua BGKP, dan Super Administrator Web Sekretariat.)*
+*(Dokumen ini bersifat sangat konfidensial dan hanya boleh diakses oleh Super Administrator Web.)*

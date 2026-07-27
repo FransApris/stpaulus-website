@@ -42,15 +42,16 @@ export default defineEventHandler(async (event) => {
 
       // Lock the target booking row so concurrent APPROVE requests cannot
       // both pass the conflict check at the same time (prevents race condition).
+      // Also filter deleted_at IS NULL to block operations on soft-deleted bookings.
       const [bookingRows] = await conn.query(
-        'SELECT * FROM bookings WHERE id = ? FOR UPDATE',
+        'SELECT * FROM bookings WHERE id = ? AND deleted_at IS NULL FOR UPDATE',
         [bookingId]
       ) as any
 
       const booking = bookingRows[0]
       if (!booking) {
         await conn.rollback()
-        throw createError({ statusCode: 404, statusMessage: 'Pemesanan tidak ditemukan' })
+        throw createError({ statusCode: 404, statusMessage: 'Pemesanan tidak ditemukan atau sudah dihapus' })
       }
 
       console.log('[APPROVE/REJECT BOOKING] Booking data:', {
@@ -68,11 +69,11 @@ export default defineEventHandler(async (event) => {
           })
         }
       } else if (status === 'CANCELLED') {
-        if (booking.status !== 'APPROVED') {
+        if (!['PENDING', 'APPROVED'].includes(booking.status)) {
           await conn.rollback()
           throw createError({
             statusCode: 400,
-            statusMessage: 'Hanya pemesanan APPROVED yang dapat dibatalkan'
+            statusMessage: 'Hanya pemesanan PENDING atau APPROVED yang dapat dibatalkan'
           })
         }
       }
@@ -116,9 +117,30 @@ export default defineEventHandler(async (event) => {
         if (conflictCount > 0) {
           const conflicting = conflictRows[0]
           await conn.rollback()
+
+          // Format times to WIB for readable error message
+          const formatWIBTime = (dt: Date | string) => {
+            const d = dt instanceof Date ? dt : new Date(String(dt).replace(' ', 'T') + (String(dt).endsWith('Z') ? '' : 'Z'))
+            return d.toLocaleTimeString('id-ID', {
+              hour: '2-digit', minute: '2-digit',
+              timeZone: 'Asia/Jakarta', hour12: false
+            }).replace(':', '.')
+          }
+          const formatWIBDate = (dt: Date | string) => {
+            const d = dt instanceof Date ? dt : new Date(String(dt).replace(' ', 'T') + (String(dt).endsWith('Z') ? '' : 'Z'))
+            return d.toLocaleDateString('id-ID', {
+              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+              timeZone: 'Asia/Jakarta'
+            })
+          }
+
+          const startFormatted = formatWIBTime(conflicting.start_time)
+          const endFormatted = formatWIBTime(conflicting.end_time)
+          const dateFormatted = formatWIBDate(conflicting.start_time)
+
           throw createError({
             statusCode: 409,
-            statusMessage: `Konflik waktu dengan pemesanan lain yang sudah disetujui: "${conflicting.event_name}" (${conflicting.start_time} – ${conflicting.end_time})`
+            statusMessage: `Konflik waktu dengan pemesanan lain yang sudah disetujui: "${conflicting.event_name}" pada ${dateFormatted} pukul ${startFormatted} – ${endFormatted}`
           })
         }
       }

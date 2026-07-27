@@ -11,13 +11,16 @@ export default defineEventHandler(async (event) => {
     
     console.log('[DELETE BOOKING] Request:', { bookingId, userId })
 
-    // Check if booking exists
-    const booking = await getQuery('SELECT * FROM bookings WHERE id = ?', [bookingId]) as any
+    // Check if booking exists and has not already been soft-deleted
+    const booking = await getQuery(
+      'SELECT * FROM bookings WHERE id = ? AND deleted_at IS NULL',
+      [bookingId]
+    ) as any
     
     if (!booking) {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Pemesanan tidak ditemukan'
+        statusMessage: 'Pemesanan tidak ditemukan atau sudah dihapus'
       })
     }
 
@@ -46,13 +49,17 @@ export default defineEventHandler(async (event) => {
     }
     // Admin can delete any booking regardless of status
 
-    // Delete the booking
-    await runQuery('DELETE FROM bookings WHERE id = ?', [bookingId])
+    // Soft-delete: set deleted_at instead of permanent DELETE
+    // This preserves audit history while hiding the booking from active lists.
+    await runQuery(
+      'UPDATE bookings SET deleted_at = NOW(), status = \'CANCELLED\', updated_at = NOW() WHERE id = ?',
+      [bookingId]
+    )
 
-    console.log('[DELETE BOOKING] Success:', { bookingId, deletedBy: isAdmin ? 'admin' : 'user' })
+    console.log('[DELETE BOOKING] Soft-deleted (cancelled):', { bookingId, deletedBy: isAdmin ? 'admin' : 'user' })
 
     return {
-      message: isAdmin ? 'Pemesanan berhasil dihapus oleh admin' : 'Pemesanan berhasil dibatalkan'
+      message: isAdmin ? 'Pemesanan berhasil dibatalkan oleh admin' : 'Pemesanan berhasil dibatalkan'
     }
   } catch (error: any) {
     console.error('[DELETE BOOKING] Error:', error)
