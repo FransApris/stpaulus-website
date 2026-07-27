@@ -102,8 +102,8 @@
         'absolute left-2.5 top-1/2 transform -translate-y-1/2 text-white/70 transition-all duration-300',
         scrolled ? 'w-3.5 h-3.5' : 'w-4 h-4'
       ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <circle cx="11" cy="11" r="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M20 20l-4.35-4.35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </div>
 
@@ -112,8 +112,8 @@
       class="hidden md:flex xl:hidden items-center justify-center w-8 h-8 bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg text-white transition-all duration-300 flex-shrink-0"
       type="button">
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <circle cx="11" cy="11" r="7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M20 20l-4.35-4.35" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     </button>
 
