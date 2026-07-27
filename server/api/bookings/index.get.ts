@@ -212,6 +212,8 @@ export default defineEventHandler(async (event) => {
             status: booking.status,
             rejection_reason: booking.rejection_reason,
             cancellation_reason: booking.cancellation_reason,
+            recurrence_pattern: booking.recurrence_pattern || null,
+            parent_booking_id: booking.parent_booking_id || null,
             created_at: toUTC(booking.created_at),
             updated_at: toUTC(booking.updated_at),
             user_name: booking.user_name,
