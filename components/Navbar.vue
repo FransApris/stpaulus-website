@@ -145,7 +145,7 @@
         <Teleport to="body">
           <transition name="dropdown">
             <div v-if="showUserDropdown" :style="userDropdownPosition"
-              class="fixed w-72 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
+              class="fixed w-72 max-w-[calc(100vw-24px)] bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200"
               style="z-index: 999999 !important;">
               <!-- User Info Header -->
               <div class="px-4 py-4 bg-gradient-to-br from-paulus-blue to-blue-700 text-white">
@@ -935,9 +935,26 @@ const toggleUserDropdown = () => {
 const updateUserDropdownPosition = () => {
   if (userButtonRef.value) {
     const rect = userButtonRef.value.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const dropdownWidth = Math.min(288, viewportWidth - 24) // 288px (w-72) or viewport - 24px
+
+    // Default right alignment to user button right edge
+    let leftPosition = rect.right - dropdownWidth
+
+    // If overflowing right edge of screen, align to right margin
+    if (leftPosition + dropdownWidth > viewportWidth - 12) {
+      leftPosition = viewportWidth - dropdownWidth - 12
+    }
+
+    // Clamp left edge so it never goes off the left screen edge (< 12px)
+    if (leftPosition < 12) {
+      leftPosition = 12
+    }
+
     userDropdownPosition.value = {
       top: `${rect.bottom + 8}px`,
-      left: `${rect.right - 280}px` // Align to right, width 280px
+      left: `${leftPosition}px`,
+      maxWidth: `calc(100vw - 24px)`
     }
   }
 }
@@ -973,6 +990,9 @@ onUnmounted(() => {
 const updateAllDropdownPositions = () => {
   if (activeDropdown.value) {
     updateDropdownPosition(activeDropdown.value)
+  }
+  if (showUserDropdown.value) {
+    updateUserDropdownPosition()
   }
 }
 
