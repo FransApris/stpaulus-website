@@ -311,8 +311,86 @@
                   {{ bookingError }}
                 </div>
 
+                <!-- ── Real-time Slot Availability Panel ──────────────────── -->
+                <!-- Checking spinner -->
+                <div v-if="slotChecking" class="flex items-center gap-2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
+                  <svg class="w-4 h-4 animate-spin text-[#882f1d] flex-shrink-0" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <span>Memeriksa ketersediaan ruangan...</span>
+                </div>
+
+                <!-- Available -->
+                <div v-else-if="slotCheckResult && slotCheckResult.available"
+                  class="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                  <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="font-medium">Slot waktu tersedia — Anda dapat melanjutkan pemesanan</span>
+                </div>
+
+                <!-- Soft conflict: only PENDING -->
+                <div v-else-if="slotCheckResult && slotCheckResult.soft_conflict"
+                  class="px-4 py-3 bg-yellow-50 border border-yellow-300 rounded-lg text-sm">
+                  <div class="flex items-start gap-2 mb-2">
+                    <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p class="font-semibold text-yellow-800">Ada pemesanan yang menunggu persetujuan di waktu ini</p>
+                      <p class="text-yellow-700 mt-0.5">Anda masih dapat memesan, namun mungkin ada konflik jika disetujui.</p>
+                    </div>
+                  </div>
+                  <ul class="mt-2 space-y-1.5 pl-7">
+                    <li v-for="c in slotCheckResult.conflicts" :key="c.id"
+                      class="flex items-center gap-2 text-yellow-800">
+                      <svg class="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="6" />
+                      </svg>
+                      <span>
+                        <strong>{{ c.event_name }}</strong> oleh {{ c.requester_name }}
+                        — Pukul {{ c.start_formatted }} – {{ c.end_formatted }}
+                        <span class="ml-1 px-1.5 py-0.5 bg-yellow-200 text-yellow-800 rounded text-xs font-semibold">MENUNGGU</span>
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- Hard conflict: APPROVED bookings exist -->
+                <div v-else-if="slotCheckResult && slotCheckResult.hard_conflict"
+                  class="px-4 py-3 bg-red-50 border border-red-300 rounded-lg text-sm">
+                  <div class="flex items-start gap-2 mb-2">
+                    <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p class="font-semibold text-red-800">Ruangan sudah dipesan pada waktu ini</p>
+                      <p class="text-red-700 mt-0.5">Silakan pilih waktu atau tanggal lain.</p>
+                    </div>
+                  </div>
+                  <ul class="mt-2 space-y-1.5 pl-7">
+                    <li v-for="c in slotCheckResult.conflicts" :key="c.id"
+                      class="flex items-center gap-2 text-red-800">
+                      <svg class="w-3.5 h-3.5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <circle cx="10" cy="10" r="6" />
+                      </svg>
+                      <span>
+                        <strong>{{ c.event_name }}</strong> oleh {{ c.requester_name }}
+                        — Pukul {{ c.start_formatted }} – {{ c.end_formatted }}
+                        <span :class="c.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
+                          class="ml-1 px-1.5 py-0.5 rounded text-xs font-semibold">
+                          {{ c.status === 'APPROVED' ? 'DISETUJUI' : 'MENUNGGU' }}
+                        </span>
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+                <!-- ── End Availability Panel ─────────────────────────────── -->
+
                 <div class="flex gap-3 pt-2">
-                  <button type="submit" :disabled="bookingLoading"
+                  <button type="submit" :disabled="bookingLoading || slotChecking || hasHardConflict"
+                    :title="hasHardConflict ? 'Waktu ini sudah dipesan. Pilih waktu lain.' : ''"
                     class="flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all">
                     {{ bookingLoading ? 'Memproses...' : 'Konfirmasi Pemesanan' }}
                   </button>
@@ -881,6 +959,68 @@ const loginError = ref('')
 const bookingMessage = ref('')
 const bookingError = ref('')
 
+// ── Real-time slot availability check ────────────────────────────────────────
+// null   = belum dicek (form belum lengkap)
+// object = hasil dari API check-availability
+const slotCheckResult = ref(null)
+const slotChecking = ref(false)
+
+// Debounce timer handle
+let slotCheckTimer = null
+
+// Cek apakah ada hard conflict (APPROVED) yang mencegah pemesanan
+const hasHardConflict = computed(() => slotCheckResult.value?.hard_conflict === true)
+
+// Fungsi cek ketersediaan slot, dipanggil setelah debounce
+const checkSlotAvailability = async () => {
+  const { event_date, start_time, end_time } = bookingForm.value
+  const roomId = selectedRoom.value?.id
+
+  // Reset jika form belum lengkap
+  if (!roomId || !event_date || !start_time || !end_time) {
+    slotCheckResult.value = null
+    return
+  }
+
+  // Validasi dasar sebelum kirim request
+  if (start_time >= end_time) {
+    slotCheckResult.value = null
+    return
+  }
+
+  slotChecking.value = true
+  slotCheckResult.value = null
+
+  try {
+    const result = await $fetch('/api/bookings/check-availability', {
+      query: {
+        room_id: roomId,
+        date: event_date,
+        start_time,
+        end_time
+      }
+    })
+    slotCheckResult.value = result
+  } catch (err) {
+    // Jika API gagal, jangan blokir user — cukup reset
+    slotCheckResult.value = null
+    console.warn('[SLOT CHECK] Failed:', err)
+  } finally {
+    slotChecking.value = false
+  }
+}
+
+// Watcher: trigger debounced check setiap kali tanggal atau waktu berubah
+watch(
+  () => [bookingForm.value.event_date, bookingForm.value.start_time, bookingForm.value.end_time],
+  () => {
+    // Reset hasil lama
+    slotCheckResult.value = null
+    if (slotCheckTimer) clearTimeout(slotCheckTimer)
+    slotCheckTimer = setTimeout(checkSlotAvailability, 600)
+  }
+)
+
 // Computed: Menampilkan kategori user dengan format yang mudah dibaca
 const displayUserCategory = computed(() => {
   const cat = user.value?.user_category
@@ -1303,6 +1443,13 @@ const selectRoom = (room) => {
   bookingError.value = ''
   bookingMessage.value = ''
   bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
+  // Reset slot availability check
+  slotCheckResult.value = null
+  slotChecking.value = false
+  if (slotCheckTimer) {
+    clearTimeout(slotCheckTimer)
+    slotCheckTimer = null
+  }
 }
 
 const createBooking = async () => {
@@ -1398,6 +1545,13 @@ const closeBookingModal = () => {
   bookingForm.value = { event_name: '', event_date: '', start_time: '', end_time: '' }
   bookingMessage.value = ''
   bookingError.value = ''
+  // Reset slot check state
+  slotCheckResult.value = null
+  slotChecking.value = false
+  if (slotCheckTimer) {
+    clearTimeout(slotCheckTimer)
+    slotCheckTimer = null
+  }
 }
 
 const getStatusClass = (status) => {
