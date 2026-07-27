@@ -205,6 +205,12 @@ const { isMaintenance } = useMaintenance('artikel')
 const route = useRoute();
 const slug = route.params.id;
 
+onMounted(() => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+})
+
 // Fetch data
 const { data: article, pending, error, refresh } = await useAsyncData(
   `artikel-${slug}`,

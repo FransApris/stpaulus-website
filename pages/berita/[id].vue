@@ -213,6 +213,12 @@ const { isMaintenance } = useMaintenance('berita')
 const route = useRoute();
 const slug = route.params.id;
 
+onMounted(() => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+})
+
 // Fetch data
 const { data: post, pending, error, refresh } = await useAsyncData(
   `berita-${slug}`,

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="min-h-screen pt-16 bg-gray-50">
     <!-- Header Section -->
     <section v-if="entry" class="bg-white border-b py-12">
@@ -84,6 +84,12 @@ definePageMeta({
 const route = useRoute()
 const entryId = String(route.params.id || '')
 const categorySlug = String(route.params.category || '')
+
+onMounted(() => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+})
 
 console.log('[Kronik Detail] Loading entry:', entryId, 'from category:', categorySlug)
 
