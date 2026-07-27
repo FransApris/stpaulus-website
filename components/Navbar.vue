@@ -322,14 +322,16 @@
     <!-- Mobile Controls: Search + Hamburger (User Menu is handled by avatar dropdown) -->
     <div class="md:hidden flex items-center gap-1.5 relative z-[100]">
       <!-- Login Button (Mobile) - When Not Logged In -->
-      <button v-if="!isLoggedIn" @click="showLoginModal = true"
-        class="p-2 text-white hover:text-[#c58229] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none rounded"
-        aria-label="Login" type="button">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      </button>
+      <ClientOnly>
+        <button v-if="!isLoggedIn" @click="showLoginModal = true"
+          class="p-2 text-white hover:text-[#c58229] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none rounded"
+          aria-label="Login" type="button">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          </svg>
+        </button>
+      </ClientOnly>
 
       <!-- Search Button (Mobile) -->
       <button @click="openMobileSearch" @keydown.enter="openMobileSearch" @keydown.space.prevent="openMobileSearch"
@@ -337,7 +339,7 @@
         aria-label="Search" type="button">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0118 0z" />
         </svg>
       </button>
 
@@ -360,43 +362,45 @@
         style="z-index: 99999 !important;" @click.stop>
 
         <!-- User Info Section (Mobile) - When Logged In -->
-        <div v-if="isLoggedIn" class="px-4 pb-4 mb-4 border-b border-gray-200">
-          <div class="flex items-center gap-3 p-3 bg-gradient-to-br from-paulus-blue to-blue-700 rounded-lg text-white">
-            <div
-              class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg">
-              {{ getUserInitials }}
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="font-bold truncate text-base">{{ user?.full_name || user?.username }}</div>
-              <div class="text-sm opacity-90 truncate">{{ user?.unit_name || user?.user_category || 'Umat Paroki' }}
+        <ClientOnly>
+          <div v-if="isLoggedIn" class="px-4 pb-4 mb-4 border-b border-gray-200">
+            <div class="flex items-center gap-3 p-3 bg-gradient-to-br from-paulus-blue to-blue-700 rounded-lg text-white">
+              <div
+                class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                {{ getUserInitials }}
               </div>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 mt-1">
-                {{ getUserRole }}
-              </span>
+              <div class="flex-1 min-w-0">
+                <div class="font-bold truncate text-base">{{ user?.full_name || user?.username }}</div>
+                <div class="text-sm opacity-90 truncate">{{ user?.unit_name || user?.user_category || 'Umat Paroki' }}
+                </div>
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 mt-1">
+                  {{ getUserRole }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Quick Access (Mobile) -->
+            <div class="mt-3 space-y-2">
+              <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="closeMobileMenu"
+                class="flex items-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-base">
+                <svg class="w-5 h-5 text-paulus-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="font-medium text-gray-800">Kelola Kronik</span>
+              </NuxtLink>
+
+              <NuxtLink to="/booking" @click="closeMobileMenu"
+                class="flex items-center gap-2 px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-base">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span class="font-medium text-gray-800">Pemesanan Ruang</span>
+              </NuxtLink>
             </div>
           </div>
-
-          <!-- Quick Access (Mobile) -->
-          <div class="mt-3 space-y-2">
-            <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="closeMobileMenu"
-              class="flex items-center gap-2 px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors text-base">
-              <svg class="w-5 h-5 text-paulus-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span class="font-medium text-gray-800">Kelola Kronik</span>
-            </NuxtLink>
-
-            <NuxtLink to="/booking" @click="closeMobileMenu"
-              class="flex items-center gap-2 px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-base">
-              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span class="font-medium text-gray-800">Pemesanan Ruang</span>
-            </NuxtLink>
-          </div>
-        </div>
+        </ClientOnly>
 
         <!-- Navigation Links -->
         <ul class="flex flex-col space-y-2 px-4">
