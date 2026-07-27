@@ -298,8 +298,8 @@
 </template>
 
 <script setup lang="ts">
-const { isMaintenance } = useMaintenance('bgkp-paroki')
 import { ref, computed, onMounted } from '#imports'
+const { isMaintenance } = useMaintenance('bgkp-paroki')
 
 // SEO
 useHead({

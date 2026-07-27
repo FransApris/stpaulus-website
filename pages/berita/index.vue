@@ -320,8 +320,8 @@
 </template>
 
 <script setup lang="ts">
-const { isMaintenance } = useMaintenance('berita')
 import { ref, computed, watch, onMounted } from "vue";
+const { isMaintenance } = useMaintenance('berita')
 
 // 1. Definisikan Cetak Biru (Interface) agar TypeScript mengenali properti data Anda
 interface Wilayah {

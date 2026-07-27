@@ -251,8 +251,8 @@
 </template>
 
 <script setup lang="ts">
-const { isMaintenance } = useMaintenance('dpp-paroki')
 import { ref, computed, onMounted } from '#imports'
+const { isMaintenance } = useMaintenance('dpp-paroki')
 
 // SEO
 useHead({
