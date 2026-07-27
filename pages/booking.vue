@@ -864,24 +864,53 @@
             <h2 class="text-xl sm:text-2xl font-cinzel font-semibold text-[#882f1d] mb-4 break-words">Peta Pemesanan Ruangan</h2>
 
             <!-- Date Selector -->
-            <div class="mb-4 w-full">
+            <div class="mb-5 w-full">
               <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Pilih Tanggal</label>
-              <div class="flex items-center justify-between gap-1.5 sm:gap-2 w-full max-w-full">
+              
+              <!-- Mobile Layout (< sm): 2 Rows -->
+              <div class="sm:hidden space-y-2 w-full">
+                <!-- Date Input Full Width -->
+                <input v-model="selectedDate" type="date" @change="loadRoomAvailability"
+                  class="w-full p-2.5 border rounded-xl text-sm font-semibold text-center text-gray-800 bg-white border-gray-300 focus:ring-2 focus:ring-[#882f1d] shadow-2xs" />
+                
+                <!-- Prev / Next Navigation Buttons 50/50 -->
+                <div class="grid grid-cols-2 gap-2 w-full">
+                  <button @click="navigateDate(-1)"
+                    class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 active:bg-gray-100 transition-colors text-xs font-semibold shadow-2xs"
+                    title="Hari sebelumnya">
+                    <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    <span>Kemarin</span>
+                  </button>
+                  <button @click="navigateDate(1)"
+                    class="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 active:bg-gray-100 transition-colors text-xs font-semibold shadow-2xs"
+                    title="Hari berikutnya">
+                    <span>Besok</span>
+                    <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Desktop / Tablet Layout (>= sm): Single Row -->
+              <div class="hidden sm:flex items-center gap-2 w-full">
                 <button @click="navigateDate(-1)"
-                  class="flex items-center justify-center gap-1 px-2.5 py-2 sm:px-3.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium flex-shrink-0"
+                  class="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium flex-shrink-0"
                   title="Hari sebelumnya">
-                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                   </svg>
                   <span>Kemarin</span>
                 </button>
                 <input v-model="selectedDate" type="date" @change="loadRoomAvailability"
-                  class="p-2 border rounded-lg text-xs sm:text-sm font-semibold text-center text-gray-800 bg-white border-gray-300 min-w-0 flex-1 focus:ring-2 focus:ring-[#882f1d]" />
+                  class="p-2 border rounded-xl text-sm font-semibold text-center text-gray-800 bg-white border-gray-300 flex-1 focus:ring-2 focus:ring-[#882f1d]" />
                 <button @click="navigateDate(1)"
-                  class="flex items-center justify-center gap-1 px-2.5 py-2 sm:px-3.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors text-xs sm:text-sm font-medium flex-shrink-0"
+                  class="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 transition-colors text-sm font-medium flex-shrink-0"
                   title="Hari berikutnya">
                   <span>Besok</span>
-                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
