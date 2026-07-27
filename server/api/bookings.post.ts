@@ -245,71 +245,102 @@ export default defineEventHandler(async (event) => {
 
       lockAcquired = true
 
-      const [conflicts] = await connection.query(`
-        SELECT 
-          b.id,
-          b.event_name,
-          b.start_time,
-          b.end_time,
-          b.status,
-          u.full_name
-        FROM bookings b
-        JOIN users u ON b.user_id = u.id
-        WHERE b.room_id = ? 
-        AND b.status IN ('APPROVED', 'PENDING')
-        AND NOT (b.end_time <= ? OR b.start_time >= ?)
-      `, [room_id, mysqlStart, mysqlEnd]) as any
+      // Calculate occurrences if recurring requested
+      const occurrences: { start: string; end: string }[] = [{ start: mysqlStart, end: mysqlEnd }]
 
-      console.log('[CREATE BOOKING] Conflict check result:', conflicts)
+      if (is_recurring && recurrence_pattern && repeat_until) {
+        const untilDate = new Date(`${repeat_until}T23:59:59`)
+        const durationMs = end.getTime() - start.getTime()
+        let currStart = new Date(start)
 
-      if (conflicts && conflicts.length > 0) {
-        const conflictInfo = conflicts[0]
-        console.log('[CREATE BOOKING] Conflict found:', conflictInfo)
+        while (true) {
+          if (recurrence_pattern === 'WEEKLY') {
+            currStart.setDate(currStart.getDate() + 7)
+          } else if (recurrence_pattern === 'BIWEEKLY') {
+            currStart.setDate(currStart.getDate() + 14)
+          } else if (recurrence_pattern === 'MONTHLY') {
+            currStart.setMonth(currStart.getMonth() + 1)
+          } else {
+            break
+          }
 
-        // Format waktu ke WIB (UTC+7) agar sesuai tampilan frontend
-        const formatWIBTime = (dt: Date | string) => {
-          const d = dt instanceof Date ? dt : new Date(dt as string)
-          return d.toLocaleTimeString('id-ID', {
-            hour: '2-digit', minute: '2-digit',
-            timeZone: 'Asia/Jakarta', hour12: false
-          }).replace(':', '.')
+          if (currStart > untilDate) break
+          if (occurrences.length >= 20) break // Safety cap max 20 occurrences
+
+          const currEnd = new Date(currStart.getTime() + durationMs)
+          occurrences.push({
+            start: currStart.toISOString().slice(0, 19).replace('T', ' '),
+            end: currEnd.toISOString().slice(0, 19).replace('T', ' ')
+          })
         }
-        const startFormatted = formatWIBTime(conflictInfo.start_time)
-        const endFormatted = formatWIBTime(conflictInfo.end_time)
-
-        const statusText = conflictInfo.status === 'PENDING' ? 'sedang menunggu persetujuan' : 'sudah disetujui'
-        throw createError({
-          statusCode: 409,
-          statusMessage: `Ruangan sudah dipesan oleh ${conflictInfo.full_name} dari pukul ${startFormatted} - ${endFormatted} (${statusText}). Silakan pilih waktu lain.`
-        })
       }
 
-      console.log('[CREATE BOOKING] No conflicts found, proceeding with booking...')
+      console.log('[CREATE BOOKING] Generated occurrences count:', occurrences.length)
+
+      // Check conflicts for ALL occurrences
+      for (const occ of occurrences) {
+        const [conflicts] = await connection.query(`
+          SELECT b.id, b.event_name, b.start_time, b.end_time, b.status, u.full_name
+          FROM bookings b
+          JOIN users u ON b.user_id = u.id
+          WHERE b.room_id = ? 
+            AND b.deleted_at IS NULL
+            AND b.status IN ('APPROVED', 'PENDING')
+            AND NOT (b.end_time <= ? OR b.start_time >= ?)
+          LIMIT 1
+        `, [room_id, occ.start, occ.end]) as any[]
+
+        if (conflicts && conflicts.length > 0) {
+          const conflictInfo = conflicts[0]
+          const formatWIBTime = (dt: Date | string) => {
+            const d = dt instanceof Date ? dt : new Date(dt as string)
+            return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).replace(':', '.')
+          }
+          const startFormatted = formatWIBTime(conflictInfo.start_time)
+          const endFormatted = formatWIBTime(conflictInfo.end_time)
+          const conflictDateStr = occ.start.slice(0, 10)
+
+          throw createError({
+            statusCode: 409,
+            statusMessage: `Konflik jadwal pada ${conflictDateStr}: Ruangan dipesan oleh ${conflictInfo.full_name} (${startFormatted} - ${endFormatted}).`
+          })
+        }
+      }
+
+      console.log('[CREATE BOOKING] No conflicts found across occurrences, creating entries...')
 
       // Determine status based on room settings
       const status = room.requires_approval ? 'PENDING' : 'APPROVED'
-
-      // Insert booking
       const normalizedRequesterName = String(requester_name || '').trim() || String(user.full_name || '').trim()
-
-      let result: any
       const recPattern = is_recurring ? (recurrence_pattern || 'WEEKLY') : null
 
-      try {
-        const [insertResult] = await connection.query(`
-          INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status, recurrence_pattern)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `, [room_id, userId, event_name, normalizedRequesterName, mysqlStart, mysqlEnd, status, recPattern]) as any
-        result = insertResult
-      } catch (insertError: any) {
-        const [legacyInsertResult] = await connection.query(`
-          INSERT INTO bookings (room_id, user_id, event_name, start_time, end_time, status)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `, [room_id, userId, event_name, mysqlStart, mysqlEnd, status]) as any
-        result = legacyInsertResult
+      let firstInsertId: number | null = null
+
+      for (let i = 0; i < occurrences.length; i++) {
+        const occ = occurrences[i]
+        const parentId = i === 0 ? null : firstInsertId
+
+        let result: any
+        try {
+          const [insertResult] = await connection.query(`
+            INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status, parent_booking_id, recurrence_pattern)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `, [room_id, userId, event_name, normalizedRequesterName, occ.start, occ.end, status, parentId, recPattern]) as any
+          result = insertResult
+        } catch (insertError: any) {
+          const [legacyInsertResult] = await connection.query(`
+            INSERT INTO bookings (room_id, user_id, event_name, start_time, end_time, status)
+            VALUES (?, ?, ?, ?, ?, ?)
+          `, [room_id, userId, event_name, occ.start, occ.end, status]) as any
+          result = legacyInsertResult
+        }
+
+        if (i === 0) {
+          firstInsertId = result.insertId
+        }
       }
 
-      console.log('[CREATE BOOKING] Success:', { insertId: result.insertId, status })
+      console.log('[CREATE BOOKING] Success:', { insertId: firstInsertId, occurrencesCount: occurrences.length, status })
 
       // ── Fire-and-forget: Notifikasi email ke admin jika status PENDING ───────────
       if (status === 'PENDING') {
@@ -338,7 +369,7 @@ export default defineEventHandler(async (event) => {
                 startFormatted: fmtTime(mysqlStart),
                 endFormatted: fmtTime(mysqlEnd),
                 dateFormatted: fmtDate(mysqlStart),
-                bookingId: result.insertId
+                bookingId: firstInsertId!
               })
             } catch (emailErr) {
               console.error('[CREATE BOOKING] Admin email notification failed (non-critical):', emailErr)
@@ -348,8 +379,9 @@ export default defineEventHandler(async (event) => {
       }
 
       return {
-        id: result.insertId,
-        message: status === 'APPROVED' ? 'Pemesanan berhasil' : 'Pemesanan menunggu persetujuan admin'
+        id: firstInsertId,
+        createdCount: occurrences.length,
+        message: status === 'APPROVED' ? `Pemesanan berulang (${occurrences.length} jadwal) berhasil` : `Pemesanan berulang (${occurrences.length} jadwal) menunggu persetujuan admin`
       }
     } finally {
       if (lockAcquired) {
