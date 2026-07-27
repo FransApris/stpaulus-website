@@ -159,6 +159,8 @@
 </template>
 
 <script setup>
+import { useMaintenance } from '~/composables/useMaintenance'
+
 const { isMaintenance } = useMaintenance('dokumen-paroki')
 // Page meta
 definePageMeta({

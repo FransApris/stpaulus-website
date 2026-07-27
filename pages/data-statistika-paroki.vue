@@ -39,17 +39,19 @@
 </template>
 
 <script setup>
-const { isMaintenance } = useMaintenance('data-statistika-paroki')
-// Page meta
-definePageMeta({
-  title: 'Data Statistik Paroki - St. Paulus'
-})
-
 // Import components
 import TablePerkembanganUmat from '~/components/TablePerkembanganUmat.vue'
 import TableUsia from '~/components/TableUsia.vue'
 import TableJenisKelaminTotal from '~/components/TableJenisKelaminTotal.vue'
 import TableSakramen from '~/components/TableSakramen.vue'
+import { useMaintenance } from '~/composables/useMaintenance'
+
+const { isMaintenance } = useMaintenance('data-statistika-paroki')
+
+// Page meta
+definePageMeta({
+  title: 'Data Statistik Paroki - St. Paulus'
+})
 
 onMounted(() => {
   if (process.client) {

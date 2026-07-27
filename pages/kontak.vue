@@ -96,6 +96,8 @@
 </template>
 
 <script setup>
+import { useMaintenance } from '~/composables/useMaintenance'
+
 const { isMaintenance } = useMaintenance('kontak')
 const form = ref({
   name: '',

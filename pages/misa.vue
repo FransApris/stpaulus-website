@@ -211,6 +211,8 @@
 </template>
 
 <script setup>
+import { useMaintenance } from '~/composables/useMaintenance'
+
 const { isMaintenance } = useMaintenance('misa')
 const schedules = ref([])
 const specialSchedules = ref([])

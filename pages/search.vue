@@ -312,8 +312,10 @@
 </template>
 
 <script setup lang="ts">
-const { isMaintenance } = useMaintenance('search')
 import { useSearch } from '~/composables/useSearch'
+import { useMaintenance } from '~/composables/useMaintenance'
+
+const { isMaintenance } = useMaintenance('search')
 
 // Get search query from URL
 const route = useRoute()

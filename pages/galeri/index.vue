@@ -130,6 +130,8 @@
 </template>
 
 <script setup>
+import { useMaintenance } from '~/composables/useMaintenance'
+
 const { isMaintenance } = useMaintenance('galeri')
 const currentPage = ref(1)
 const pageLimit = 9

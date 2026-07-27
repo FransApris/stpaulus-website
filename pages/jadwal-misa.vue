@@ -244,6 +244,8 @@
 </template>
 
 <script setup>
+import { useMaintenance } from '~/composables/useMaintenance'
+
 const { isMaintenance } = useMaintenance('jadwal-misa')
 const liturgyTypes = ref([])
 const schedules = ref([])

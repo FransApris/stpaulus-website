@@ -391,8 +391,10 @@
 </template>
 
 <script setup>
-const { isMaintenance } = useMaintenance('teritorial-paroki')
 import { ref, computed } from '#imports'
+import { useMaintenance } from '~/composables/useMaintenance'
+
+const { isMaintenance } = useMaintenance('teritorial-paroki')
 
 // Page meta
 definePageMeta({
