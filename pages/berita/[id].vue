@@ -87,12 +87,12 @@
 
       <!-- Social Actions -->
       <section class="container mx-auto px-4 max-w-4xl py-3 sm:py-4 sticky top-16 sm:top-20 z-10 bg-gray-50/95 backdrop-blur-sm">
-        <div class="flex items-center justify-between gap-2 bg-white shadow-md rounded-xl px-3 sm:px-6 py-2.5 sm:py-3.5 overflow-x-auto">
+        <div class="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:justify-between sm:gap-2 bg-white shadow-md rounded-xl p-2 sm:px-6 sm:py-3.5 w-full">
           <!-- Like Button -->
           <button
             @click="toggleLike"
             :disabled="isLiking"
-            class="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 flex-shrink-0 text-xs sm:text-sm font-medium"
+            class="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 text-xs sm:text-sm font-medium w-full sm:w-auto"
             :class="{
               'text-red-500': post.user_liked,
               'text-gray-600': !post.user_liked
@@ -100,7 +100,7 @@
           >
             <!-- Heart Icon -->
             <svg 
-              class="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-200 flex-shrink-0"
+              class="w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-200 flex-shrink-0"
               :class="{ 'scale-110': post.user_liked }"
               :fill="post.user_liked ? 'currentColor' : 'none'" 
               stroke="currentColor" 
@@ -114,7 +114,7 @@
               ></path>
             </svg>
             <span>{{ post.user_liked ? 'Liked' : 'Like' }}</span>
-            <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full font-bold">
+            <span class="text-[10px] sm:text-xs bg-gray-100 px-1.5 py-0.5 rounded-full font-bold">
               {{ post.likes_count }}
             </span>
           </button>
@@ -123,14 +123,14 @@
           <button
             @click="shareNews"
             :disabled="isSharing"
-            class="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 disabled:opacity-50 flex-shrink-0 text-xs sm:text-sm font-medium"
+            class="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 disabled:opacity-50 text-xs sm:text-sm font-medium w-full sm:w-auto"
           >
             <!-- Paper Plane Icon -->
-            <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
             </svg>
             <span>Share</span>
-            <span class="text-xs bg-gray-100 px-2 py-0.5 rounded-full font-bold">
+            <span class="text-[10px] sm:text-xs bg-gray-100 px-1.5 py-0.5 rounded-full font-bold">
               {{ post.shares_count }}
             </span>
           </button>
@@ -138,12 +138,12 @@
           <!-- Copy Link -->
           <button
             @click="copyLink"
-            class="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 flex-shrink-0 text-xs sm:text-sm font-medium"
+            class="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 text-xs sm:text-sm font-medium w-full sm:w-auto"
           >
-            <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
             </svg>
-            <span>{{ copied ? 'Copied!' : 'Copy Link' }}</span>
+            <span>{{ copied ? 'Copied!' : 'Copy' }}<span class="hidden sm:inline"> Link</span></span>
           </button>
         </div>
       </section>
