@@ -509,6 +509,31 @@
                   </div>
                 </div>
 
+                <!-- Opsi Pemesanan Berulang (Recurring Booking) -->
+                <div class="border-t border-gray-200 pt-4">
+                  <label class="flex items-center gap-2 text-sm font-semibold text-gray-800 cursor-pointer">
+                    <input v-model="bookingForm.is_recurring" type="checkbox" class="w-4 h-4 text-[#882f1d] rounded border-gray-300 focus:ring-[#882f1d]" />
+                    <span>Pemesanan Berulang / Rutin (Recurring)</span>
+                  </label>
+
+                  <div v-if="bookingForm.is_recurring" class="mt-3 p-4 bg-amber-50/60 border border-amber-200 rounded-xl space-y-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Frekuensi Pengulangan</label>
+                        <select v-model="bookingForm.recurrence_pattern" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-[#882f1d]">
+                          <option value="WEEKLY">Mingguan (Setiap minggu)</option>
+                          <option value="BIWEEKLY">2 Mingguan (Setiap 2 minggu)</option>
+                          <option value="MONTHLY">Bulanan (Setiap bulan)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Ulangi Sampai Tanggal</label>
+                        <input v-model="bookingForm.repeat_until" type="date" :min="bookingForm.event_date" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-[#882f1d]" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div v-if="bookingMessage"
                   class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center">
                   <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -855,6 +880,36 @@
                     Tutup
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+          <!-- Modal Konfirmasi Pembatalan dengan Alasan Wajib -->
+          <div v-if="cancelBookingId" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" @click="cancelBookingId = null">
+            <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl" @click.stop>
+              <h3 class="text-xl font-bold text-gray-900 mb-2">Konfirmasi Pembatalan</h3>
+              <p class="text-sm text-gray-600 mb-4">
+                Apakah Anda yakin ingin membatalkan pemesanan ini? Mohon berikan alasan pembatalan untuk kebutuhan evaluasi pengurus paroki.
+              </p>
+
+              <div class="mb-4">
+                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Alasan Pembatalan *</label>
+                <textarea v-model="cancellationReasonInput" rows="3" placeholder="Tuliskan alasan pembatalan (minimal 5 karakter)..."
+                  class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#882f1d] focus:border-transparent"></textarea>
+                <p v-if="cancelError" class="text-xs text-red-600 mt-1.5 font-medium">{{ cancelError }}</p>
+              </div>
+
+              <div class="flex items-center justify-end gap-2">
+                <button @click="cancelBookingId = null" type="button" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+                  Batal
+                </button>
+                <button @click="submitCancellation" :disabled="cancelLoading || !cancellationReasonInput || cancellationReasonInput.trim().length < 5"
+                  type="button" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-xl transition-colors flex items-center gap-2">
+                  <svg v-if="cancelLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                  </svg>
+                  <span>Ya, Batalkan Pemesanan</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1288,8 +1343,50 @@ const bookingForm = ref({
   event_name: '',
   event_date: '',
   start_time: '',
-  end_time: ''
+  end_time: '',
+  is_recurring: false,
+  recurrence_pattern: 'WEEKLY',
+  repeat_until: ''
 })
+
+const cancelBookingId = ref(null)
+const cancellationReasonInput = ref('')
+const cancelLoading = ref(false)
+const cancelError = ref('')
+
+const confirmCancelBooking = (bookingId) => {
+  cancelBookingId.value = bookingId
+  cancellationReasonInput.value = ''
+  cancelError.value = ''
+}
+
+const submitCancellation = async () => {
+  if (!cancelBookingId.value) return
+  if (!cancellationReasonInput.value || cancellationReasonInput.value.trim().length < 5) {
+    cancelError.value = 'Alasan pembatalan wajib diisi (minimal 5 karakter).'
+    return
+  }
+
+  cancelLoading.value = true
+  cancelError.value = ''
+
+  try {
+    const token = localStorage.getItem('auth_token')
+    await $fetch(`/api/bookings/${cancelBookingId.value}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+      body: { cancellation_reason: cancellationReasonInput.value.trim() }
+    })
+
+    cancelBookingId.value = null
+    cancellationReasonInput.value = ''
+    await loadData()
+  } catch (err) {
+    cancelError.value = err.data?.statusMessage || 'Gagal membatalkan pemesanan'
+  } finally {
+    cancelLoading.value = false
+  }
+}
 
 const loginLoading = ref(false)
 const bookingLoading = ref(false)
@@ -1683,31 +1780,7 @@ const logout = () => {
   myBookings.value = []
 }
 
-const confirmCancelBooking = (bookingId) => {
-  if (confirm('Apakah Anda yakin ingin membatalkan pemesanan ini?')) {
-    cancelBooking(bookingId)
-  }
-}
 
-const cancelBooking = async (bookingId) => {
-  try {
-    const token = localStorage.getItem('auth_token')
-    await $fetch(`/api/bookings/${bookingId}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-
-    // Remove from list optimistically
-    myBookings.value = myBookings.value.filter(b => b.id !== bookingId)
-
-    alert('Pemesanan berhasil dibatalkan')
-  } catch (err) {
-    console.error('Error canceling booking:', err)
-    alert('Gagal membatalkan pemesanan. Silakan coba lagi.')
-  }
-}
 
 const loadData = async () => {
   try {

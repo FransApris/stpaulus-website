@@ -141,6 +141,30 @@ export default defineEventHandler(async (event) => {
     LIMIT 20
   `, [])
 
+  // 9. Recent cancellations (last 20)
+  let cancellations: any[] = []
+  try {
+    cancellations = await allQuery(`
+      SELECT
+        b.id,
+        b.event_name,
+        r.name as room_name,
+        u.full_name as user_name,
+        u.user_category,
+        DATE_FORMAT(b.start_time, '%d/%m/%Y %H:%i') as booking_date,
+        b.cancellation_reason,
+        DATE_FORMAT(b.updated_at, '%d/%m/%Y') as cancelled_at
+      FROM bookings b
+      JOIN rooms r ON b.room_id = r.id
+      LEFT JOIN users u ON b.user_id = u.id
+      WHERE b.status = 'CANCELLED' ${dateFilter}
+      ORDER BY b.updated_at DESC
+      LIMIT 20
+    `, [])
+  } catch (err) {
+    cancellations = []
+  }
+
   return {
     summary: summary[0] || {},
     roomUsage,
@@ -153,6 +177,7 @@ export default defineEventHandler(async (event) => {
     byDayOfWeek,
     byHour,
     rejections,
+    cancellations,
     dateRange: { startDate, endDate }
   }
 })

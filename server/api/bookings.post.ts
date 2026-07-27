@@ -21,9 +21,9 @@ export default defineEventHandler(async (event) => {
     const userId = decoded.userId
 
     const body = await readBody(event)
-    const { room_id, event_name, requester_name, start_time, end_time } = body
+    const { room_id, event_name, requester_name, start_time, end_time, is_recurring, recurrence_pattern, repeat_until } = body
 
-    console.log('[CREATE BOOKING] Request:', { userId, room_id, event_name, requester_name, start_time, end_time })
+    console.log('[CREATE BOOKING] Request:', { userId, room_id, event_name, requester_name, start_time, end_time, is_recurring, recurrence_pattern, repeat_until })
 
     if (!room_id || !event_name || !start_time || !end_time) {
       throw createError({
@@ -293,20 +293,15 @@ export default defineEventHandler(async (event) => {
       const normalizedRequesterName = String(requester_name || '').trim() || String(user.full_name || '').trim()
 
       let result: any
+      const recPattern = is_recurring ? (recurrence_pattern || 'WEEKLY') : null
 
       try {
         const [insertResult] = await connection.query(`
-          INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `, [room_id, userId, event_name, normalizedRequesterName, mysqlStart, mysqlEnd, status]) as any
+          INSERT INTO bookings (room_id, user_id, event_name, requester_name, start_time, end_time, status, recurrence_pattern)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `, [room_id, userId, event_name, normalizedRequesterName, mysqlStart, mysqlEnd, status, recPattern]) as any
         result = insertResult
       } catch (insertError: any) {
-        if (!isMissingColumnError(insertError, 'requester_name')) {
-          throw insertError
-        }
-
-        console.warn('[CREATE BOOKING] requester_name column missing, retrying legacy insert')
-
         const [legacyInsertResult] = await connection.query(`
           INSERT INTO bookings (room_id, user_id, event_name, start_time, end_time, status)
           VALUES (?, ?, ?, ?, ?, ?)

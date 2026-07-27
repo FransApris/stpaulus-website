@@ -31,6 +31,9 @@ export default defineEventHandler(async (event) => {
 
     console.log('[DELETE BOOKING] User check:', { userId, isAdmin, bookingOwner: booking.user_id })
 
+    const body = await readBody(event).catch(() => ({}))
+    const cancellationReason = String(body?.cancellation_reason || '').trim()
+
     // If not admin, only allow owner to delete PENDING bookings
     if (!isAdmin) {
       if (booking.user_id !== userId) {
@@ -46,14 +49,19 @@ export default defineEventHandler(async (event) => {
           statusMessage: `Tidak dapat membatalkan pemesanan dengan status ${booking.status}. Hanya pemesanan PENDING yang dapat dibatalkan.`
         })
       }
-    }
-    // Admin can delete any booking regardless of status
 
-    // Soft-delete: set deleted_at instead of permanent DELETE
-    // This preserves audit history while hiding the booking from active lists.
+      if (!cancellationReason || cancellationReason.length < 5) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Alasan pembatalan wajib diisi (minimal 5 karakter).'
+        })
+      }
+    }
+
+    // Soft-delete: set deleted_at & cancellation_reason
     await runQuery(
-      'UPDATE bookings SET deleted_at = NOW(), status = \'CANCELLED\', updated_at = NOW() WHERE id = ?',
-      [bookingId]
+      'UPDATE bookings SET deleted_at = NOW(), status = \'CANCELLED\', cancellation_reason = ?, updated_at = NOW() WHERE id = ?',
+      [cancellationReason || (isAdmin ? 'Dibatalkan oleh Admin' : 'Dibatalkan oleh Pemesan'), bookingId]
     )
 
     console.log('[DELETE BOOKING] Soft-deleted (cancelled):', { bookingId, deletedBy: isAdmin ? 'admin' : 'user' })

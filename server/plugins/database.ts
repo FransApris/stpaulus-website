@@ -1,4 +1,4 @@
-﻿import { initDatabase, runQuery } from '../database/db'
+import { initDatabase, runQuery } from '../database/db'
 
 // =============================================================================
 // SCHEMA MIGRATION RUNNER
@@ -56,14 +56,16 @@ const STRUCTURAL_MIGRATIONS: Migration[] = [
       `ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_backup_codes TEXT NULL`
     ]
   },
-  // Tambahkan migrasi baru di sini menggunakan template:
-  // {
-  //   id: '034_nama_migrasi',
-  //   description: 'Deskripsi singkat',
-  //   statements: [
-  //     `ALTER TABLE nama_tabel ADD COLUMN IF NOT EXISTS nama_kolom TINYINT(1) NOT NULL DEFAULT 0`
-  //   ]
-  // },
+  {
+    id: '034_booking_v2_enhancements',
+    description: 'Add cancellation_reason, parent_booking_id, recurrence_pattern, and is_read fields to bookings table',
+    statements: [
+      `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancellation_reason VARCHAR(255) NULL`,
+      `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS parent_booking_id INT NULL`,
+      `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS recurrence_pattern VARCHAR(50) NULL`,
+      `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_read TINYINT(1) NOT NULL DEFAULT 0`
+    ]
+  }
 ]
 
 const PERMISSION_SEEDS = [

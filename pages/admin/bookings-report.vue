@@ -243,6 +243,37 @@
         <p v-else class="text-gray-400 text-sm">Tidak ada penolakan dalam periode ini.</p>
       </div>
 
+      <!-- 7. Recent Cancellations with Reasons -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-4">Pemesanan Dibatalkan (dengan Alasan)</h2>
+        <div v-if="report.cancellations && report.cancellations.length > 0" class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-gray-500 border-b">
+                <th class="pb-2 font-medium">Acara</th>
+                <th class="pb-2 font-medium">Ruangan</th>
+                <th class="pb-2 font-medium">Pemesan</th>
+                <th class="pb-2 font-medium">Tanggal</th>
+                <th class="pb-2 font-medium">Alasan Pembatalan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="c in report.cancellations" :key="c.id" class="border-b border-gray-50 hover:bg-gray-50">
+                <td class="py-2 font-medium text-gray-800">{{ c.event_name }}</td>
+                <td class="py-2 text-gray-600">{{ c.room_name }}</td>
+                <td class="py-2">
+                  <div class="text-gray-700">{{ c.user_name }}</div>
+                  <div class="text-xs text-gray-400">{{ c.user_category || '-' }}</div>
+                </td>
+                <td class="py-2 text-gray-500 whitespace-nowrap">{{ c.booking_date }}</td>
+                <td class="py-2 text-gray-700 text-xs bg-gray-50 px-2 rounded">{{ c.cancellation_reason || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p v-else class="text-gray-400 text-sm">Tidak ada pembatalan dalam periode ini.</p>
+      </div>
+
     </template>
 
     <!-- Error -->
