@@ -342,3 +342,45 @@ export async function sendBookingRejectedEmail(params: {
     `)
   })
 }
+
+/**
+ * Notify user that their booking has been CANCELLED.
+ */
+export async function sendBookingCancelledEmail(params: {
+  to: string
+  fullName: string
+  eventName: string
+  roomName: string
+  startFormatted: string
+  endFormatted: string
+  dateFormatted: string
+  cancellationReason?: string
+}): Promise<boolean> {
+  const reasonHtml = params.cancellationReason
+    ? `<div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px; margin: 16px 0;">
+         <p style="margin: 0; color: #374151; font-size: 14px;"><strong>Alasan Pembatalan:</strong> ${params.cancellationReason}</p>
+       </div>`
+    : ''
+
+  return sendMail({
+    to: params.to,
+    subject: `⚠️ Pemesanan Ruangan Dibatalkan: "${params.eventName}"`,
+    html: baseTemplate(`
+      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <p style="color: #374151;">Pemesanan ruangan Anda telah <strong>dibatalkan</strong>.</p>
+      <div style="background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #374151;">
+          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${params.eventName}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${params.roomName}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${params.dateFormatted}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${params.startFormatted} – ${params.endFormatted} WIB</td></tr>
+        </table>
+      </div>
+      ${reasonHtml}
+      <p style="color: #374151; font-size: 14px;">
+        Jika Anda memerlukan jadwal lain, silakan lakukan pemesanan kembali melalui
+        <a href="${SITE_URL}/booking" style="color: #882f1d;">halaman pemesanan</a>.
+      </p>
+    `)
+  })
+}

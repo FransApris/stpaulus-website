@@ -1,5 +1,6 @@
 import { runQuery, getQuery } from '../../../database/db'
 import { requireAuth, getUserPermissions } from '../../../utils/auth'
+import { sendBookingCancelledEmail } from '../../../utils/email'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -65,6 +66,38 @@ export default defineEventHandler(async (event) => {
     )
 
     console.log('[DELETE BOOKING] Soft-deleted (cancelled):', { bookingId, deletedBy: isAdmin ? 'admin' : 'user' })
+
+    // Fire-and-forget email notification to user
+    setImmediate(async () => {
+      try {
+        const bookingDetails = await getQuery(`
+          SELECT b.event_name, b.start_time, b.end_time, r.name as room_name, u.email, u.full_name
+          FROM bookings b
+          JOIN rooms r ON b.room_id = r.id
+          LEFT JOIN users u ON b.user_id = u.id
+          WHERE b.id = ?
+        `, [bookingId]) as any
+
+        if (bookingDetails?.email) {
+          const toUTCStr = (s: any) => s ? String(s).replace(' ', 'T') + (String(s).endsWith('Z') ? '' : 'Z') : null
+          const fmtTime = (raw: any) => new Date(toUTCStr(raw) as string).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false }).replace(':', '.')
+          const fmtDate = (raw: any) => new Date(toUTCStr(raw) as string).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' })
+
+          await sendBookingCancelledEmail({
+            to: bookingDetails.email,
+            fullName: bookingDetails.full_name,
+            eventName: bookingDetails.event_name,
+            roomName: bookingDetails.room_name,
+            startFormatted: fmtTime(bookingDetails.start_time),
+            endFormatted: fmtTime(bookingDetails.end_time),
+            dateFormatted: fmtDate(bookingDetails.start_time),
+            cancellationReason: cancellationReason || undefined
+          })
+        }
+      } catch (e) {
+        console.error('[DELETE BOOKING] Email send error:', e)
+      }
+    })
 
     return {
       message: isAdmin ? 'Pemesanan berhasil dibatalkan oleh admin' : 'Pemesanan berhasil dibatalkan'
