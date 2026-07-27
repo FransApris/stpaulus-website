@@ -149,28 +149,31 @@
                   d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
-                <h3 class="text-lg font-semibold text-blue-900 mb-3">Cara Pemesanan Ruangan</h3>
-                <ol class="space-y-2 text-blue-800">
+                <h3 class="text-lg font-semibold text-blue-900 mb-3">Cara & Panduan Pemesanan Ruangan</h3>
+                <ol class="space-y-2.5 text-blue-800 text-sm">
                   <li class="flex items-start">
                     <span class="font-bold mr-2">1.</span>
                     <span><strong>Pilih Ruangan:</strong> Klik tombol "Pesan" pada ruangan yang tersedia di bawah</span>
                   </li>
                   <li class="flex items-start">
                     <span class="font-bold mr-2">2.</span>
-                    <span><strong>Isi Detail:</strong> Masukkan nama acara, tanggal, jam mulai, dan jam selesai</span>
+                    <span><strong>Isi Detail:</strong> Masukkan nama acara, tanggal, jam mulai, dan jam selesai.</span>
                   </li>
                   <li class="flex items-start">
                     <span class="font-bold mr-2">3.</span>
-                    <span><strong>Konfirmasi:</strong> Klik "Konfirmasi Pemesanan" setelah mengisi semua data</span>
+                    <span><strong>Pemesanan Berulang (Rutin):</strong> Untuk kegiatan rutin (misal rapat mingguan), centang <em>"Pemesanan Berulang"</em> dan pilih frekuensi (Mingguan, 2-Mingguan, atau Bulanan) serta batas tanggal pengulangan.</span>
                   </li>
                   <li class="flex items-start">
                     <span class="font-bold mr-2">4.</span>
-                    <span><strong>Tunggu Persetujuan:</strong> Pemesanan Anda akan diproses oleh admin</span>
+                    <span><strong>Konfirmasi:</strong> Klik <em>"Konfirmasi Pemesanan"</em> setelah seluruh data terisi dengan benar.</span>
                   </li>
                   <li class="flex items-start">
                     <span class="font-bold mr-2">5.</span>
-                    <span><strong>Batalkan (Opsional):</strong> Anda dapat membatalkan pemesanan selama status masih
-                      <span class="font-semibold">PENDING</span></span>
+                    <span><strong>Notifikasi In-App (Navbar):</strong> Perubahan status pemesanan (<span class="font-semibold text-green-700">DISETUJUI</span> / <span class="font-semibold text-red-700">DITOLAK</span>) akan langsung muncul melalui <strong>Ikon Lonceng Notifikasi (Bell)</strong> di Navbar atas tanpa perlu refresh.</span>
+                  </li>
+                  <li class="flex items-start">
+                    <span class="font-bold mr-2">6.</span>
+                    <span><strong>Batalkan (Wajib Alasan):</strong> Anda dapat membatalkan pemesanan PENDING dengan menekan tombol <em>"Batalkan"</em> dan mengisi alasan pembatalan pada form konfirmasi.</span>
                   </li>
                 </ol>
                 <div class="mt-4 pt-4 border-t border-blue-200">
@@ -198,14 +201,14 @@
                     <span>Akun Anda (DPP/BGKP) tidak memiliki batas pemesanan bulanan.</span>
                   </div>
                   <p class="text-sm text-blue-700">
-                    <strong>Tips:</strong> Lihat pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
+                    <strong>Tips:</strong> Pantau notifikasi lonceng di Navbar atas atau lihat daftar pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
                     berubah menjadi
                     <span
                       class="inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-semibold">DISETUJUI</span>
                     atau
                     <span
                       class="inline-block px-2 py-0.5 bg-red-100 text-red-800 rounded text-xs font-semibold">DITOLAK</span>
-                    setelah ditinjau admin.
+                    setelah ditinjau oleh admin sekretariat.
                   </p>
                 </div>
               </div>
