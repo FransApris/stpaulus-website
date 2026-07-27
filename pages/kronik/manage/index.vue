@@ -157,9 +157,13 @@
                         <button
                             @click="goToPage(currentPage - 1)"
                             :disabled="currentPage === 1"
-                            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                            aria-label="Halaman Sebelumnya"
                         >
-                            Sebelumnya
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                            <span class="hidden sm:inline">Sebelumnya</span>
                         </button>
                         <button
                             v-for="page in visiblePages"
@@ -177,9 +181,13 @@
                         <button
                             @click="goToPage(currentPage + 1)"
                             :disabled="currentPage >= totalPages"
-                            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                            class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                            aria-label="Halaman Selanjutnya"
                         >
-                            Berikutnya
+                            <span class="hidden sm:inline">Berikutnya</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
                         </button>
                     </div>
                 </div>
