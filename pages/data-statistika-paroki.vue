@@ -50,6 +50,12 @@ import TablePerkembanganUmat from '~/components/TablePerkembanganUmat.vue'
 import TableUsia from '~/components/TableUsia.vue'
 import TableJenisKelaminTotal from '~/components/TableJenisKelaminTotal.vue'
 import TableSakramen from '~/components/TableSakramen.vue'
+
+onMounted(() => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+})
 </script>
 
 <style scoped>

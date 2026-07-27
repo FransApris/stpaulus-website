@@ -298,6 +298,9 @@ const formatDate = (dateString) => {
 
 // Initialize
 onMounted(async () => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
   await Promise.all([fetchCategories(), fetchDocuments()])
 })
 
