@@ -316,10 +316,7 @@ export default defineEventHandler(async (event) => {
 
       let firstInsertId: number | null = null
 
-      for (let i = 0; i < occurrences.length; i++) {
-        const occ = occurrences[i]
-        if (!occ) continue
-
+      for (const [i, occ] of occurrences.entries()) {
         const parentId = i === 0 ? null : firstInsertId
 
         let result: any
