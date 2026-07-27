@@ -321,6 +321,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
+import { useMaintenance } from '~/composables/useMaintenance';
 const { isMaintenance } = useMaintenance('berita')
 
 // 1. Definisikan Cetak Biru (Interface) agar TypeScript mengenali properti data Anda

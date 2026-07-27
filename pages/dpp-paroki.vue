@@ -252,6 +252,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from '#imports'
+import { useMaintenance } from '~/composables/useMaintenance'
 const { isMaintenance } = useMaintenance('dpp-paroki')
 
 // SEO
