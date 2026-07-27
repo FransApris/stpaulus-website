@@ -1129,7 +1129,7 @@ const loadWeeklySchedule = async (startDate = '') => {
 }
 
 // Navigate week: direction -1 = prev, 0 = current, 1 = next
-const navigateWeek = (direction: number) => {
+const navigateWeek = (direction) => {
   if (direction === 0) {
     loadWeeklySchedule('')
     return
@@ -1145,29 +1145,29 @@ const navigateWeek = (direction: number) => {
 }
 
 // Get all bookings for a specific room + date cell
-const getBookingsForCell = (roomId: number, dateKey: string) => {
+const getBookingsForCell = (roomId, dateKey) => {
   if (!weeklyData.value?.bookings) return []
   return weeklyData.value.bookings.filter(
-    (b: any) => b.room_id === roomId && b.date_key === dateKey
+    (b) => b.room_id === roomId && b.date_key === dateKey
   )
 }
 
 // Format YYYY-MM-DD to "Sen 28 Jul"
-const formatShortDate = (dateStr: string) => {
+const formatShortDate = (dateStr) => {
   if (!dateStr) return ''
   const d = new Date(`${dateStr}T00:00:00`)
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })
 }
 
 // Day name for header
-const getDayName = (dateStr: string) => {
+const getDayName = (dateStr) => {
   if (!dateStr) return ''
   const d = new Date(`${dateStr}T00:00:00`)
   return d.toLocaleDateString('id-ID', { weekday: 'short', timeZone: 'Asia/Jakarta' })
 }
 
 // Check if a date string equals today
-const isToday = (dateStr: string) => {
+const isToday = (dateStr) => {
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
   return dateStr === today
 }
