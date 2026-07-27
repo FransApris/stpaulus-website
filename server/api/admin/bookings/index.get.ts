@@ -80,7 +80,24 @@ export default defineEventHandler(async (event) => {
 
   console.log('[Admin Bookings API] Executing query with params:', params)
 
-  const rawBookings = await allQuery(query, params)
+  let rawBookings: any[] = []
+  try {
+    rawBookings = await allQuery(query, params)
+  } catch (err: any) {
+    const msg = String(err?.message || '')
+    console.warn('[Admin Bookings API] Query warning/fallback:', msg)
+
+    if (msg.includes('recurrence_pattern') || msg.includes('parent_booking_id') || msg.includes('is_active') || msg.includes('unit_name')) {
+      const fallbackSelect = query
+        .replace('b.recurrence_pattern,', 'NULL as recurrence_pattern,')
+        .replace('b.parent_booking_id,', 'NULL as parent_booking_id,')
+        .replace('u.unit_name,', 'NULL as unit_name,')
+        .replace('AND r.is_active = 1', '')
+      rawBookings = await allQuery(fallbackSelect, params)
+    } else {
+      throw err
+    }
+  }
 
   console.log('[Admin Bookings API] Found', rawBookings.length, 'bookings')
 
