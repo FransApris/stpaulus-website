@@ -169,11 +169,11 @@
                   </li>
                   <li class="flex items-start">
                     <span class="font-bold mr-2">5.</span>
-                    <span><strong>Notifikasi In-App (Navbar):</strong> Perubahan status pemesanan (<span class="font-semibold text-green-700">DISETUJUI</span> / <span class="font-semibold text-red-700">DITOLAK</span>) akan langsung muncul melalui <strong>Ikon Lonceng Notifikasi (Bell)</strong> di Navbar atas tanpa perlu refresh.</span>
+                    <span><strong>Notifikasi In-App & Email:</strong> Perubahan status pemesanan (<span class="font-semibold text-green-700">DISETUJUI</span> / <span class="font-semibold text-red-700">DITOLAK</span> / <span class="font-semibold text-gray-700">DIBATALKAN</span>) akan dikirimkan otomatis ke <strong>Email Akun Anda</strong> serta muncul di <strong>Ikon Lonceng Notifikasi (Bell)</strong> pada Navbar atas.</span>
                   </li>
                   <li class="flex items-start">
                     <span class="font-bold mr-2">6.</span>
-                    <span><strong>Batalkan (Wajib Alasan):</strong> Anda dapat membatalkan pemesanan PENDING dengan menekan tombol <em>"Batalkan"</em> dan mengisi alasan pembatalan pada form konfirmasi.</span>
+                    <span><strong>Batalkan (Wajib Alasan):</strong> Anda dapat membatalkan pemesanan PENDING dengan menekan tombol <em>"Batalkan"</em> dan mengisi alasan pembatalan pada form konfirmasi. Konfirmasi pembatalan juga akan dikirimkan via email.</span>
                   </li>
                 </ol>
                 <div class="mt-4 pt-4 border-t border-blue-200">
@@ -201,14 +201,14 @@
                     <span>Akun Anda (DPP/BGKP) tidak memiliki batas pemesanan bulanan.</span>
                   </div>
                   <p class="text-sm text-blue-700">
-                    <strong>Tips:</strong> Pantau notifikasi lonceng di Navbar atas atau lihat daftar pemesanan Anda di bagian "Pemesanan Saya" di bawah. Status akan
+                    <strong>Tips:</strong> Cek kotak masuk Email Anda atau pantau notifikasi lonceng di Navbar atas. Status pemesanan akan
                     berubah menjadi
                     <span
                       class="inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-semibold">DISETUJUI</span>
                     atau
                     <span
                       class="inline-block px-2 py-0.5 bg-red-100 text-red-800 rounded text-xs font-semibold">DITOLAK</span>
-                    setelah ditinjau oleh admin sekretariat.
+                    setelah ditinjau oleh admin sekretariat paroki.
                   </p>
                 </div>
               </div>
