@@ -391,6 +391,9 @@ const formatTime = (timeString) => {
 
 // Fetch data on mount
 onMounted(async () => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
   await Promise.all([fetchSchedules(), fetchSpecialSchedules(), fetchDevotions()])
 })
 </script>

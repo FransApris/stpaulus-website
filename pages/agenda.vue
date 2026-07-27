@@ -323,6 +323,9 @@ const getRibbonColorHex = (index) => {
 
 // Set default year to current year
 onMounted(async () => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
   const currentYear = new Date().getFullYear().toString()
   filters.value.year = currentYear
   await fetchCategories()

@@ -497,6 +497,12 @@ const wilayahStats = computed(() => {
 
 // View mode toggle
 const viewMode = ref('grouped') // Default: 'grouped', bisa diganti 'all'
+
+onMounted(() => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+})
 </script>
 
 <style scoped>

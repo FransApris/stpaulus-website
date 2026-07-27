@@ -313,6 +313,12 @@ const formatDate = (dateString) => {
     day: 'numeric'
   });
 };
+
+onMounted(() => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+})
 </script>
 
 <style scoped>

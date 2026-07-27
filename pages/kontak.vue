@@ -132,4 +132,10 @@ const openWhatsApp = () => {
   const whatsappUrl = 'https://wa.me/6285649779883'
   window.open(whatsappUrl, '_blank')
 }
+
+onMounted(() => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+})
 </script>

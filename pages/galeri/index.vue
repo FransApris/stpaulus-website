@@ -197,6 +197,12 @@ const handleAlbumImageError = (event) => {
   if (img.src.includes('/images/default-gallery.jpg')) return
   img.src = '/images/default-gallery.jpg'
 }
+
+onMounted(() => {
+  if (process.client) {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+  }
+})
 </script>
 
 <style scoped>
