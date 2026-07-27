@@ -319,26 +319,10 @@
         </div>
       </transition>
     </Teleport>
-    <!-- Mobile Controls: User Menu + Search + Hamburger -->
-    <div class="md:hidden flex items-center gap-2 relative z-[100]">
-      <!-- User Avatar/Logout (Mobile) - When Logged In -->
-      <button v-if="isLoggedIn" @click="handleLogout"
-        class="flex items-center gap-1.5 px-2.5 py-1.5 bg-red-500/20 rounded-lg hover:bg-red-500/30 transition-all duration-300 min-h-[44px] border border-red-500/40"
-        :aria-label="`Logout ${user?.full_name || user?.username || 'User'}`"
-        :title="`Logout ${user?.full_name || user?.username || 'User'}`" type="button">
-        <div
-          class="w-7 h-7 bg-gradient-to-br from-paulus-blue to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-xs">
-          {{ getUserInitials }}
-        </div>
-        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        <span class="text-white text-xs font-medium">Logout</span>
-      </button>
-
+    <!-- Mobile Controls: Search + Hamburger (User Menu is handled by avatar dropdown) -->
+    <div class="md:hidden flex items-center gap-1.5 relative z-[100]">
       <!-- Login Button (Mobile) - When Not Logged In -->
-      <button v-else @click="showLoginModal = true"
+      <button v-if="!isLoggedIn" @click="showLoginModal = true"
         class="p-2 text-white hover:text-[#c58229] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center focus:outline-none rounded"
         aria-label="Login" type="button">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
