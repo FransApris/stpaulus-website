@@ -151,11 +151,11 @@ export default defineEventHandler(async (event) => {
       return str.replace(' ', 'T') + (str.endsWith('Z') ? '' : '')
     }
 
-    const fmtTime = (raw: any) => {
+    const fmtTime = (raw: any): string => {
       if (!raw) return ''
       if (typeof raw === 'string') {
         const parts = raw.split(' ')
-        if (parts.length >= 2) {
+        if (parts.length >= 2 && parts[1]) {
           const timePart = parts[1].slice(0, 5)
           if (timePart.includes(':')) return timePart.replace(':', '.')
         }
@@ -172,7 +172,8 @@ export default defineEventHandler(async (event) => {
       if (!raw) return ''
       if (typeof raw === 'string') {
         const str = raw.trim()
-        const datePart = str.split(' ')[0].split('T')[0]
+        const firstPart = str.split(' ')[0] || ''
+        const datePart = firstPart.split('T')[0] || ''
         if (datePart.length === 10 && datePart.charAt(4) === '-' && datePart.charAt(7) === '-') {
           return datePart
         }
