@@ -59,12 +59,22 @@ export default defineEventHandler(async (event) => {
 
   try {
     // ── Fetch all rooms ──────────────────────────────────────────────────────
-    const rooms = await allQuery(`
-      SELECT id, name, capacity, location, color
-      FROM rooms
-      WHERE is_active = 1
-      ORDER BY name ASC
-    `)
+    let rooms: any[] = []
+    try {
+      rooms = await allQuery(`
+        SELECT id, name, capacity, location
+        FROM rooms
+        WHERE is_active = 1
+        ORDER BY name ASC
+      `)
+    } catch (roomErr: any) {
+      // Fallback if is_active column is missing
+      rooms = await allQuery(`
+        SELECT id, name, capacity, location
+        FROM rooms
+        ORDER BY name ASC
+      `)
+    }
 
     // ── Fetch bookings in this week ──────────────────────────────────────────
     // We compare DATE(start_time) because times are stored in UTC but we

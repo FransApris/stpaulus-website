@@ -23,10 +23,18 @@ export default defineEventHandler(async (event) => {
 
   try {
     // ── Ambil data user untuk cek kategori ───────────────────────────────────
-    const userData = await getQuery(
-      'SELECT user_category FROM users WHERE id = ? AND deleted_at IS NULL',
-      [userId]
-    ) as any
+    let userData: any = null
+    try {
+      userData = await getQuery(
+        'SELECT user_category FROM users WHERE id = ? AND deleted_at IS NULL',
+        [userId]
+      )
+    } catch (uErr: any) {
+      userData = await getQuery(
+        'SELECT user_category FROM users WHERE id = ?',
+        [userId]
+      )
+    }
 
     const userCategory = String(userData?.user_category || '').toUpperCase()
     const isUnlimited = UNLIMITED_CATEGORIES.includes(userCategory)
