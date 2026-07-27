@@ -285,27 +285,88 @@
               </table>
             </div>
 
-            <!-- Mobile: list per-day -->
-            <div v-else-if="weeklyData" class="md:hidden space-y-3">
-              <div v-for="day in weeklyData.days" :key="day" class="rounded-xl border border-gray-200 overflow-hidden">
-                <div class="px-4 py-2 font-semibold text-sm"
-                  :class="isToday(day) ? 'bg-[#882f1d] text-white' : 'bg-gray-50 text-gray-700'">
-                  {{ getDayName(day) }}, {{ formatShortDate(day) }}
+            <!-- Mobile: Day Selector Chips + Schedule Cards -->
+            <div v-else-if="weeklyData" class="md:hidden space-y-4">
+              <!-- Day Selector Tabs (Horizontal Scroll) -->
+              <div class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-2 px-2">
+                <button
+                  v-for="day in weeklyData.days"
+                  :key="day"
+                  @click="selectedMobileDay = day"
+                  :class="selectedMobileDay === day
+                    ? 'bg-[#882f1d] text-white font-bold shadow-md scale-[1.02]'
+                    : isToday(day)
+                      ? 'bg-orange-100 text-[#882f1d] border border-orange-300 font-semibold'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'"
+                  class="flex-shrink-0 px-3 py-2 rounded-xl text-xs transition-all text-center min-w-[64px]">
+                  <div class="text-[10px] uppercase opacity-80">{{ getDayName(day) }}</div>
+                  <div class="text-sm font-bold leading-none my-0.5">{{ formatShortDate(day).split(' ')[0] }}</div>
+                  <div class="text-[10px] opacity-75">{{ formatShortDate(day).split(' ')[1] }}</div>
+                </button>
+              </div>
+
+              <!-- Active Day Banner -->
+              <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-[#882f1d]"></span>
+                  <span class="font-bold text-gray-800 text-sm">
+                    {{ getDayName(selectedMobileDay) }}, {{ formatShortDate(selectedMobileDay) }}
+                  </span>
                 </div>
-                <div class="divide-y divide-gray-100">
-                  <template v-for="room in weeklyData.rooms" :key="room.id">
-                    <div v-if="getBookingsForCell(room.id, day).length > 0" class="px-4 py-2">
-                      <p class="text-xs font-semibold text-gray-500 mb-1">{{ room.name }}</p>
-                      <div v-for="b in getBookingsForCell(room.id, day)" :key="b.id"
-                        :class="b.status === 'APPROVED' ? 'bg-green-50 text-green-800' : 'bg-yellow-50 text-yellow-800'"
-                        class="rounded px-2 py-1 text-xs mb-1">
-                        <span class="font-semibold">{{ b.event_name }}</span>
-                        <span class="text-xs opacity-75 ml-1">({{ b.start_formatted }}–{{ b.end_formatted }})</span>
+                <span v-if="isToday(selectedMobileDay)" class="text-[10px] font-bold px-2 py-0.5 bg-orange-100 text-[#882f1d] rounded-full">
+                  HARI INI
+                </span>
+              </div>
+
+              <!-- Room Schedule Cards for Selected Day -->
+              <div class="space-y-3">
+                <template v-for="room in weeklyData.rooms" :key="room.id">
+                  <div v-if="getBookingsForCell(room.id, selectedMobileDay).length > 0"
+                    class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <!-- Room Header -->
+                    <div class="bg-gray-50 px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
+                      <span class="font-bold text-gray-800 text-sm">{{ room.name }}</span>
+                      <span class="text-xs text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">
+                        📍 {{ room.location }}
+                      </span>
+                    </div>
+
+                    <!-- Room Bookings -->
+                    <div class="p-3 space-y-2">
+                      <div v-for="b in getBookingsForCell(room.id, selectedMobileDay)" :key="b.id"
+                        :class="b.status === 'APPROVED' ? 'bg-green-50/80 border-green-200' : 'bg-yellow-50/80 border-yellow-200'"
+                        class="p-3 rounded-lg border flex flex-col gap-1.5">
+                        <div class="flex items-start justify-between gap-2">
+                          <span class="font-bold text-gray-900 text-sm leading-snug">{{ b.event_name }}</span>
+                          <span :class="b.status === 'APPROVED' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'"
+                            class="px-2 py-0.5 rounded text-[10px] font-bold flex-shrink-0">
+                            {{ b.status === 'APPROVED' ? 'DISETUJUI' : 'MENUNGGU' }}
+                          </span>
+                        </div>
+                        <div class="flex items-center justify-between text-xs text-gray-600 pt-1.5 border-t border-black/5">
+                          <span class="flex items-center gap-1 text-gray-700">
+                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {{ b.requester_name }}
+                          </span>
+                          <span class="font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs">
+                            ⏰ {{ b.start_formatted }} – {{ b.end_formatted }} WIB
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </template>
-                  <div v-if="weeklyData.rooms && !weeklyData.rooms.some(r => getBookingsForCell(r.id, day).length > 0)"
-                    class="px-4 py-3 text-sm text-gray-400 text-center">Tidak ada pemesanan</div>
+                  </div>
+                </template>
+
+                <!-- Empty State for Selected Day -->
+                <div v-if="weeklyData.rooms && !weeklyData.rooms.some(r => getBookingsForCell(r.id, selectedMobileDay).length > 0)"
+                  class="bg-gray-50 rounded-xl border border-dashed border-gray-300 py-8 px-4 text-center">
+                  <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p class="text-sm font-semibold text-gray-600">Tidak ada pemesanan ruangan pada hari ini</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Semua ruangan bebas dipesan</p>
                 </div>
               </div>
             </div>
@@ -1113,6 +1174,8 @@ const weeklyData  = ref(null)
 const weeklyLoading = ref(false)
 const currentWeekStart = ref('') // YYYY-MM-DD of the Monday being displayed
 
+const selectedMobileDay = ref('')
+
 const loadWeeklySchedule = async (startDate = '') => {
   weeklyLoading.value = true
   try {
@@ -1120,6 +1183,16 @@ const loadWeeklySchedule = async (startDate = '') => {
     const data = await $fetch('/api/bookings/weekly-schedule', { query: params })
     weeklyData.value = data
     currentWeekStart.value = data.week_start
+
+    // Set selectedMobileDay to today (if in week) or first day
+    if (data?.days?.length) {
+      const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
+      if (data.days.includes(todayStr)) {
+        selectedMobileDay.value = todayStr
+      } else {
+        selectedMobileDay.value = data.days[0]
+      }
+    }
   } catch (err) {
     console.error('[WEEKLY SCHEDULE] Failed:', err)
     weeklyData.value = null
