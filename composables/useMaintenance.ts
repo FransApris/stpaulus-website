@@ -86,11 +86,12 @@ const PAGE_META: Record<string, Omit<MaintenancePageConfig, 'active'>> = {
  * @example
  * const { isInMaintenance, maintenanceInfo } = useMaintenance()
  */
-export function useMaintenance() {
+export function useMaintenance(customRouteKey?: string) {
   const route = useRoute()
 
-  // Ambil key dari route path (hilangkan leading/trailing slash)
+  // Ambil key dari parameter jika ada, atau dari route path (hilangkan leading/trailing slash)
   const routeKey = computed(() => {
+    if (customRouteKey) return customRouteKey
     return route.path.replace(/^\//, '').replace(/\/$/, '') || 'index'
   })
 
@@ -118,6 +119,7 @@ export function useMaintenance() {
 
   return {
     isInMaintenance,
+    isMaintenance: isInMaintenance,
     maintenanceInfo,
     routeKey,
   }
