@@ -1418,9 +1418,10 @@ const submitCancellation = async () => {
     cancelError.value = ''
     // Bug #2C fix: refresh kalender mingguan juga setelah pembatalan
     await Promise.all([loadData(), loadWeeklySchedule()])
-  } catch (err: any) {
+  } catch (err) {
     // Bug #7B fix: fallback ke berbagai properti error agar pesan lebih informatif
-    cancelError.value = err?.data?.statusMessage || err?.statusMessage || err?.message || 'Gagal membatalkan pemesanan'
+    const anyErr = err as any
+    cancelError.value = anyErr?.data?.statusMessage || anyErr?.statusMessage || anyErr?.message || 'Gagal membatalkan pemesanan'
   } finally {
     cancelLoading.value = false
   }
