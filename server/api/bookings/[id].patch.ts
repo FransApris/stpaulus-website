@@ -1,6 +1,6 @@
 import { getConnection, getQuery } from '../../database/db'
 import { requireAuth, requirePermission, getUserPermissions } from '../../utils/auth'
-import { sendBookingApprovedEmail, sendBookingRejectedEmail } from '../../utils/email'
+import { sendBookingApprovedEmail, sendBookingRejectedEmail, sendBookingCancelledEmail } from '../../utils/email'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -17,8 +17,6 @@ export default defineEventHandler(async (event) => {
     const permissions = await getUserPermissions(user)
     event.context.auth = { userId, permissions }
 
-    requirePermission('manage_bookings')(event)
-
     const bookingId = getRouterParam(event, 'id')
     const body = await readBody(event)
     const { status, rejection_reason, cancellation_reason } = body
@@ -33,6 +31,24 @@ export default defineEventHandler(async (event) => {
 
     if (status === 'REJECTED' && !rejection_reason?.trim()) {
       throw createError({ statusCode: 400, statusMessage: 'Alasan penolakan diperlukan' })
+    }
+
+    // ── Bug #7A fix: CANCELLED bisa dilakukan oleh pemilik booking sendiri ────
+    // APPROVED/REJECTED hanya untuk admin yang punya manage_bookings permission
+    const isAdmin = permissions.includes('manage_bookings')
+
+    if (status === 'APPROVED' || status === 'REJECTED') {
+      // Hanya admin yang bisa approve/reject
+      requirePermission('manage_bookings')(event)
+    }
+    // CANCELLED bisa dilakukan admin ATAU user yang punya booking tersebut
+    // Validasi ownership dilakukan setelah ambil data booking di bawah
+
+    if (status === 'CANCELLED' && !isAdmin) {
+      // Untuk user biasa: alasan pembatalan wajib diisi
+      if (!cancellation_reason?.trim() || cancellation_reason.trim().length < 5) {
+        throw createError({ statusCode: 400, statusMessage: 'Alasan pembatalan wajib diisi (minimal 5 karakter).' })
+      }
     }
 
     // ── Acquire a dedicated connection for the transaction ────────────────────
@@ -70,12 +86,28 @@ export default defineEventHandler(async (event) => {
           })
         }
       } else if (status === 'CANCELLED') {
-        if (!['PENDING', 'APPROVED'].includes(booking.status)) {
-          await conn.rollback()
-          throw createError({
-            statusCode: 400,
-            statusMessage: 'Hanya pemesanan PENDING atau APPROVED yang dapat dibatalkan'
-          })
+        if (!isAdmin) {
+          // User biasa: hanya bisa cancel miliknya sendiri, dan hanya yang PENDING
+          if (booking.user_id !== userId) {
+            await conn.rollback()
+            throw createError({ statusCode: 403, statusMessage: 'Anda tidak memiliki akses untuk membatalkan pemesanan ini' })
+          }
+          if (booking.status !== 'PENDING') {
+            await conn.rollback()
+            throw createError({
+              statusCode: 400,
+              statusMessage: `Tidak dapat membatalkan pemesanan dengan status ${booking.status}. Hanya pemesanan PENDING yang dapat dibatalkan oleh pemesan.`
+            })
+          }
+        } else {
+          // Admin bisa cancel PENDING atau APPROVED
+          if (!['PENDING', 'APPROVED'].includes(booking.status)) {
+            await conn.rollback()
+            throw createError({
+              statusCode: 400,
+              statusMessage: 'Hanya pemesanan PENDING atau APPROVED yang dapat dibatalkan'
+            })
+          }
         }
       }
 
@@ -153,14 +185,14 @@ export default defineEventHandler(async (event) => {
       if (status === 'CANCELLED') {
         updateQuery = `
           UPDATE bookings
-          SET status = ?, cancellation_reason = ?, updated_at = CURRENT_TIMESTAMP
+          SET status = ?, cancellation_reason = ?, is_read = 0, updated_at = CURRENT_TIMESTAMP
           WHERE id = ?
         `
         updateParams = [status, cancellation_reason || null, bookingId]
       } else {
         updateQuery = `
           UPDATE bookings
-          SET status = ?, rejection_reason = ?, updated_at = CURRENT_TIMESTAMP
+          SET status = ?, rejection_reason = ?, is_read = 0, updated_at = CURRENT_TIMESTAMP
           WHERE id = ?
         `
         updateParams = [status, rejection_reason || null, bookingId]
@@ -187,12 +219,12 @@ export default defineEventHandler(async (event) => {
 
     // ── Fire-and-forget email notifications ──────────────────────────────────
     // Fetch booking + user details outside the transaction (already committed)
-    if (status === 'APPROVED' || status === 'REJECTED') {
+    if (status === 'APPROVED' || status === 'REJECTED' || status === 'CANCELLED') {
       setImmediate(async () => {
         try {
           const bookingData = await getQuery(`
             SELECT b.id, b.event_name, b.start_time, b.end_time,
-                   b.rejection_reason, r.name AS room_name,
+                   b.rejection_reason, b.cancellation_reason, r.name AS room_name,
                    u.email, u.full_name
             FROM bookings b
             JOIN rooms r ON b.room_id = r.id
@@ -224,10 +256,15 @@ export default defineEventHandler(async (event) => {
 
           if (status === 'APPROVED') {
             await sendBookingApprovedEmail(emailParams)
-          } else {
+          } else if (status === 'REJECTED') {
             await sendBookingRejectedEmail({
               ...emailParams,
               rejectionReason: bookingData.rejection_reason || undefined
+            })
+          } else if (status === 'CANCELLED') {
+            await sendBookingCancelledEmail({
+              ...emailParams,
+              cancellationReason: bookingData.cancellation_reason || undefined
             })
           }
         } catch (emailErr) {

@@ -16,10 +16,15 @@ export default defineEventHandler(async (event) => {
   }
 
   const queryParams = getQuery(event)
-  const startDate = (queryParams.startDate as string) || ''
-  const endDate = (queryParams.endDate as string) || ''
+  const rawStart = (queryParams.startDate as string) || ''
+  const rawEnd = (queryParams.endDate as string) || ''
 
-  // Build dynamic date filter
+  // ── Bug #6A fix: validasi format tanggal sebelum interpolasi SQL ─────────
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+  const startDate = dateRegex.test(rawStart) ? rawStart : ''
+  const endDate   = dateRegex.test(rawEnd)   ? rawEnd   : ''
+
+  // Build dynamic date filter — safe because inputs are validated as YYYY-MM-DD
   const dateFilter = startDate && endDate
     ? `AND DATE(b.start_time) BETWEEN '${startDate}' AND '${endDate}'`
     : startDate
@@ -157,7 +162,7 @@ export default defineEventHandler(async (event) => {
       FROM bookings b
       JOIN rooms r ON b.room_id = r.id
       LEFT JOIN users u ON b.user_id = u.id
-      WHERE b.status = 'CANCELLED' ${dateFilter}
+      WHERE b.status = 'CANCELLED' AND b.deleted_at IS NULL ${dateFilter}
       ORDER BY b.updated_at DESC
       LIMIT 20
     `, [])

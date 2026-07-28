@@ -148,7 +148,7 @@ export default defineEventHandler(async (event) => {
       if (!s) return ''
       if (s instanceof Date) return s.toISOString()
       const str = String(s).trim()
-      return str.replace(' ', 'T') + (str.endsWith('Z') ? '' : '')
+      return str.replace(' ', 'T') + (str.endsWith('Z') ? '' : 'Z')
     }
 
     const fmtTime = (raw: any): string => {

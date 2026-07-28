@@ -114,7 +114,7 @@ export default defineEventHandler(async (event) => {
       // Update status booking
       await conn.query(
         `UPDATE bookings
-         SET status = ?, rejection_reason = ?, updated_at = NOW()
+         SET status = ?, rejection_reason = ?, is_read = 0, updated_at = NOW()
          WHERE id = ?`,
         [status, status === 'REJECTED' ? (rejection_reason || null) : null, id]
       )

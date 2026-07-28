@@ -252,7 +252,7 @@
             </div>
 
             <!-- Calendar Grid (Desktop) -->
-            <div v-else-if="weeklyData" class="overflow-x-auto rounded-xl border border-gray-200 hidden md:block">
+            <div v-if="weeklyData" class="overflow-x-auto rounded-xl border border-gray-200 hidden md:block">
               <table class="w-full text-xs border-collapse">
                 <thead>
                   <tr class="bg-gray-50">
@@ -289,7 +289,8 @@
             </div>
 
             <!-- Mobile: Day Selector Chips + Schedule Cards -->
-            <div v-else-if="weeklyData" class="md:hidden space-y-4">
+            <!-- Bug #2A fix: gunakan v-if terpisah (bukan v-else-if chained) agar keduanya bisa render -->
+            <div v-if="weeklyData" class="md:hidden space-y-4">
               <!-- Day Selector Tabs (Horizontal Scroll) -->
               <div class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-2 px-2">
                 <button
@@ -1400,17 +1401,26 @@ const submitCancellation = async () => {
 
   try {
     const token = localStorage.getItem('auth_token')
+    // Bug #7A fix: gunakan PATCH dengan action 'cancel' agar body tidak dibuang oleh proxy.
+    // Sebelumnya menggunakan DELETE + body yang bisa dibuang oleh beberapa reverse proxy/CDN.
     await $fetch(`/api/bookings/${cancelBookingId.value}`, {
-      method: 'DELETE',
+      method: 'PATCH',
       headers: { Authorization: `Bearer ${token}` },
-      body: { cancellation_reason: cancellationReasonInput.value.trim() }
+      body: {
+        status: 'CANCELLED',
+        cancellation_reason: cancellationReasonInput.value.trim()
+      }
     })
 
     cancelBookingId.value = null
     cancellationReasonInput.value = ''
-    await loadData()
-  } catch (err) {
-    cancelError.value = err.data?.statusMessage || 'Gagal membatalkan pemesanan'
+    // Bug #7C fix: reset error state setelah sukses
+    cancelError.value = ''
+    // Bug #2C fix: refresh kalender mingguan juga setelah pembatalan
+    await Promise.all([loadData(), loadWeeklySchedule()])
+  } catch (err: any) {
+    // Bug #7B fix: fallback ke berbagai properti error agar pesan lebih informatif
+    cancelError.value = err?.data?.statusMessage || err?.statusMessage || err?.message || 'Gagal membatalkan pemesanan'
   } finally {
     cancelLoading.value = false
   }
@@ -1938,6 +1948,16 @@ const createBooking = async () => {
     }
     if (bookingForm.value.repeat_until <= bookingForm.value.event_date) {
       bookingError.value = 'Batas tanggal pengulangan harus setelah tanggal acara pertama'
+      bookingLoading.value = false
+      return
+    }
+    // Bug #5A fix: validasi maksimum 90 hari ke depan
+    const startDateObj = new Date(bookingForm.value.event_date)
+    const repeatUntilObj = new Date(bookingForm.value.repeat_until)
+    const maxFutureDate = new Date(startDateObj)
+    maxFutureDate.setDate(maxFutureDate.getDate() + 90)
+    if (repeatUntilObj > maxFutureDate) {
+      bookingError.value = 'Batas pemesanan berulang maksimal 90 hari (3 bulan) dari tanggal pertama'
       bookingLoading.value = false
       return
     }

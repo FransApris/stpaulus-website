@@ -10,6 +10,7 @@ export default defineEventHandler(async (event) => {
       UPDATE bookings 
       SET is_read = 1 
       WHERE user_id = ? AND deleted_at IS NULL AND is_read = 0
+        AND status IN ('APPROVED', 'REJECTED', 'CANCELLED')
     `, [userId])
 
     return {

@@ -1,7 +1,7 @@
 import { runQuery, getQuery, getConnection } from '../database/db'
 import { requireAuth } from '../utils/auth'
 import { getHeader } from 'h3'
-import { sendBookingCreatedEmail } from '../utils/email'
+import { sendBookingCreatedEmail, sendBookingApprovedEmail } from '../utils/email'
 
 const isMissingColumnError = (error: any, columnName: string) => {
   const message = String(error?.message || '')
@@ -141,13 +141,13 @@ export default defineEventHandler(async (event) => {
         return normalized
       }
 
-      const userCategoryRaw = String(user.user_category || '')
-      const userCategoryCanonical = canonicalizeCategory(userCategoryRaw)
+      const userCategoryForRoom = String(user.user_category || '')
+      const userCategoryCanonical = canonicalizeCategory(userCategoryForRoom)
       const allowedCanonical = allowedCategories.map((c: string) => canonicalizeCategory(String(c)))
 
       // Keep partial fallback for uncommon labels not yet in alias map.
       const hasExactMatch = allowedCanonical.includes(userCategoryCanonical)
-      const userNormalized = normalizeCategory(userCategoryRaw)
+      const userNormalized = normalizeCategory(userCategoryForRoom)
       const hasPartialMatch = allowedCategories.some((allowedCat: string) => {
         const allowed = normalizeCategory(String(allowedCat))
         return allowed.includes(userNormalized) || userNormalized.includes(allowed)
@@ -210,18 +210,38 @@ export default defineEventHandler(async (event) => {
 
       const monthlyCount = Number(quotaResult?.count ?? 0)
 
-      if (monthlyCount >= MAX_MONTHLY_BOOKINGS) {
+      // ── Bug #3B fix: hitung occurrence yang AKAN dibuat ──────────────────
+      // Estimasi jumlah occurrence dari form (sebelum insert) agar kuota
+      // tidak bisa di-bypass dengan recurring booking.
+      let estimatedNewOccurrences = 1
+      if (is_recurring && recurrence_pattern && repeat_until) {
+        const untilDate = new Date(`${repeat_until}T23:59:59`)
+        let tempStart = new Date(start)
+        let count = 1
+        while (count < 20) {
+          if (recurrence_pattern === 'WEEKLY')      tempStart.setDate(tempStart.getDate() + 7)
+          else if (recurrence_pattern === 'BIWEEKLY') tempStart.setDate(tempStart.getDate() + 14)
+          else if (recurrence_pattern === 'MONTHLY')  tempStart.setMonth(tempStart.getMonth() + 1)
+          else break
+          if (tempStart > untilDate) break
+          count++
+        }
+        estimatedNewOccurrences = count
+      }
+
+      if (monthlyCount + estimatedNewOccurrences > MAX_MONTHLY_BOOKINGS) {
         const monthLabel = now.toLocaleDateString('id-ID', {
           month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta'
         })
         throw createError({
           statusCode: 429,
-          statusMessage: `Anda sudah memiliki ${monthlyCount} pemesanan di bulan ${monthLabel}. ` +
-            `Maksimal ${MAX_MONTHLY_BOOKINGS} pemesanan per bulan untuk kategori Anda.`
+          statusMessage: `Kuota bulan ${monthLabel} tidak mencukupi. ` +
+            `Saat ini: ${monthlyCount} pemesanan, akan ditambah: ${estimatedNewOccurrences}. ` +
+            `Maksimal ${MAX_MONTHLY_BOOKINGS} per bulan untuk kategori Anda.`
         })
       }
 
-      console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, max: MAX_MONTHLY_BOOKINGS })
+      console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, estimatedNewOccurrences, max: MAX_MONTHLY_BOOKINGS })
     } else {
       console.log('[CREATE BOOKING] Quota check skipped — unlimited category:', userCategoryRaw)
     }
@@ -249,7 +269,17 @@ export default defineEventHandler(async (event) => {
       const occurrences: { start: string; end: string }[] = [{ start: mysqlStart, end: mysqlEnd }]
 
       if (is_recurring && recurrence_pattern && repeat_until) {
+        // ── Bug #5A fix: validasi maksimum 90 hari ke depan ─────────────────
         const untilDate = new Date(`${repeat_until}T23:59:59`)
+        const maxFutureDate = new Date(start)
+        maxFutureDate.setDate(maxFutureDate.getDate() + 90)
+        if (untilDate > maxFutureDate) {
+          throw createError({
+            statusCode: 400,
+            statusMessage: 'Batas pemesanan berulang maksimal 90 hari (3 bulan) ke depan dari tanggal pertama.'
+          })
+        }
+
         const durationMs = end.getTime() - start.getTime()
         let currStart = new Date(start)
 
@@ -341,46 +371,113 @@ export default defineEventHandler(async (event) => {
 
       console.log('[CREATE BOOKING] Success:', { insertId: firstInsertId, occurrencesCount: occurrences.length, status })
 
-      // ── Fire-and-forget: Notifikasi email ke admin jika status PENDING ───────────
-      if (status === 'PENDING') {
-        const adminEmail = process.env.ADMIN_BOOKING_EMAIL ||
-          process.env.SECURITY_ALERT_EMAIL ||
-          process.env.RESEND_FROM
+      // ── Fire-and-forget: Notifikasi email ──────────────────────────────────
+      setImmediate(async () => {
+        try {
+          const toUTCStr = (s: any) =>
+            s ? String(s).replace(' ', 'T') + (String(s).endsWith('Z') ? '' : 'Z') : null
 
-        if (adminEmail) {
-          setImmediate(async () => {
-            try {
-              const toUTCStr = (s: any) =>
-                s ? String(s).replace(' ', 'T') + (String(s).endsWith('Z') ? '' : 'Z') : null
+          const fmtTime = (raw: any) => new Date(toUTCStr(raw) as string)
+            .toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false })
+            .replace(':', '.')
 
-              const fmtTime = (raw: any) => new Date(toUTCStr(raw) as string)
-                .toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta', hour12: false })
-                .replace(':', '.')
+          const fmtDate = (raw: any) => new Date(toUTCStr(raw) as string)
+            .toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' })
 
-              const fmtDate = (raw: any) => new Date(toUTCStr(raw) as string)
-                .toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' })
+          const emailCommon = {
+            eventName: event_name,
+            roomName: room.name,
+            startFormatted: fmtTime(mysqlStart),
+            endFormatted: fmtTime(mysqlEnd),
+            dateFormatted: fmtDate(mysqlStart)
+          }
 
+          // ── Bug #1A fix: kirim email ke pemesan juga ──────────────────────
+          const userEmail = await getQuery('SELECT email, full_name FROM users WHERE id = ?', [userId]) as any
+          if (userEmail?.email) {
+            if (status === 'APPROVED') {
+              // Auto-approved (room tanpa persetujuan) — langsung konfirmasi
+              await sendBookingApprovedEmail({
+                to: userEmail.email,
+                fullName: userEmail.full_name || normalizedRequesterName,
+                ...emailCommon
+              })
+            } else {
+              // PENDING — beri tahu pemesan bahwa booking diterima & menunggu review
+              const { Resend } = await import('resend')
+              const resendKey = process.env.RESEND_API_KEY
+              const fromEmail = process.env.RESEND_FROM || 'noreply@stpaulusjuanda.org'
+              if (resendKey) {
+                const resend = new Resend(resendKey)
+                await resend.emails.send({
+                  from: `Paroki St. Paulus - Juanda <${fromEmail}>`,
+                  to: userEmail.email,
+                  subject: `📋 Pemesanan Diterima — Menunggu Persetujuan: "${event_name}"`,
+                  html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f9fafb; padding: 24px;">
+                      <div style="background: #882f1d; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+                        <h1 style="color: white; margin: 0; font-size: 20px;">Paroki Santo Paulus Juanda</h1>
+                      </div>
+                      <div style="background: white; padding: 28px; border-radius: 0 0 8px 8px; border: 1px solid #e5e7eb; border-top: none;">
+                        <h2 style="color: #1f2937;">Halo, ${userEmail.full_name || normalizedRequesterName}!</h2>
+                        <p style="color: #374151;">Pemesanan ruangan Anda telah <strong>diterima</strong> dan sedang menunggu persetujuan admin paroki.</p>
+                        <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                          <p style="margin: 0 0 12px 0; color: #713f12; font-weight: bold;">⏳ Menunggu Persetujuan Admin</p>
+                          <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #713f12;">
+                            <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${event_name}</td></tr>
+                            <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${room.name}</td></tr>
+                            <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${fmtDate(mysqlStart)}</td></tr>
+                            <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${fmtTime(mysqlStart)} – ${fmtTime(mysqlEnd)} WIB</td></tr>
+                            ${occurrences.length > 1 ? `<tr><td style="padding: 5px 0; font-weight: bold;">Jumlah Jadwal</td><td>${occurrences.length} jadwal (berulang)</td></tr>` : ''}
+                          </table>
+                        </div>
+                        <p style="color: #374151; font-size: 14px;">Anda akan menerima email lagi setelah pemesanan disetujui atau ditolak oleh admin. Pantau juga notifikasi lonceng di halaman pemesanan.</p>
+                      </div>
+                      <p style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 16px;">Email ini dikirim otomatis. Jangan membalas email ini.</p>
+                    </div>
+                  `
+                })
+              }
+            }
+          }
+
+          // Kirim juga ke admin jika PENDING
+          if (status === 'PENDING') {
+            const adminEmail = process.env.ADMIN_BOOKING_EMAIL ||
+              process.env.SECURITY_ALERT_EMAIL ||
+              process.env.RESEND_FROM
+
+            if (adminEmail) {
               await sendBookingCreatedEmail({
                 adminEmail,
                 requesterName: normalizedRequesterName,
-                eventName: event_name,
-                roomName: room.name,
-                startFormatted: fmtTime(mysqlStart),
-                endFormatted: fmtTime(mysqlEnd),
-                dateFormatted: fmtDate(mysqlStart),
+                ...emailCommon,
                 bookingId: firstInsertId!
               })
-            } catch (emailErr) {
-              console.error('[CREATE BOOKING] Admin email notification failed (non-critical):', emailErr)
             }
-          })
+          }
+        } catch (emailErr) {
+          console.error('[CREATE BOOKING] Email notification failed (non-critical):', emailErr)
         }
+      })
+
+      // ── Bug #5C fix: pesan sukses yang tepat ────────────────────────────────
+      const isActuallyRecurring = is_recurring && occurrences.length > 1
+      let successMsg: string
+      if (isActuallyRecurring) {
+        successMsg = status === 'APPROVED'
+          ? `Pemesanan berulang (${occurrences.length} jadwal) berhasil dibuat`
+          : `Pemesanan berulang (${occurrences.length} jadwal) menunggu persetujuan admin`
+      } else {
+        successMsg = status === 'APPROVED'
+          ? 'Pemesanan berhasil dibuat'
+          : 'Pemesanan berhasil diajukan dan menunggu persetujuan admin'
       }
 
       return {
         id: firstInsertId,
         createdCount: occurrences.length,
-        message: status === 'APPROVED' ? `Pemesanan berulang (${occurrences.length} jadwal) berhasil` : `Pemesanan berulang (${occurrences.length} jadwal) menunggu persetujuan admin`
+        message: successMsg
       }
     } finally {
       if (lockAcquired) {

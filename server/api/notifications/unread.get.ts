@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
 
     if (isAdmin) {
       // Admins see pending bookings requiring approval
+      // Bug #4A: Hitung hanya yang belum dilihat oleh admin (is_notified_admin = 0)
       try {
         notifications = await allQuery(`
           SELECT 
@@ -32,13 +33,24 @@ export default defineEventHandler(async (event) => {
           ORDER BY b.created_at DESC
           LIMIT 10
         `)
-        unreadCount = notifications.length
+        // Try to use is_notified_admin column if it exists
+        try {
+          const unreadAdminCount = await getQuery(
+            `SELECT COUNT(*) as count FROM bookings WHERE deleted_at IS NULL AND status = 'PENDING' AND (is_notified_admin IS NULL OR is_notified_admin = 0)`,
+            []
+          ) as any
+          unreadCount = unreadAdminCount?.count || notifications.length
+        } catch {
+          // Fallback: kolom belum ada, gunakan total PENDING
+          unreadCount = notifications.length
+        }
       } catch (err) {
         notifications = []
       }
     } else {
       // Regular users see recent status updates
       try {
+        // Bug #4B fix: filter hanya status yang valid untuk notifikasi user
         notifications = await allQuery(`
           SELECT 
             b.id,
@@ -58,7 +70,9 @@ export default defineEventHandler(async (event) => {
         const unreadItems = await getQuery(`
           SELECT COUNT(*) as count
           FROM bookings
-          WHERE user_id = ? AND deleted_at IS NULL AND status IN ('APPROVED', 'REJECTED', 'CANCELLED') AND is_read = 0
+          WHERE user_id = ? AND deleted_at IS NULL
+            AND status IN ('APPROVED', 'REJECTED', 'CANCELLED')
+            AND is_read = 0
         `, [userId]) as any
 
         unreadCount = unreadItems?.count || 0
