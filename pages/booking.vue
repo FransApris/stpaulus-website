@@ -1420,8 +1420,7 @@ const submitCancellation = async () => {
     await Promise.all([loadData(), loadWeeklySchedule()])
   } catch (err) {
     // Bug #7B fix: fallback ke berbagai properti error agar pesan lebih informatif
-    const anyErr = err as any
-    cancelError.value = anyErr?.data?.statusMessage || anyErr?.statusMessage || anyErr?.message || 'Gagal membatalkan pemesanan'
+    cancelError.value = (err && err.data && err.data.statusMessage) || (err && err.statusMessage) || (err && err.message) || 'Gagal membatalkan pemesanan'
   } finally {
     cancelLoading.value = false
   }
