@@ -570,16 +570,16 @@
                       <div class="text-sm text-gray-900">{{ formatDate(booking.event_date) }}</div>
                       <div class="text-sm text-gray-500">{{ booking.start_time }} - {{ booking.end_time }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4">
                       <div class="text-sm font-medium text-gray-900">{{ booking.event_name }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4">
                       <div class="text-sm text-gray-900">{{ booking.room_name }}</div>
                       <div class="text-sm text-gray-500">{{ booking.room_location }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
+                    <td class="px-6 py-4">
                       <div class="text-sm text-gray-900">{{ booking.requester_name || booking.user_name || '-' }}</div>
-                      <div class="text-sm text-gray-500">@{{ booking.username || '-' }}</div>
+                      <div class="text-sm text-gray-500 break-all">@{{ booking.username || '-' }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <span :style="getBookingStatusStyle(booking.status)"
