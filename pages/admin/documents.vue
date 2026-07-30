@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <!-- Header -->
     <div class="mb-8">
@@ -7,7 +7,7 @@
     </div>
 
     <!-- Action Buttons -->
-    <div class="mb-6 flex flex-wrap gap-3 items-center">
+    <div class="mb-6 flex flex-wrap gap-2 items-center">
       <button
         @click="openModal()"
         class="bg-[#882f1d] text-white px-4 py-2 rounded-md hover:bg-[#6b2416] transition-colors duration-200 flex items-center"
@@ -83,12 +83,13 @@
         <p class="mt-1 text-sm text-gray-500">Mulai dengan mengunggah dokumen pertama.</p>
       </div>
 
-      <table v-else class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Judul
-            </th>
+      <div v-else class="w-full overflow-x-auto rounded-lg border border-gray-200">
+        <table class="min-w-[900px] w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5 min-w-[280px]">
+                Judul
+              </th>
             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Kategori
             </th>
@@ -111,7 +112,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="document in paginatedDocuments" :key="document.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4">
+            <td class="px-6 py-4 w-2/5 min-w-[280px]">
               <div>
                 <div class="text-sm font-medium text-gray-900">{{ document.title }}</div>
                 
@@ -155,9 +156,9 @@
                 <span class="text-sm text-gray-900">{{ document.category_name }}</span>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-900">{{ document.original_filename }}</div>
-              <div class="text-sm text-gray-500">{{ document.mime_type }}</div>
+            <td class="px-6 py-4 max-w-[200px]">
+              <div class="text-sm text-gray-900 break-all" :title="document.original_filename">{{ document.original_filename }}</div>
+              <div class="text-sm text-gray-500 whitespace-nowrap">{{ document.mime_type }}</div>
               <!-- Storage indicator -->
               <div class="mt-1">
                 <span v-if="document.file_path && (document.file_path.startsWith('https://') || document.file_path.startsWith('http://'))" class="inline-flex items-center text-xs text-green-700 bg-green-50 rounded px-1.5 py-0.5">
@@ -208,6 +209,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
 
       <!-- Pagination -->
       <div v-if="totalPages > 1" class="flex items-center justify-between border-t border-gray-200 px-6 py-4">
