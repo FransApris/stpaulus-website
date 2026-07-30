@@ -288,7 +288,7 @@ const shareArticle = async () => {
       });
       article.value.shares_count = response.shares_count;
       showToastMessage('Berhasil share artikel!');
-    } catch (err: any) {
+    } catch (err) {
       if (err?.name !== 'AbortError') {
         console.error('Error sharing:', err);
       }
@@ -331,7 +331,7 @@ const copyLink = async () => {
 };
 
 // Show Toast
-const showToastMessage = (message: string, type: string = 'success') => {
+const showToastMessage = (message, type = 'success') => {
   toastMessage.value = message;
   toastType.value = type;
   showToast.value = true;
