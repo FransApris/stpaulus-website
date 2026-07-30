@@ -207,27 +207,48 @@ export default defineEventHandler(async (event) => {
 
       // ── Phase 10: Execute UPDATE ───────────────────────────────────────────
       phase = 'db-update'
-      let updateQuery: string
-      let updateParams: any[]
+      let updateResult: any
+      
+      let hasIsRead = true
+      let hasCancellationReason = true
+      let hasRejectionReason = true
+      
+      while (true) {
+        let updateQuery = `UPDATE bookings SET status = ?`
+        let updateParams: any[] = [status]
+        
+        if (status === 'CANCELLED' && hasCancellationReason) {
+           updateQuery += `, cancellation_reason = ?`
+           updateParams.push(cancellation_reason || null)
+        } else if (status !== 'CANCELLED' && hasRejectionReason) {
+           updateQuery += `, rejection_reason = ?`
+           updateParams.push(rejection_reason || null)
+        }
+        
+        if (hasIsRead) {
+           updateQuery += `, is_read = 0`
+        }
+        
+        updateQuery += `, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+        updateParams.push(bookingId)
 
-      if (status === 'CANCELLED') {
-        updateQuery = `
-          UPDATE bookings
-          SET status = ?, cancellation_reason = ?, is_read = 0, updated_at = CURRENT_TIMESTAMP
-          WHERE id = ?
-        `
-        updateParams = [status, cancellation_reason || null, bookingId]
-      } else {
-        updateQuery = `
-          UPDATE bookings
-          SET status = ?, rejection_reason = ?, is_read = 0, updated_at = CURRENT_TIMESTAMP
-          WHERE id = ?
-        `
-        updateParams = [status, rejection_reason || null, bookingId]
+        try {
+          console.log(`[BOOKING PATCH][${requestId}] Executing UPDATE — query: ${updateQuery}`)
+          const [res] = await conn.query(updateQuery, updateParams) as any
+          updateResult = res
+          break
+        } catch (updateErr: any) {
+          const msg = String(updateErr?.message || '')
+          if (!msg.includes('Unknown column')) throw updateErr
+          
+          console.warn(`[BOOKING PATCH][${requestId}] Fallback UPDATE due to missing column: ${msg}`)
+          if (msg.includes('is_read')) hasIsRead = false
+          else if (msg.includes('cancellation_reason')) hasCancellationReason = false
+          else if (msg.includes('rejection_reason')) hasRejectionReason = false
+          else throw updateErr
+        }
       }
 
-      console.log(`[BOOKING PATCH][${requestId}] Executing UPDATE — status: ${status}, bookingId: ${bookingId}`)
-      const [updateResult] = await conn.query(updateQuery, updateParams) as any
       console.log(`[BOOKING PATCH][${requestId}] UPDATE result — affectedRows: ${updateResult.affectedRows}`)
 
       if (updateResult.affectedRows === 0) {
@@ -273,7 +294,7 @@ export default defineEventHandler(async (event) => {
       try {
         const bookingData = await getQuery(`
           SELECT b.id, b.event_name, b.start_time, b.end_time,
-                 b.rejection_reason, b.cancellation_reason, r.name AS room_name,
+                 r.name AS room_name,
                  u.email, u.full_name
           FROM bookings b
           JOIN rooms r ON b.room_id = r.id
@@ -311,12 +332,12 @@ export default defineEventHandler(async (event) => {
         } else if (status === 'REJECTED') {
           await sendBookingRejectedEmail({
             ...emailParams,
-            rejectionReason: bookingData.rejection_reason || undefined
+            rejectionReason: rejection_reason || undefined
           })
         } else if (status === 'CANCELLED') {
           await sendBookingCancelledEmail({
             ...emailParams,
-            cancellationReason: bookingData.cancellation_reason || undefined
+            cancellationReason: cancellation_reason || undefined
           })
         }
 
