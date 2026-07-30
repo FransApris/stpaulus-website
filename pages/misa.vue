@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageMaintenance v-if="isMaintenance" title="Informasi Misa" />
     <div v-else>
@@ -393,9 +393,7 @@ const formatTime = (timeString) => {
 
 // Fetch data on mount
 onMounted(async () => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
+  // Scroll-to-top sudah ditangani secara global oleh router.options.ts
   await Promise.all([fetchSchedules(), fetchSpecialSchedules(), fetchDevotions()])
 })
 </script>

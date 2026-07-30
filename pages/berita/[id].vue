@@ -212,11 +212,7 @@ const { isMaintenance } = useMaintenance('berita')
 const route = useRoute();
 const slug = route.params.id;
 
-onMounted(() => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
-})
+// Scroll-to-top sudah ditangani secara global oleh router.options.ts
 
 // Fetch data
 const { data: post, pending, error, refresh } = await useAsyncData(

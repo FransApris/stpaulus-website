@@ -1,12 +1,11 @@
-import { allQuery, runQuery } from '../../database/db'
+// Global cache & retrieval helper dari server/utils/faqCache.ts
+import { fetchCachedFAQs, clearFAQCache } from '../../utils/faqCache'
 import Groq from 'groq-sdk'
 
-// ─── CATATAN PENTING: Groq TIDAK diinisialisasi di top-level module ──────────
-// Alasan: useRuntimeConfig() hanya tersedia dalam request handler context.
-// Jika Groq diinisialisasi di top-level (saat module load), apiKey akan
-// undefined dan semua request ke AI chatbot akan gagal dengan 401.
-// Gunakan fungsi getGroqClient() yang dipanggil di dalam handler.
-// ─────────────────────────────────────────────────────────────────────────────
+// Re-export untuk kompatibilitas jika ada yang mengimpor dari file ini
+export function invalidateFAQCache() {
+  clearFAQCache()
+}
 
 function getGroqClient(): Groq | null {
   const config = useRuntimeConfig()
@@ -18,44 +17,8 @@ function getGroqClient(): Groq | null {
   return new Groq({ apiKey })
 }
 
-// FAQ Cache - mengurangi query database berulang
-// CATATAN: Cache ini global (persisten lintas request).
-// Jika admin mengupdate FAQ, cache akan kedaluwarsa setelah CACHE_DURATION.
-let faqCache: any[] | null = null
-let faqCacheTime: number = 0
-const CACHE_DURATION = 5 * 60 * 1000 // 5 menit
-
-// Fungsi ini bisa dipanggil dari admin API untuk invalidasi cache
-export function invalidateFAQCache() {
-  faqCache = null
-  faqCacheTime = 0
-  console.log('[Chatbot] FAQ cache invalidated')
-}
-
 const FALLBACK_CONTACT = 'Sekretariat Paroki (hubungi langsung di kantor atau lihat halaman Kontak kami)'
 const MAX_MESSAGE_LENGTH = 500 // Batasi input agar tidak memboroskan token AI
-
-async function getCachedFAQs() {
-  const now = Date.now()
-  if (faqCache && (now - faqCacheTime) < CACHE_DURATION) {
-    console.log('[Chatbot] Using cached FAQs')
-    return faqCache
-  }
-
-  console.log('[Chatbot] Fetching fresh FAQs from database')
-  try {
-    faqCache = await allQuery(
-      'SELECT id, question, answer, keywords FROM chatbot_faqs WHERE is_active = 1'
-    ) as any[]
-    faqCacheTime = now
-    return faqCache
-  } catch (error: any) {
-    console.error('[Chatbot] Failed to fetch FAQs:', error.message)
-    // Jika fetch gagal (misal tabel belum ada), kembalikan array kosong
-    // tapi JANGAN cache hasilnya agar bisa dicoba lagi di request berikutnya
-    return []
-  }
-}
 
 // Helper: parse keywords dari berbagai format (JSON array / comma-separated string)
 function parseKeywords(keywords: any): string[] {
@@ -76,17 +39,20 @@ function parseKeywords(keywords: any): string[] {
 
 // Hitung skor relevansi antara pesan user dengan FAQ
 function scoreFAQ(userWords: string[], faq: any): number {
-  const keywords = parseKeywords(faq.keywords)
+  const keywords = parseKeywords(faq.keywords).map(k => k.toLowerCase())
   const questionWords = faq.question.toLowerCase().split(/\s+/)
-  const allWords = [...keywords, ...questionWords]
+  const categoryWords = (faq.category || '').toLowerCase().split(/\s+/)
+  const allWords = [...keywords, ...questionWords, ...categoryWords]
 
   let score = 0
   for (const userWord of userWords) {
+    if (userWord.length <= 2) continue // Hindari noise kata pendek (di, ke, ya, dll)
     for (const faqWord of allWords) {
-      if (faqWord.length > 2 && userWord.length > 2) { // Hindari noise dari kata pendek
-        if (faqWord.includes(userWord) || userWord.includes(faqWord)) {
-          score += 1
-        }
+      if (faqWord.length <= 2) continue
+      if (faqWord === userWord) {
+        score += 2 // Match kata persis mendapat bobot lebih tinggi (+2)
+      } else if (faqWord.includes(userWord) || userWord.includes(faqWord)) {
+        score += 1 // Partial match (+1)
       }
     }
   }
@@ -102,7 +68,7 @@ function findBestMatch(userMessage: string, faqs: any[]): { answer: string; conf
     }
   }
 
-  const userWords = userMessage.toLowerCase().split(/\s+/)
+  const userWords = userMessage.toLowerCase().trim().split(/\s+/).filter(w => w.length > 2)
   let bestMatch = null
   let bestScore = 0
 
@@ -114,7 +80,8 @@ function findBestMatch(userMessage: string, faqs: any[]): { answer: string; conf
     }
   }
 
-  const MINIMUM_SCORE = 2
+  // Jika kata kunci tunggal (misal: "Theresia"), skor 1 atau lebih sudah mencukupi match
+  const MINIMUM_SCORE = userWords.length === 1 ? 1 : 2
   if (bestMatch && bestScore >= MINIMUM_SCORE) {
     return { answer: bestMatch.answer, confidence: bestScore }
   }
@@ -128,7 +95,7 @@ function findBestMatch(userMessage: string, faqs: any[]): { answer: string; conf
 // Ambil FAQ paling relevan untuk dikirim sebagai context ke Groq
 function getRelevantFAQs(userMessage: string, faqs: any[], limit = 5): any[] {
   if (faqs.length === 0) return []
-  const userWords = userMessage.toLowerCase().split(/\s+/)
+  const userWords = userMessage.toLowerCase().trim().split(/\s+/).filter(w => w.length > 2)
 
   return faqs
     .map(faq => ({ faq, score: scoreFAQ(userWords, faq) }))
@@ -141,11 +108,11 @@ function getRelevantFAQs(userMessage: string, faqs: any[], limit = 5): any[] {
 // Update usage_count FAQ yang paling relevan (fire-and-forget, tidak memblokir response)
 function updateUsageCount(userMessage: string, faqs: any[]) {
   if (faqs.length === 0) return
-  const userWords = userMessage.toLowerCase().split(/\s+/)
+  const userWords = userMessage.toLowerCase().trim().split(/\s+/).filter(w => w.length > 2)
 
   for (const faq of faqs) {
     const hasMatch = [...parseKeywords(faq.keywords), ...faq.question.toLowerCase().split(/\s+/)]
-      .some(word => userWords.some(userWord => word.includes(userWord) || userWord.includes(word)))
+      .some(word => userWords.some(userWord => word.toLowerCase().includes(userWord) || userWord.includes(word.toLowerCase())))
 
     if (hasMatch) {
       // Fire-and-forget: log error jika gagal tapi jangan blocking
@@ -178,7 +145,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const faqs = await getCachedFAQs()
+    const faqs = await fetchCachedFAQs()
     let response = ''
 
     // Coba Groq AI jika API key tersedia
@@ -191,22 +158,16 @@ export default defineEventHandler(async (event) => {
           ? relevantFAQs.map(faq => `Q: ${faq.question}\nA: ${faq.answer}`).join('\n\n')
           : 'Tidak ada FAQ yang relevan ditemukan.'
 
-        const systemPrompt = `Anda adalah asisten AI untuk Gereja St. Paulus Juanda.
+        const systemPrompt = `Anda adalah asisten AI resmi untuk Gereja St. Paulus Juanda.
 
-**ATURAN KETAT:**
-1. HANYA jawab pertanyaan tentang: Jadwal misa, sakramen (baptis, pernikahan, dll), informasi paroki, kegiatan gereja
-2. Jika pertanyaan TIDAK RELEVAN dengan gereja/paroki: TOLAK dengan sopan dan arahkan ke sekretariat
-3. Jika tidak yakin atau tidak ada informasi di FAQ: ARAHKAN ke sekretariat paroki
-4. JANGAN mengarang jawaban yang tidak ada di FAQ
+**ATURAN UTAMA:**
+1. Jawab pertanyaan seputar: Jadwal misa, sakramen (baptis, pernikahan, dll), informasi paroki, ketua wilayah, kegiatan gereja.
+2. Jika pengguna menyebut kata kunci tunggal (contoh: "Theresia", "Baptis", "Misa") dan terdapat FAQ relevan, berikan informasi dari FAQ tersebut secara ramah dan lengkap.
+3. JANGAN mengarang jawaban di luar informasi FAQ. Jika tidak ada informasi di FAQ, arahkan pengguna ke Sekretariat Paroki.
+4. Jawab dalam bahasa Indonesia yang ramah, sopan, dan jelas.
 
 **FAQ Relevan:**
-${context}
-
-**CONTOH PENOLAKAN:**
-- Pertanyaan tentang cuaca, resep, olahraga → "Mohon maaf, pertanyaan tersebut di luar cakupan saya. Saya hanya dapat membantu informasi seputar Gereja St. Paulus Juanda."
-- Pertanyaan tidak jelas → "Mohon maaf, saya belum mengerti pertanyaan Anda. Silakan hubungi Sekretariat Paroki."
-
-Jawab dalam bahasa Indonesia dengan ramah namun TEGAS menolak pertanyaan di luar konteks.`
+${context}`
 
         console.log('[Chatbot] Calling Groq API...')
         const startTime = Date.now()
@@ -227,18 +188,11 @@ Jawab dalam bahasa Indonesia dengan ramah namun TEGAS menolak pertanyaan di luar
 
         const aiResponse = completion.choices[0]?.message?.content || ''
 
-        // Validasi: cek apakah respons AI relevan
-        const responseLower = aiResponse.toLowerCase()
-        const hasRelevantKeywords = [
-          'gereja', 'paroki', 'misa', 'baptis', 'sakramen', 'jadwal',
-          'paulus', 'sekretariat', 'informasi', 'kegiatan', 'mohon maaf'
-        ].some(keyword => responseLower.includes(keyword))
-
-        if (!hasRelevantKeywords && relevantFAQs.length === 0) {
-          // AI menjawab di luar konteks — gunakan fallback
-          response = `Mohon maaf, saya belum mengerti pertanyaan Anda. Silakan hubungi ${FALLBACK_CONTACT}.`
-        } else {
+        if (aiResponse.trim().length > 0) {
           response = aiResponse
+        } else {
+          const matchResult = findBestMatch(sanitizedMessage, faqs)
+          response = matchResult.answer
         }
       } catch (groqError: any) {
         console.warn('[Chatbot] Groq API error, falling back to keyword matching:', groqError.message)

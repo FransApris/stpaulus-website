@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageMaintenance v-if="isMaintenance" title="Jadwal Misa" />
     <div v-else>
@@ -366,9 +366,7 @@ const formatDate = (dateString) => {
 
 // Check authentication and fetch data on mount
 onMounted(async () => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
+  // Scroll-to-top sudah ditangani secara global oleh router.options.ts
   await fetchLiturgyTypes()
   await fetchRegularSchedules()
   fetchSchedules()

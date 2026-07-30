@@ -401,18 +401,24 @@
           </div>
 
           <!-- Available Rooms -->
-          <div class="mb-8 w-full overflow-x-hidden">
+          <div class="mb-8 w-full overflow-x-hidden scroll-mt-28" id="katalog-ruangan">
             <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d] mb-6">Ruangan Tersedia</h2>
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
               <div v-for="room in rooms" :key="room.id"
                 class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-6 border border-gray-100 w-full max-w-full overflow-hidden">
                 <!-- Room Name & Status Badge -->
-                <div class="flex items-start justify-between mb-4">
+                <div class="flex items-start justify-between mb-3">
                   <h3 class="text-2xl font-bold text-gray-900">{{ room.name }}</h3>
                   <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex-shrink-0 ml-2">
                     <span class="w-2 h-2 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                     Siap Dipesan
                   </span>
+                </div>
+
+                <!-- Dedicated Room Badge -->
+                <div v-if="room.is_dedicated" class="mb-4 px-3 py-1.5 bg-amber-50 border border-amber-300 rounded-xl flex items-center gap-1.5 text-xs text-amber-900 font-semibold shadow-xs">
+                  <span class="text-sm">🔒</span>
+                  <span>Khusus Permanen: {{ room.dedicated_to ? room.dedicated_to : 'Seksi / Kelompok' }}</span>
                 </div>
 
 
@@ -460,21 +466,66 @@
 
           <!-- Booking Modal -->
           <div v-if="selectedRoom"
-            class="fixed top-16 left-0 right-0 bottom-0 bg-black/50 flex items-center justify-center z-10 p-4"
+            class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-300 overflow-y-auto"
             @click="closeBookingModal">
             <div
-              class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
+              class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto border border-gray-100 transform transition-all animate-fadeIn my-auto"
               @click.stop>
-              <!-- Simple Header -->
-              <div class="p-6 border-b border-gray-200">
+              <!-- Modal Header -->
+              <div class="p-6 border-b border-gray-200 bg-gray-50/50 sticky top-0 bg-white z-10">
                 <div class="flex justify-between items-start">
                   <div>
                     <h2 class="text-2xl font-cinzel font-bold text-gray-800">Pesan Ruangan</h2>
-                    <p class="text-sm text-gray-600 mt-1">
-                      {{ selectedRoom.name }} • {{ selectedRoom.capacity }} orang • {{ selectedRoom.location }}
+                    <p class="text-sm text-gray-600 mt-1 flex items-center gap-2 flex-wrap">
+                      <span class="font-semibold text-gray-900">{{ selectedRoom.name }}</span>
+                      <span>•</span>
+                      <span>{{ selectedRoom.capacity }} orang</span>
+                      <span>•</span>
+                      <span class="text-[#882f1d] font-medium">{{ selectedRoom.location }}</span>
                     </p>
+
+                    <!-- User Quota Badge -->
+                    <div class="mt-2.5 flex items-center gap-2 flex-wrap">
+                      <span v-if="userQuota?.is_unlimited"
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800 border border-purple-200">
+                        <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                        </svg>
+                        Dewan Paroki / BGKP — Kuota Tanpa Batas
+                      </span>
+                      <span v-else-if="userQuota"
+                            :class="userQuota.remaining > 0 ? 'bg-blue-50 text-blue-800 border-blue-200' : 'bg-amber-50 text-amber-800 border-amber-200'"
+                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 11h.01M7 15h.01M13 7h.01M13 11h.01M13 15h.01M19 7h.01M19 11h.01M19 15h.01M4 21h16a2 2 0 002-2V5a2 2 0 00-2-2H4a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        Sisa Kuota Anda: {{ userQuota.remaining }} dari {{ userQuota.max_allowed }} pemesanan (Bulan Ini)
+                      </span>
+                    </div>
+
+                    <!-- Facilities & Description Summary -->
+                    <div v-if="selectedRoom.facilities || selectedRoom.description" class="mt-2.5 text-xs text-gray-500 bg-white p-2.5 rounded-lg border border-gray-200 space-y-1">
+                      <p v-if="selectedRoom.facilities" class="flex items-center gap-1.5">
+                        <strong class="text-gray-700 font-semibold">📍 Fasilitas:</strong>
+                        <span>{{ parseFacilities(selectedRoom.facilities).join(', ') }}</span>
+                      </p>
+                      <p v-if="selectedRoom.description" class="flex items-center gap-1.5 text-amber-700">
+                        <strong class="font-semibold">⚠️ Tata Tertib:</strong>
+                        <span>{{ selectedRoom.description }}</span>
+                      </p>
+                    </div>
+
+                    <!-- Dedicated Room Notice -->
+                    <div v-if="selectedRoom.is_dedicated" class="mt-2.5 p-2.5 bg-amber-100/90 border border-amber-300 rounded-lg text-xs text-amber-950 font-medium flex items-start gap-1.5">
+                      <span class="text-base leading-none">🔒</span>
+                      <div>
+                        <strong class="font-bold">Ruangan Hak Pakai Permanen: {{ selectedRoom.dedicated_to || 'Seksi / Kelompok' }}</strong>
+                        <p class="text-[11px] opacity-90 mt-0.5">Pemesanan oleh pihak luar memerlukan persetujuan khusus dari Sekretariat / Admin.</p>
+                      </div>
+                    </div>
                   </div>
-                  <button @click="closeBookingModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+
+                  <button @click="closeBookingModal" class="text-gray-400 hover:text-gray-600 transition-colors p-1">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -484,32 +535,63 @@
 
               <form @submit.prevent="createBooking" class="p-6 space-y-5">
                 <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Acara *</label>
+                  <label class="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
+                    <span>Nama Acara *</span>
+                  </label>
                   <input v-model="bookingForm.event_name" type="text"
-                    placeholder="Contoh: Rapat Komisi, Pertemuan Kelompok"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                    placeholder="Contoh: Rapat Komisi, Pertemuan Kelompok, Gladi Misa"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all outline-none"
                     required />
                 </div>
 
                 <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Acara *</label>
+                  <label class="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
+                    <span>Tanggal Acara *</span>
+                  </label>
                   <input v-model="bookingForm.event_date" type="date" :min="getTodayDate()"
-                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all outline-none"
                     required />
                 </div>
 
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Mulai *</label>
-                    <input v-model="bookingForm.start_time" type="time"
-                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
-                      required />
+                <div>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-1.5">Waktu Mulai *</label>
+                      <input v-model="bookingForm.start_time" type="time"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all outline-none"
+                        required />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-semibold text-gray-700 mb-1.5">Waktu Selesai *</label>
+                      <input v-model="bookingForm.end_time" type="time"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all outline-none"
+                        required />
+                    </div>
                   </div>
-                  <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Waktu Selesai *</label>
-                    <input v-model="bookingForm.end_time" type="time"
-                      class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all"
-                      required />
+
+                  <!-- Presets Cepat Durasi & Sesi Waktu -->
+                  <div class="mt-2.5 flex items-center gap-1.5 flex-wrap">
+                    <span class="text-xs font-semibold text-gray-500 mr-1">⚡ Preset Cepat:</span>
+                    <button type="button" @click="applyTimePreset(1)" 
+                            class="px-2.5 py-1 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors border border-gray-200">
+                      +1 Jam
+                    </button>
+                    <button type="button" @click="applyTimePreset(2)" 
+                            class="px-2.5 py-1 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md transition-colors border border-gray-200">
+                      +2 Jam
+                    </button>
+                    <button type="button" @click="applySessionPreset('09:00', '12:00')" 
+                            class="px-2.5 py-1 text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors border border-blue-200">
+                      Pagi (09:00–12:00)
+                    </button>
+                    <button type="button" @click="applySessionPreset('13:00', '16:00')" 
+                            class="px-2.5 py-1 text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md transition-colors border border-blue-200">
+                      Siang (13:00–16:00)
+                    </button>
+                    <button type="button" @click="applySessionPreset('19:00', '21:00')" 
+                            class="px-2.5 py-1 text-xs font-medium bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-md transition-colors border border-purple-200">
+                      Malam (19:00–21:00)
+                    </button>
                   </div>
                 </div>
 
@@ -520,19 +602,32 @@
                     <span>Pemesanan Berulang / Rutin (Recurring)</span>
                   </label>
 
-                  <div v-if="bookingForm.is_recurring" class="mt-3 p-4 bg-amber-50/60 border border-amber-200 rounded-xl space-y-3">
+                  <div v-if="bookingForm.is_recurring" class="mt-3 p-4 bg-amber-50/80 border border-amber-200 rounded-xl space-y-3">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1">Frekuensi Pengulangan</label>
-                        <select v-model="bookingForm.recurrence_pattern" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-[#882f1d]">
+                        <select v-model="bookingForm.recurrence_pattern" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-[#882f1d] outline-none bg-white">
                           <option value="WEEKLY">Mingguan (Setiap minggu)</option>
                           <option value="BIWEEKLY">2 Mingguan (Setiap 2 minggu)</option>
                           <option value="MONTHLY">Bulanan (Setiap bulan)</option>
                         </select>
                       </div>
                       <div>
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Ulangi Sampai Tanggal</label>
-                        <input v-model="bookingForm.repeat_until" type="date" :min="bookingForm.event_date" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-[#882f1d]" />
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Ulangi Sampai Tanggal (Maks 90 Hari)</label>
+                        <input v-model="bookingForm.repeat_until" type="date" :min="bookingForm.event_date" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-[#882f1d] outline-none bg-white" />
+                      </div>
+                    </div>
+
+                    <!-- Live Recurring Summary Dates Preview -->
+                    <div v-if="recurringSummaryDates.length > 0" class="mt-2 pt-2 border-t border-amber-200/60">
+                      <p class="text-xs font-bold text-amber-900 mb-1.5 flex items-center gap-1">
+                        <span>ℹ️ Perkiraan {{ recurringSummaryDates.length }} jadwal yang akan dipesan:</span>
+                      </p>
+                      <div class="flex flex-wrap gap-1">
+                        <span v-for="(dt, dIdx) in recurringSummaryDates" :key="dIdx"
+                              class="inline-block bg-white text-amber-900 border border-amber-300 text-[11px] font-medium px-2 py-0.5 rounded-md">
+                          {{ dt.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric', month: 'short' }) }}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -555,6 +650,17 @@
                   {{ bookingError }}
                 </div>
 
+                <!-- ── Quota Exhausted Alert Card ────────────────────── -->
+                <div v-if="hasQuotaExhausted" class="px-4 py-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900 flex items-start gap-2.5">
+                  <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p class="font-bold text-amber-900">Kuota Pemesanan Bulan Ini Habis ({{ userQuota.monthly_count }}/{{ userQuota.max_allowed }})</p>
+                    <p class="text-xs text-amber-800 mt-0.5">Kategori Anda dibatasi maksimal {{ userQuota.max_allowed }} pemesanan per bulan kalender. Pemesanan baru tidak dapat dibuat untuk bulan ini.</p>
+                  </div>
+                </div>
+
                 <!-- ── Real-time Slot Availability Panel ──────────────────── -->
                 <!-- Checking spinner -->
                 <div v-if="slotChecking" class="flex items-center gap-2 px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600">
@@ -568,7 +674,7 @@
                 <!-- Available -->
                 <div v-else-if="slotCheckResult && slotCheckResult.available"
                   class="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
-                  <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 flex-shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span class="font-medium">Slot waktu tersedia — Anda dapat melanjutkan pemesanan</span>
@@ -633,10 +739,14 @@
                 <!-- ── End Availability Panel ─────────────────────────────── -->
 
                 <div class="flex gap-3 pt-2">
-                  <button type="submit" :disabled="bookingLoading || slotChecking || hasHardConflict"
-                    :title="hasHardConflict ? 'Waktu ini sudah dipesan. Pilih waktu lain.' : ''"
-                    class="flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all">
-                    {{ bookingLoading ? 'Memproses...' : 'Konfirmasi Pemesanan' }}
+                  <button type="submit" :disabled="bookingLoading || slotChecking || hasHardConflict || hasQuotaExhausted"
+                    :title="hasQuotaExhausted ? 'Kuota pemesanan Anda bulan ini sudah habis' : (hasHardConflict ? 'Waktu ini sudah dipesan. Pilih waktu lain.' : '')"
+                    class="flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all flex items-center justify-center gap-2">
+                    <svg v-if="bookingLoading" class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                    </svg>
+                    <span>{{ bookingLoading ? 'Memproses...' : 'Konfirmasi Pemesanan' }}</span>
                   </button>
                   <button type="button" @click="closeBookingModal"
                     class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all">
@@ -648,7 +758,7 @@
           </div>
 
           <!-- My Bookings -->
-          <div class="mb-12 w-full overflow-x-hidden" id="pemesanan-saya">
+          <div class="mb-12 w-full overflow-x-hidden scroll-mt-28" id="pemesanan-saya">
             <!-- Header dengan tombol filter -->
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
               <h2 class="text-2xl font-cinzel font-semibold text-[#882f1d]">Pemesanan Saya</h2>
@@ -1432,6 +1542,55 @@ const loginError = ref('')
 const bookingMessage = ref('')
 const bookingError = ref('')
 
+// --- Quick time preset helpers for booking modal -----------------------
+const applyTimePreset = (hours) => {
+  if (!bookingForm.value.start_time) {
+    bookingForm.value.start_time = '09:00'
+  }
+  const parts = bookingForm.value.start_time.split(':')
+  if (parts.length < 2) return
+  let h = parseInt(parts[0], 10) || 0
+  let m = parseInt(parts[1], 10) || 0
+
+  h = (h + hours) % 24
+  const endH = String(h).padStart(2, '0')
+  const endM = String(m).padStart(2, '0')
+  bookingForm.value.end_time = `${endH}:${endM}`
+}
+
+const applySessionPreset = (startStr, endStr) => {
+  bookingForm.value.start_time = startStr
+  bookingForm.value.end_time = endStr
+}
+
+// Computed: Preview tanggal pemesanan berulang (recurring)
+const recurringSummaryDates = computed(() => {
+  if (!bookingForm.value.is_recurring || !bookingForm.value.event_date || !bookingForm.value.repeat_until) {
+    return []
+  }
+  const pattern = bookingForm.value.recurrence_pattern || 'WEEKLY'
+  const start = new Date(`${bookingForm.value.event_date}T00:00:00`)
+  const until = new Date(`${bookingForm.value.repeat_until}T23:59:59`)
+  if (isNaN(start.getTime()) || isNaN(until.getTime()) || until <= start) return []
+
+  const maxFutureDate = new Date(start)
+  maxFutureDate.setDate(maxFutureDate.getDate() + 90)
+
+  const list = [new Date(start)]
+  let curr = new Date(start)
+
+  while (list.length < 20) {
+    if (pattern === 'WEEKLY') curr.setDate(curr.getDate() + 7)
+    else if (pattern === 'BIWEEKLY') curr.setDate(curr.getDate() + 14)
+    else if (pattern === 'MONTHLY') curr.setMonth(curr.getMonth() + 1)
+    else break
+
+    if (curr > until || curr > maxFutureDate) break
+    list.push(new Date(curr))
+  }
+  return list
+})
+
 // ── Real-time slot availability check ────────────────────────────────────────
 // null   = belum dicek (form belum lengkap)
 // object = hasil dari API check-availability
@@ -1493,6 +1652,13 @@ watch(
     slotCheckTimer = setTimeout(checkSlotAvailability, 600)
   }
 )
+
+// Computed: Cek apakah kuota pemesanan user sudah terpakai seluruhnya
+const hasQuotaExhausted = computed(() => {
+  if (!userQuota.value) return false
+  if (userQuota.value.is_unlimited) return false
+  return userQuota.value.remaining <= 0 || !userQuota.value.can_book
+})
 
 // Computed: Menampilkan kategori user dengan format yang mudah dibaca
 const displayUserCategory = computed(() => {
@@ -1753,18 +1919,21 @@ onMounted(async () => {
   const today = new Date().toISOString().split('T')[0]
   selectedDate.value = today
 
-  // Add window resize listener to reapply fix
+  // Auto-scroll smooth ke elemen yang dituju (memakai scroll-mt-28 CSS margin)
   if (process.client) {
-    window.addEventListener('resize', () => {
-      const containers = ['html', 'body', '#__nuxt', 'main'];
-      containers.forEach(selector => {
-        const el = document.querySelector(selector);
+    const scrollToHash = () => {
+      const hash = window.location.hash
+      const targetId = hash ? hash.replace('#', '') : ''
+      if (targetId) {
+        const el = document.getElementById(targetId)
         if (el) {
-          el.style.setProperty('overflow-x', 'hidden', 'important');
-          el.style.setProperty('max-width', '100vw', 'important');
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
         }
-      });
-    });
+      }
+    }
+
+    setTimeout(scrollToHash, 300)
+    window.addEventListener('hashchange', scrollToHash)
   }
 })
 

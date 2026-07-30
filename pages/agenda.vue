@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-[#882f1d] text-white">
@@ -323,9 +323,7 @@ const getRibbonColorHex = (index) => {
 
 // Set default year to current year
 onMounted(async () => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
+  // Scroll-to-top sudah ditangani secara global oleh router.options.ts
   const currentYear = new Date().getFullYear().toString()
   filters.value.year = currentYear
   await fetchCategories()

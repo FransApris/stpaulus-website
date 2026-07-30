@@ -36,74 +36,114 @@
           </div>
 
           <!-- Content -->
-          <div class="p-8">
-            <!-- Already Logged In -->
-            <div v-if="isLoggedIn" class="space-y-6">
-              <!-- User Info -->
-              <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border-2 border-green-200">
-                <div class="flex items-center space-x-4 mb-4">
-                  <div class="h-14 w-14 bg-green-500 rounded-full flex items-center justify-center">
-                    <svg class="h-7 w-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
+          <div class="p-6 sm:p-8">
+            <!-- Notice Banner when opened via ?login=required -->
+            <div v-if="!isLoggedIn && route.query.login === 'required'" 
+                 class="mb-4 p-3.5 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-xs font-semibold flex items-start gap-2.5 shadow-xs">
+              <span class="text-base leading-none">🔐</span>
+              <div>
+                <strong class="font-bold text-amber-900">Akses Memerlukan Login</strong>
+                <p class="text-amber-800 font-normal mt-0.5">Silakan masuk ke akun Anda terlebih dahulu untuk mengakses layanan paroki ini.</p>
+              </div>
+            </div>
+
+            <!-- Already Logged In (User Profile Card) -->
+            <div v-if="isLoggedIn" class="space-y-5">
+              <!-- User Info Header -->
+              <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200 shadow-xs">
+                <div class="flex items-center space-x-4 mb-3">
+                  <div class="h-14 w-14 bg-gradient-to-br from-paulus-blue to-blue-700 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-md border-2 border-white">
+                    {{ getUserInitials }}
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="font-bold text-gray-900 truncate">{{ user?.full_name || user?.username || 'User' }}</p>
-                    <p class="text-sm text-gray-600 truncate">{{ user?.unit_name || user?.user_category || 'Umat Paroki'
-                      }}</p>
+                    <p class="font-bold text-gray-900 text-base truncate">{{ user?.full_name || user?.username || 'User' }}</p>
+                    <p class="text-xs text-gray-600 truncate mt-0.5">{{ user?.email || user?.contact_phone || 'Umat Paroki' }}</p>
+                    <p class="text-xs font-semibold text-[#882f1d] truncate mt-0.5">🏷️ {{ user?.user_category || 'Umat Paroki' }}</p>
                   </div>
                 </div>
 
-                <!-- Roles -->
-                <div class="border-t border-green-200 pt-4">
-                  <p class="text-xs font-semibold text-gray-700 mb-2">Hak Akses:</p>
-                  <div class="flex flex-wrap gap-2">
+                <!-- Roles Badge -->
+                <div class="border-t border-blue-200/80 pt-3">
+                  <p class="text-xs font-semibold text-gray-700 mb-1.5">Hak Akses Sistem:</p>
+                  <div class="flex flex-wrap gap-1.5">
                     <span v-for="role in userRoles" :key="role"
-                      class="px-3 py-1 bg-white rounded-full text-xs font-medium text-gray-700 shadow-sm">
+                      class="px-2.5 py-0.5 bg-white rounded-full text-xs font-semibold text-gray-700 border border-blue-200 shadow-xs">
                       {{ getRoleLabel(role) }}
                     </span>
                   </div>
                 </div>
+
+                <!-- Live User Quota Badge -->
+                <div v-if="userQuota" class="bg-white/90 border border-blue-200 rounded-lg p-3 mt-3 text-xs">
+                  <div class="flex items-center justify-between gap-1 flex-wrap">
+                    <span class="font-bold text-gray-800 text-xs">📊 Status Kuota Pemesanan:</span>
+                    <span v-if="userQuota.is_unlimited" class="px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full font-bold text-[11px] border border-purple-200">
+                      ✨ Tanpa Batas (DPP)
+                    </span>
+                    <span v-else :class="userQuota.remaining > 0 ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-amber-100 text-amber-900 border-amber-300'" class="px-2.5 py-0.5 rounded-full font-bold text-[11px] border">
+                      Sisa {{ userQuota.remaining }} / {{ userQuota.max_allowed }}
+                    </span>
+                  </div>
+                  <p v-if="!userQuota.is_unlimited" class="text-gray-600 text-[11px] mt-1">
+                    Bulan {{ userQuota.period }}: Telah terpakai {{ userQuota.monthly_count }} dari maksimal {{ userQuota.max_allowed }} pemesanan.
+                  </p>
+                </div>
               </div>
 
-              <!-- Quick Access -->
-              <div class="space-y-3">
-                <h3 class="text-sm font-semibold text-gray-700 mb-3">Akses Cepat</h3>
-
-                <!-- Kronik (hanya untuk admin/pengurus) -->
-                <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="closeModal"
-                  class="flex items-center space-x-3 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg hover:shadow-md transition-all group">
-                  <div class="h-10 w-10 bg-paulus-blue rounded-lg flex items-center justify-center">
-                    <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div class="flex-1">
-                    <p class="font-semibold text-gray-800 text-sm">Kelola Kronik</p>
-                    <p class="text-xs text-gray-600">Isi & kelola kronik paroki</p>
-                  </div>
-                  <svg class="h-5 w-5 text-gray-400 group-hover:text-paulus-blue transition-colors" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </NuxtLink>
+              <!-- Quick Access Actions -->
+              <div class="space-y-2.5">
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Akses Layanan</h3>
 
                 <!-- Pemesanan Ruang -->
-                <NuxtLink to="/booking" @click="closeModal"
-                  class="flex items-center space-x-3 p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg hover:shadow-md transition-all group">
-                  <div class="h-10 w-10 bg-green-600 rounded-lg flex items-center justify-center">
-                    <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button @click="navigateToBookingSection('')"
+                  class="w-full flex items-center space-x-3 p-3.5 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl hover:shadow-md transition-all text-left group">
+                  <div class="h-9 w-9 bg-green-600 text-white rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <div class="flex-1">
-                    <p class="font-semibold text-gray-800 text-sm">Pemesanan Ruang</p>
-                    <p class="text-xs text-gray-600">Booking ruang paroki</p>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-bold text-gray-800 text-sm">Katalog & Pesan Ruang</p>
+                    <p class="text-xs text-green-700 font-medium">Pilih fasilitas & buat sewa baru</p>
                   </div>
-                  <svg class="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-5 w-5 text-gray-400 group-hover:text-green-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                <!-- Pemesanan Saya -->
+                <button @click="navigateToBookingSection('#pemesanan-saya')"
+                  class="w-full flex items-center space-x-3 p-3.5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-xl hover:shadow-md transition-all text-left group">
+                  <div class="h-9 w-9 bg-purple-600 text-white rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-bold text-gray-800 text-sm">Riwayat Booking Saya</p>
+                    <p class="text-xs text-purple-700 font-medium">Status & daftar transaksi sewa Anda</p>
+                  </div>
+                  <svg class="h-5 w-5 text-gray-400 group-hover:text-purple-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+
+                <!-- Kronik (hanya untuk admin/pengurus) -->
+                <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="closeModal"
+                  class="flex items-center space-x-3 p-3.5 bg-gradient-to-r from-blue-50 to-sky-50 border border-blue-200 rounded-xl hover:shadow-md transition-all group">
+                  <div class="h-9 w-9 bg-paulus-blue text-white rounded-lg flex items-center justify-center">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-bold text-gray-800 text-sm">Kelola Kronik</p>
+                    <p class="text-xs text-gray-600">Isi & kelola peristiwa paroki</p>
+                  </div>
+                  <svg class="h-5 w-5 text-gray-400 group-hover:text-paulus-blue transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                   </svg>
                 </NuxtLink>
@@ -111,12 +151,12 @@
 
               <!-- Logout Button -->
               <button @click="handleLogout"
-                class="w-full py-3 px-4 bg-red-50 hover:bg-red-100 text-red-600 font-semibold rounded-lg transition-colors flex items-center justify-center space-x-2">
+                class="w-full py-3 px-4 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl transition-colors border border-red-200 flex items-center justify-center space-x-2 text-sm mt-2">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                <span>Logout</span>
+                <span>Keluar / Logout</span>
               </button>
             </div>
 
@@ -189,8 +229,11 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
+const route = useRoute()
+
 const isLoggedIn = ref(false)
 const user = ref(null)
+const userQuota = ref(null)
 const loading = ref(false)
 const errorMessage = ref('')
 
@@ -198,6 +241,33 @@ const loginForm = ref({
   username: '',
   password: ''
 })
+
+const getUserInitials = computed(() => {
+  if (!user.value) return '?'
+  const name = user.value.full_name || user.value.username || ''
+  const parts = name.trim().split(' ')
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }
+  return name.substring(0, 2).toUpperCase()
+})
+
+const loadUserQuota = async () => {
+  if (!process.client) return
+  const token = localStorage.getItem('auth_token')
+  if (!token) {
+    userQuota.value = null
+    return
+  }
+  try {
+    const data = await $fetch('/api/bookings/my-quota', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    userQuota.value = data
+  } catch (err) {
+    console.warn('[LoginModal] Could not fetch quota:', err)
+  }
+}
 
 // Check login status on mount
 onMounted(async () => {
@@ -210,6 +280,7 @@ onMounted(async () => {
         })
         user.value = response
         isLoggedIn.value = true
+        loadUserQuota()
       } catch (error) {
         console.error('[LoginModal] Token invalid:', error)
         localStorage.removeItem('auth_token')
@@ -218,16 +289,17 @@ onMounted(async () => {
   }
 })
 
-// Watch for modal open to refresh auth state
+// Watch for modal open to refresh auth state and quota
 watch(() => props.modelValue, (newVal) => {
   if (newVal && process.client) {
     const token = localStorage.getItem('auth_token')
-    if (token && !user.value) {
+    if (token) {
       $fetch('/api/me', {
         headers: { Authorization: `Bearer ${token}` }
       }).then(response => {
         user.value = response
         isLoggedIn.value = true
+        loadUserQuota()
       }).catch(() => {
         localStorage.removeItem('auth_token')
       })
@@ -332,6 +404,29 @@ const getRoleLabel = (role) => {
     'user': '👤 User'
   }
   return labels[role] || role
+}
+
+const navigateToBookingSection = async (sectionHash = '') => {
+  closeModal()
+  if (!process.client) return
+
+  const targetId = sectionHash === '#pemesanan-saya' ? 'pemesanan-saya' : 'katalog-ruangan'
+
+  const doScroll = () => {
+    const el = document.getElementById(targetId)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  if (route.path === '/booking') {
+    setTimeout(doScroll, 50)
+  } else {
+    await navigateTo(`/booking${sectionHash}`)
+    setTimeout(doScroll, 450)
+  }
 }
 
 const handleLogin = async () => {

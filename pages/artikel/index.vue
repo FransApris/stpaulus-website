@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageMaintenance v-if="isMaintenance" title="Artikel Paroki" />
     <div v-else>
@@ -315,9 +315,7 @@ const formatDate = (dateString) => {
 };
 
 onMounted(() => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
+  // Scroll-to-top sudah ditangani secara global oleh router.options.ts
 })
 </script>
 

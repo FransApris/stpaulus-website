@@ -1,165 +1,266 @@
 <template>
   <div class="space-y-6">
-    <!-- Add Room Form -->
-    <div class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-lg font-semibold mb-4">Tambah Ruangan Baru</h2>
-      <form @submit.prevent="createRoom" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input v-model="newRoom.name" type="text" placeholder="Nama Ruangan" class="border p-2 rounded" required />
-        <input v-model="newRoom.capacity" type="number" placeholder="Kapasitas" class="border p-2 rounded" required />
-        <div class="flex flex-col">
-          <label class="mb-1">Lokasi</label>
-          <select v-model="newRoom.location" class="border p-2 rounded" required>
-            <option value="">Pilih Lokasi</option>
-            <option value="Gereja">Gereja</option>
-            <option value="Balai Paroki Lt.1">Balai Paroki Lt.1</option>
-            <option value="Balai Paroki Lt.2">Balai Paroki Lt.2</option>
-            <option value="Balai Paroki Lt.3">Balai Paroki Lt.3</option>
-            <option value="Selasar">Selasar</option>
-            <option value="Halaman Belakang Gereja">Halaman Belakang Gereja</option>
-            <option value="Halaman Depan Gereja">Halaman Depan Gereja</option>
-          </select>
-        </div>
-        <input v-model="newRoom.facilities" type="text" placeholder="Fasilitas (comma separated)"
-          class="border p-2 rounded" />
-        <div class="flex flex-col">
-          <label class="mb-1">Memerlukan Persetujuan</label>
-          <select v-model="newRoom.requires_approval" class="border p-2 rounded">
-            <option :value="true">Ya</option>
-            <option :value="false">Tidak</option>
-          </select>
-        </div>
-        <div class="md:col-span-2">
-          <label class="block mb-2">Kategori yang Diijinkan</label>
-          <div class="mb-3 pb-3 border-b">
-            <label class="flex items-center font-semibold text-blue-600">
-              <input v-model="selectAllCreate" @change="toggleAllCategoriesCreate" type="checkbox"
-                class="mr-2 w-4 h-4" />
-              Pilih Semua
-            </label>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <label v-for="category in userCategories" :key="category.value" class="flex items-center">
-              <input v-model="newRoom.allowed_categories" :value="category.value" type="checkbox" class="mr-2" />
-              {{ category.label }}
-            </label>
-          </div>
-        </div>
-        <button type="submit" :disabled="loading"
-          class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
-          {{ loading ? 'Membuat...' : 'Buat Ruangan' }}
-        </button>
-      </form>
-      <p v-if="message" class="mt-2 text-green-600">{{ message }}</p>
-      <p v-if="error" class="mt-2 text-red-600">{{ error }}</p>
+    <!-- Toast Notification -->
+    <div v-if="toastMessage" 
+         class="fixed top-5 right-5 z-50 flex items-center p-4 mb-4 text-sm rounded-lg shadow-lg transition-all duration-300 transform translate-y-0"
+         :class="toastType === 'success' ? 'bg-green-800 text-green-100 border border-green-700' : 'bg-red-800 text-red-100 border border-red-700'">
+      <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <path v-if="toastType === 'success'" fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+        <path v-else fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+      </svg>
+      <span>{{ toastMessage }}</span>
+      <button @click="toastMessage = ''" class="ml-4 text-white hover:opacity-75 focus:outline-none">✕</button>
     </div>
 
-    <!-- Rooms List -->
-    <div class="bg-white p-6 rounded-lg shadow">
-      <div class="flex justify-between items-center mb-4">
-        <h2 class="text-lg font-semibold">Daftar Ruangan</h2>
-        <div class="text-sm text-gray-600">
-          Total: <span class="font-semibold">{{ totalItems }}</span> ruangan
+    <!-- Header Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Total Ruangan</p>
+          <p class="text-2xl font-bold text-gray-800 mt-1">{{ stats.total }}</p>
+        </div>
+        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
         </div>
       </div>
-      <div v-if="rooms.length === 0" class="text-gray-500">Belum ada ruangan.</div>
+
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Ruangan Aktif</p>
+          <p class="text-2xl font-bold text-green-600 mt-1">{{ stats.active }}</p>
+        </div>
+        <div class="w-12 h-12 bg-green-50 text-green-600 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Perlu Persetujuan</p>
+          <p class="text-2xl font-bold text-amber-600 mt-1">{{ stats.requiresApproval }}</p>
+        </div>
+        <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Nonaktif</p>
+          <p class="text-2xl font-bold text-gray-400 mt-1">{{ stats.inactive }}</p>
+        </div>
+        <div class="w-12 h-12 bg-gray-100 text-gray-500 rounded-lg flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Container Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <!-- Toolbar: Search, Filters & Action Button -->
+      <div class="p-6 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <!-- Search and Filters -->
+        <div class="flex flex-col sm:flex-row flex-wrap items-center gap-3 flex-1">
+          <!-- Search Box -->
+          <div class="relative w-full sm:w-64">
+            <input v-model="searchQuery" 
+                   type="text" 
+                   placeholder="Cari ruangan / fasilitas..." 
+                   class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" />
+            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+
+          <!-- Location Filter -->
+          <select v-model="selectedLocationFilter" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="">Semua Lokasi</option>
+            <option v-for="loc in locationOptions" :key="loc" :value="loc">{{ loc }}</option>
+          </select>
+
+          <!-- Status Filter -->
+          <select v-model="selectedStatusFilter" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="all">Semua Status</option>
+            <option value="active">Aktif Saja</option>
+            <option value="inactive">Nonaktif Saja</option>
+          </select>
+
+          <!-- Approval Filter -->
+          <select v-model="selectedApprovalFilter" class="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none">
+            <option value="all">Semua Persetujuan</option>
+            <option value="approval">Memerlukan Persetujuan</option>
+            <option value="no_approval">Tanpa Persetujuan</option>
+          </select>
+
+          <!-- Clear Filters -->
+          <button v-if="searchQuery || selectedLocationFilter || selectedStatusFilter !== 'all' || selectedApprovalFilter !== 'all'"
+                  @click="resetFilters" 
+                  class="text-xs text-blue-600 hover:text-blue-800 font-medium underline px-2 py-1">
+            Reset Filter
+          </button>
+        </div>
+
+        <!-- Add Button -->
+        <button @click="openCreateModal" 
+                class="bg-[#882f1d] hover:bg-[#6e2517] text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-colors shadow-sm">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Tambah Ruangan Baru
+        </button>
+      </div>
+
+      <!-- Table View -->
+      <div v-if="filteredRooms.length === 0" class="p-12 text-center text-gray-500">
+        <svg class="w-16 h-16 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+        </svg>
+        <p class="text-lg font-medium text-gray-700">Tidak ada ruangan ditemukan</p>
+        <p class="text-sm text-gray-400 mt-1">Coba ubah kata kunci pencarian atau reset filter ruangan.</p>
+      </div>
+
       <div v-else class="overflow-x-auto">
-        <table class="min-w-full table-auto">
-          <thead>
-            <tr class="bg-gray-50">
-              <th class="px-4 py-2 text-left">
-                <button @click="sortBy('name')" class="flex items-center gap-1 hover:text-blue-600 transition-colors">
-                  Nama
-                  <span v-if="sortField === 'name'" class="text-blue-600">
-                    {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                  </span>
-                  <span v-else class="text-gray-400">⇅</span>
-                </button>
-              </th>
-              <th class="px-4 py-2 text-left">
-                <button @click="sortBy('capacity')"
-                  class="flex items-center gap-1 hover:text-blue-600 transition-colors">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ruangan</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <button @click="sortBy('capacity')" class="flex items-center gap-1 hover:text-gray-700">
                   Kapasitas
-                  <span v-if="sortField === 'capacity'" class="text-blue-600">
-                    {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                  </span>
-                  <span v-else class="text-gray-400">⇅</span>
+                  <span v-if="sortField === 'capacity'" class="text-blue-600">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
                 </button>
               </th>
-              <th class="px-4 py-2 text-left">
-                <button @click="sortBy('location')"
-                  class="flex items-center gap-1 hover:text-blue-600 transition-colors">
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <button @click="sortBy('location')" class="flex items-center gap-1 hover:text-gray-700">
                   Lokasi
-                  <span v-if="sortField === 'location'" class="text-blue-600">
-                    {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                  </span>
-                  <span v-else class="text-gray-400">⇅</span>
+                  <span v-if="sortField === 'location'" class="text-blue-600">{{ sortOrder === 'asc' ? '▲' : '▼' }}</span>
                 </button>
               </th>
-              <th class="px-4 py-2 text-left">Fasilitas</th>
-              <th class="px-4 py-2 text-left">
-                <button @click="sortBy('requires_approval')"
-                  class="flex items-center gap-1 hover:text-blue-600 transition-colors">
-                  Persetujuan
-                  <span v-if="sortField === 'requires_approval'" class="text-blue-600">
-                    {{ sortOrder === 'asc' ? '▲' : '▼' }}
-                  </span>
-                  <span v-else class="text-gray-400">⇅</span>
-                </button>
-              </th>
-              <th class="px-4 py-2 text-left">Aksi</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Fasilitas</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Persetujuan</th>
+              <th scope="col" class="px-6 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">Status Aktif</th>
+              <th scope="col" class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="room in paginatedRooms" :key="room.id" class="border-t hover:bg-gray-50 transition-colors">
-              <td class="px-4 py-2">{{ room.name }}</td>
-              <td class="px-4 py-2">{{ room.capacity }}</td>
-              <td class="px-4 py-2">{{ room.location }}</td>
-              <td class="px-4 py-2">
-                {{
-                  (() => {
-                    try {
-                      let facilities = room.facilities;
-                      if (typeof facilities === 'string') {
-                        facilities = JSON.parse(facilities);
-                      }
-                      return Array.isArray(facilities) ? facilities.join(', ') : '';
-                    } catch (e) {
-                      return room.facilities || '';
-                    }
-                  })()
-                }}
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="room in paginatedRooms" :key="room.id" class="hover:bg-gray-50/80 transition-colors">
+              <!-- Name & Photo -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center">
+                    <img v-if="room.photo_url" :src="room.photo_url" :alt="room.name" class="h-full w-full object-cover" />
+                    <svg v-else class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-semibold text-gray-900 flex items-center gap-1.5 flex-wrap">
+                      <span>{{ room.name }}</span>
+                      <span v-if="room.is_dedicated" 
+                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300"
+                            :title="`Hak Pakai Permanen: ${room.dedicated_to || 'Seksi'}`">
+                        🔒 Khusus: {{ room.dedicated_to ? room.dedicated_to : 'Seksi' }}
+                      </span>
+                    </div>
+                    <div v-if="room.description" class="text-xs text-gray-500 max-w-xs truncate" :title="room.description">{{ room.description }}</div>
+                  </div>
+                </div>
               </td>
-              <td class="px-4 py-2">{{ room.requires_approval == 1 || room.requires_approval === true ? 'Ya' : 'Tidak'
-                }}</td>
-              <td class="px-4 py-2">
-                <button @click="editRoom(room)" title="Edit" class="text-blue-600 hover:text-blue-800 mr-2 p-1 inline-flex items-center">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+
+              <!-- Capacity -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                  <svg class="w-3.5 h-3.5 mr-1 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                   </svg>
+                  {{ room.capacity }} Orang
+                </span>
+              </td>
+
+              <!-- Location -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-medium">
+                {{ room.location }}
+              </td>
+
+              <!-- Facilities -->
+              <td class="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                <div class="flex flex-wrap gap-1">
+                  <span v-for="(fac, fIdx) in parseFacilities(room.facilities)" :key="fIdx" 
+                        class="inline-block bg-gray-100 text-gray-600 text-[11px] px-2 py-0.5 rounded">
+                    {{ fac }}
+                  </span>
+                  <span v-if="parseFacilities(room.facilities).length === 0" class="text-gray-400 italic text-xs">Standard</span>
+                </div>
+              </td>
+
+              <!-- Requires Approval -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span :class="room.requires_approval ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'" 
+                      class="px-2.5 py-1 rounded-full text-xs font-semibold inline-flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full" :class="room.requires_approval ? 'bg-amber-500' : 'bg-gray-400'"></span>
+                  {{ room.requires_approval ? 'Perlu Persetujuan' : 'Bebas Dipesan' }}
+                </span>
+              </td>
+
+              <!-- Active Status Toggle -->
+              <td class="px-6 py-4 whitespace-nowrap text-center">
+                <button @click="toggleActiveStatus(room)" 
+                        :disabled="toggleLoadingId === room.id"
+                        class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none disabled:opacity-50"
+                        :class="isRoomActive(room) ? 'bg-green-600' : 'bg-gray-300'"
+                        :title="isRoomActive(room) ? 'Klik untuk menonaktifkan' : 'Klik untuk mengaktifkan'">
+                  <span class="sr-only">Toggle Room Status</span>
+                  <span class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200"
+                        :class="isRoomActive(room) ? 'translate-x-5' : 'translate-x-0'"></span>
                 </button>
-                <button @click="deleteRoom(room)" title="Hapus" class="text-red-600 hover:text-red-800 p-1 inline-flex items-center">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                </button>
+              </td>
+
+              <!-- Actions -->
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex items-center justify-end space-x-2">
+                  <button @click="openEditModal(room)" title="Edit Ruangan" 
+                          class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                    </svg>
+                  </button>
+                  <button @click="promptDeleteRoom(room)" title="Hapus Ruangan" 
+                          class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
-        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t pt-4">
-          <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
-          <div class="flex items-center gap-2">
+
+        <!-- Pagination -->
+        <div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+          <p class="text-sm text-gray-600">
+            Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}–{{ Math.min(currentPage * pageLimit, totalItems) }} dari {{ totalItems }} ruangan
+          </p>
+          <div class="flex items-center gap-1.5">
             <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                    class="px-3 py-1.5 rounded-lg border text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors">
               Sebelumnya
             </button>
             <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
-              class="px-3 py-1 rounded border text-sm"
-              :class="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'">
+                    class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                    :class="page === currentPage ? 'bg-[#882f1d] text-white' : 'border text-gray-700 hover:bg-gray-50'">
               {{ page }}
             </button>
             <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
+                    class="px-3.5 py-1.5 rounded-lg border text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors">
               Berikutnya
             </button>
           </div>
@@ -167,65 +268,160 @@
       </div>
     </div>
 
-    <!-- Edit Room Modal -->
-    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <h3 class="text-lg font-semibold mb-4">Edit Ruangan</h3>
-        <form @submit.prevent="updateRoom" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input v-model="editingRoom.name" type="text" placeholder="Nama Ruangan" class="border p-2 rounded"
-            required />
-          <input v-model="editingRoom.capacity" type="number" placeholder="Kapasitas" class="border p-2 rounded"
-            required />
-          <div class="flex flex-col">
-            <label class="mb-1">Lokasi</label>
-            <select v-model="editingRoom.location" class="border p-2 rounded" required>
-              <option value="">Pilih Lokasi</option>
-              <option value="Gereja">Gereja</option>
-              <option value="Balai Paroki Lt.1">Balai Paroki Lt.1</option>
-              <option value="Balai Paroki Lt.2">Balai Paroki Lt.2</option>
-              <option value="Balai Paroki Lt.3">Balai Paroki Lt.3</option>
-              <option value="Selasar">Selasar</option>
-              <option value="Halaman Belakang Gereja">Halaman Belakang Gereja</option>
-              <option value="Halaman Depan Gereja">Halaman Depan Gereja</option>
-            </select>
+    <!-- Create / Edit Room Modal -->
+    <div v-if="showModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto my-8 border border-gray-100">
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between bg-gray-50/50 sticky top-0 bg-white z-10">
+          <h3 class="text-lg font-bold text-gray-800">
+            {{ isEditing ? 'Edit Ruangan' : 'Tambah Ruangan Baru' }}
+          </h3>
+          <button @click="closeModal" class="text-gray-400 hover:text-gray-600 text-xl font-bold p-1">✕</button>
+        </div>
+
+        <!-- Modal Body -->
+        <form @submit.prevent="saveRoom" class="p-6 space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Name -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Nama Ruangan *</label>
+              <input v-model="form.name" type="text" placeholder="Contoh: Balai Paroki Utama" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" required />
+            </div>
+
+            <!-- Capacity -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Kapasitas (Orang) *</label>
+              <input v-model.number="form.capacity" type="number" min="1" placeholder="50" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" required />
+            </div>
+
+            <!-- Location -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Lokasi *</label>
+              <select v-model="form.location" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" required>
+                <option value="">Pilih Lokasi Ruangan</option>
+                <option v-for="loc in locationOptions" :key="loc" :value="loc">{{ loc }}</option>
+              </select>
+            </div>
+
+            <!-- Requires Approval -->
+            <div>
+              <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Persetujuan Admin *</label>
+              <select v-model="form.requires_approval" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                <option :value="true">Memerlukan Persetujuan Admin</option>
+                <option :value="false">Bebas Dipesan Langsung</option>
+              </select>
+            </div>
           </div>
-          <input v-model="editingRoom.facilities" type="text" placeholder="Fasilitas (comma separated)"
-            class="border p-2 rounded" />
-          <div class="flex flex-col">
-            <label class="mb-1">Memerlukan Persetujuan</label>
-            <select v-model="editingRoom.requires_approval" class="border p-2 rounded">
-              <option :value="true">Ya</option>
-              <option :value="false">Tidak</option>
-            </select>
+
+          <!-- Photo URL -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">URL Foto Ruangan (Opsional)</label>
+            <div class="flex gap-2">
+              <input v-model="form.photo_url" type="url" placeholder="https://res.cloudinary.com/..." class="flex-1 border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <!-- Photo Preview -->
+            <div v-if="form.photo_url" class="mt-2 relative w-32 h-20 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+              <img :src="form.photo_url" alt="Preview Foto" class="w-full h-full object-cover" />
+            </div>
           </div>
-          <div class="md:col-span-2">
-            <label class="block mb-2">Kategori yang Diijinkan</label>
-            <div class="mb-3 pb-3 border-b">
-              <label class="flex items-center font-semibold text-blue-600">
-                <input v-model="selectAllEdit" @change="toggleAllCategoriesEdit" type="checkbox" class="mr-2 w-4 h-4" />
+
+          <!-- Facilities -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Fasilitas (Dipisah Koma)</label>
+            <input v-model="form.facilities" type="text" placeholder="Contoh: AC 2 PK, Sound System, Proyektor, LCD Screen" class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">Deskripsi & Catatan Tata Tertib</label>
+            <textarea v-model="form.description" rows="3" placeholder="Contoh: Harap mematikan AC dan merapikan kembali meja/kursi setelah digunakan..." class="w-full border border-gray-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+          </div>
+
+          <!-- Allowed Categories -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-semibold text-gray-700 uppercase tracking-wider">Kategori Pengguna yang Diizinkan *</label>
+              <label class="flex items-center text-xs font-bold text-blue-600 cursor-pointer">
+                <input v-model="selectAllModal" @change="toggleAllModalCategories" type="checkbox" class="mr-1.5 w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
                 Pilih Semua
               </label>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-              <label v-for="category in userCategories" :key="category.value" class="flex items-center">
-                <input v-model="editingRoom.allowed_categories" :value="category.value" type="checkbox" class="mr-2" />
-                {{ category.label }}
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              <label v-for="cat in userCategories" :key="cat.value" class="flex items-center text-xs text-gray-700 font-medium cursor-pointer hover:text-gray-900">
+                <input v-model="form.allowed_categories" :value="cat.value" type="checkbox" class="mr-2 w-4 h-4 text-blue-600 rounded" />
+                {{ cat.label }}
               </label>
             </div>
           </div>
-          <div class="md:col-span-2 flex justify-end space-x-2">
-            <button type="button" @click="closeEditModal"
-              class="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50">
+
+          <!-- Dedicated Room Section -->
+          <div class="p-3.5 bg-amber-50/70 rounded-lg border border-amber-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-amber-900 uppercase tracking-wider">🔒 Ruangan Khusus Permanen (Dedicated)</p>
+                <p class="text-xs text-amber-800">Tandai jika ruangan dialokasikan khusus untuk Seksi / Kelompok tertentu</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input v-model="form.is_dedicated" type="checkbox" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+              </label>
+            </div>
+
+            <div v-if="form.is_dedicated" class="pt-2">
+              <label class="block text-xs font-semibold text-amber-900 mb-1">Nama Seksi / Lembaga Pemilik *</label>
+              <input v-model="form.dedicated_to" type="text" placeholder="Contoh: Seksi Komsos, Sekretariat Paroki, Mudika/OMK" class="w-full border border-amber-300 bg-white rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-amber-500" />
+            </div>
+          </div>
+
+          <!-- Active Status Toggle in Form -->
+          <div class="flex items-center justify-between p-3 bg-blue-50/50 rounded-lg border border-blue-100">
+            <div>
+              <p class="text-xs font-bold text-blue-900 uppercase tracking-wider">Status Akses Ruangan</p>
+              <p class="text-xs text-blue-700">Ruangan aktif dapat dilihat dan dipesan oleh umat/pengguna</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input v-model="form.is_active" type="checkbox" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+            </label>
+          </div>
+
+          <!-- Error Alert inside modal -->
+          <p v-if="modalError" class="text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200">{{ modalError }}</p>
+
+          <!-- Buttons -->
+          <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+            <button type="button" @click="closeModal" class="px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50">
               Batal
             </button>
-            <button type="submit" :disabled="editLoading"
-              class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50">
-              {{ editLoading ? 'Menyimpan...' : 'Simpan Perubahan' }}
+            <button type="submit" :disabled="formLoading" class="bg-[#882f1d] hover:bg-[#6e2517] text-white px-5 py-2 text-sm font-semibold rounded-lg disabled:opacity-50">
+              {{ formLoading ? 'Menyimpan...' : (isEditing ? 'Simpan Perubahan' : 'Buat Ruangan') }}
             </button>
           </div>
         </form>
-        <p v-if="editMessage" class="mt-2 text-green-600">{{ editMessage }}</p>
-        <p v-if="editError" class="mt-2 text-red-600">{{ editError }}</p>
+      </div>
+    </div>
+
+    <!-- Delete / Deactivate Confirmation Modal -->
+    <div v-if="showDeleteModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 text-center border border-gray-100">
+        <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Hapus Ruangan "{{ roomToDelete?.name }}"?</h3>
+        <p class="text-sm text-gray-600 mb-6">
+          Jika ruangan ini pernah dipesan, sistem akan <strong>menonaktifkan ruangan</strong> untuk menjaga data histori laporan.
+        </p>
+
+        <div class="flex justify-center gap-3">
+          <button @click="showDeleteModal = false" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
+            Batal
+          </button>
+          <button @click="executeDeleteRoom" :disabled="deleteLoading" class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 disabled:opacity-50">
+            {{ deleteLoading ? 'Memproses...' : 'Ya, Hapus / Nonaktifkan' }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -238,44 +434,45 @@ definePageMeta({
 })
 
 const rooms = useState('admin-rooms', () => [])
-const newRoom = ref({
-  name: '',
-  capacity: '',
-  location: '',
-  facilities: '',
-  requires_approval: true,
-  allowed_categories: []
-})
+const searchQuery = ref('')
+const selectedLocationFilter = ref('')
+const selectedStatusFilter = ref('all')
+const selectedApprovalFilter = ref('all')
 
-const loading = ref(false)
-const message = ref('')
-const error = ref('')
-
-// Select All state
-const selectAllCreate = ref(false)
-const selectAllEdit = ref(false)
-
-// Sorting state
 const sortField = ref('name')
 const sortOrder = ref('asc')
 const currentPage = useState('admin-rooms-page', () => 1)
 const pageLimit = 10
 
-// Edit modal
-const showEditModal = ref(false)
-const editingRoom = ref({
-  id: '',
-  name: '',
-  capacity: '',
-  location: '',
-  facilities: '',
-  requires_approval: true,
-  allowed_categories: []
-})
-const editLoading = ref(false)
-const editMessage = ref('')
-const editError = ref('')
+const toggleLoadingId = ref(null)
+const deleteLoading = ref(false)
 
+// Toast Notifications
+const toastMessage = ref('')
+const toastType = ref('success')
+
+const showToast = (msg, type = 'success') => {
+  toastMessage.value = msg
+  toastType.value = type
+  setTimeout(() => {
+    if (toastMessage.value === msg) {
+      toastMessage.value = ''
+    }
+  }, 4000)
+}
+
+// Location options
+const locationOptions = [
+  'Gereja',
+  'Balai Paroki Lt.1',
+  'Balai Paroki Lt.2',
+  'Balai Paroki Lt.3',
+  'Selasar',
+  'Halaman Belakang Gereja',
+  'Halaman Depan Gereja'
+]
+
+// User Category Options
 const userCategories = [
   { value: 'Dewan Pastoral Paroki', label: 'Dewan Pastoral Paroki' },
   { value: 'Kategorial', label: 'Kelompok Kategorial' },
@@ -285,114 +482,88 @@ const userCategories = [
   { value: 'Seksi', label: 'Seksi' }
 ]
 
-// Toggle all categories for Create form
-const toggleAllCategoriesCreate = () => {
-  if (selectAllCreate.value) {
-    // Select all
-    newRoom.value.allowed_categories = userCategories.map(cat => cat.value)
-  } else {
-    // Deselect all
-    newRoom.value.allowed_categories = []
+// Modal Form State
+const showModal = ref(false)
+const isEditing = ref(false)
+const formLoading = ref(false)
+const modalError = ref('')
+const selectAllModal = ref(false)
+
+const form = ref({
+  id: null,
+  name: '',
+  capacity: 10,
+  location: '',
+  facilities: '',
+  description: '',
+  photo_url: '',
+  requires_approval: true,
+  is_active: true,
+  is_dedicated: false,
+  dedicated_to: '',
+  allowed_categories: []
+})
+
+// Delete Modal State
+const showDeleteModal = ref(false)
+const roomToDelete = ref(null)
+
+// Stats Computed
+const stats = computed(() => {
+  const all = rooms.value || []
+  return {
+    total: all.length,
+    active: all.filter(r => isRoomActive(r)).length,
+    inactive: all.filter(r => !isRoomActive(r)).length,
+    requiresApproval: all.filter(r => r.requires_approval == 1 || r.requires_approval === true).length,
+    dedicated: all.filter(r => r.is_dedicated == 1 || r.is_dedicated === true).length
   }
+})
+
+// Helper check room active
+function isRoomActive(r) {
+  return r.is_active === undefined || r.is_active === null || r.is_active == 1 || r.is_active === true
 }
 
-// Toggle all categories for Edit form
-const toggleAllCategoriesEdit = () => {
-  if (selectAllEdit.value) {
-    // Select all
-    editingRoom.value.allowed_categories = userCategories.map(cat => cat.value)
-  } else {
-    // Deselect all
-    editingRoom.value.allowed_categories = []
-  }
-}
-
-// Watch for manual checkbox changes in Create form
-watch(() => newRoom.value.allowed_categories, (newVal) => {
-  selectAllCreate.value = newVal.length === userCategories.length
-}, { deep: true })
-
-// Watch for manual checkbox changes in Edit form
-watch(() => editingRoom.value.allowed_categories, (newVal) => {
-  selectAllEdit.value = newVal.length === userCategories.length
-}, { deep: true })
-
-// Sorted rooms computed property
-const sortedRooms = computed(() => {
-  if (!rooms.value || rooms.value.length === 0) return []
-
-  const sorted = [...rooms.value].sort((a, b) => {
-    let aValue = a[sortField.value]
-    let bValue = b[sortField.value]
-
-    // Special handling for requires_approval (boolean)
-    if (sortField.value === 'requires_approval') {
-      aValue = aValue ? 1 : 0
-      bValue = bValue ? 1 : 0
-    } else if (sortField.value === 'capacity') {
-      // Numeric sort for capacity
-      aValue = parseInt(aValue) || 0
-      bValue = parseInt(bValue) || 0
-    } else {
-      // Handle null/undefined values for other fields
-      if (!aValue) aValue = ''
-      if (!bValue) bValue = ''
-
-      // Convert to lowercase for case-insensitive sorting
-      if (typeof aValue === 'string') aValue = aValue.toLowerCase()
-      if (typeof bValue === 'string') bValue = bValue.toLowerCase()
+// Helper parse facilities
+function parseFacilities(fac) {
+  if (!fac) return []
+  if (Array.isArray(fac)) return fac
+  if (typeof fac === 'string') {
+    try {
+      const parsed = JSON.parse(fac)
+      if (Array.isArray(parsed)) return parsed
+    } catch (e) {
+      return fac.split(',').map(s => s.trim()).filter(Boolean)
     }
-
-    // Compare
-    if (aValue < bValue) return sortOrder.value === 'asc' ? -1 : 1
-    if (aValue > bValue) return sortOrder.value === 'asc' ? 1 : -1
-    return 0
-  })
-
-  return sorted
-})
-
-const totalItems = computed(() => sortedRooms.value.length)
-const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
-const paginatedRooms = computed(() => {
-  const start = (currentPage.value - 1) * pageLimit
-  return sortedRooms.value.slice(start, start + pageLimit)
-})
-const visiblePages = computed(() => {
-  const pages = []
-  const start = Math.max(1, currentPage.value - 2)
-  const end = Math.min(totalPages.value, currentPage.value + 2)
-  for (let page = start; page <= end; page++) pages.push(page)
-  return pages
-})
-
-const goToPage = (page) => {
-  if (page < 1 || page > totalPages.value) return
-  currentPage.value = page
+  }
+  return [String(fac)]
 }
 
-// Sort function
-const sortBy = (field) => {
-  if (sortField.value === field) {
-    // Toggle order if same field
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+// Watch modal category changes for selectAll
+watch(() => form.value.allowed_categories, (newVal) => {
+  selectAllModal.value = (newVal || []).length === userCategories.length
+}, { deep: true })
+
+const toggleAllModalCategories = () => {
+  if (selectAllModal.value) {
+    form.value.allowed_categories = userCategories.map(c => c.value)
   } else {
-    // New field - reset to ascending
-    sortField.value = field
-    sortOrder.value = 'asc'
+    form.value.allowed_categories = []
   }
 }
 
-// Load rooms
+// Load Rooms
 const loadRooms = async () => {
   try {
-    rooms.value = await $fetch('/api/admin/rooms', {
+    const data = await $fetch('/api/admin/rooms', {
       headers: {
         Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
       }
     })
+    rooms.value = data || []
   } catch (err) {
-    console.error('Failed to load rooms', err)
+    console.error('Failed to load rooms:', err)
   }
 }
 
@@ -400,216 +571,296 @@ onMounted(() => {
   loadRooms()
 })
 
-watch([sortField, sortOrder], () => {
-  currentPage.value = 1
-})
+// Filtering & Sorting
+const filteredRooms = computed(() => {
+  let list = [...(rooms.value || [])]
 
-watch(totalPages, (pageCount) => {
-  if (currentPage.value > pageCount) {
-    currentPage.value = pageCount
-  }
-})
-
-const createRoom = async () => {
-  // Optimistic update: Clone form data before clearing
-  const roomData = { ...newRoom.value }
-
-  // Handle facilities - bisa berupa string comma-separated atau kosong
-  let facilities = null
-  if (roomData.facilities && typeof roomData.facilities === 'string' && roomData.facilities.trim() !== '') {
-    facilities = JSON.stringify(roomData.facilities.split(',').map(f => f.trim()))
-  }
-
-  const allowedCategories = roomData.allowed_categories.length > 0 ? JSON.stringify(roomData.allowed_categories) : null
-
-  loading.value = true
-  message.value = ''
-  error.value = ''
-
-  // Clear form immediately for instant UX
-  newRoom.value = {
-    name: '',
-    capacity: '',
-    location: '',
-    facilities: '',
-    requires_approval: true,
-    allowed_categories: []
-  }
-
-  try {
-    const result = await $fetch('/api/admin/rooms', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
-      },
-      body: {
-        ...roomData,
-        facilities,
-        allowed_categories: allowedCategories
-      }
+  // Filter Search
+  if (searchQuery.value.trim()) {
+    const q = searchQuery.value.toLowerCase().trim()
+    list = list.filter(r => {
+      const nameMatch = (r.name || '').toLowerCase().includes(q)
+      const locMatch = (r.location || '').toLowerCase().includes(q)
+      const facMatch = (r.facilities || '').toLowerCase().includes(q)
+      const dedMatch = (r.dedicated_to || '').toLowerCase().includes(q)
+      return nameMatch || locMatch || facMatch || dedMatch
     })
-
-    // Add new room to list instantly
-    rooms.value.unshift(result.room || result)
-
-    // Show success message without blocking
-    setTimeout(() => {
-      message.value = 'Ruangan berhasil dibuat'
-      setTimeout(() => { message.value = '' }, 3000)
-    }, 100)
-  } catch (err) {
-    error.value = err.data?.statusMessage || 'Gagal membuat ruangan'
-    // Rollback: Re-fetch to ensure consistency
-    await loadRooms()
-  } finally {
-    loading.value = false
   }
-}
 
-const editRoom = (room) => {
-  // Normalize facilities to a comma-separated string
-  // regardless of whether the API returns a JSON string, a parsed array, or plain text
-  let facilitiesStr = ''
-  if (room.facilities) {
-    if (Array.isArray(room.facilities)) {
-      // Already a parsed array — join directly
-      facilitiesStr = room.facilities.join(', ')
-    } else if (typeof room.facilities === 'string') {
-      try {
-        const parsed = JSON.parse(room.facilities)
-        facilitiesStr = Array.isArray(parsed) ? parsed.join(', ') : room.facilities
-      } catch (e) {
-        // Not JSON — use as-is (plain comma-separated or single value)
-        facilitiesStr = room.facilities
-      }
+  // Filter Location
+  if (selectedLocationFilter.value) {
+    list = list.filter(r => r.location === selectedLocationFilter.value)
+  }
+
+  // Filter Status
+  if (selectedStatusFilter.value === 'active') {
+    list = list.filter(r => isRoomActive(r))
+  } else if (selectedStatusFilter.value === 'inactive') {
+    list = list.filter(r => !isRoomActive(r))
+  }
+
+  // Filter Approval
+  if (selectedApprovalFilter.value === 'approval') {
+    list = list.filter(r => r.requires_approval == 1 || r.requires_approval === true)
+  } else if (selectedApprovalFilter.value === 'no_approval') {
+    list = list.filter(r => !r.requires_approval && r.requires_approval !== 1)
+  }
+
+  // Sort
+  list.sort((a, b) => {
+    let aVal = a[sortField.value]
+    let bVal = b[sortField.value]
+
+    if (sortField.value === 'capacity') {
+      aVal = parseInt(aVal) || 0
+      bVal = parseInt(bVal) || 0
     } else {
-      facilitiesStr = String(room.facilities)
+      aVal = (aVal || '').toString().toLowerCase()
+      bVal = (bVal || '').toString().toLowerCase()
     }
-  }
 
-  // Populate edit form with room data
-  editingRoom.value = {
-    id: room.id,
-    name: room.name || '',
-    capacity: room.capacity || '',
-    location: room.location || '',
-    facilities: facilitiesStr,           // Always a normalized string now
-    requires_approval: Boolean(room.requires_approval),
-    allowed_categories: []
-  }
-
-  // Parse allowed_categories — robustly handles: JSON string, Array, null, undefined
-  let parsedCategories = []
-  if (Array.isArray(room.allowed_categories)) {
-    // Already an array (e.g. some APIs return parsed JSON)
-    parsedCategories = room.allowed_categories
-  } else if (typeof room.allowed_categories === 'string' && room.allowed_categories.trim() !== '') {
-    try {
-      const parsed = JSON.parse(room.allowed_categories)
-      parsedCategories = Array.isArray(parsed) ? parsed : []
-    } catch (e) {
-      // If not valid JSON, try comma-separated fallback
-      parsedCategories = room.allowed_categories.split(',').map(s => s.trim()).filter(Boolean)
-    }
-  }
-  editingRoom.value.allowed_categories = parsedCategories
-
-  // Update "Pilih Semua" checkbox state
-  selectAllEdit.value = parsedCategories.length === userCategories.length
-
-  showEditModal.value = true
-}
-
-const deleteRoom = (room) => {
-  // TODO: Implement delete functionality
-  alert('Delete functionality not implemented yet')
-}
-
-const updateRoom = async () => {
-  // Optimistic update: Clone form data and close modal
-  const roomData = { ...editingRoom.value }
-
-  // Handle facilities — always a string at this point (normalized in editRoom)
-  // but guard against any edge-case where it could be an array or other type
-  let facilities = null
-  if (roomData.facilities) {
-    if (Array.isArray(roomData.facilities)) {
-      // Defensive: shouldn't happen, but handle gracefully
-      if (roomData.facilities.length > 0) {
-        facilities = JSON.stringify(roomData.facilities)
-      }
-    } else if (typeof roomData.facilities === 'string' && roomData.facilities.trim() !== '') {
-      facilities = JSON.stringify(roomData.facilities.split(',').map(f => f.trim()).filter(Boolean))
-    }
-  }
-
-  const allowedCategories = roomData.allowed_categories.length > 0 ? JSON.stringify(roomData.allowed_categories) : null
-
-  console.log('Sending update with:', {
-    roomData,
-    facilities,
-    allowedCategories,
-    requires_approval: roomData.requires_approval,
-    requires_approval_type: typeof roomData.requires_approval
+    if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1
+    if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1
+    return 0
   })
 
-  editLoading.value = true
-  editMessage.value = ''
-  editError.value = ''
+  return list
+})
 
-  // Close modal immediately for instant UX
-  showEditModal.value = false
+const totalItems = computed(() => filteredRooms.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageLimit)))
+const paginatedRooms = computed(() => {
+  const start = (currentPage.value - 1) * pageLimit
+  return filteredRooms.value.slice(start, start + pageLimit)
+})
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, currentPage.value + 2)
+  for (let p = start; p <= end; p++) pages.push(p)
+  return pages
+})
 
-  try {
-    const result = await $fetch(`/api/admin/rooms/${roomData.id}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('admin_access_token')}`
-      },
-      body: {
-        ...roomData,
-        facilities,
-        allowed_categories: allowedCategories
-      }
-    })
-
-    console.log('Received update result:', result)
-
-    // Update room in list instantly
-    const index = rooms.value.findIndex(r => r.id === roomData.id)
-    if (index !== -1) {
-      rooms.value[index] = result.room || result
-      console.log('Updated room in list:', rooms.value[index])
-    }
-
-    // Show success message without blocking
-    setTimeout(() => {
-      editMessage.value = 'Ruangan berhasil diperbarui'
-      setTimeout(() => { editMessage.value = '' }, 3000)
-    }, 100)
-  } catch (err) {
-    console.error('Update room error:', err)
-    editError.value = err.data?.statusMessage || 'Gagal memperbarui ruangan'
-    // Rollback: Re-fetch to ensure consistency
-    await loadRooms()
-  } finally {
-    editLoading.value = false
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
   }
 }
 
-const closeEditModal = () => {
-  showEditModal.value = false
-  editingRoom.value = {
-    id: '',
+const sortBy = (field) => {
+  if (sortField.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField.value = field
+    sortOrder.value = 'asc'
+  }
+}
+
+const resetFilters = () => {
+  searchQuery.value = ''
+  selectedLocationFilter.value = ''
+  selectedStatusFilter.value = 'all'
+  selectedApprovalFilter.value = 'all'
+}
+
+// Toggle active status directly from table switch
+const toggleActiveStatus = async (room) => {
+  toggleLoadingId.value = room.id
+  try {
+    const token = sessionStorage.getItem('admin_access_token')
+    const res = await $fetch(`/api/admin/rooms/${room.id}/toggle-active`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    const index = rooms.value.findIndex(r => r.id === room.id)
+    if (index !== -1) {
+      rooms.value[index] = res.room || { ...room, is_active: room.is_active ? 0 : 1 }
+    }
+    showToast(res.message || 'Status ruangan berhasil diubah', 'success')
+  } catch (err) {
+    const msg = (err && err.data && err.data.statusMessage) || 'Gagal mengubah status ruangan'
+    showToast(msg, 'error')
+  } finally {
+    toggleLoadingId.value = null
+  }
+}
+
+// Open Modal Add / Edit
+const openCreateModal = () => {
+  isEditing.value = false
+  modalError.value = ''
+  form.value = {
+    id: null,
     name: '',
-    capacity: '',
+    capacity: 20,
     location: '',
     facilities: '',
+    description: '',
+    photo_url: '',
     requires_approval: true,
-    allowed_categories: []
+    is_active: true,
+    is_dedicated: false,
+    dedicated_to: '',
+    allowed_categories: userCategories.map(c => c.value) // Default all checked
   }
-  selectAllEdit.value = false
-  editMessage.value = ''
-  editError.value = ''
+  selectAllModal.value = true
+  showModal.value = true
+}
+
+const openEditModal = (room) => {
+  isEditing.value = true
+  modalError.value = ''
+
+  const facs = parseFacilities(room.facilities).join(', ')
+
+  let parsedCats = []
+  if (Array.isArray(room.allowed_categories)) {
+    parsedCats = room.allowed_categories
+  } else if (typeof room.allowed_categories === 'string' && room.allowed_categories.trim() !== '') {
+    try {
+      const p = JSON.parse(room.allowed_categories)
+      parsedCats = Array.isArray(p) ? p : []
+    } catch (e) {
+      parsedCats = room.allowed_categories.split(',').map(s => s.trim()).filter(Boolean)
+    }
+  }
+
+  form.value = {
+    id: room.id,
+    name: room.name || '',
+    capacity: room.capacity || 10,
+    location: room.location || '',
+    facilities: facs,
+    description: room.description || '',
+    photo_url: room.photo_url || '',
+    requires_approval: Boolean(room.requires_approval),
+    is_active: isRoomActive(room),
+    is_dedicated: Boolean(room.is_dedicated),
+    dedicated_to: room.dedicated_to || '',
+    allowed_categories: parsedCats
+  }
+
+  selectAllModal.value = parsedCats.length === userCategories.length
+  showModal.value = true
+}
+
+const closeModal = () => {
+  showModal.value = false
+  modalError.value = ''
+}
+
+// Save Room (POST / PUT)
+const saveRoom = async () => {
+  if (!form.value.name || !form.value.capacity || !form.value.location) {
+    modalError.value = 'Mohon lengkapi Nama Ruangan, Kapasitas, dan Lokasi.'
+    return
+  }
+
+  if (form.value.is_dedicated && !form.value.dedicated_to?.trim()) {
+    modalError.value = 'Mohon isi Nama Seksi / Lembaga Pemilik untuk ruangan khusus.'
+    return
+  }
+
+  formLoading.value = true
+  modalError.value = ''
+
+  let facilitiesPayload = null
+  if (form.value.facilities && typeof form.value.facilities === 'string' && form.value.facilities.trim()) {
+    facilitiesPayload = JSON.stringify(form.value.facilities.split(',').map(f => f.trim()).filter(Boolean))
+  }
+
+  const allowedCategoriesPayload = form.value.allowed_categories.length > 0 
+    ? JSON.stringify(form.value.allowed_categories) 
+    : null
+
+  const payload = {
+    name: form.value.name,
+    capacity: form.value.capacity,
+    location: form.value.location,
+    facilities: facilitiesPayload,
+    description: form.value.description || null,
+    photo_url: form.value.photo_url || null,
+    requires_approval: form.value.requires_approval,
+    is_active: form.value.is_active,
+    is_dedicated: form.value.is_dedicated,
+    dedicated_to: form.value.is_dedicated ? (form.value.dedicated_to.trim() || null) : null,
+    allowed_categories: allowedCategoriesPayload
+  }
+
+  try {
+    const token = sessionStorage.getItem('admin_access_token')
+    let result
+
+    if (isEditing.value && form.value.id) {
+      result = await $fetch(`/api/admin/rooms/${form.value.id}`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` },
+        body: payload
+      })
+      const index = rooms.value.findIndex(r => r.id === form.value.id)
+      if (index !== -1) {
+        rooms.value[index] = result.room || result
+      }
+      showToast('Ruangan berhasil diperbarui', 'success')
+    } else {
+      result = await $fetch('/api/admin/rooms', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: payload
+      })
+      rooms.value.unshift(result.room || result)
+      showToast('Ruangan baru berhasil dibuat', 'success')
+    }
+
+    // Refresh data untuk memastikan state sinkron dengan database
+    await loadRooms()
+
+    closeModal()
+  } catch (err) {
+    const msg = (err && err.data && err.data.statusMessage) || 'Gagal menyimpan ruangan'
+    modalError.value = msg
+  } finally {
+    formLoading.value = false
+  }
+}
+
+// Delete Prompt & Execute
+const promptDeleteRoom = (room) => {
+  roomToDelete.value = room
+  showDeleteModal.value = true
+}
+
+const executeDeleteRoom = async () => {
+  if (!roomToDelete.value) return
+  deleteLoading.value = true
+
+  try {
+    const token = sessionStorage.getItem('admin_access_token')
+    const res = await $fetch(`/api/admin/rooms/${roomToDelete.value.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` }
+    })
+
+    if (res.deactivated) {
+      // Room was soft-deactivated due to existing bookings
+      const index = rooms.value.findIndex(r => r.id === roomToDelete.value.id)
+      if (index !== -1) {
+        rooms.value[index].is_active = 0
+      }
+      showToast(res.message, 'success')
+    } else {
+      // Room hard deleted
+      rooms.value = rooms.value.filter(r => r.id !== roomToDelete.value.id)
+      showToast(res.message, 'success')
+    }
+  } catch (err) {
+    const msg = (err && err.data && err.data.statusMessage) || 'Gagal menghapus ruangan'
+    showToast(msg, 'error')
+  } finally {
+    deleteLoading.value = false
+    showDeleteModal.value = false
+    roomToDelete.value = null
+  }
 }
 </script>

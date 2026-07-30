@@ -1,5 +1,6 @@
 import { runQuery, getQuery } from '../../../database/db'
 import { requireAuth, requirePermission } from '../../../utils/auth'
+import { clearFAQCache } from '../../../utils/faqCache'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
@@ -34,6 +35,9 @@ export default defineEventHandler(async (event) => {
     INSERT INTO chatbot_faqs (question, answer, category, keywords)
     VALUES (?, ?, ?, ?)
   `, [question, answer, category || null, keywordsJson])
+
+  // Clear global chatbot FAQ cache
+  clearFAQCache()
 
   const insertId = (result as any).insertId
 

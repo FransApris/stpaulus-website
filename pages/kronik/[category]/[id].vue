@@ -85,11 +85,7 @@ const route = useRoute()
 const entryId = String(route.params.id || '')
 const categorySlug = String(route.params.category || '')
 
-onMounted(() => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
-})
+// Scroll-to-top sudah ditangani secara global oleh router.options.ts
 
 console.log('[Kronik Detail] Loading entry:', entryId, 'from category:', categorySlug)
 

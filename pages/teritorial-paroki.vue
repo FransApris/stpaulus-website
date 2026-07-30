@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageMaintenance v-if="isMaintenance" title="Teritorial Paroki" />
     <div v-else>
@@ -501,9 +501,7 @@ const wilayahStats = computed(() => {
 const viewMode = ref('grouped') // Default: 'grouped', bisa diganti 'all'
 
 onMounted(() => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
+  // Scroll-to-top sudah ditangani secara global oleh router.options.ts
 })
 </script>
 

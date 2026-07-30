@@ -15,6 +15,21 @@ const FROM_EMAIL = process.env.RESEND_FROM || 'noreply@stpaulusjuanda.org'
 const SITE_URL = process.env.NUXT_PUBLIC_SITE_URL || 'https://stpaulusjuanda.org'
 
 /**
+ * Escape HTML special characters untuk mencegah XSS dalam template email.
+ * WAJIB digunakan untuk semua nilai yang berasal dari user/admin input.
+ * @see OWASP XSS Prevention Cheat Sheet
+ */
+function esc(unsafe: string | null | undefined): string {
+  if (unsafe === null || unsafe === undefined) return ''
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
+/**
  * Send email via Resend HTTP API — silently skips if not configured.
  * Returns true if sent, false if skipped/error.
  */
@@ -72,7 +87,7 @@ export async function sendRegistrationPendingEmail(params: {
     to: params.to,
     subject: 'Pendaftaran Diterima — Menunggu Persetujuan',
     html: baseTemplate(`
-      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <h2 style="color: #1f2937;">Halo, ${esc(params.fullName)}!</h2>
       <p style="color: #374151;">Terima kasih telah mendaftar di sistem pemesanan ruangan <strong>Paroki St. Paulus - Juanda</strong>.</p>
       <div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <p style="margin: 0; color: #713f12;">
@@ -80,7 +95,7 @@ export async function sendRegistrationPendingEmail(params: {
           Anda akan menerima email lagi setelah akun diproses.
         </p>
       </div>
-      <p style="color: #6b7280; font-size: 14px;">Username Anda: <strong>${params.username}</strong></p>
+      <p style="color: #6b7280; font-size: 14px;">Username Anda: <strong>${esc(params.username)}</strong></p>
       <p style="color: #6b7280; font-size: 14px;">Untuk pertanyaan, hubungi sekretariat paroki.</p>
       <a href="${SITE_URL}/cek-status" style="display: inline-block; background: #166534; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-top: 8px;">
         Cek Status Akun
@@ -101,15 +116,15 @@ export async function sendAccountApprovedEmail(params: {
     to: params.to,
     subject: '✅ Akun Anda Telah Disetujui',
     html: baseTemplate(`
-      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <h2 style="color: #1f2937;">Halo, ${esc(params.fullName)}!</h2>
       <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <p style="margin: 0; color: #14532d;">
           ✅ <strong>Akun Anda telah disetujui!</strong> Sekarang Anda dapat login dan membuat pemesanan ruangan.
         </p>
       </div>
-      <p style="color: #6b7280; font-size: 14px;">Username Anda: <strong>${params.username}</strong></p>
+      <p style="color: #6b7280; font-size: 14px;">Username Anda: <strong>${esc(params.username)}</strong></p>
       <a href="${SITE_URL}/booking" style="display: inline-block; background: #166534; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-top: 8px;">
-        Login & Pesan Ruangan
+        Login &amp; Pesan Ruangan
       </a>
     `)
   })
@@ -127,7 +142,7 @@ export async function sendAccountRejectedEmail(params: {
     to: params.to,
     subject: 'Pendaftaran Tidak Dapat Diproses',
     html: baseTemplate(`
-      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <h2 style="color: #1f2937;">Halo, ${esc(params.fullName)}!</h2>
       <div style="background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 16px; margin: 20px 0;">
         <p style="margin: 0; color: #7f1d1d;">
           ❌ <strong>Pendaftaran Anda tidak dapat diproses.</strong>
@@ -151,11 +166,11 @@ export async function sendPasswordResetEmail(params: {
     to: params.to,
     subject: '🔑 Reset Password Akun Anda',
     html: baseTemplate(`
-      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <h2 style="color: #1f2937;">Halo, ${esc(params.fullName)}!</h2>
       <p style="color: #374151;">Kami menerima permintaan untuk mereset password akun Anda di sistem
       <strong>Paroki St. Paulus - Juanda</strong>.</p>
       <div style="text-align: center; margin: 28px 0;">
-        <a href="${params.resetLink}"
+        <a href="${SITE_URL}/reset-password"
            style="display: inline-block; background: #166534; color: white; padding: 14px 32px;
                   border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px;">
           Reset Password Saya
@@ -187,11 +202,12 @@ export async function sendSecurityAlertEmail(params: {
   }
 
   const metaJson = params.meta ? JSON.stringify(params.meta, null, 2) : 'Tidak ada metadata'
-  const metaHtml = `<pre style="background: #1e293b; color: #38bdf8; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap;">${metaJson}</pre>`
+  // esc() diperlukan karena metaJson bisa mengandung < > & dari nilai IP atau path
+  const metaHtml = `<pre style="background: #1e293b; color: #38bdf8; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; white-space: pre-wrap;">${esc(metaJson)}</pre>`
 
   return sendMail({
     to: alertRecipient,
-    subject: `🚨 [SECURITY ALERT] ${params.level}: ${params.message}`,
+    subject: `🚨 [SECURITY ALERT] ${esc(params.level)}: ${esc(params.message)}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 650px; margin: 0 auto; background: #f8fafc; padding: 24px;">
         <div style="background: #dc2626; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
@@ -200,8 +216,8 @@ export async function sendSecurityAlertEmail(params: {
         </div>
         <div style="background: white; padding: 28px; border-radius: 0 0 8px 8px; border: 1px solid #e2e8f0; border-top: none;">
           <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 16px; margin-bottom: 20px;">
-            <strong style="color: #991b1b; font-size: 16px;">${params.message}</strong>
-            <p style="margin: 6px 0 0 0; color: #7f1d1d; font-size: 13px;">Waktu Kejadian: ${params.timestamp}</p>
+            <strong style="color: #991b1b; font-size: 16px;">${esc(params.message)}</strong>
+            <p style="margin: 6px 0 0 0; color: #7f1d1d; font-size: 13px;">Waktu Kejadian: ${esc(params.timestamp)}</p>
           </div>
           
           <h3 style="color: #334155; margin-top: 20px; font-size: 14px;">Detail Metadata Insiden:</h3>
@@ -246,11 +262,11 @@ export async function sendBookingCreatedEmail(params: {
       <p style="color: #374151;">Ada pemesanan ruangan baru yang menunggu persetujuan Anda.</p>
       <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin: 20px 0;">
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1e3a5f;">
-          <tr><td style="padding: 6px 0; font-weight: bold; width: 140px;">Nama Acara</td><td>${params.eventName}</td></tr>
-          <tr><td style="padding: 6px 0; font-weight: bold;">Pemohon</td><td>${params.requesterName}</td></tr>
-          <tr><td style="padding: 6px 0; font-weight: bold;">Ruangan</td><td>${params.roomName}</td></tr>
-          <tr><td style="padding: 6px 0; font-weight: bold;">Tanggal</td><td>${params.dateFormatted}</td></tr>
-          <tr><td style="padding: 6px 0; font-weight: bold;">Waktu</td><td>${params.startFormatted} – ${params.endFormatted} WIB</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold; width: 140px;">Nama Acara</td><td>${esc(params.eventName)}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Pemohon</td><td>${esc(params.requesterName)}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Ruangan</td><td>${esc(params.roomName)}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Tanggal</td><td>${esc(params.dateFormatted)}</td></tr>
+          <tr><td style="padding: 6px 0; font-weight: bold;">Waktu</td><td>${esc(params.startFormatted)} – ${esc(params.endFormatted)} WIB</td></tr>
         </table>
       </div>
       <div style="text-align: center; margin: 24px 0;">
@@ -260,7 +276,7 @@ export async function sendBookingCreatedEmail(params: {
           Tinjau &amp; Setujui Pemesanan
         </a>
       </div>
-      <p style="color: #9ca3af; font-size: 12px; text-align: center;">ID Pemesanan: #${params.bookingId}</p>
+      <p style="color: #9ca3af; font-size: 12px; text-align: center;">ID Pemesanan: #${esc(String(params.bookingId))}</p>
     `)
   })
 }
@@ -281,15 +297,15 @@ export async function sendBookingApprovedEmail(params: {
     to: params.to,
     subject: `✅ Pemesanan Ruangan Disetujui: "${params.eventName}"`,
     html: baseTemplate(`
-      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <h2 style="color: #1f2937;">Halo, ${esc(params.fullName)}!</h2>
       <p style="color: #374151;">Kabar baik! Pemesanan ruangan Anda telah <strong>disetujui</strong> oleh admin paroki.</p>
       <div style="background: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 20px; margin: 20px 0;">
         <p style="margin: 0 0 12px 0; color: #14532d; font-weight: bold; font-size: 15px;">✅ Pemesanan Dikonfirmasi</p>
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #14532d;">
-          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${params.eventName}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${params.roomName}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${params.dateFormatted}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${params.startFormatted} – ${params.endFormatted} WIB</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${esc(params.eventName)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${esc(params.roomName)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${esc(params.dateFormatted)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${esc(params.startFormatted)} – ${esc(params.endFormatted)} WIB</td></tr>
         </table>
       </div>
       <p style="color: #374151; font-size: 14px;">
@@ -314,24 +330,25 @@ export async function sendBookingRejectedEmail(params: {
   dateFormatted: string
   rejectionReason?: string
 }): Promise<boolean> {
+  // esc() wajib: rejectionReason berasal dari input admin — cegah XSS
   const reasonHtml = params.rejectionReason
     ? `<div style="background: #fef9c3; border: 1px solid #fde047; border-radius: 6px; padding: 14px; margin: 16px 0;">
-         <p style="margin: 0; color: #713f12; font-size: 14px;"><strong>Alasan:</strong> ${params.rejectionReason}</p>
+         <p style="margin: 0; color: #713f12; font-size: 14px;"><strong>Alasan:</strong> ${esc(params.rejectionReason)}</p>
        </div>`
     : ''
 
   return sendMail({
     to: params.to,
-    subject: `❌ Pemesanan Ruangan Tidak Disetujui: "${params.eventName}"`,
+    subject: `❌ Pemesanan Ruangan Tidak Disetujui: "${esc(params.eventName)}"`,
     html: baseTemplate(`
-      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <h2 style="color: #1f2937;">Halo, ${esc(params.fullName)}!</h2>
       <p style="color: #374151;">Mohon maaf, pemesanan ruangan Anda <strong>tidak dapat disetujui</strong>.</p>
       <div style="background: #fee2e2; border: 1px solid #fca5a5; border-radius: 8px; padding: 20px; margin: 20px 0;">
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #7f1d1d;">
-          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${params.eventName}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${params.roomName}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${params.dateFormatted}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${params.startFormatted} – ${params.endFormatted} WIB</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${esc(params.eventName)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${esc(params.roomName)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${esc(params.dateFormatted)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${esc(params.startFormatted)} – ${esc(params.endFormatted)} WIB</td></tr>
         </table>
       </div>
       ${reasonHtml}
@@ -356,24 +373,25 @@ export async function sendBookingCancelledEmail(params: {
   dateFormatted: string
   cancellationReason?: string
 }): Promise<boolean> {
+  // esc() wajib: cancellationReason berasal dari input user/admin — cegah XSS
   const reasonHtml = params.cancellationReason
     ? `<div style="background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px; margin: 16px 0;">
-         <p style="margin: 0; color: #374151; font-size: 14px;"><strong>Alasan Pembatalan:</strong> ${params.cancellationReason}</p>
+         <p style="margin: 0; color: #374151; font-size: 14px;"><strong>Alasan Pembatalan:</strong> ${esc(params.cancellationReason)}</p>
        </div>`
     : ''
 
   return sendMail({
     to: params.to,
-    subject: `⚠️ Pemesanan Ruangan Dibatalkan: "${params.eventName}"`,
+    subject: `⚠️ Pemesanan Ruangan Dibatalkan: "${esc(params.eventName)}"`,
     html: baseTemplate(`
-      <h2 style="color: #1f2937;">Halo, ${params.fullName}!</h2>
+      <h2 style="color: #1f2937;">Halo, ${esc(params.fullName)}!</h2>
       <p style="color: #374151;">Pemesanan ruangan Anda telah <strong>dibatalkan</strong>.</p>
       <div style="background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 8px; padding: 20px; margin: 20px 0;">
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #374151;">
-          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${params.eventName}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${params.roomName}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${params.dateFormatted}</td></tr>
-          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${params.startFormatted} – ${params.endFormatted} WIB</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Nama Acara</td><td>${esc(params.eventName)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Ruangan</td><td>${esc(params.roomName)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Tanggal</td><td>${esc(params.dateFormatted)}</td></tr>
+          <tr><td style="padding: 5px 0; font-weight: bold;">Waktu</td><td>${esc(params.startFormatted)} – ${esc(params.endFormatted)} WIB</td></tr>
         </table>
       </div>
       ${reasonHtml}

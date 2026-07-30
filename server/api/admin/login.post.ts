@@ -85,17 +85,27 @@ export default defineEventHandler(async (event) => {
     }
 
     // Check if user has admin role, password reset flag, and 2FA status
-    const userDetails = await getQuery(
-      'SELECT role_id, role, requires_password_reset, totp_enabled, totp_secret, totp_backup_codes FROM users WHERE id = ?',
-      [result.user.id]
-    ) as {
+    let userDetails: {
       role_id?: number
       role?: string
       requires_password_reset?: number
       totp_enabled?: number
       totp_secret?: string
       totp_backup_codes?: string
-    } | undefined
+    } | undefined = undefined
+
+    try {
+      userDetails = await getQuery(
+        'SELECT role_id, role, requires_password_reset, totp_enabled, totp_secret, totp_backup_codes FROM users WHERE id = ?',
+        [result.user.id]
+      ) as any
+    } catch (dbErr: any) {
+      console.warn('[Admin Login] Extended columns query failed, falling back to basic role check:', dbErr?.message)
+      userDetails = await getQuery(
+        'SELECT role_id, role FROM users WHERE id = ?',
+        [result.user.id]
+      ) as any
+    }
 
     console.log('[Admin Login] User details:', userDetails)
 
@@ -190,11 +200,8 @@ export default defineEventHandler(async (event) => {
     return result
 
   } catch (error: any) {
-    // Bedakan H3Error (error terstruktur: 400/401/403/429) dari error sistem mentah (500)
-    const isH3Error = error?.statusCode && error.statusCode < 500
-
-    if (isH3Error) {
-      // Error terstruktur — langsung lempar ulang tanpa noise di log
+    // Jika error sudah berupa H3Error (memiliki statusCode), langsung lempar ulang agar status & pesan aslinya terjaga
+    if (error?.statusCode) {
       throw error
     }
 

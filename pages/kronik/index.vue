@@ -244,11 +244,13 @@ const visiblePages = computed(() => {
   return pages
 })
 
-const goToPage = (page) => {
+const goToPage = (page: number) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
     refresh()
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (process.client) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
 }
 

@@ -2,7 +2,7 @@
 
 ## 📋 Ringkasan
 Fitur ini memungkinkan admin untuk mengelola data **Ketua Wilayah** dan **Ketua Lingkungan** di sistem DPP Paroki. Data akan ditampilkan di:
-- **Halaman Publik**: `/dpp-paroki` (untuk jemaat)
+- **Halaman Publik**: `/dpp-paroki` (untuk umat)
 - **Halaman Admin**: `/admin/dpp` (untuk pengelolaan data)
 
 ---

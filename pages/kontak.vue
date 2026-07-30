@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageMaintenance v-if="isMaintenance" title="Kontak & Sekretariat" />
     <div v-else>
@@ -136,8 +136,6 @@ const openWhatsApp = () => {
 }
 
 onMounted(() => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
+  // Scroll-to-top sudah ditangani secara global oleh router.options.ts
 })
 </script>

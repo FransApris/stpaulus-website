@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div>
     <PageMaintenance v-if="isMaintenance" title="Kronik Gereja" />
     <div v-else>
@@ -144,9 +144,7 @@ const fetchKronik = async (page = 1) => {
 }
 
 onMounted(() => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
+  // Scroll-to-top sudah ditangani secara global oleh router.options.ts
   fetchKronik()
 })
 

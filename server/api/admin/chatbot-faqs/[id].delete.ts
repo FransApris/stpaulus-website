@@ -1,5 +1,6 @@
 import { runQuery, getQuery } from '../../../database/db'
 import { requireAuth, requirePermission } from '../../../utils/auth'
+import { clearFAQCache } from '../../../utils/faqCache'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
@@ -33,6 +34,9 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'FAQ tidak ditemukan atau sudah dihapus'
     })
   }
+
+  // Clear global chatbot FAQ cache
+  clearFAQCache()
 
   return {
     message: 'FAQ berhasil dihapus'

@@ -44,26 +44,34 @@ const STRUCTURAL_MIGRATIONS: Migration[] = [
     id: '032_add_force_password_reset',
     description: 'Add requires_password_reset column to users table (Clean Slate security policy)',
     statements: [
-      `ALTER TABLE users ADD COLUMN IF NOT EXISTS requires_password_reset TINYINT(1) NOT NULL DEFAULT 0`
+      `ALTER TABLE users ADD COLUMN requires_password_reset TINYINT(1) NOT NULL DEFAULT 0`
     ]
   },
   {
     id: '033_add_totp_2fa_to_users',
     description: 'Add TOTP 2FA fields to users table',
     statements: [
-      `ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_secret VARCHAR(255) NULL`,
-      `ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_enabled TINYINT(1) NOT NULL DEFAULT 0`,
-      `ALTER TABLE users ADD COLUMN IF NOT EXISTS totp_backup_codes TEXT NULL`
+      `ALTER TABLE users ADD COLUMN totp_secret VARCHAR(255) NULL`,
+      `ALTER TABLE users ADD COLUMN totp_enabled TINYINT(1) NOT NULL DEFAULT 0`,
+      `ALTER TABLE users ADD COLUMN totp_backup_codes TEXT NULL`
     ]
   },
   {
     id: '034_booking_v2_enhancements',
     description: 'Add cancellation_reason, parent_booking_id, recurrence_pattern, and is_read fields to bookings table',
     statements: [
-      `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS cancellation_reason VARCHAR(255) NULL`,
-      `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS parent_booking_id INT NULL`,
-      `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS recurrence_pattern VARCHAR(50) NULL`,
-      `ALTER TABLE bookings ADD COLUMN IF NOT EXISTS is_read TINYINT(1) NOT NULL DEFAULT 0`
+      `ALTER TABLE bookings ADD COLUMN cancellation_reason VARCHAR(255) NULL`,
+      `ALTER TABLE bookings ADD COLUMN parent_booking_id INT NULL`,
+      `ALTER TABLE bookings ADD COLUMN recurrence_pattern VARCHAR(50) NULL`,
+      `ALTER TABLE bookings ADD COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0`
+    ]
+  },
+  {
+    id: '035_add_dedicated_room_fields',
+    description: 'Add is_dedicated and dedicated_to columns to rooms table for dedicated parish section rooms',
+    statements: [
+      `ALTER TABLE rooms ADD COLUMN is_dedicated TINYINT(1) NOT NULL DEFAULT 0`,
+      `ALTER TABLE rooms ADD COLUMN dedicated_to VARCHAR(150) NULL`
     ]
   }
 ]
@@ -135,7 +143,16 @@ async function runMigrations(): Promise<void> {
         }
 
         for (const sql of migration.statements) {
-          await runQuery(sql)
+          try {
+            await runQuery(sql)
+          } catch (sqlErr: any) {
+            const msg = String(sqlErr?.message || '')
+            if (msg.includes('Duplicate column name') || sqlErr?.code === 'ER_DUP_FIELDNAME') {
+              // Ignore error if column already exists
+            } else {
+              throw sqlErr
+            }
+          }
         }
 
         await runQuery(

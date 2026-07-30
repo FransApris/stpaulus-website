@@ -1,5 +1,6 @@
 import { runQuery, getQuery } from '../../../database/db'
 import { requireAuth, requirePermission } from '../../../utils/auth'
+import { clearFAQCache } from '../../../utils/faqCache'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
@@ -52,6 +53,9 @@ export default defineEventHandler(async (event) => {
     SET question = ?, answer = ?, category = ?, keywords = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
   `, [question, answer, category || null, keywordsJson, is_active !== undefined ? (is_active ? 1 : 0) : 1, id])
+
+  // Clear global chatbot FAQ cache
+  clearFAQCache()
 
   // Fetch updated data to return
   const updatedFaq = await getQuery('SELECT * FROM chatbot_faqs WHERE id = ?', [id])

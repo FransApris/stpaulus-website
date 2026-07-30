@@ -442,9 +442,7 @@ const getRangeEnd = (currentPage: number, totalItems: number) => {
 
 // Lifecycle
 onMounted(() => {
-    if (process.client) {
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-    }
+    // Scroll-to-top sudah ditangani secara global oleh router.options.ts
     fetchMembers()
 })
 </script>

@@ -47,11 +47,26 @@
         <div v-else class="space-y-4">
           <div v-for="article in articles" :key="article.id"
             class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-            <div class="flex justify-between items-start">
-              <div class="flex-1">
-                <h4 class="text-lg font-medium text-gray-900">{{ article.title }}</h4>
-                <p class="text-sm text-gray-500 mt-1">{{ article.excerpt || 'Tidak ada ringkasan' }}</p>
-                <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+            <div class="flex justify-between items-start gap-4">
+              <!-- Thumbnail Preview -->
+              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200">
+                <img 
+                  v-if="article.image && article.image !== '/images/default-article.jpg'" 
+                  :src="article.image" 
+                  :alt="article.title" 
+                  class="w-full h-full object-cover" 
+                />
+                <div v-else class="w-full h-full bg-gradient-to-br from-red-800 to-amber-700 flex items-center justify-center text-white">
+                  <svg class="w-6 h-6 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <h4 class="text-lg font-medium text-gray-900 truncate">{{ article.title }}</h4>
+                <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ article.excerpt || 'Tidak ada ringkasan' }}</p>
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
                   <span>Penulis: {{ article.author || 'Tidak diketahui' }}</span>
                   <span>Dibuat: {{ formatDate(article.created_at) }}</span>
                   <span :class="getStatusClass(article.status)" class="px-2 py-1 rounded-full text-xs font-medium">
@@ -59,7 +74,7 @@
                   </span>
                 </div>
               </div>
-              <div class="flex space-x-2 ml-4">
+              <div class="flex space-x-2 ml-2 flex-shrink-0">
                 <button @click="editArticle(article)" title="Edit"
                   class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded text-sm inline-flex items-center">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

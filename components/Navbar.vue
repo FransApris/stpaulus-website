@@ -151,76 +151,99 @@
               <div class="px-4 py-4 bg-gradient-to-br from-paulus-blue to-blue-700 text-white">
                 <div class="flex items-center gap-3">
                   <div
-                    class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-lg backdrop-blur-sm">
+                    class="w-11 h-11 bg-white/20 rounded-full flex items-center justify-center text-white font-bold text-base backdrop-blur-sm border border-white/30 flex-shrink-0">
                     {{ getUserInitials }}
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="font-bold truncate">{{ user?.full_name || user?.username }}</div>
-                    <div class="text-xs opacity-90 truncate">{{ user?.unit_name || user?.user_category || 'Umat Paroki'
-                      }}
-                    </div>
-                    <div class="mt-1">
-                      <span
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-white/20 backdrop-blur-sm">
-                        {{ getUserRole }}
-                      </span>
-                    </div>
+                    <div class="font-bold truncate text-sm">{{ user?.full_name || user?.username }}</div>
+                    <div class="text-xs text-blue-100 truncate mt-0.5">🏷️ {{ user?.user_category || user?.unit_name || 'Umat Paroki' }}</div>
+                  </div>
+                </div>
+
+                <!-- Live User Quota Badge in Dropdown -->
+                <div v-if="userQuota" class="mt-3 bg-white/15 backdrop-blur-xs rounded-lg p-2 text-xs border border-white/20">
+                  <div class="flex items-center justify-between gap-1">
+                    <span class="opacity-90 font-medium text-[11px]">📊 Sisa Kuota:</span>
+                    <span v-if="userQuota.is_unlimited" class="px-2 py-0.5 bg-purple-200/90 text-purple-900 rounded font-bold text-[10px]">
+                      Tanpa Batas
+                    </span>
+                    <span v-else :class="userQuota.remaining > 0 ? 'bg-emerald-200/90 text-emerald-900' : 'bg-amber-200/90 text-amber-950'" class="px-2 py-0.5 rounded font-bold text-[10px]">
+                      {{ userQuota.remaining }} / {{ userQuota.max_allowed }}
+                    </span>
                   </div>
                 </div>
               </div>
 
               <!-- Quick Access Menu -->
-              <div class="py-2">
-                <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="showUserDropdown = false"
-                  class="flex items-center gap-3 px-4 py-3 hover:bg-blue-50 transition-colors group">
-                  <div
-                    class="w-10 h-10 bg-blue-100 group-hover:bg-paulus-blue rounded-lg flex items-center justify-center transition-colors">
-                    <svg class="w-5 h-5 text-paulus-blue group-hover:text-white transition-colors" fill="none"
-                      stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                  <div class="flex-1">
-                    <div class="font-semibold text-gray-800 text-sm">Kelola Kronik</div>
-                    <div class="text-xs text-gray-600">Isi & kelola kronik paroki</div>
-                  </div>
-                  <svg class="w-5 h-5 text-gray-400 group-hover:text-paulus-blue transition-colors" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </NuxtLink>
+              <div class="py-1.5 divide-y divide-gray-100">
+                <div class="py-1">
+                  <!-- Profil Saya Modal Trigger -->
+                  <button @click="showLoginModal = true; showUserDropdown = false"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-blue-50 transition-colors text-left group">
+                    <div class="w-8 h-8 bg-blue-100 group-hover:bg-paulus-blue text-paulus-blue group-hover:text-white rounded-lg flex items-center justify-center transition-colors flex-shrink-0">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-semibold text-gray-800 text-xs">Profil Akun Saya</div>
+                      <div class="text-[11px] text-gray-500">Lihat rincian data & kuota</div>
+                    </div>
+                  </button>
 
-                <NuxtLink to="/booking" @click="showUserDropdown = false"
-                  class="flex items-center gap-3 px-4 py-3 hover:bg-green-50 transition-colors group">
-                  <div
-                    class="w-10 h-10 bg-green-100 group-hover:bg-green-600 rounded-lg flex items-center justify-center transition-colors">
-                    <svg class="w-5 h-5 text-green-600 group-hover:text-white transition-colors" fill="none"
-                      stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div class="flex-1">
-                    <div class="font-semibold text-gray-800 text-sm">Pemesanan Ruang</div>
-                    <div class="text-xs text-gray-600">Booking ruang paroki</div>
-                  </div>
-                  <svg class="w-5 h-5 text-gray-400 group-hover:text-green-600 transition-colors" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </NuxtLink>
+                  <!-- Pemesanan Saya -->
+                  <button @click="navigateToBookingSection('#pemesanan-saya')"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-purple-50 transition-colors text-left group">
+                    <div class="w-8 h-8 bg-purple-100 group-hover:bg-purple-600 text-purple-600 group-hover:text-white rounded-lg flex items-center justify-center transition-colors flex-shrink-0">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-semibold text-gray-800 text-xs">Riwayat Booking Saya</div>
+                      <div class="text-[11px] text-purple-700 font-medium">Status & daftar transaksi sewa</div>
+                    </div>
+                  </button>
+
+                  <!-- Pemesanan Ruang -->
+                  <button @click="navigateToBookingSection('')"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-green-50 transition-colors text-left group">
+                    <div class="w-8 h-8 bg-green-100 group-hover:bg-green-600 text-green-600 group-hover:text-white rounded-lg flex items-center justify-center transition-colors flex-shrink-0">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-semibold text-gray-800 text-xs">Katalog & Pesan Ruang</div>
+                      <div class="text-[11px] text-green-700 font-medium">Pilih fasilitas & buat sewa baru</div>
+                    </div>
+                  </button>
+
+                  <!-- Kelola Kronik (Untuk Pengurus/DPP/Wilayah/Seksi) -->
+                  <NuxtLink v-if="canAccessKronik" to="/kronik/manage" @click="showUserDropdown = false"
+                    class="flex items-center gap-3 px-4 py-2.5 hover:bg-amber-50 transition-colors group">
+                    <div class="w-8 h-8 bg-amber-100 group-hover:bg-amber-600 text-amber-700 group-hover:text-white rounded-lg flex items-center justify-center transition-colors flex-shrink-0">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="font-semibold text-gray-800 text-xs">Kelola Kronik</div>
+                      <div class="text-[11px] text-gray-500">Catatan peristiwa paroki</div>
+                    </div>
+                  </NuxtLink>
+                </div>
               </div>
 
               <!-- Logout -->
-              <div class="border-t border-gray-200 p-2">
+              <div class="border-t border-gray-100 p-2 bg-gray-50/50">
                 <button @click="handleLogout"
-                  class="w-full flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="w-full flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-xs font-bold">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
-                  <span class="font-medium">Logout</span>
+                  <span>Keluar / Logout</span>
                 </button>
               </div>
             </div>
@@ -864,6 +887,20 @@ const handleScroll = () => {
 }
 
 // Auth Methods
+const userQuota = ref(null)
+
+const loadNavbarUserQuota = async () => {
+  if (!process.client) return
+  const token = localStorage.getItem('auth_token')
+  if (!token) return
+  try {
+    const data = await $fetch('/api/bookings/my-quota', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    userQuota.value = data
+  } catch (err) {}
+}
+
 const checkAuthStatus = async () => {
   if (process.client) {
     const token = localStorage.getItem('auth_token')
@@ -874,11 +911,13 @@ const checkAuthStatus = async () => {
         })
         user.value = response
         isLoggedIn.value = true
+        loadNavbarUserQuota()
       } catch (error) {
         console.error('[Navbar] Auth check failed:', error)
         localStorage.removeItem('auth_token')
         isLoggedIn.value = false
         user.value = null
+        userQuota.value = null
       }
     }
   }
@@ -901,22 +940,60 @@ const getUserRole = computed(() => {
 
   if (unitName.includes('ketua')) return 'Ketua'
   if (category === 'parish_council' || category === 'categorical_group' ||
-    category === 'region' || category === 'community') return 'Pengurus'
+    category === 'region' || category === 'community' || category.includes('dpp') || category.includes('seksi') || category.includes('komsos')) return 'Pengurus'
   return 'User'
 })
 
 const canAccessKronik = computed(() => {
   if (!user.value) return false
   const category = (user.value.user_category || '').toLowerCase()
-  const validCategories = ['parish_council', 'categorical_group', 'region', 'community',
-    'dpp', 'bgkp', 'wilayah', 'lingkungan']
-  return validCategories.some(cat => category.includes(cat))
+  const unitName = (user.value.unit_name || '').toLowerCase()
+  const validCategories = [
+    'parish_council',
+    'categorical_group',
+    'region',
+    'community',
+    'dpp',
+    'bgkp',
+    'wilayah',
+    'lingkungan',
+    'seksi',
+    'komsos',
+    'komunitas',
+    'kategorial'
+  ]
+  return validCategories.some(cat => category.includes(cat)) || unitName.length > 0
 })
 
 const toggleUserDropdown = () => {
   showUserDropdown.value = !showUserDropdown.value
   if (showUserDropdown.value) {
     updateUserDropdownPosition()
+    loadNavbarUserQuota()
+  }
+}
+
+const navigateToBookingSection = async (sectionHash = '') => {
+  showUserDropdown.value = false
+  if (!process.client) return
+
+  const targetId = sectionHash === '#pemesanan-saya' ? 'pemesanan-saya' : 'katalog-ruangan'
+
+  const doScroll = () => {
+    const el = document.getElementById(targetId)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  if (route.path === '/booking') {
+    // Delay 50ms agar dropdown unmount dengan bersih sebelum scroll dipicu
+    setTimeout(doScroll, 50)
+  } else {
+    await navigateTo(`/booking${sectionHash}`)
+    setTimeout(doScroll, 450)
   }
 }
 
@@ -964,6 +1041,17 @@ onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   window.addEventListener('resize', updateAllDropdownPositions)
   window.addEventListener('resize', updateSearchSuggestionsPosition)
+
+  // Otomatis buka modal profil / login saat URL mengandung ?login=required
+  if (route.query.login === 'required' || route.query.login === 'true') {
+    showLoginModal.value = true
+  }
+})
+
+watch(() => route.query.login, (val) => {
+  if (val === 'required' || val === 'true') {
+    showLoginModal.value = true
+  }
 })
 
 onUnmounted(() => {

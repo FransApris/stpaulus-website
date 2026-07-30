@@ -140,6 +140,18 @@
         </div>
       </section>
 
+      <!-- Featured Thumbnail Image -->
+      <section v-if="article.image && article.image !== '/images/default-article.jpg'" class="container mx-auto px-4 max-w-4xl pt-6">
+        <div class="w-full h-64 sm:h-80 md:h-[420px] rounded-2xl overflow-hidden shadow-lg bg-gray-100 relative border border-gray-200">
+          <img 
+            :src="article.image" 
+            :alt="article.title"
+            class="w-full h-full object-cover"
+            @error="(e) => { e.target.parentElement.style.display = 'none'; }"
+          />
+        </div>
+      </section>
+
       <!-- Content -->
       <section class="container mx-auto px-4 max-w-4xl py-6 sm:py-8">
         <div class="bg-white shadow-lg rounded-2xl p-4 sm:p-6 md:p-8 overflow-hidden">
@@ -204,11 +216,8 @@ const { isMaintenance } = useMaintenance('artikel')
 const route = useRoute();
 const slug = route.params.id;
 
-onMounted(() => {
-  if (process.client) {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
-  }
-})
+// Scroll-to-top sudah ditangani secara global oleh router.options.ts
+// Tidak perlu memanggil window.scrollTo lagi di sini
 
 // Fetch data
 const { data: article, pending, error, refresh } = await useAsyncData(
@@ -279,8 +288,8 @@ const shareArticle = async () => {
       });
       article.value.shares_count = response.shares_count;
       showToastMessage('Berhasil share artikel!');
-    } catch (err) {
-      if (err.name !== 'AbortError') {
+    } catch (err: any) {
+      if (err?.name !== 'AbortError') {
         console.error('Error sharing:', err);
       }
     } finally {
@@ -322,7 +331,7 @@ const copyLink = async () => {
 };
 
 // Show Toast
-const showToastMessage = (message, type = 'success') => {
+const showToastMessage = (message: string, type: string = 'success') => {
   toastMessage.value = message;
   toastType.value = type;
   showToast.value = true;
@@ -332,13 +341,32 @@ const showToastMessage = (message, type = 'success') => {
   }, 3000);
 };
 
-// Meta tags
+// Meta tags — OG image per-artikel agar share ke WhatsApp/Facebook tampilkan thumbnail
+const SITE_URL = 'https://stpaulusjuanda.org'
+const DEFAULT_OG_IMAGE = `${SITE_URL}/images/logo-paulus-juanda.png`
+
 useHead(() => ({
-  title: article.value ? `${article.value.title}` : 'Detail Artikel',
-  meta: [{ 
-    name: 'description', 
-    content: article.value?.excerpt || 'Artikel rohani dari Gereja Katolik St. Paulus Juanda.' 
-  }]
+  title: article.value ? `${article.value.title} — Paroki St. Paulus Juanda` : 'Detail Artikel',
+  meta: [
+    {
+      name: 'description',
+      content: article.value?.excerpt || 'Artikel rohani dari Gereja Katolik St. Paulus Juanda.'
+    },
+    // Open Graph
+    { property: 'og:type',        content: 'article' },
+    { property: 'og:title',       content: article.value?.title || 'Artikel Paroki St. Paulus Juanda' },
+    { property: 'og:description', content: article.value?.excerpt || 'Artikel rohani dari Gereja Katolik St. Paulus Juanda.' },
+    { property: 'og:image',       content: (article.value?.image && article.value.image !== '/images/default-article.jpg') ? article.value.image : DEFAULT_OG_IMAGE },
+    { property: 'og:image:width',  content: '1200' },
+    { property: 'og:image:height', content: '630' },
+    { property: 'og:url',         content: `${SITE_URL}/artikel/${slug}` },
+    { property: 'og:site_name',   content: 'Paroki St. Paulus Juanda' },
+    // Twitter Card
+    { name: 'twitter:card',        content: 'summary_large_image' },
+    { name: 'twitter:title',       content: article.value?.title || 'Artikel Paroki St. Paulus Juanda' },
+    { name: 'twitter:description', content: article.value?.excerpt || 'Artikel rohani dari Gereja Katolik St. Paulus Juanda.' },
+    { name: 'twitter:image',       content: (article.value?.image && article.value.image !== '/images/default-article.jpg') ? article.value.image : DEFAULT_OG_IMAGE }
+  ]
 }));
 </script>
 
