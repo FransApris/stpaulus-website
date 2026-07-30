@@ -83,8 +83,68 @@
         <p class="mt-1 text-sm text-gray-500">Mulai dengan mengunggah dokumen pertama.</p>
       </div>
 
-      <div v-else class="w-full overflow-x-auto rounded-lg border border-gray-200">
-        <table class="min-w-full divide-y divide-gray-200">
+      <div v-else>
+        <!-- Mobile/Tablet Card View -->
+        <div class="xl:hidden space-y-4 mb-4">
+          <div v-for="document in paginatedDocuments" :key="'card-'+document.id" class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-100">
+              <div class="flex-1 pr-4">
+                <h3 class="text-lg font-bold text-gray-900 leading-tight">{{ document.title }}</h3>
+                <div v-if="document.description" class="text-sm text-gray-500 mt-2">
+                  <div v-if="isDescriptionExpanded(document.id)">{{ document.description }}</div>
+                  <div v-else>{{ truncateDescription(document.description, 80) }}</div>
+                  <button v-if="document.description && document.description.length > 80" @click="toggleDescription(document.id)" class="text-blue-600 hover:text-blue-800 text-xs mt-1 font-medium inline-flex items-center">
+                    {{ isDescriptionExpanded(document.id) ? 'Sembunyikan' : 'Lihat Detail' }}
+                    <svg class="w-3 h-3 ml-1 transition-transform" :class="{ 'rotate-180': isDescriptionExpanded(document.id) }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  </button>
+                </div>
+                <div v-else class="text-xs text-gray-400 italic mt-2">Tidak ada deskripsi</div>
+              </div>
+              <div class="flex flex-col space-y-2">
+                <button @click="openModal(document)" title="Edit" class="text-blue-600 hover:text-blue-900 p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <button @click="deleteDocument(document.id)" title="Hapus" class="text-red-600 hover:text-red-900 p-2 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Kategori</p>
+                <div class="flex items-center mt-1">
+                  <div class="flex-shrink-0 w-3 h-3 rounded mr-2" :style="{ backgroundColor: document.category_color }"></div>
+                  <span class="text-gray-900 font-medium">{{ document.category_name }}</span>
+                </div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3">
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Status</p>
+                <label class="inline-flex items-center mt-1">
+                  <input type="checkbox" :checked="document.is_featured || false" @change="toggleFeatured(document.id, $event.target.checked)" class="rounded border-gray-300 text-[#882f1d] focus:ring-[#882f1d]" />
+                  <span class="ml-2 text-gray-900 font-medium">Featured</span>
+                </label>
+              </div>
+              <div class="col-span-2 bg-gray-50 rounded-lg p-3">
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Informasi File</p>
+                <p class="text-gray-900 font-medium break-all">{{ document.original_filename }}</p>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="text-gray-500 text-xs">{{ document.mime_type }} • {{ formatFileSize(document.file_size) }}</span>
+                  <span v-if="document.file_path && (document.file_path.startsWith('https://') || document.file_path.startsWith('http://'))" class="inline-flex items-center text-[10px] font-bold text-green-700 bg-green-100 rounded px-2 py-1 uppercase tracking-wider">☁ Cloud</span>
+                  <span v-else class="inline-flex items-center text-[10px] font-bold text-yellow-700 bg-yellow-100 rounded px-2 py-1 uppercase tracking-wider">💾 Lokal</span>
+                </div>
+              </div>
+              <div class="col-span-2 bg-gray-50 rounded-lg p-3">
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Tanggal Upload</p>
+                <p class="text-gray-900 font-medium">{{ formatDate(document.created_at) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop Table View -->
+        <div class="hidden xl:block w-full overflow-x-auto rounded-lg border border-gray-200">
+          <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
               <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3 min-w-[200px]">
@@ -209,6 +269,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
       </div>
 
       <!-- Pagination -->
