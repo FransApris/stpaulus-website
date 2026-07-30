@@ -84,35 +84,35 @@
       </div>
 
       <div v-else class="w-full overflow-x-auto rounded-lg border border-gray-200">
-        <table class="min-w-[900px] w-full divide-y divide-gray-200">
+        <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5 min-w-[280px]">
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3 min-w-[200px]">
                 Judul
               </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Kategori
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               File
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Ukuran
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Tanggal Upload
             </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Featured
             </th>
-            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
               Aksi
             </th>
           </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
           <tr v-for="document in paginatedDocuments" :key="document.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4 w-2/5 min-w-[280px]">
+            <td class="px-4 py-4 w-1/3 min-w-[200px]">
               <div>
                 <div class="text-sm font-medium text-gray-900">{{ document.title }}</div>
                 
@@ -150,13 +150,13 @@
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 w-3 h-3 rounded mr-2" :style="{ backgroundColor: document.category_color }"></div>
                 <span class="text-sm text-gray-900">{{ document.category_name }}</span>
               </div>
             </td>
-            <td class="px-6 py-4 max-w-[200px]">
+            <td class="px-4 py-4 max-w-[200px]">
               <div class="text-sm text-gray-900 break-all" :title="document.original_filename">{{ document.original_filename }}</div>
               <div class="text-sm text-gray-500 whitespace-nowrap">{{ document.mime_type }}</div>
               <!-- Storage indicator -->
@@ -169,13 +169,13 @@
                 </span>
               </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-4 whitespace-nowrap">
               <span class="text-sm text-gray-900">{{ formatFileSize(document.file_size) }}</span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-4 whitespace-nowrap">
               <span class="text-sm text-gray-900">{{ formatDate(document.created_at) }}</span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-4 whitespace-nowrap">
               <label class="inline-flex items-center">
                 <input
                   type="checkbox"
@@ -186,7 +186,7 @@
                 <span class="ml-2 text-sm text-gray-900">Featured</span>
               </label>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+            <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
               <button
                 @click="openModal(document)"
                 title="Edit"
