@@ -1077,7 +1077,7 @@ const exportToExcel = async () => {
 // toUtcDate sudah diimport dari useDatetime() di atas — tidak perlu dideklarasikan ulang.
 // formatBookingDate, formatBookingTime, formatDateTime adalah alias ke composable.
 
-const getRecurrenceLabel = (pattern: string) => {
+const getRecurrenceLabel = (pattern) => {
   if (pattern === 'WEEKLY') return 'Mingguan'
   if (pattern === 'BIWEEKLY') return '2-Mingguan'
   if (pattern === 'MONTHLY') return 'Bulanan'
