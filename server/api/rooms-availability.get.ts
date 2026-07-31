@@ -4,9 +4,12 @@ export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const date = query.date as string
 
-  // If no date provided, use current date
-  const targetDate = date ? new Date(date) : new Date()
-  const dateStr = targetDate.toISOString().split('T')[0] // YYYY-MM-DD format
+  // If no date provided, use current date in WIB timezone
+  // Use en-CA locale for YYYY-MM-DD format
+  const targetDateWIB = date
+    ? (date as string)
+    : new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
+  const dateStr = targetDateWIB  // YYYY-MM-DD in WIB
 
   // Get all active rooms
   const rooms = await allQuery(`
@@ -17,10 +20,12 @@ export default defineEventHandler(async (event) => {
   `)
 
   const getBookingsForDate = async () => {
-    // Hitung awal dan akhir hari yang diminta (UTC midnight-to-midnight)
-    // karena data disimpan sebagai UTC di database.
-    const dayStart = dateStr + ' 00:00:00'
-    const dayEnd   = dateStr + ' 23:59:59'
+    // Convert WIB day boundaries to UTC for querying (DB stores UTC).
+    // WIB midnight = UTC-7h, so WIB 2026-08-21 00:00:00 = UTC 2026-08-20 17:00:00
+    const wibStart = new Date(`${dateStr}T00:00:00+07:00`)
+    const wibEnd   = new Date(`${dateStr}T23:59:59+07:00`)
+    const dayStart = wibStart.toISOString().slice(0, 19).replace('T', ' ')
+    const dayEnd   = wibEnd.toISOString().slice(0, 19).replace('T', ' ')
 
     try {
       // Fix: query lama hanya cek date(start_time) = ? — tidak mendeteksi

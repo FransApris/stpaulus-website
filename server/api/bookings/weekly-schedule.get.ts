@@ -151,16 +151,12 @@ export default defineEventHandler(async (event) => {
       return str.replace(' ', 'T') + (str.endsWith('Z') ? '' : 'Z')
     }
 
+    // fmtTime: always parse as UTC first (DB stores UTC), then display in WIB
     const fmtTime = (raw: any): string => {
       if (!raw) return ''
-      if (typeof raw === 'string') {
-        const parts = raw.split(' ')
-        if (parts.length >= 2 && parts[1]) {
-          const timePart = parts[1].slice(0, 5)
-          if (timePart.includes(':')) return timePart.replace(':', '.')
-        }
-      }
-      const d = raw instanceof Date ? raw : new Date(raw)
+      const utcStr = toUTCStr(raw)
+      if (!utcStr) return ''
+      const d = new Date(utcStr)
       if (isNaN(d.getTime())) return ''
       return d.toLocaleTimeString('id-ID', {
         hour: '2-digit', minute: '2-digit',
@@ -168,17 +164,14 @@ export default defineEventHandler(async (event) => {
       }).replace(':', '.')
     }
 
+    // fmtDateKey: parse as UTC, then get the WIB calendar date (YYYY-MM-DD)
+    // This prevents day-boundary errors for bookings stored as e.g. "2026-08-21 00:30:00" UTC
+    // which is actually "2026-08-21 07:30:00" WIB (same date) but could shift if close to midnight UTC.
     const fmtDateKey = (raw: any): string => {
       if (!raw) return ''
-      if (typeof raw === 'string') {
-        const str = raw.trim()
-        const firstPart = str.split(' ')[0] || ''
-        const datePart = firstPart.split('T')[0] || ''
-        if (datePart.length === 10 && datePart.charAt(4) === '-' && datePart.charAt(7) === '-') {
-          return datePart
-        }
-      }
-      const d = raw instanceof Date ? raw : new Date(raw)
+      const utcStr = toUTCStr(raw)
+      if (!utcStr) return ''
+      const d = new Date(utcStr)
       if (isNaN(d.getTime())) return ''
       return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
     }
