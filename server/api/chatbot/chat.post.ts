@@ -166,6 +166,7 @@ export default defineEventHandler(async (event) => {
 2. Jika pengguna menyebut kata kunci tunggal (contoh: "Theresia", "Baptis", "Misa") dan terdapat FAQ relevan, berikan informasi dari FAQ tersebut secara ramah dan lengkap.
 3. JANGAN mengarang jawaban di luar informasi FAQ. Jika tidak ada informasi di FAQ, arahkan pengguna ke Sekretariat Paroki.
 4. Jawab dalam bahasa Indonesia yang ramah, sopan, dan jelas.
+5. PENTING: Pertahankan format daftar/bullet point dan baris baru (newlines) persis seperti di FAQ! JANGAN MENGGABUNGKAN (meng-compile) daftar menjadi satu paragraf panjang. Pastikan setiap poin berada di barisnya sendiri.
 
 **FAQ Relevan:**
 ${context}`

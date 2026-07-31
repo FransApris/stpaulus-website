@@ -30,12 +30,13 @@
         <div class="flex-1 p-4 overflow-y-auto space-y-3" ref="messagesContainer">
           <TransitionGroup name="message">
             <div v-for="message in messages" :key="message.id" :class="[
-              'max-w-xs p-3 rounded-lg text-sm whitespace-pre-wrap',
+              'max-w-xs p-3 rounded-lg text-sm',
               message.sender === 'user'
-                ? 'bg-paulus-blue text-white ml-auto'
-                : 'bg-gray-100 text-gray-800'
+                ? 'bg-paulus-blue text-white ml-auto whitespace-pre-wrap'
+                : 'bg-gray-100 text-gray-800 prose prose-sm prose-p:my-1 prose-ul:my-1 prose-li:my-0'
             ]">
-              {{ message.text }}
+              <div v-if="message.sender === 'bot'" v-html="renderMarkdown(message.text)" class="markdown-body"></div>
+              <div v-else>{{ message.text }}</div>
             </div>
           </TransitionGroup>
           <div v-if="isTyping" class="bg-gray-100 text-gray-800 p-3 rounded-lg text-sm max-w-xs">
@@ -71,6 +72,14 @@
 
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted } from '#imports'
+import { marked } from 'marked'
+import DOMPurify from 'isomorphic-dompurify'
+
+const renderMarkdown = (text) => {
+  if (!text) return ''
+  // Use breaks: true so single newlines become <br>
+  return DOMPurify.sanitize(marked.parse(text, { breaks: true, async: false }))
+}
 
 const isOpen = ref(false)
 const messages = ref([])

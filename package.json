@@ -32,7 +32,6 @@
     "google-photos:migrate": "powershell -ExecutionPolicy Bypass -File scripts/run-google-photos-migration-simple.ps1",
     "security:audit": "npm audit --audit-level=high"
   },
-
   "dependencies": {
     "@ckeditor/ckeditor5-vue": "7.3.0",
     "@google/generative-ai": "^0.24.1",
@@ -50,6 +49,7 @@
     "groq-sdk": "^1.1.1",
     "isomorphic-dompurify": "^3.19.0",
     "jsonwebtoken": "^9.0.2",
+    "marked": "^18.0.7",
     "mysql2": "^3.15.3",
     "nodemailer": "^8.0.5",
     "nuxt": "^4.4.2",
