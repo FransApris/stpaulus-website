@@ -30,7 +30,7 @@
         <div class="flex-1 p-4 overflow-y-auto space-y-3" ref="messagesContainer">
           <TransitionGroup name="message">
             <div v-for="message in messages" :key="message.id" :class="[
-              'max-w-xs p-3 rounded-lg text-sm',
+              'max-w-xs p-3 rounded-lg text-sm whitespace-pre-wrap',
               message.sender === 'user'
                 ? 'bg-paulus-blue text-white ml-auto'
                 : 'bg-gray-100 text-gray-800'
