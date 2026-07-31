@@ -1345,6 +1345,17 @@
 
 <script setup>
 const { isMaintenance } = useMaintenance('booking')
+const {
+  toUtcDate,
+  formatWibDate,
+  formatWibTime,
+  formatWibTimeRange,
+  formatWibBookingTime,
+  formatWibDateTime,
+  wibDateKey,
+  todayWibStr,
+  isBookingPassed
+} = useDatetime()
 // Use composable to prevent horizontal scroll
 usePreventHorizontalScroll();
 
@@ -1788,20 +1799,9 @@ const nextPage = () => {
 }
 
 // Check if booking has passed
-const isBookingPassed = (endTime) => {
-  const now = new Date()
-  const bookingEndTime = new Date(endTime)
-  return bookingEndTime < now
-}
-
-// Helper functions
-const getTodayDate = () => {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
+// isBookingPassed dan getTodayDate — dari useDatetime composable
+// Alias agar kompatibel dengan kode yang sudah ada
+const getTodayDate = todayWibStr
 
 const viewBookingDetail = (booking) => {
   console.log('[VIEW DETAIL] Opening booking detail:', booking)
@@ -1815,20 +1815,9 @@ const closeBookingDetail = () => {
   // reload hanya dilakukan setelah tindakan yang mengubah data (booking baru, cancel, dll.)
 }
 
-const formatDate = (dateTime) => {
-  const date = new Date(dateTime)
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' }
-  return date.toLocaleDateString('id-ID', options)
-}
-
-const formatTime = (dateTime) => {
-  const date = new Date(dateTime)
-  return date.toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Asia/Jakarta'
-  }).replace('.', ':')
-}
+// formatDate dan formatTime — dari useDatetime composable
+const formatDate = formatWibDate
+const formatTime = formatWibTime
 
 const getRecurrenceLabel = (pattern) => {
   if (pattern === 'WEEKLY') return 'Rutin (Mingguan)'
@@ -2277,30 +2266,8 @@ const getBookingStatusText = (status) => {
   }
 }
 
-const formatBookingTime = (startTime, endTime) => {
-  const start = new Date(startTime)
-  const end = new Date(endTime)
-
-  const dateOptions = {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'Asia/Jakarta'
-  }
-
-  const timeOptions = {
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'Asia/Jakarta'
-  }
-
-  const dateStr = start.toLocaleDateString('id-ID', dateOptions)
-  const startTimeStr = start.toLocaleTimeString('id-ID', timeOptions).replace('.', ':')
-  const endTimeStr = end.toLocaleTimeString('id-ID', timeOptions).replace('.', ':')
-
-  return `${dateStr} (${startTimeStr} - ${endTimeStr})`
-}
+// formatBookingTime — dari useDatetime composable
+const formatBookingTime = formatWibBookingTime
 
 // Navigate date by days offset (-1 = kemarin, +1 = besok)
 const navigateDate = (offset) => {

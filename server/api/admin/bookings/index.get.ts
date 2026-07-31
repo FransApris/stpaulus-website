@@ -1,5 +1,6 @@
 import { allQuery } from '../../../database/db'
 import { requireAuth, requirePermission } from '../../../utils/auth'
+import { dbToUtcIso, todayWib } from '../../../utils/datetime'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
@@ -17,15 +18,16 @@ export default defineEventHandler(async (event) => {
   const days = parseInt(queryParams.days as string) || 365
   const pastDays = parseInt(queryParams.past_days as string) || 30
 
-  // Calculate date range
-  const now = new Date()
-  const startDate = new Date(now)
-  startDate.setDate(now.getDate() - pastDays)
-  const endDate = new Date(now)
-  endDate.setDate(now.getDate() + days)
+  // Date range pakai WIB date agar tidak ada off-by-one pada hari WIB
+  const todayStr = todayWib()
+  const nowWib = new Date(`${todayStr}T00:00:00+07:00`)
+  const startDate = new Date(nowWib)
+  startDate.setDate(nowWib.getDate() - pastDays)
+  const endDate = new Date(nowWib)
+  endDate.setDate(nowWib.getDate() + days)
 
-  const startDateStr = startDate.toISOString().split('T')[0]
-  const endDateStr = endDate.toISOString().split('T')[0]
+  const startDateStr = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
+  const endDateStr = endDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
 
   console.log('[Admin Bookings API] Request from user:', userId)
   console.log('[Admin Bookings API] Filter status:', status || 'all')
@@ -101,16 +103,12 @@ export default defineEventHandler(async (event) => {
 
   console.log('[Admin Bookings API] Found', rawBookings.length, 'bookings')
 
-  // Normalize datetime strings: MySQL with dateStrings:true returns "YYYY-MM-DD HH:MM:SS"
-  // (no timezone info). Append 'Z' so browsers treat them as UTC instead of local WIB,
-  // matching the normalization already done in the user-facing /api/bookings endpoint.
-  const toUTC = (s: any) => (s ? String(s).replace(' ', 'T') + 'Z' : null)
-
+  // Normalize datetime strings — menggunakan shared utility
   const bookings = rawBookings.map((b: any) => ({
     ...b,
-    start_time: toUTC(b.start_time),
-    end_time:   toUTC(b.end_time),
-    created_at: toUTC(b.created_at)
+    start_time: dbToUtcIso(b.start_time),
+    end_time:   dbToUtcIso(b.end_time),
+    created_at: dbToUtcIso(b.created_at)
   }))
 
   // Log summary by status

@@ -1,4 +1,5 @@
 import { allQuery } from '~/server/database/db'
+import { dbToUtcIso, dbToWibDate, dbToWibTimeStr, todayWib, wibDayBoundariesUtc } from '~/server/utils/datetime'
 
 /**
  * GET /api/bookings/weekly-schedule
@@ -33,8 +34,9 @@ export default defineEventHandler(async (event) => {
       }
       weekStart = parsed
     } else {
-      // Default to current Monday (WIB)
-      const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }))
+      // Default to current Monday (WIB) — todayWib() returns WIB date string
+      const todayStr = todayWib()
+      const now = new Date(`${todayStr}T00:00:00+07:00`)
       const dayOfWeek = now.getDay() // 0=Sun, 1=Mon
       const diffToMonday = (dayOfWeek === 0 ? -6 : 1 - dayOfWeek)
       weekStart = new Date(now)
@@ -143,49 +145,18 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // ── 4. Format booking times safely ───────────────────────────────────────
-    const toUTCStr = (s: any): string => {
-      if (!s) return ''
-      if (s instanceof Date) return s.toISOString()
-      const str = String(s).trim()
-      return str.replace(' ', 'T') + (str.endsWith('Z') ? '' : 'Z')
-    }
-
-    // fmtTime: always parse as UTC first (DB stores UTC), then display in WIB
-    const fmtTime = (raw: any): string => {
-      if (!raw) return ''
-      const utcStr = toUTCStr(raw)
-      if (!utcStr) return ''
-      const d = new Date(utcStr)
-      if (isNaN(d.getTime())) return ''
-      return d.toLocaleTimeString('id-ID', {
-        hour: '2-digit', minute: '2-digit',
-        timeZone: 'Asia/Jakarta', hour12: false
-      }).replace(':', '.')
-    }
-
-    // fmtDateKey: parse as UTC, then get the WIB calendar date (YYYY-MM-DD)
-    // This prevents day-boundary errors for bookings stored as e.g. "2026-08-21 00:30:00" UTC
-    // which is actually "2026-08-21 07:30:00" WIB (same date) but could shift if close to midnight UTC.
-    const fmtDateKey = (raw: any): string => {
-      if (!raw) return ''
-      const utcStr = toUTCStr(raw)
-      if (!utcStr) return ''
-      const d = new Date(utcStr)
-      if (isNaN(d.getTime())) return ''
-      return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
-    }
-
+    // ── 4. Format booking times — menggunakan shared datetime utility ─────────
+    // Semua konversi UTC→WIB dilakukan via ~/server/utils/datetime
     const formattedBookings = (bookings || []).map(b => ({
       id             : b?.id ?? 0,
       room_id        : b?.room_id ?? 0,
       event_name     : b?.event_name || 'Acara',
       requester_name : b?.requester_name || 'Tidak diketahui',
-      date_key       : fmtDateKey(b?.start_time),
-      start_time     : toUTCStr(b?.start_time),
-      end_time       : toUTCStr(b?.end_time),
-      start_formatted: fmtTime(b?.start_time),
-      end_formatted  : fmtTime(b?.end_time),
+      date_key       : dbToWibDate(b?.start_time),
+      start_time     : dbToUtcIso(b?.start_time) ?? '',
+      end_time       : dbToUtcIso(b?.end_time) ?? '',
+      start_formatted: dbToWibTimeStr(b?.start_time),
+      end_formatted  : dbToWibTimeStr(b?.end_time),
       status         : b?.status || 'PENDING'
     }))
 

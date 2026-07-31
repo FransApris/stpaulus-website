@@ -1,4 +1,5 @@
 import { allQuery } from '~/server/database/db'
+import { dbToUtcIso, dbToWibDate, dbToWibTimeColon, todayWib } from '~/server/utils/datetime'
 
 export default defineEventHandler(async (event) => {
   // Get query parameters for filtering
@@ -6,15 +7,16 @@ export default defineEventHandler(async (event) => {
   const limit = parseInt(query.limit as string) || 100 // Default limit 100 untuk menampilkan lebih banyak data
   const days = parseInt(query.days as string) || 90 // Show bookings for next 90 days (increased from 30)
 
-  // Calculate date range
-  const now = new Date()
-  const startDate = new Date(now)
-  startDate.setDate(now.getDate() - 30) // Include past 30 days (increased from 7)
-  const endDate = new Date(now)
-  endDate.setDate(now.getDate() + days) // Include next X days
+  // Hitung date range — pakai WIB date agar tidak off-by-one
+  const todayStr = todayWib()
+  const nowWib = new Date(`${todayStr}T00:00:00+07:00`)
+  const startDate = new Date(nowWib)
+  startDate.setDate(nowWib.getDate() - 30)
+  const endDate = new Date(nowWib)
+  endDate.setDate(nowWib.getDate() + days)
 
-  const startDateStr = startDate.toISOString().split('T')[0]
-  const endDateStr = endDate.toISOString().split('T')[0]
+  const startDateStr = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
+  const endDateStr = endDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
 
   // Only use placeholders for WHERE conditions
   const params = [startDateStr, endDateStr]
@@ -83,42 +85,13 @@ export default defineEventHandler(async (event) => {
   // Apply limit in JavaScript to avoid SQL injection
   const limitedBookings = bookings.slice(0, limit)
 
-  // Helper: normalize DB datetime strings (stored as UTC) by appending 'Z'
-  // so that browsers parse them as UTC instead of local time.
-  // This is consistent with how booking.vue and index.get.ts process datetime values.
-  const toUTC = (s: any) => s ? String(s).replace(' ', 'T') + 'Z' : null
-
-  // Format the response
+  // Semua konversi UTC→WIB via shared utility
   const formattedBookings = limitedBookings.map((booking: any) => {
-    const startTimeUTC = toUTC(booking.start_time)
-    const endTimeUTC = toUTC(booking.end_time)
-
-    // Extract date part in Jakarta timezone for display
-    let eventDateStr = ''
-    if (startTimeUTC) {
-      const startDate = new Date(startTimeUTC)
-      // Format as YYYY-MM-DD in WIB (Asia/Jakarta = UTC+7)
-      const dateInJakarta = startDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
-      eventDateStr = dateInJakarta
-    }
-
-    // Extract time strings in Jakarta timezone for display
-    let startTimeStr = ''
-    let endTimeStr = ''
-    if (startTimeUTC) {
-      startTimeStr = new Date(startTimeUTC).toLocaleTimeString('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Asia/Jakarta'
-      }).replace('.', ':')
-    }
-    if (endTimeUTC) {
-      endTimeStr = new Date(endTimeUTC).toLocaleTimeString('id-ID', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'Asia/Jakarta'
-      }).replace('.', ':')
-    }
+    const startTimeUTC = dbToUtcIso(booking.start_time)
+    const endTimeUTC   = dbToUtcIso(booking.end_time)
+    const eventDateStr = dbToWibDate(booking.start_time)
+    const startTimeStr = dbToWibTimeColon(booking.start_time)
+    const endTimeStr   = dbToWibTimeColon(booking.end_time)
 
     return {
       id: booking.id,

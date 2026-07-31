@@ -498,6 +498,13 @@ definePageMeta({
   layout: 'admin',
   middleware: 'auth'
 })
+const {
+  toUtcDate,
+  formatWibDate,
+  formatWibTime,
+  formatWibTimeRange,
+  formatWibDateTime
+} = useDatetime()
 
 // State
 const activeTab = ref('list')
@@ -1066,45 +1073,27 @@ const exportToExcel = async () => {
   }
 }
 
-// Utility Functions
-// Booking datetimes are stored as UTC in MySQL.
-// With dateStrings:true, they come back as "YYYY-MM-DD HH:MM:SS" (no TZ info).
-// Append 'Z' so browsers treat them correctly as UTC instead of local WIB.
-const toUtcDate = (s) => {
+// Utility Functions — via useDatetime composable (single source of truth)
+// toUtcDate, formatBookingDate, formatBookingTime, formatDateTime semua
+// di-alias ke fungsi shared agar bug timezone tidak berulang.
+const toUtcDate = (s: any) => {
+  // Wrapper tipis — logika asli ada di composables/useDatetime.ts
   if (!s) return new Date(NaN)
-  const str = String(s)
-  if (str.includes('Z') || str.includes('+')) return new Date(str)
+  const str = String(s).trim()
+  if (str.endsWith('Z') || str.includes('+')) return new Date(str)
   return new Date(str.replace(' ', 'T') + 'Z')
 }
 
-const getRecurrenceLabel = (pattern) => {
+const getRecurrenceLabel = (pattern: string) => {
   if (pattern === 'WEEKLY') return 'Mingguan'
   if (pattern === 'BIWEEKLY') return '2-Mingguan'
   if (pattern === 'MONTHLY') return 'Bulanan'
   return 'Rutin'
 }
 
-const formatBookingDate = (startTime) => {
-  const date = toUtcDate(startTime)
-  return date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
-}
-
-const formatBookingTime = (startTime, endTime) => {
-  const start = toUtcDate(startTime)
-  const end = toUtcDate(endTime)
-  return `${start.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
-}
-
-const formatDateTime = (dateTime) => {
-  const date = toUtcDate(dateTime)
-  return date.toLocaleString('id-ID', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
+const formatBookingDate = formatWibDate
+const formatBookingTime = formatWibTimeRange
+const formatDateTime = formatWibDateTime
 
 const getStatusClass = (status) => {
   const classes = {

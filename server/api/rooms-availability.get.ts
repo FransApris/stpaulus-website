@@ -1,15 +1,12 @@
 import { allQuery } from '../database/db'
+import { dbToUtcIso, todayWib, wibDayBoundariesUtc, dbToWibTimeColon } from '../utils/datetime'
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event)
   const date = query.date as string
 
-  // If no date provided, use current date in WIB timezone
-  // Use en-CA locale for YYYY-MM-DD format
-  const targetDateWIB = date
-    ? (date as string)
-    : new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
-  const dateStr = targetDateWIB  // YYYY-MM-DD in WIB
+  // If no date provided, use current date in WIB timezone (via shared utility)
+  const dateStr = (date || todayWib()) as string  // YYYY-MM-DD in WIB
 
   // Get all active rooms
   const rooms = await allQuery(`
@@ -20,12 +17,8 @@ export default defineEventHandler(async (event) => {
   `)
 
   const getBookingsForDate = async () => {
-    // Convert WIB day boundaries to UTC for querying (DB stores UTC).
-    // WIB midnight = UTC-7h, so WIB 2026-08-21 00:00:00 = UTC 2026-08-20 17:00:00
-    const wibStart = new Date(`${dateStr}T00:00:00+07:00`)
-    const wibEnd   = new Date(`${dateStr}T23:59:59+07:00`)
-    const dayStart = wibStart.toISOString().slice(0, 19).replace('T', ' ')
-    const dayEnd   = wibEnd.toISOString().slice(0, 19).replace('T', ' ')
+    // Convert WIB day boundaries to UTC via shared utility (DB stores UTC)
+    const { dayStart, dayEnd } = wibDayBoundariesUtc(dateStr)
 
     try {
       // Fix: query lama hanya cek date(start_time) = ? — tidak mendeteksi
@@ -82,14 +75,11 @@ export default defineEventHandler(async (event) => {
   // Get bookings for the target date
   const rawBookings = await getBookingsForDate()
 
-  // Helper: normalize DB datetime strings (stored as UTC) by appending 'Z'
-  // so that browsers parse them as UTC instead of local time.
-  const toUTC = (s: any) => s ? String(s).replace(' ', 'T') + 'Z' : null
-
+  // Helper: normalize DB datetime strings — menggunakan shared utility
   const bookings = rawBookings.map((b: any) => ({
     ...b,
-    start_time: toUTC(b.start_time),
-    end_time: toUTC(b.end_time)
+    start_time: dbToUtcIso(b.start_time),
+    end_time: dbToUtcIso(b.end_time)
   }))
 
   // Group bookings by room
@@ -132,8 +122,8 @@ export default defineEventHandler(async (event) => {
           const startTime = new Date(upcomingBooking.start_time)
           const endTime = new Date(upcomingBooking.end_time)
           status = 'Sudah Dipesan'
-          const startStr = startTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
-          const endStr = endTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jakarta' })
+          const startStr = dbToWibTimeColon(upcomingBooking.start_time)
+          const endStr = dbToWibTimeColon(upcomingBooking.end_time)
           statusDetails = `${upcomingBooking.event_name} pada ${startStr} - ${endStr} (${upcomingBooking.requester_name || upcomingBooking.user_name})`
         } else {
           // Check for pending bookings

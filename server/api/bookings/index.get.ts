@@ -1,5 +1,6 @@
 import { allQuery } from '~/server/database/db'
 import { verifyToken } from '~/server/utils/auth'
+import { dbToUtcIso } from '~/server/utils/datetime'
 
 type BookingQueryFeatures = {
     hasRequesterName: boolean
@@ -194,11 +195,8 @@ export default defineEventHandler(async (event) => {
         console.log('[User Bookings API] Status summary:', statusSummary)
 
         // Format response
-        // Helper: normalize DB datetime strings (stored as UTC) by appending 'Z'
-        // so that browsers parse them as UTC instead of local time.
-        // Without 'Z', new Date("2026-07-10 07:00:00") is treated as local (WIB)
-        // causing a 7-hour discrepancy for UTC-stored values.
-        const toUTC = (s: any) => s ? String(s).replace(' ', 'T') + 'Z' : null
+        // Helper: normalize DB datetime strings — menggunakan shared utility
+        const toUTC = dbToUtcIso
 
         const formattedBookings = bookings.map((booking: any) => ({
             id: booking.id,

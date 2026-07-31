@@ -1,18 +1,20 @@
 import { allQuery } from '~/server/database/db'
+import { dbToUtcIso, todayWib } from '~/server/utils/datetime'
 
 export default defineCachedEventHandler(async (event) => {
   // Public Endpoint: No authentication required
   // Data Privacy: Only fetches event_name, room_name, and time. No user personal data.
 
-  // 1. Define date range (yesterday to 14 days in future)
-  const now = new Date()
-  const startDate = new Date(now)
-  startDate.setDate(now.getDate() - 1) // include past days for events crossing midnight
-  const endDate = new Date(now)
-  endDate.setDate(now.getDate() + 14)
+  // Define date range (WIB-aware, agar tidak off-by-one)
+  const todayStr = todayWib()
+  const nowWib = new Date(`${todayStr}T00:00:00+07:00`)
+  const startDate = new Date(nowWib)
+  startDate.setDate(nowWib.getDate() - 1)
+  const endDate = new Date(nowWib)
+  endDate.setDate(nowWib.getDate() + 14)
 
-  const startDateStr = startDate.toISOString().split('T')[0]
-  const endDateStr = endDate.toISOString().split('T')[0]
+  const startDateStr = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
+  const endDateStr = endDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
 
   console.log('[Public Signage API] Date range:', { start: startDateStr, end: endDateStr })
 
@@ -40,14 +42,11 @@ export default defineCachedEventHandler(async (event) => {
   try {
     const rawBookings = await allQuery(query, params)
     
-    // Normalize datetime strings to UTC by appending 'Z'
-    // MySQL with dateStrings:true returns "YYYY-MM-DD HH:MM:SS" without TZ
-    const toUTC = (s: any) => (s ? String(s).replace(' ', 'T') + 'Z' : null)
-
+    // Normalize datetime strings via shared utility
     const bookings = rawBookings.map((b: any) => ({
       ...b,
-      start_time: toUTC(b.start_time),
-      end_time:   toUTC(b.end_time),
+      start_time: dbToUtcIso(b.start_time),
+      end_time:   dbToUtcIso(b.end_time),
     }))
 
     console.log(`[Public Signage API] Found ${bookings.length} approved bookings`)

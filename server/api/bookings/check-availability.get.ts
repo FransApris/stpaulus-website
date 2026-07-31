@@ -1,4 +1,5 @@
 import { allQuery } from '~/server/database/db'
+import { dbToUtcIso, dbToWibTimeStr } from '~/server/utils/datetime'
 
 /**
  * GET /api/bookings/check-availability
@@ -91,27 +92,15 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // ── Format times to WIB for readable response ─────────────────────────────
-    const toUTCStr = (s: any): string | null =>
-      s ? String(s).replace(' ', 'T') + (String(s).endsWith('Z') ? '' : 'Z') : null
-
-    const formatWIBTime = (raw: string) => {
-      const utcStr = toUTCStr(raw)
-      if (!utcStr) return ''
-      return new Date(utcStr).toLocaleTimeString('id-ID', {
-        hour: '2-digit', minute: '2-digit',
-        timeZone: 'Asia/Jakarta', hour12: false
-      }).replace(':', '.')
-    }
-
+    // ── Format times to WIB via shared utility ────────────────────────────────
     const formattedConflicts = conflicts.map((c: any) => ({
       id: c.id,
       event_name: c.event_name,
       requester_name: c.requester_name || 'Tidak diketahui',
-      start_time: toUTCStr(c.start_time),
-      end_time: toUTCStr(c.end_time),
-      start_formatted: formatWIBTime(c.start_time),
-      end_formatted: formatWIBTime(c.end_time),
+      start_time: dbToUtcIso(c.start_time),
+      end_time: dbToUtcIso(c.end_time),
+      start_formatted: dbToWibTimeStr(c.start_time),
+      end_formatted: dbToWibTimeStr(c.end_time),
       status: c.status
     }))
 
