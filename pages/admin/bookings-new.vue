@@ -1074,15 +1074,8 @@ const exportToExcel = async () => {
 }
 
 // Utility Functions — via useDatetime composable (single source of truth)
-// toUtcDate, formatBookingDate, formatBookingTime, formatDateTime semua
-// di-alias ke fungsi shared agar bug timezone tidak berulang.
-const toUtcDate = (s: any) => {
-  // Wrapper tipis — logika asli ada di composables/useDatetime.ts
-  if (!s) return new Date(NaN)
-  const str = String(s).trim()
-  if (str.endsWith('Z') || str.includes('+')) return new Date(str)
-  return new Date(str.replace(' ', 'T') + 'Z')
-}
+// toUtcDate sudah diimport dari useDatetime() di atas — tidak perlu dideklarasikan ulang.
+// formatBookingDate, formatBookingTime, formatDateTime adalah alias ke composable.
 
 const getRecurrenceLabel = (pattern: string) => {
   if (pattern === 'WEEKLY') return 'Mingguan'
@@ -1094,6 +1087,7 @@ const getRecurrenceLabel = (pattern: string) => {
 const formatBookingDate = formatWibDate
 const formatBookingTime = formatWibTimeRange
 const formatDateTime = formatWibDateTime
+
 
 const getStatusClass = (status) => {
   const classes = {
