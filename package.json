@@ -33,7 +33,7 @@
     "security:audit": "npm audit --audit-level=high"
   },
   "dependencies": {
-    "@ckeditor/ckeditor5-vue": "7.3.0",
+    "@ckeditor/ckeditor5-vue": "8.2.0",
     "@google/generative-ai": "^0.24.1",
     "@nuxt/image": "^2.0.0",
     "@nuxt/kit": "^4.4.2",
