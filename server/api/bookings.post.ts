@@ -2,6 +2,7 @@ import { runQuery, getQuery, getConnection } from '../database/db'
 import { requireAuth } from '../utils/auth'
 import { getHeader } from 'h3'
 import { sendBookingCreatedEmail, sendBookingApprovedEmail } from '../utils/email'
+import { canonicalizeCategory, normalizeCategory } from '../utils/category'
 
 const isMissingColumnError = (error: any, columnName: string) => {
   const message = String(error?.message || '')
@@ -111,35 +112,7 @@ export default defineEventHandler(async (event) => {
       console.log('[CREATE BOOKING] Parsed allowed categories:', allowedCategories)
       console.log('[CREATE BOOKING] User category:', user.user_category)
 
-      // Normalize + alias category names so code-style and display-style values match.
-      const normalizeCategory = (cat: string): string => {
-        return String(cat || '')
-          .toLowerCase()
-          .trim()
-          .replace(/[_-]+/g, ' ')
-          .replace(/\s+/g, ' ')
-      }
-
-      const categoryAliasMap: Record<string, string[]> = {
-        wilayah: ['wilayah', 'region'],
-        lingkungan: ['lingkungan'],
-        kategorial: ['kategorial', 'categorical group', 'categorical_group'],
-        komunitas: ['komunitas', 'community'],
-        seksi: ['seksi', 'section'],
-        // BGKP (Badan Gereja Katolik Paroki) is grouped with DPP — both are parish-level bodies
-        // so BGKP users get access to the same rooms that allow "Dewan Pastoral Paroki"
-        dewan: ['dewan pastoral paroki', 'dewan paroki pastoral', 'dewan paroki', 'dpp', 'parish council', 'parish_council', 'badan gereja katolik paroki', 'bgkp']
-      }
-
-      const canonicalizeCategory = (raw: string): string => {
-        const normalized = normalizeCategory(raw)
-        for (const [canonical, aliases] of Object.entries(categoryAliasMap)) {
-          if (aliases.some((alias) => normalized.includes(alias))) {
-            return canonical
-          }
-        }
-        return normalized
-      }
+      // Normalize + alias category names dari shared utility
 
       const userCategoryForRoom = String(user.user_category || '')
       const userCategoryCanonical = canonicalizeCategory(userCategoryForRoom)

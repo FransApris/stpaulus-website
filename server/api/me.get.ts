@@ -1,5 +1,6 @@
 import { getQuery } from '../database/db'
 import { requireAuth, getUserPermissions } from '../utils/auth'
+import { getCategoryDisplayName } from '../utils/category'
 
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
@@ -22,17 +23,8 @@ export default defineEventHandler(async (event) => {
 
   const permissions = await getUserPermissions(user)
 
-  const categoryMap: Record<string, string> = {
-    PARISH_COUNCIL: 'Dewan Pastoral Paroki',
-    CATEGORICAL_GROUP: 'Kategorial',
-    REGION: 'Wilayah',
-    COMMUNITY: 'Komunitas',
-    LINGKUNGAN: 'Lingkungan',
-    ADMIN: 'Admin'
-  }
-
   const rawCategory = String(user.user_category || '').trim()
-  const normalizedCategory = categoryMap[rawCategory.toUpperCase()] || rawCategory
+  const normalizedCategory = getCategoryDisplayName(rawCategory)
 
   return {
     ...user,
