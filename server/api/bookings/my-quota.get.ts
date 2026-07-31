@@ -6,7 +6,14 @@ import { requireAuth } from '~/server/utils/auth'
  * - PARISH_COUNCIL  = DPP (Dewan Pastoral Paroki)
  * - CATEGORICAL_GROUP = BGKP (Badan Gereja Katolik Paroki)
  */
-const UNLIMITED_CATEGORIES = ['PARISH_COUNCIL', 'CATEGORICAL_GROUP']
+const UNLIMITED_CATEGORIES = [
+  'PARISH_COUNCIL', 
+  'CATEGORICAL_GROUP', 
+  'DEWAN PASTORAL PAROKI', 
+  'BADAN GEREJA KATOLIK PAROKI',
+  'DPP',
+  'BGKP'
+]
 
 /** Batas pemesanan per bulan kalender bagi user biasa */
 const MAX_MONTHLY_BOOKINGS = 3

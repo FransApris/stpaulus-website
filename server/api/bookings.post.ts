@@ -2,7 +2,6 @@ import { runQuery, getQuery, getConnection } from '../database/db'
 import { requireAuth } from '../utils/auth'
 import { getHeader } from 'h3'
 import { sendBookingCreatedEmail, sendBookingApprovedEmail } from '../utils/email'
-import { canonicalizeCategory, normalizeCategory } from '../utils/category'
 
 const isMissingColumnError = (error: any, columnName: string) => {
   const message = String(error?.message || '')
@@ -112,7 +111,35 @@ export default defineEventHandler(async (event) => {
       console.log('[CREATE BOOKING] Parsed allowed categories:', allowedCategories)
       console.log('[CREATE BOOKING] User category:', user.user_category)
 
-      // Normalize + alias category names dari shared utility
+      // Normalize + alias category names so code-style and display-style values match.
+      const normalizeCategory = (cat: string): string => {
+        return String(cat || '')
+          .toLowerCase()
+          .trim()
+          .replace(/[_-]+/g, ' ')
+          .replace(/\s+/g, ' ')
+      }
+
+      const categoryAliasMap: Record<string, string[]> = {
+        wilayah: ['wilayah', 'region'],
+        lingkungan: ['lingkungan'],
+        kategorial: ['kategorial', 'categorical group', 'categorical_group'],
+        komunitas: ['komunitas', 'community'],
+        seksi: ['seksi', 'section'],
+        // BGKP (Badan Gereja Katolik Paroki) is grouped with DPP — both are parish-level bodies
+        // so BGKP users get access to the same rooms that allow "Dewan Pastoral Paroki"
+        dewan: ['dewan pastoral paroki', 'dewan paroki pastoral', 'dewan paroki', 'dpp', 'parish council', 'parish_council', 'badan gereja katolik paroki', 'bgkp']
+      }
+
+      const canonicalizeCategory = (raw: string): string => {
+        const normalized = normalizeCategory(raw)
+        for (const [canonical, aliases] of Object.entries(categoryAliasMap)) {
+          if (aliases.some((alias) => normalized.includes(alias))) {
+            return canonical
+          }
+        }
+        return normalized
+      }
 
       const userCategoryForRoom = String(user.user_category || '')
       const userCategoryCanonical = canonicalizeCategory(userCategoryForRoom)
@@ -155,27 +182,20 @@ export default defineEventHandler(async (event) => {
     }
 
     // ── Cek kuota pemesanan bulanan per user ──────────────────────────────────
-    // DPP (Dewan Pastoral Paroki) dan BGKP tidak terkena batas kuota bulanan.
-    // Kategori lain dibatasi MAX_MONTHLY_BOOKINGS per bulan kalender.
-    //
-    // Gunakan canonicalizeCategory() yang sama seperti pengecekan akses ruangan
-    // di atas — agar semua variasi "dpp", "BGKP", "Dewan Pastoral Paroki", dll.
-    // dikenali dengan benar sebagai kategori unlimited.
+    // DPP (PARISH_COUNCIL) dan BGKP (CATEGORICAL_GROUP) tidak terkena batas.
+    // User lain dibatasi MAX_MONTHLY_BOOKINGS per bulan kalender.
+    const UNLIMITED_CATEGORIES = [
+      'PARISH_COUNCIL', 
+      'CATEGORICAL_GROUP',
+      'DEWAN PASTORAL PAROKI',
+      'BADAN GEREJA KATOLIK PAROKI',
+      'DPP',
+      'BGKP'
+    ]
     const MAX_MONTHLY_BOOKINGS = 3
 
-    // Canonical 'dewan' mencakup: DPP, BGKP, parish_council, dan semua variasinya
-    // (lihat categoryAliasMap di atas — sudah mendaftarkan semua alias ini)
-    const UNLIMITED_CANONICAL_CATEGORIES = ['dewan']
-
-    const userCategoryRaw = String(user.user_category || '')
-    const userCategoryCanonicalForQuota = canonicalizeCategory(userCategoryRaw)
-    const isUnlimited = UNLIMITED_CANONICAL_CATEGORIES.includes(userCategoryCanonicalForQuota)
-
-    console.log('[CREATE BOOKING] Quota check:', {
-      userCategoryRaw,
-      userCategoryCanonicalForQuota,
-      isUnlimited
-    })
+    const userCategoryRaw = String(user.user_category || '').toUpperCase()
+    const isUnlimited = UNLIMITED_CATEGORIES.includes(userCategoryRaw)
 
     if (!isUnlimited) {
       // Hitung pemesanan bulan ini (UTC boundaries)
@@ -230,9 +250,8 @@ export default defineEventHandler(async (event) => {
 
       console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, estimatedNewOccurrences, max: MAX_MONTHLY_BOOKINGS })
     } else {
-      console.log('[CREATE BOOKING] Quota check skipped — unlimited category:', userCategoryRaw, '→', userCategoryCanonicalForQuota)
+      console.log('[CREATE BOOKING] Quota check skipped — unlimited category:', userCategoryRaw)
     }
-
 
     // Serialize booking creation per room to prevent race-condition double booking.
     const lockName = `booking_room_${room_id}`
