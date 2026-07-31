@@ -1,5 +1,6 @@
 // Global cache & retrieval helper dari server/utils/faqCache.ts
 import { fetchCachedFAQs, clearFAQCache } from '../../utils/faqCache'
+import { runQuery } from '../../database/db'
 import Groq from 'groq-sdk'
 
 // Re-export untuk kompatibilitas jika ada yang mengimpor dari file ini
@@ -173,7 +174,7 @@ ${context}`
         const startTime = Date.now()
 
         const completion = await groq.chat.completions.create({
-          model: 'llama3-8b-8192',
+          model: 'llama-3.1-8b-instant',
           messages: [
             { role: 'system', content: systemPrompt },
             { role: 'user', content: sanitizedMessage }
