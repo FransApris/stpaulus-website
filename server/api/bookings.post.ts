@@ -182,13 +182,27 @@ export default defineEventHandler(async (event) => {
     }
 
     // ── Cek kuota pemesanan bulanan per user ──────────────────────────────────
-    // DPP (PARISH_COUNCIL) dan BGKP (CATEGORICAL_GROUP) tidak terkena batas.
-    // User lain dibatasi MAX_MONTHLY_BOOKINGS per bulan kalender.
-    const UNLIMITED_CATEGORIES = ['PARISH_COUNCIL', 'CATEGORICAL_GROUP']
+    // DPP (Dewan Pastoral Paroki) dan BGKP tidak terkena batas kuota bulanan.
+    // Kategori lain dibatasi MAX_MONTHLY_BOOKINGS per bulan kalender.
+    //
+    // Gunakan canonicalizeCategory() yang sama seperti pengecekan akses ruangan
+    // di atas — agar semua variasi "dpp", "BGKP", "Dewan Pastoral Paroki", dll.
+    // dikenali dengan benar sebagai kategori unlimited.
     const MAX_MONTHLY_BOOKINGS = 3
 
-    const userCategoryRaw = String(user.user_category || '').toUpperCase()
-    const isUnlimited = UNLIMITED_CATEGORIES.includes(userCategoryRaw)
+    // Canonical 'dewan' mencakup: DPP, BGKP, parish_council, dan semua variasinya
+    // (lihat categoryAliasMap di atas — sudah mendaftarkan semua alias ini)
+    const UNLIMITED_CANONICAL_CATEGORIES = ['dewan']
+
+    const userCategoryRaw = String(user.user_category || '')
+    const userCategoryCanonicalForQuota = canonicalizeCategory(userCategoryRaw)
+    const isUnlimited = UNLIMITED_CANONICAL_CATEGORIES.includes(userCategoryCanonicalForQuota)
+
+    console.log('[CREATE BOOKING] Quota check:', {
+      userCategoryRaw,
+      userCategoryCanonicalForQuota,
+      isUnlimited
+    })
 
     if (!isUnlimited) {
       // Hitung pemesanan bulan ini (UTC boundaries)
@@ -243,8 +257,9 @@ export default defineEventHandler(async (event) => {
 
       console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, estimatedNewOccurrences, max: MAX_MONTHLY_BOOKINGS })
     } else {
-      console.log('[CREATE BOOKING] Quota check skipped — unlimited category:', userCategoryRaw)
+      console.log('[CREATE BOOKING] Quota check skipped — unlimited category:', userCategoryRaw, '→', userCategoryCanonicalForQuota)
     }
+
 
     // Serialize booking creation per room to prevent race-condition double booking.
     const lockName = `booking_room_${room_id}`
