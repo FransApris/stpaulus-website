@@ -121,6 +121,14 @@ const migrations = ref<Migration[]>([
     result: null
   },
   {
+    key: '046_insert_ketua_wilayah_faqs',
+    label: '046 - Tambah data FAQ Ketua Wilayah dan Lingkungan',
+    description: 'Memasukkan data daftar Ketua Wilayah dan seluruh daftar Ketua Lingkungan masing-masing ke dalam database Chatbot FAQ.',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
     key: '050_create_news_interactions',
     label: '050 - Buat tabel news_interactions & kolom interaksi berita',
     description: 'Membuat tabel news_interactions (untuk tracking views, likes, shares) dan menambah kolom image, likes_count, shares_count, views_count, is_bgkp, dll ke tabel news. WAJIB dijalankan untuk memperbaiki error 500 pada halaman detail berita.',
