@@ -129,6 +129,14 @@ const migrations = ref<Migration[]>([
     result: null
   },
   {
+    key: '047_insert_dpp_pengurus_faqs',
+    label: '047 - Tambah data FAQ Pengurus Inti dan Bidang DPP',
+    description: 'Memasukkan data daftar Pengurus Inti dan struktur pengurus Bidang-Bidang di DPP Paroki St. Paulus Juanda ke dalam database Chatbot FAQ.',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
     key: '050_create_news_interactions',
     label: '050 - Buat tabel news_interactions & kolom interaksi berita',
     description: 'Membuat tabel news_interactions (untuk tracking views, likes, shares) dan menambah kolom image, likes_count, shares_count, views_count, is_bgkp, dll ke tabel news. WAJIB dijalankan untuk memperbaiki error 500 pada halaman detail berita.',
