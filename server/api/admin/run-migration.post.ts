@@ -1,4 +1,4 @@
-// API: Run a pending migration SQL
+﻿// API: Run a pending migration SQL
 // Path: POST /api/admin/run-migration
 // Access: super_admin only
 // Body: { migration: '007_add_agenda_id_to_announcements' }
