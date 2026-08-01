@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="p-6 max-w-2xl mx-auto">
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Database Migrations</h1>
@@ -124,6 +124,14 @@ const migrations = ref<Migration[]>([
     key: '035_add_kontributor_role',
     label: '035 - Tambah Role Kontributor Berita',
     description: 'Menambahkan role kontributor_berita dan kolom author_id di tabel news untuk melacak penulis berita dari kontributor lingkungan/wilayah.',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
+    key: '036_add_user_kontributor_role',
+    label: '036 - Tambah Role User & Kontributor',
+    description: 'Menambahkan role user_kontributor untuk user yang bisa memesan ruangan dan juga portal kontributor.',
     running: false,
     done: false,
     result: null
