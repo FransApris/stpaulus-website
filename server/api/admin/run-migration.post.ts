@@ -151,14 +151,18 @@ const MIGRATIONS: Record<string, string[]> = {
     `UPDATE user_categories SET is_unlimited = TRUE, monthly_quota = 999 WHERE UPPER(name) IN ('PARISH_COUNCIL','CATEGORICAL_GROUP','DPP','BGKP','DEWAN PASTORAL PAROKI','BADAN GEREJA KATOLIK PAROKI')`
   ],
   '035_add_kontributor_role': [
-    `INSERT IGNORE INTO roles (name, display_name, description) VALUES ('kontributor_berita', 'Kontributor Berita', 'Bisa membuat draft berita tapi tidak bisa mempublikasikannya langsung')`,
+    `INSERT IGNORE INTO roles (id, name, display_name, description) VALUES (32, 'kontributor_berita', 'Kontributor Berita', 'Bisa membuat draft berita tapi tidak bisa mempublikasikannya langsung')`,
+    `INSERT IGNORE INTO user_roles (id, name, slug, description, level) VALUES (32, 'Kontributor Berita', 'kontributor-berita', 'Kontributor Berita', 12)`,
     // Safe: migration runner already catches 'Duplicate column name' and skips
     `ALTER TABLE news ADD COLUMN author_id INT NULL AFTER author`,
     // Safe: migration runner already catches 'Duplicate foreign key' and skips
     `ALTER TABLE news ADD CONSTRAINT fk_news_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL`
   ],
   '036_add_user_kontributor_role': [
-    `INSERT IGNORE INTO roles (name, display_name, description) VALUES ('user_kontributor', 'User & Kontributor Berita', 'Bisa memesan ruangan sekaligus membuat berita/artikel')`
+    `INSERT IGNORE INTO roles (id, name, display_name, description) VALUES (33, 'user_kontributor', 'User & Kontributor Berita', 'Bisa memesan ruangan sekaligus membuat berita/artikel')`,
+    `INSERT IGNORE INTO user_roles (id, name, slug, description, level) VALUES (33, 'User Kontributor', 'user-kontributor', 'User dan Kontributor', 13)`,
+    // Hotfix: Ensure 035 role is also in user_roles just in case it was missed (double foreign key constraint)
+    `INSERT IGNORE INTO user_roles (id, name, slug, description, level) VALUES (32, 'Kontributor Berita', 'kontributor-berita', 'Kontributor Berita', 12)`
   ]
 }
 
