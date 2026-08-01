@@ -137,6 +137,18 @@ const MIGRATIONS: Record<string, string[]> = {
 ('Siapa pengurus Bidang Sumber di DPP?', 'Berikut adalah susunan pengurus Bidang Sumber:\n- Ketua Bidang Sumber: Teresa Indah Rukmini\n- Sekretaris Bidang Sumber: Vincensius Heri Dwi Oprasetyo\n\nSeksi Katekese:\n- Laurensius Babo\n- Aloysius Tugiyo Pranoto\n\nSeksi Kerasulan Kitab Suci:\n- Vinansius Seran\n- Marissa Hosbach\n\nSeksi Liturgi:\n- Lukas Arisono\n- Endrika Luh Ayu Sulistyanti P.R.\n- Bernadeth Fransisca Hendrojono (Lektor)\n- Fransisca Desi Ika Dewanti (Pemazmur)\n- Agustina Wahyu Budiyati (Koor & Dirigen)\n- Giovannio Andrian Soares De Jesus (Misdinar)\n- F.X. Tri Widjayanto (Organis)\n- Maria Erlina Magdalena (Bunga Altar)', 'parish_info', '["bidang sumber", "seksi katekese", "kerasulan kitab suci", "seksi liturgi", "lektor", "pemazmur", "koor", "dirigen", "misdinar", "organis", "bunga altar"]', 1),
 ('Siapa pengurus Bidang Kerasulan Khusus di DPP?', 'Berikut adalah susunan pengurus Bidang Kerasulan Khusus:\n- Ketua Bidang Kerasulan Khusus: Andri Kurniawan\n- Sekretaris Bidang Kerasulan Khusus: Lusia Permata Sari Hartani\n\nKarya Misioner:\n- Ignatius Jaka Mulyana\n- Dominique Wahyu Pradana\n\nPendidikan:\n- Maria Magdalena Kariyatun\n- Elisabeth Budi Pihatningsih\n\nKomunikasi Sosial (Komsos):\n- Aurelia Margaretha Debby\n- Fransiscus Apris Dwiharta\n\nLainnya:\n- Ethaviana Suchnistyani', 'parish_info', '["bidang kerasulan khusus", "karya misioner", "pendidikan", "komunikasi sosial", "komsos"]', 1),
 ('Siapa pengurus Bidang Kerasulan Umum di DPP?', 'Berikut adalah susunan pengurus Bidang Kerasulan Umum:\n- Ketua Bidang Kerasulan Umum: Yosef Arpo Trilaksono\n- Sekretaris Bidang Kerasulan Umum: Norbertus Puger Luxeto\n\nPHUBB:\n- Matheus Wahyu Hardani\n- Andreas Bambang Eko Endryatno\n- Yohanes I Dewa Gde Dharmajaya\n\nKomisi PSE:\n- Cornelius Suminto Gondo\n- Agnes Dian Amurwani Tyas Utami', 'parish_info', '["bidang kerasulan umum", "phubb", "komisi pse", "pse"]', 1)`
+  ],
+  '034_add_quota_settings': [
+    // Add is_unlimited and monthly_quota columns to user_categories
+    `ALTER TABLE user_categories ADD COLUMN is_unlimited BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'TRUE = no monthly booking limit (DPP/BGKP)'`,
+    `ALTER TABLE user_categories ADD COLUMN monthly_quota INT NOT NULL DEFAULT 3 COMMENT 'Max bookings per calendar month'`,
+    `ALTER TABLE user_categories ADD INDEX idx_user_categories_is_unlimited (is_unlimited)`,
+    // Add per-user quota override columns to users
+    `ALTER TABLE users ADD COLUMN monthly_quota_override INT DEFAULT NULL COMMENT 'NULL = use category default. Set by Super Admin per user.'`,
+    `ALTER TABLE users ADD COLUMN quota_is_unlimited_override BOOLEAN DEFAULT NULL COMMENT 'NULL = use category default. Override unlimited status per user.'`,
+    `ALTER TABLE users ADD INDEX idx_users_quota_override (monthly_quota_override)`,
+    // Seed DPP and BGKP categories as unlimited
+    `UPDATE user_categories SET is_unlimited = TRUE, monthly_quota = 999 WHERE UPPER(name) IN ('PARISH_COUNCIL','CATEGORICAL_GROUP','DPP','BGKP','DEWAN PASTORAL PAROKI','BADAN GEREJA KATOLIK PAROKI')`
   ]
 }
 

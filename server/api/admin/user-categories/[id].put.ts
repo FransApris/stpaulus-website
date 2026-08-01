@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
 
   const categoryId = getRouterParam(event, 'id')
   const body = await readBody(event)
-  const { name, display_name, description, display_order, is_active } = body
+  const { name, display_name, description, display_order, is_active, is_unlimited, monthly_quota } = body
 
   // Validation
   if (!name || !display_name) {
@@ -43,12 +43,33 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const isUnlimitedValue = is_unlimited !== undefined ? Boolean(is_unlimited) : false
+
+  // Validate monthly_quota range (1–999, only relevant when not unlimited)
+  const quotaValue = monthly_quota !== undefined ? Number(monthly_quota) : 3
+  if (!isUnlimitedValue && (isNaN(quotaValue) || quotaValue < 1 || quotaValue > 999)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'monthly_quota harus antara 1 dan 999'
+    })
+  }
+
   // Update category
   await runQuery(`
     UPDATE user_categories
-    SET name = ?, display_name = ?, description = ?, display_order = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP
+    SET name = ?, display_name = ?, description = ?, display_order = ?, is_active = ?,
+        is_unlimited = ?, monthly_quota = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `, [name, display_name, description || '', display_order || 0, is_active !== undefined ? (is_active ? 1 : 0) : 1, categoryId])
+  `, [
+    name,
+    display_name,
+    description || '',
+    display_order || 0,
+    is_active !== undefined ? (is_active ? 1 : 0) : 1,
+    isUnlimitedValue ? 1 : 0,
+    isUnlimitedValue ? 999 : quotaValue,
+    categoryId
+  ])
 
   // Get updated category
   const categories = await allQuery('SELECT * FROM user_categories WHERE id = ?', [categoryId])

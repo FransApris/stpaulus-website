@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Add User Form -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -241,6 +241,7 @@
                     </button>
                   </th>
                   <th class="px-4 py-2 text-left font-semibold">Status</th>
+                  <th class="px-4 py-2 text-left font-semibold">Kuota</th>
                   <th class="px-4 py-2 text-left font-semibold">Aksi</th>
                 </tr>
               </thead>
@@ -266,6 +267,19 @@
                     <span v-else-if="user.account_status === 'PENDING'" class="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">Menunggu</span>
                     <span v-else class="inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Nonaktif</span>
                   </td>
+                  <!-- Kuota column: show override badge if set -->
+                  <td class="px-4 py-2">
+                    <template v-if="!user.role_id || user.role_id === 0">
+                      <span v-if="user.quota_is_unlimited_override === true || user.quota_is_unlimited_override === 1"
+                        class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800"
+                        title="Override: Unlimited">♾️ Unlimited*</span>
+                      <span v-else-if="user.monthly_quota_override !== null && user.monthly_quota_override !== undefined"
+                        class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800"
+                        :title="'Override: ' + user.monthly_quota_override + '/bln'">📅 {{ user.monthly_quota_override }}*</span>
+                      <span v-else class="text-xs text-gray-400">–</span>
+                    </template>
+                    <span v-else class="text-xs text-gray-300">–</span>
+                  </td>
                   <td class="px-4 py-2">
                     <!-- Approve / Reject buttons for PENDING users (only sekretariat & super admin) -->
                     <template v-if="user.account_status === 'PENDING' && (isSuperAdmin || isAdminSekretariat)">
@@ -279,6 +293,17 @@
                     <button @click="editUser(user)" title="Edit" class="text-blue-600 hover:text-blue-800 mr-2 p-1 inline-flex items-center">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                      </svg>
+                    </button>
+                    <!-- Quota Override Button: Super Admin + booking users only -->
+                    <button
+                      v-if="isSuperAdmin && (!user.role_id || user.role_id === 0)"
+                      @click="openQuotaModal(user)"
+                      title="Atur Kuota Individual"
+                      class="text-purple-600 hover:text-purple-800 mr-2 p-1 inline-flex items-center"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                       </svg>
                     </button>
                     <button v-if="isSuperAdmin" @click="openResetPasswordModal(user)" title="Reset Password" class="text-orange-600 hover:text-orange-800 mr-2 p-1 inline-flex items-center">
@@ -380,6 +405,67 @@
             </form>
             <p v-if="resetPasswordError" class="mt-2 text-red-600 text-sm">{{ resetPasswordError }}</p>
             <p v-if="resetPasswordMessage" class="mt-2 text-green-600 text-sm">{{ resetPasswordMessage }}</p>
+          </div>
+        </div>
+
+        <!-- Quota Override Modal (Super Admin only) -->
+        <div v-if="showQuotaModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold mb-1">⚙️ Override Kuota Individual</h3>
+            <p class="text-sm text-gray-500 mb-4">User: <strong>{{ quotaTargetUser?.full_name }}</strong> ({{ quotaTargetUser?.user_category || '–' }})</p>
+
+            <div class="space-y-4">
+              <!-- Unlimited toggle -->
+              <div class="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <input
+                  id="quota-unlimited"
+                  v-model="quotaForm.quota_is_unlimited_override"
+                  type="checkbox"
+                  class="mt-1 w-4 h-4 accent-purple-600"
+                />
+                <div>
+                  <label for="quota-unlimited" class="font-semibold text-purple-800 cursor-pointer">♾️ Unlimited untuk user ini</label>
+                  <p class="text-xs text-purple-600 mt-0.5">Abaikan batas kuota bulanan khusus untuk user ini</p>
+                </div>
+              </div>
+
+              <!-- Monthly quota input -->
+              <div :class="quotaForm.quota_is_unlimited_override ? 'opacity-40 pointer-events-none' : ''"
+                   class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">📅 Batas Khusus (pemesanan/bulan)</label>
+                <input
+                  v-model.number="quotaForm.monthly_quota_override"
+                  type="number"
+                  min="1"
+                  max="999"
+                  class="border border-blue-300 p-2 rounded w-full text-sm"
+                  :disabled="quotaForm.quota_is_unlimited_override"
+                  placeholder="Kosongkan untuk mengikuti default kategori"
+                />
+                <p class="text-xs text-blue-600 mt-1">Kosongkan untuk reset ke default kategori</p>
+              </div>
+
+              <!-- Info box -->
+              <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-600">
+                <p>* = override individu aktif. Kosongkan semua field dan simpan untuk reset ke default kategori.</p>
+              </div>
+            </div>
+
+            <p v-if="quotaModalError" class="mt-3 text-red-600 text-sm">{{ quotaModalError }}</p>
+            <p v-if="quotaModalMsg" class="mt-3 text-green-600 text-sm">{{ quotaModalMsg }}</p>
+
+            <div class="flex justify-end gap-3 mt-5">
+              <button
+                type="button"
+                @click="showQuotaModal = false; quotaModalError = ''; quotaModalMsg = ''"
+                class="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >Batal</button>
+              <button
+                @click="saveQuotaOverride"
+                :disabled="quotaModalLoading"
+                class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+              >{{ quotaModalLoading ? 'Menyimpan...' : 'Simpan' }}</button>
+            </div>
           </div>
         </div>
 
@@ -552,6 +638,64 @@ const isAdminSekretariat = computed(() => {
 
 // Clear all booking users
 const showClearModal = ref(false)
+
+// ── Quota Override Modal (Super Admin) ────────────────────────────────────────
+const showQuotaModal      = ref(false)
+const quotaTargetUser     = ref(null)
+const quotaModalLoading   = ref(false)
+const quotaModalError     = ref('')
+const quotaModalMsg       = ref('')
+const quotaForm           = ref({
+  monthly_quota_override       : null,
+  quota_is_unlimited_override  : false
+})
+
+const openQuotaModal = (user) => {
+  quotaTargetUser.value  = user
+  quotaModalError.value  = ''
+  quotaModalMsg.value    = ''
+  quotaForm.value = {
+    monthly_quota_override      : user.monthly_quota_override ?? null,
+    quota_is_unlimited_override : Boolean(user.quota_is_unlimited_override)
+  }
+  showQuotaModal.value = true
+}
+
+const saveQuotaOverride = async () => {
+  quotaModalLoading.value = true
+  quotaModalError.value   = ''
+  quotaModalMsg.value     = ''
+  try {
+    const token = sessionStorage.getItem('admin_access_token')
+    const payload = {
+      // If unlimited is checked, ignore quota number
+      quota_is_unlimited_override: quotaForm.value.quota_is_unlimited_override || null,
+      monthly_quota_override     : quotaForm.value.quota_is_unlimited_override
+        ? null
+        : (quotaForm.value.monthly_quota_override || null)
+    }
+    const result = await $fetch(`/api/admin/users/${quotaTargetUser.value.id}/quota`, {
+      method : 'PUT',
+      headers: { Authorization: `Bearer ${token}` },
+      body   : payload
+    })
+    // Update local list
+    const idx = users.value.findIndex(u => u.id === quotaTargetUser.value.id)
+    if (idx !== -1) {
+      users.value[idx] = {
+        ...users.value[idx],
+        monthly_quota_override      : payload.monthly_quota_override,
+        quota_is_unlimited_override : payload.quota_is_unlimited_override
+      }
+    }
+    quotaModalMsg.value = 'Kuota berhasil disimpan'
+    setTimeout(() => { showQuotaModal.value = false }, 1200)
+  } catch (err) {
+    quotaModalError.value = err?.data?.statusMessage || 'Gagal menyimpan kuota'
+  } finally {
+    quotaModalLoading.value = false
+  }
+}
 const clearLoading = ref(false)
 const clearConfirmText = ref('')
 

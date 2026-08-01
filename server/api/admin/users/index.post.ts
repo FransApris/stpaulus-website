@@ -1,5 +1,6 @@
 import { runQuery, getQuery, allQuery } from '../../../database/db'
 import { requireAuth, hashPassword } from '../../../utils/auth'
+import { isCategoryUnlimited } from '../../../utils/quota'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -55,6 +56,16 @@ export default defineEventHandler(async (event) => {
       throw createError({
         statusCode: 400,
         statusMessage: `Kategori pengguna tidak valid. Valid: ${validCategoryNames.join(', ')}`
+      })
+    }
+
+    // ── Security fix: only super_admin can assign unlimited-quota categories ──
+    const categoryIsUnlimited = await isCategoryUnlimited(user_category)
+    if (categoryIsUnlimited && admin.role_name !== 'super_admin') {
+      console.warn('[Create User] SECURITY: non-super-admin tried to assign unlimited category:', user_category)
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Hanya Super Admin yang dapat membuat akun dengan kategori kuota unlimited (DPP/BGKP)'
       })
     }
 

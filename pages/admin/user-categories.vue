@@ -30,6 +30,7 @@
               <th class="px-4 py-2 text-left">Deskripsi</th>
               <th class="px-4 py-2 text-left">Urutan</th>
               <th class="px-4 py-2 text-left">Status</th>
+              <th class="px-4 py-2 text-left">Kuota/Bulan</th>
               <th class="px-4 py-2 text-left">Aksi</th>
             </tr>
           </thead>
@@ -42,6 +43,18 @@
               <td class="px-4 py-2">
                 <span :class="category.is_active ? 'text-green-600' : 'text-red-600'">
                   {{ category.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                </span>
+              </td>
+              <!-- Kuota column -->
+              <td class="px-4 py-2">
+                <span
+                  v-if="category.is_unlimited"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800"
+                >
+                  ♾️ Unlimited
+                </span>
+                <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                  📅 {{ category.monthly_quota ?? 3 }}×/bln
                 </span>
               </td>
               <td class="px-4 py-2">
@@ -89,10 +102,46 @@
           <input v-model="editingCategory.display_name" type="text" placeholder="Nama Tampilan" class="border p-2 rounded" required />
           <input v-model="editingCategory.description" type="text" placeholder="Deskripsi" class="border p-2 rounded" />
           <input v-model.number="editingCategory.display_order" type="number" placeholder="Urutan Tampilan" class="border p-2 rounded" />
-          <div class="flex items-center md:col-span-2">
+          <div class="flex items-center">
             <input v-model="editingCategory.is_active" type="checkbox" class="mr-2" />
             <label>Aktif</label>
           </div>
+
+          <!-- Quota Settings -->
+          <div class="md:col-span-2 border-t pt-4">
+            <h4 class="font-medium text-gray-700 mb-3">⚙️ Pengaturan Kuota Pemesanan</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Unlimited Toggle -->
+              <div class="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <input
+                  id="edit-is-unlimited"
+                  v-model="editingCategory.is_unlimited"
+                  type="checkbox"
+                  class="mt-1 w-4 h-4 accent-purple-600"
+                />
+                <div>
+                  <label for="edit-is-unlimited" class="font-semibold text-purple-800 cursor-pointer">♾️ Kuota Unlimited</label>
+                  <p class="text-xs text-purple-600 mt-0.5">Kategori ini tidak dibatasi jumlah pemesanan per bulan (cocok untuk DPP / BGKP)</p>
+                </div>
+              </div>
+
+              <!-- Monthly Quota -->
+              <div :class="editingCategory.is_unlimited ? 'opacity-40 pointer-events-none' : ''"
+                   class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <label class="block text-sm font-semibold text-blue-800 mb-1">📅 Batas Pemesanan/Bulan</label>
+                <input
+                  v-model.number="editingCategory.monthly_quota"
+                  type="number"
+                  min="1"
+                  max="999"
+                  class="border border-blue-300 p-2 rounded w-full text-sm"
+                  :disabled="editingCategory.is_unlimited"
+                />
+                <p class="text-xs text-blue-600 mt-1">Jumlah booking maksimal per bulan kalender</p>
+              </div>
+            </div>
+          </div>
+
           <div class="md:col-span-2 flex justify-end space-x-2">
             <button type="button" @click="closeEditModal" class="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50">
               Batal
@@ -135,7 +184,9 @@ const editingCategory = ref({
   display_name: '',
   description: '',
   display_order: 0,
-  is_active: true
+  is_active: true,
+  is_unlimited: false,
+  monthly_quota: 3
 })
 const editLoading = ref(false)
 const editMessage = ref('')
@@ -171,9 +222,12 @@ const loadCategories = async () => {
       }
     })
     // Normalize is_active from MySQL TINYINT (1/0) to boolean
+    // Normalize is_unlimited from MySQL TINYINT (1/0) to boolean
     categories.value = (Array.isArray(data) ? data : []).map(cat => ({
       ...cat,
-      is_active: Boolean(cat.is_active)
+      is_active   : Boolean(cat.is_active),
+      is_unlimited: Boolean(cat.is_unlimited),
+      monthly_quota: Number(cat.monthly_quota ?? 3)
     }))
   } catch (err) {
     console.error('Failed to load categories', err)
@@ -235,8 +289,9 @@ const editCategory = (category) => {
   editingCategory.value = {
     ...category,
     // MySQL TINYINT returns 1/0 (integer), must convert to boolean
-    // so that v-model on checkbox works correctly
-    is_active: Boolean(category.is_active)
+    is_active   : Boolean(category.is_active),
+    is_unlimited: Boolean(category.is_unlimited),
+    monthly_quota: Number(category.monthly_quota ?? 3)
   }
   showEditModal.value = true
 }
@@ -323,7 +378,9 @@ const closeEditModal = () => {
     display_name: '',
     description: '',
     display_order: 0,
-    is_active: true
+    is_active: true,
+    is_unlimited: false,
+    monthly_quota: 3
   }
   editMessage.value = ''
   editError.value = ''

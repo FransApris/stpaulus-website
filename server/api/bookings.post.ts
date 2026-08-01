@@ -2,6 +2,7 @@ import { runQuery, getQuery, getConnection } from '../database/db'
 import { requireAuth } from '../utils/auth'
 import { getHeader } from 'h3'
 import { sendBookingCreatedEmail, sendBookingApprovedEmail } from '../utils/email'
+import { getUserQuotaInfo } from '../utils/quota'
 
 const isMissingColumnError = (error: any, columnName: string) => {
   const message = String(error?.message || '')
@@ -182,20 +183,11 @@ export default defineEventHandler(async (event) => {
     }
 
     // ── Cek kuota pemesanan bulanan per user ──────────────────────────────────
-    // DPP (PARISH_COUNCIL) dan BGKP (CATEGORICAL_GROUP) tidak terkena batas.
-    // User lain dibatasi MAX_MONTHLY_BOOKINGS per bulan kalender.
-    const UNLIMITED_CATEGORIES = [
-      'PARISH_COUNCIL', 
-      'CATEGORICAL_GROUP',
-      'DEWAN PASTORAL PAROKI',
-      'BADAN GEREJA KATOLIK PAROKI',
-      'DPP',
-      'BGKP'
-    ]
-    const MAX_MONTHLY_BOOKINGS = 3
-
-    const userCategoryRaw = String(user.user_category || '').toUpperCase()
-    const isUnlimited = UNLIMITED_CATEGORIES.includes(userCategoryRaw)
+    // Quota settings dibaca dari DB (user_categories + per-user override).
+    // DPP / BGKP (is_unlimited = TRUE) tidak terkena batas.
+    const quotaInfo = await getUserQuotaInfo(userId)
+    const isUnlimited = quotaInfo.isUnlimited
+    const MAX_MONTHLY_BOOKINGS = quotaInfo.maxMonthly
 
     if (!isUnlimited) {
       // Hitung pemesanan bulan ini (UTC boundaries)
@@ -248,9 +240,9 @@ export default defineEventHandler(async (event) => {
         })
       }
 
-      console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, estimatedNewOccurrences, max: MAX_MONTHLY_BOOKINGS })
+      console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, estimatedNewOccurrences, max: MAX_MONTHLY_BOOKINGS, source: quotaInfo.source })
     } else {
-      console.log('[CREATE BOOKING] Quota check skipped — unlimited category:', userCategoryRaw)
+      console.log('[CREATE BOOKING] Quota check skipped — unlimited category (source:', quotaInfo.source, ')')
     }
 
     // Serialize booking creation per room to prevent race-condition double booking.

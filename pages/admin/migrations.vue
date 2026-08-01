@@ -113,6 +113,14 @@ const migrations = ref<Migration[]>([
     result: null
   },
   {
+    key: '034_add_quota_settings',
+    label: '034 - Tambah pengaturan kuota pemesanan (DPP/BGKP & per kategori)',
+    description: 'Menambah kolom is_unlimited & monthly_quota ke tabel user_categories, serta kolom monthly_quota_override & quota_is_unlimited_override ke tabel users. Memungkinkan Super Admin mengatur batas kuota pemesanan per kategori maupun per user individual. DPP & BGKP otomatis di-set unlimited.',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
     key: '040_add_news_organization_filters',
     label: '040 - Tambah filter organisasi untuk berita (Wilayah, Lingkungan, Seksi, BGKP)',
     description: 'Membuat tabel seksi, news_wilayah_relations, news_lingkungan_relations, news_seksi_relations, dan menambah kolom is_bgkp di tabel news. Diperlukan untuk fitur kategorisasi dan filtering berita berdasarkan organisasi paroki.',
