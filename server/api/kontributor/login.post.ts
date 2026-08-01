@@ -4,7 +4,7 @@ import { isBlocked, recordFailedAttempt, resetAttempts } from '../../utils/rateL
 import { getRequestHeader } from 'h3'
 
 export default defineEventHandler(async (event) => {
-  const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0].trim()
+  const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0]?.trim()
     || getRequestHeader(event, 'x-real-ip')
     || 'unknown'
 
