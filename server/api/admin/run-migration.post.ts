@@ -1,4 +1,4 @@
-﻿// API: Run a pending migration SQL
+// API: Run a pending migration SQL
 // Path: POST /api/admin/run-migration
 // Access: super_admin only
 // Body: { migration: '007_add_agenda_id_to_announcements' }
@@ -156,6 +156,9 @@ const MIGRATIONS: Record<string, string[]> = {
     `ALTER TABLE news ADD COLUMN author_id INT NULL AFTER author`,
     // Safe: migration runner already catches 'Duplicate foreign key' and skips
     `ALTER TABLE news ADD CONSTRAINT fk_news_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL`
+  ],
+  '036_add_user_kontributor_role': [
+    `INSERT IGNORE INTO roles (name, display_name, description) VALUES ('user_kontributor', 'User & Kontributor Berita', 'Bisa memesan ruangan sekaligus membuat berita/artikel')`
   ]
 }
 
