@@ -709,7 +709,7 @@ const menuVisibility = computed(() => {
       chatbotFaqs: true,
       chatbotFaqCategories: true,
       // Kelompok 7: Pengaturan Sistem & Akses
-      users: false,
+      users: true,
       userCategories: false,
       heroThemes: true,
       footerSettings: true,

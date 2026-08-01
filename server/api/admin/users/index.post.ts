@@ -91,15 +91,19 @@ export default defineEventHandler(async (event) => {
 
         console.log('[Create User] Role record found:', roleRecord)
 
-        if (roleRecord?.id) {
-          // Check if only super_admin can create admin roles
+          // Check permissions for role assignment
           console.log('[Create User] Current admin role:', admin.role_name)
           if (admin.role_name !== 'super_admin') {
-            console.log('[Create User] Permission denied - not super admin')
-            throw createError({
-              statusCode: 403,
-              statusMessage: 'Hanya super admin yang dapat membuat akun admin'
-            })
+            // Non-super-admins can only create specific roles
+            if (admin.role_name === 'admin_komsos' && normalizedRole === 'kontributor_berita') {
+              // Allow admin_komsos to create kontributor_berita
+            } else {
+              console.log('[Create User] Permission denied - not super admin and not allowed role')
+              throw createError({
+                statusCode: 403,
+                statusMessage: 'Anda tidak memiliki izin untuk membuat akun dengan role ini'
+              })
+            }
           }
           roleId = roleRecord.id
           roleString = roleRecord.name || normalizedRole
@@ -108,7 +112,7 @@ export default defineEventHandler(async (event) => {
           console.log('[Create User] Invalid role!')
           throw createError({
             statusCode: 400,
-            statusMessage: `Role tidak valid: ${role}. Valid roles: user, super_admin, admin_komsos, admin_sekretariat`
+            statusMessage: `Role tidak valid: ${role}. Valid roles: user, super_admin, admin_komsos, admin_sekretariat, kontributor_berita`
           })
         }
       }

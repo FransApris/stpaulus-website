@@ -122,6 +122,15 @@ export default defineEventHandler(async (event) => {
       const roleRecord = await getQuery('SELECT id, name FROM roles WHERE LOWER(name) = ?', [normalizedRole]) as { id?: number; name?: string } | undefined
       
       if (roleRecord?.id) {
+        // Also check if admin is allowed to assign this role
+        const auth = event.context.auth
+        const isAdminKomsos = auth?.permissions?.includes('manage_users_komsos_sekretariat') && !auth?.permissions?.includes('manage_users') // Heuristic for non-superadmin
+        // If they are trying to assign super_admin and they are not super_admin, that's already prevented in the first place by the target user check. But what if they assign it to a normal user?
+        // Let's add a basic check:
+        if (roleRecord.name === 'super_admin' && !auth?.permissions?.includes('manage_users')) {
+           throw createError({ statusCode: 403, statusMessage: 'Hanya super admin yang dapat memberikan akses super admin' })
+        }
+        
         updateData.role_id = roleRecord.id
         // Also update legacy role field for backward compatibility
         updateData.role = roleRecord.name || normalizedRole
@@ -129,7 +138,7 @@ export default defineEventHandler(async (event) => {
         console.error('[Update User] Invalid role requested:', normalizedRole)
         throw createError({
           statusCode: 400,
-          statusMessage: `Role tidak valid: ${role}. Role yang valid: user, super_admin, admin_komsos, admin_sekretariat`
+          statusMessage: `Role tidak valid: ${role}. Role yang valid: user, super_admin, admin_komsos, admin_sekretariat, kontributor_berita`
         })
       }
     }
