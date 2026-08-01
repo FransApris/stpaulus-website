@@ -93,20 +93,27 @@ export default defineEventHandler(async (event) => {
   // Prepare update data
   const updateData: any = {
     username,
-    email,
+    email: email !== undefined ? email : null,
     full_name,
-    contact_phone: contact_phone || null,
-    user_category: user_category || null,
-    unit_name: unit_name || null,
+    contact_phone: contact_phone !== undefined ? contact_phone : null,
+    user_category: user_category !== undefined ? user_category : null,
+    unit_name: unit_name !== undefined ? unit_name : null,
     updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
   }
+
+  // Remove keys with undefined values (if any slipped through)
+  Object.keys(updateData).forEach(key => {
+    if (updateData[key] === undefined) {
+      updateData[key] = null
+    }
+  })
 
   // Handle role updates
   if (role) {
     const normalizedRoleCheck = role.toLowerCase()
     // Admin Komsos hanya boleh mengubah role antara 'user' <-> 'kontributor_berita'
     const isAdminKomsos = currentUserRole?.role_name === 'admin_komsos'
-    const isKomsosSafeRoleChange = ['user', 'kontributor_berita'].includes(normalizedRoleCheck)
+    const isKomsosSafeRoleChange = ['user', 'kontributor_berita', 'user_kontributor'].includes(normalizedRoleCheck)
     if (currentUserRole?.role_name !== 'super_admin') {
       if (!isAdminKomsos || !isKomsosSafeRoleChange) {
         throw createError({
