@@ -122,13 +122,14 @@ export default defineEventHandler(async (event) => {
 
     // Admin must have role_id (assigned to roles table)
     // Users with only 'user' role (role_id = NULL or 0) cannot access admin panel
-    if (!userDetails || !userDetails.role_id || userDetails.role_id === 0) {
-      console.log('[Admin Login] Access denied - User is not an admin:', username)
+    // Kontributor Berita is also blocked from Admin CMS (they must use the Kontributor portal)
+    if (!userDetails || !userDetails.role_id || userDetails.role_id === 0 || userDetails.role === 'kontributor_berita') {
+      console.log('[Admin Login] Access denied - User is not an admin or is a contributor:', username)
       logger.logUnauthorizedAccess('/api/admin/login', ip, result.user.id)
-      logger.security('Non-admin user attempted admin login', { username, ip, userId: result.user.id })
+      logger.security('Non-admin or contributor user attempted admin login', { username, ip, userId: result.user.id })
       throw createError({
         statusCode: 403,
-        statusMessage: 'Akses ditolak. Anda tidak memiliki akses ke panel admin. Silakan gunakan halaman pemesanan ruangan.'
+        statusMessage: 'Akses ditolak. Anda tidak memiliki akses ke panel admin. Jika Anda Kontributor Berita, silakan login di /kontributor/login.'
       })
     }
 

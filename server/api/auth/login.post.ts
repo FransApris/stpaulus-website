@@ -39,7 +39,8 @@ export default defineEventHandler(async (event) => {
 
     // Booking users should have role_id = NULL or 0
     // Users with admin roles (role_id > 0) cannot login to booking system
-    if (userDetails && userDetails.role_id && userDetails.role_id > 0) {
+    // Pengecualian: kontributor_berita diizinkan login ke portal booking (user sekaligus kontributor)
+    if (userDetails && userDetails.role_id && userDetails.role_id > 0 && userDetails.role !== 'kontributor_berita') {
       console.log('[User Login] Access denied - User is an admin:', username)
       throw createError({
         statusCode: 403,
