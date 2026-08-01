@@ -91,6 +91,7 @@ export default defineEventHandler(async (event) => {
 
         console.log('[Create User] Role record found:', roleRecord)
 
+        if (roleRecord?.id) {
           // Check permissions for role assignment
           console.log('[Create User] Current admin role:', admin.role_name)
           if (admin.role_name !== 'super_admin') {

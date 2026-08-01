@@ -1,4 +1,5 @@
 import { verifyToken, getUserPermissions } from '~/server/utils/auth'
+import { getQuery as dbGetQuery } from '~/server/database/db'
 
 export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, 'authorization')
@@ -30,8 +31,16 @@ export default defineEventHandler(async (event) => {
       role_id = 2
     } else if (payload.role === 'admin_sekretariat') {
       role_id = 3
+    } else if (payload.role === 'kontributor_berita') {
+      // Lookup from DB since role_id may vary
+      try {
+        const roleRow = await dbGetQuery('SELECT id FROM roles WHERE name = ?', ['kontributor_berita']) as { id?: number } | undefined
+        role_id = roleRow?.id || null
+      } catch {
+        role_id = null
+      }
     }
-    
+
     const permissions = await getUserPermissions({ id: payload.userId, role_id: role_id })
     
     console.log('[Admin ME] Fetched permissions for role_id:', role_id, 'count:', permissions.length)

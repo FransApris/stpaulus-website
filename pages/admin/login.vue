@@ -228,11 +228,7 @@ const handleLogin = async () => {
     const auth = useAuth()
     await auth.fetchUserData(true)
 
-    if (auth.user.value?.role === 'kontributor_berita') {
-      await navigateTo('/kontributor')
-    } else {
-      await navigateTo('/admin/dashboard')
-    }
+    await navigateTo('/admin/dashboard')
   } catch (err) {
     // Nuxt $fetch membungkus H3Error dalam err.data:
     //   err.data?.statusMessage → pesan dari createError({ statusMessage: '...' })
