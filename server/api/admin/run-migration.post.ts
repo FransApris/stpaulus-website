@@ -149,6 +149,13 @@ const MIGRATIONS: Record<string, string[]> = {
     `ALTER TABLE users ADD INDEX idx_users_quota_override (monthly_quota_override)`,
     // Seed DPP and BGKP categories as unlimited
     `UPDATE user_categories SET is_unlimited = TRUE, monthly_quota = 999 WHERE UPPER(name) IN ('PARISH_COUNCIL','CATEGORICAL_GROUP','DPP','BGKP','DEWAN PASTORAL PAROKI','BADAN GEREJA KATOLIK PAROKI')`
+  ],
+  '035_add_kontributor_role': [
+    `INSERT IGNORE INTO roles (name, display_name, description) VALUES ('kontributor_berita', 'Kontributor Berita', 'Bisa membuat draft berita tapi tidak bisa mempublikasikannya langsung')`,
+    // Safe: migration runner already catches 'Duplicate column name' and skips
+    `ALTER TABLE news ADD COLUMN author_id INT NULL AFTER author`,
+    // Safe: migration runner already catches 'Duplicate foreign key' and skips
+    `ALTER TABLE news ADD CONSTRAINT fk_news_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL`
   ]
 }
 
