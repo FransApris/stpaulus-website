@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6">
     <!-- Add User Form -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -77,6 +77,34 @@
               </div>
             </div>
           </div>
+
+          <!-- Opsi Kontributor Berita: Terlihat oleh Admin Komsos DAN Super Admin -->
+          <div
+            v-if="isSuperAdmin || isAdminKomsos"
+            @click="newUser.role = 'kontributor_berita'"
+            :class="[
+              'mt-3 p-4 border-2 rounded-lg cursor-pointer transition-all',
+              newUser.role === 'kontributor_berita'
+                ? 'border-red-500 bg-red-50'
+                : 'border-gray-300 hover:border-red-300'
+            ]"
+          >
+            <div class="flex items-center">
+              <input
+                type="radio"
+                v-model="newUser.role"
+                value="kontributor_berita"
+                class="mr-3"
+              />
+              <div>
+                <div class="font-semibold text-gray-900">Kontributor Berita</div>
+                <div class="text-xs text-gray-600 mt-1">
+                  Bisa menulis berita/kegiatan paroki via Portal Kontributor.<br/>
+                  Tulisan harus disetujui Admin Komsos sebelum tayang di website.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Admin Role Selection (only if admin type selected) -->
@@ -102,7 +130,7 @@
           </option>
         </select>
         <button type="submit" :disabled="loading" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 md:col-span-2">
-          {{ loading ? 'Membuat...' : (newUser.role === 'admin' ? '🔐 Buat Admin' : '👤 Buat User') }}
+          {{ loading ? 'Membuat...' : (newUser.role === 'admin' ? '🔐 Buat Admin' : newUser.role === 'kontributor_berita' ? '✍️ Buat Kontributor' : '👤 Buat User') }}
         </button>
       </form>
       <p v-if="message" class="mt-2 text-green-600">{{ message }}</p>
@@ -631,6 +659,11 @@ const isSuperAdmin = computed(() => {
   return currentUser.value?.role_name === 'super_admin'
 })
 
+// Check if current user is admin komsos
+const isAdminKomsos = computed(() => {
+  return currentUser.value?.role_name === 'admin_komsos'
+})
+
 // Check if current user is admin sekretariat (can approve/reject)
 const isAdminSekretariat = computed(() => {
   return currentUser.value?.role_name === 'admin_sekretariat'
@@ -869,6 +902,8 @@ const createUser = async () => {
   let roleToSend = 'user'
   if (userData.role === 'admin' && userData.adminRole) {
     roleToSend = userData.adminRole // super_admin, admin_komsos, or admin_sekretariat
+  } else if (userData.role === 'kontributor_berita') {
+    roleToSend = 'kontributor_berita'
   }
   
   // Prepare clean data for API
