@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Add User Form -->
     <div class="bg-white p-6 rounded-lg shadow">
@@ -561,7 +561,8 @@
                 <!-- If Super Admin or Admin Komsos, allow changing role -->
                 <select v-if="isSuperAdmin || isAdminKomsos" v-model="editingUser.role" class="border p-2 rounded w-full bg-white">
                   <option value="user">👤 User (Booking)</option>
-                  <option value="kontributor_berita">✍️ Kontributor Berita</option>
+                  <option value="kontributor_berita">✍️ Kontributor Berita (Saja)</option>
+                  <option value="user_kontributor">✍️+👤 User & Kontributor Berita</option>
                   <!-- Only Super Admin can assign admin roles -->
                   <option v-if="isSuperAdmin" value="admin_komsos">🔐 Admin Komsos</option>
                   <option v-if="isSuperAdmin" value="admin_sekretariat">🔐 Admin Sekretariat</option>
