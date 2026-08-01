@@ -63,19 +63,27 @@ export default defineEventHandler(async (event) => {
     }
 
     // --- EXCLUSIVE CHECK: only kontributor_berita can use this login endpoint ---
-    // Get the role name
     const roleInfo = await getQuery(
       'SELECT r.name FROM roles r JOIN users u ON u.role_id = r.id WHERE u.id = ?',
       [result.user.id]
     ) as { name?: string } | undefined
 
-    if (!roleInfo || roleInfo.name !== 'kontributor_berita') {
-      // This login page is ONLY for contributors
-      // Admins should use /admin/login
+    if (!roleInfo || !roleInfo.name) {
+      // Role tidak ditemukan: kemungkinan migration 035 belum dijalankan,
+      // atau akun ini adalah user biasa (role_id = NULL)
       recordFailedAttempt(ip, username)
       throw createError({
         statusCode: 403,
-        statusMessage: 'Akun ini tidak memiliki akses ke Portal Kontributor. Admin silakan gunakan halaman login CMS Admin.'
+        statusMessage: 'Akun ini belum memiliki role Kontributor Berita. Pastikan Admin sudah menjalankan Migration 035 dan membuat akun dengan role "Kontributor Berita".'
+      })
+    }
+
+    if (roleInfo.name !== 'kontributor_berita') {
+      // Akun ditemukan tapi bukan kontributor (admin mencoba masuk ke portal)
+      recordFailedAttempt(ip, username)
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Akun ini adalah akun Admin, bukan Kontributor Berita. Silakan login melalui halaman Admin CMS di /admin/login.'
       })
     }
 
