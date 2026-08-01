@@ -554,20 +554,29 @@
                 </option>
               </select>
               
-              <!-- Info about user type (read-only) -->
+              <!-- Role / Tipe Pengguna -->
               <div class="md:col-span-2 p-3 bg-gray-50 border border-gray-200 rounded">
-                <p class="text-sm text-gray-700">
-                  <strong>Tipe Pengguna:</strong> 
-                  <span v-if="editingUser.role_id && editingUser.role_id > 0" class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs ml-2">
-                    🔐 Admin
-                  </span>
-                  <span v-else class="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs ml-2">
-                    👤 User (Booking)
-                  </span>
-                </p>
-                <p class="text-xs text-gray-500 mt-1">
-                  ℹ️ Tipe pengguna tidak dapat diubah melalui panel admin.
-                </p>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Pengguna (Role)</label>
+                
+                <!-- If Super Admin or Admin Komsos, allow changing role -->
+                <select v-if="isSuperAdmin || isAdminKomsos" v-model="editingUser.role" class="border p-2 rounded w-full bg-white">
+                  <option value="user">👤 User (Booking)</option>
+                  <option value="kontributor_berita">✍️ Kontributor Berita</option>
+                  <!-- Only Super Admin can assign admin roles -->
+                  <option v-if="isSuperAdmin" value="admin_komsos">🔐 Admin Komsos</option>
+                  <option v-if="isSuperAdmin" value="admin_sekretariat">🔐 Admin Sekretariat</option>
+                  <option v-if="isSuperAdmin" value="super_admin">👑 Super Admin</option>
+                </select>
+                
+                <!-- Fallback static display for others -->
+                <div v-else>
+                  <p class="text-sm text-gray-700">
+                    <span v-if="editingUser.role === 'kontributor_berita'" class="inline-block px-2 py-1 bg-red-100 text-red-800 rounded text-xs font-medium">✍️ Kontributor Berita</span>
+                    <span v-else-if="editingUser.role_id && editingUser.role_id > 0" class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium">🔐 Admin ({{ editingUser.role }})</span>
+                    <span v-else class="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">👤 User (Booking)</span>
+                  </p>
+                  <p class="text-xs text-gray-500 mt-2">ℹ️ Anda tidak memiliki izin untuk mengubah role pengguna ini.</p>
+                </div>
               </div>
               
               <div class="md:col-span-2 flex justify-end space-x-2">
@@ -1085,10 +1094,10 @@ const updateUser = async () => {
     email: userData.email,
     full_name: userData.full_name,
     contact_phone: userData.contact_phone,
-    user_category: userData.user_category
+    user_category: userData.user_category,
+    role: userData.role
   }
   
-  // Role tidak diubah via form edit (tidak ada dropdown role)
   // Gunakan role_name dari RBAC jika ada agar tidak kirim nilai legacy 'admin'
   
   editLoading.value = true
