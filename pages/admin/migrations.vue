@@ -121,6 +121,14 @@ const migrations = ref<Migration[]>([
     result: null
   },
   {
+    key: '035_add_kontributor_role',
+    label: '035 - Tambah Role Kontributor Berita',
+    description: 'Menambahkan role kontributor_berita dan kolom author_id di tabel news untuk melacak penulis berita dari kontributor lingkungan/wilayah.',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
     key: '040_add_news_organization_filters',
     label: '040 - Tambah filter organisasi untuk berita (Wilayah, Lingkungan, Seksi, BGKP)',
     description: 'Membuat tabel seksi, news_wilayah_relations, news_lingkungan_relations, news_seksi_relations, dan menambah kolom is_bgkp di tabel news. Diperlukan untuk fitur kategorisasi dan filtering berita berdasarkan organisasi paroki.',
