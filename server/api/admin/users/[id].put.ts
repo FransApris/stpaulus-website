@@ -101,13 +101,19 @@ export default defineEventHandler(async (event) => {
     updated_at: new Date().toISOString().slice(0, 19).replace('T', ' ')
   }
 
-  // Handle role updates - only super_admin can change roles
+  // Handle role updates
   if (role) {
+    const normalizedRoleCheck = role.toLowerCase()
+    // Admin Komsos hanya boleh mengubah role antara 'user' <-> 'kontributor_berita'
+    const isAdminKomsos = currentUserRole?.role_name === 'admin_komsos'
+    const isKomsosSafeRoleChange = ['user', 'kontributor_berita'].includes(normalizedRoleCheck)
     if (currentUserRole?.role_name !== 'super_admin') {
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'Hanya super admin yang dapat mengubah role pengguna'
-      })
+      if (!isAdminKomsos || !isKomsosSafeRoleChange) {
+        throw createError({
+          statusCode: 403,
+          statusMessage: 'Anda tidak memiliki izin untuk mengubah role pengguna ini'
+        })
+      }
     }
     
     // Normalize role to lowercase for validation
@@ -122,13 +128,10 @@ export default defineEventHandler(async (event) => {
       const roleRecord = await getQuery('SELECT id, name FROM roles WHERE LOWER(name) = ?', [normalizedRole]) as { id?: number; name?: string } | undefined
       
       if (roleRecord?.id) {
-        // Also check if admin is allowed to assign this role
+        // Blokir siapapun selain super_admin dari memberikan role super_admin
         const auth = event.context.auth
-        const isAdminKomsos = auth?.permissions?.includes('manage_users_komsos_sekretariat') && !auth?.permissions?.includes('manage_users') // Heuristic for non-superadmin
-        // If they are trying to assign super_admin and they are not super_admin, that's already prevented in the first place by the target user check. But what if they assign it to a normal user?
-        // Let's add a basic check:
         if (roleRecord.name === 'super_admin' && !auth?.permissions?.includes('manage_users')) {
-           throw createError({ statusCode: 403, statusMessage: 'Hanya super admin yang dapat memberikan akses super admin' })
+          throw createError({ statusCode: 403, statusMessage: 'Hanya super admin yang dapat memberikan akses super admin' })
         }
         
         updateData.role_id = roleRecord.id

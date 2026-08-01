@@ -72,6 +72,12 @@
         <div v-if="errorMsg" class="p-4 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
           {{ errorMsg }}
         </div>
+        <div v-if="successMsg" class="p-4 rounded-lg bg-green-50 border border-green-200 text-sm text-green-700 flex items-center gap-2">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          {{ successMsg }}
+        </div>
       </form>
     </div>
   </div>
@@ -104,6 +110,7 @@ const form = ref({
 
 const submitting = ref(false)
 const errorMsg = ref('')
+const successMsg = ref('')
 
 const submitNews = async () => {
   if (!form.value.title || !form.value.content) {
@@ -123,8 +130,9 @@ const submitNews = async () => {
       body: { ...form.value }
     })
 
-    alert('Berita berhasil dikirim dan menunggu tinjauan Komsos.')
-    navigateTo('/kontributor')
+    successMsg.value = 'Berita berhasil dikirim! Menunggu tinjauan Admin Komsos.'
+    form.value = { title: '', content: '', image: '', when_date: '', where_location: '' }
+    setTimeout(() => navigateTo('/kontributor'), 2000)
   } catch (err: any) {
     errorMsg.value = err.data?.statusMessage || err.message || 'Gagal mengirim berita.'
   } finally {
