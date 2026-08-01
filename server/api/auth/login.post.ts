@@ -1,4 +1,4 @@
-import { authenticateUser, getUserPermissions } from '../../utils/auth'
+﻿import { authenticateUser, getUserPermissions } from '../../utils/auth'
 import { getQuery } from '../../database/db'
 
 export default defineEventHandler(async (event) => {

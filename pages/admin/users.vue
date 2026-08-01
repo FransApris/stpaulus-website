@@ -911,8 +911,8 @@ const createUser = async () => {
   let roleToSend = 'user'
   if (userData.role === 'admin' && userData.adminRole) {
     roleToSend = userData.adminRole // super_admin, admin_komsos, or admin_sekretariat
-  } else if (userData.role === 'kontributor_berita') {
-    roleToSend = 'kontributor_berita'
+  } else if (userData.role === 'kontributor_berita' || userData.role === 'user_kontributor') {
+    roleToSend = userData.role
   }
   
   // Prepare clean data for API

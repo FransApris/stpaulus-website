@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="p-6 max-w-2xl mx-auto">
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Database Migrations</h1>

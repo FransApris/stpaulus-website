@@ -1,4 +1,4 @@
-// middleware/kontributor-auth.ts
+﻿// middleware/kontributor-auth.ts
 // Auth guard khusus untuk rute Portal Kontributor.
 // Memastikan user sudah login DAN memiliki role yang diizinkan.
 // Jika tidak ada token, redirect ke halaman login kontributor (bukan admin).
@@ -24,7 +24,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     }
 
     // Kontributor dan Super Admin diizinkan masuk portal
-    const allowedRoles = ['kontributor_berita', 'super_admin']
+    const allowedRoles = ['kontributor_berita', 'user_kontributor', 'super_admin']
     if (!allowedRoles.includes(role)) {
       // Admin roles lain (admin_komsos, dll) harus ke admin dashboard
       return navigateTo('/admin/dashboard')

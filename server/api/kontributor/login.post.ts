@@ -1,4 +1,4 @@
-import { authenticateUser } from '../../utils/auth'
+﻿import { authenticateUser } from '../../utils/auth'
 import { getQuery } from '../../database/db'
 import { isBlocked, recordFailedAttempt, resetAttempts } from '../../utils/rateLimiter'
 import { getRequestHeader } from 'h3'
@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    if (roleInfo.name !== 'kontributor_berita') {
+    if (roleInfo.name !== 'kontributor_berita' && roleInfo.name !== 'user_kontributor') {
       // Akun ditemukan tapi bukan kontributor (admin mencoba masuk ke portal)
       recordFailedAttempt(ip, username)
       throw createError({
