@@ -78,13 +78,21 @@ export default defineEventHandler(async (event) => {
     })
     console.log('[CREATE BOOKING] Room allowed_categories:', room.allowed_categories)
 
-    // Admin users should NOT use public booking - they manage bookings via admin panel
-    const isAdmin = user.role === 'super_admin' ||
-      user.role === 'admin_komsos' ||
-      user.role === 'admin_sekretariat' ||
-      ((user.role_id || 0) > 0)
+    // Admin users should NOT use public booking — they manage bookings via admin panel.
+    //
+    // Pendekatan: cek role_id dari DB, bukan nama role (future-proof).
+    // Semua akun admin (super_admin, admin_komsos, admin_sekretariat, dll)
+    // SELALU punya role_id > 0 (FK ke tabel roles).
+    // Booking user biasa punya role_id = NULL.
+    //
+    // Ini lebih aman dari whitelist nama role karena:
+    //   - Tidak perlu diupdate saat ada role admin baru
+    //   - Tidak bisa di-bypass dengan mengirim { "role": "user" } di body
+    const isAdminAccount = user.role_id !== null
+      && user.role_id !== undefined
+      && Number(user.role_id) > 0
 
-    if (isAdmin) {
+    if (isAdminAccount) {
       throw createError({
         statusCode: 403,
         statusMessage: 'Admin tidak dapat membuat booking melalui halaman public. Gunakan Admin Panel untuk mengelola booking.'

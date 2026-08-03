@@ -32,6 +32,25 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     // So calling it here is always safe; it only hits the network when necessary.
     await auth.fetchUserData()
 
+    const userRole = auth.user.value?.role ?? ''
+
+    // ── Blokir role yang sama sekali tidak boleh masuk admin panel ───────────
+    // Ini mencegah kontributor dan user biasa mengakses /admin/* secara visual
+    // bahkan ketika route tersebut tidak memiliki required permissions (kosong).
+    const NON_ADMIN_ROLES = new Set([
+      'kontributor_berita',
+      'user_kontributor',
+      'user',
+      'booking_user',
+      ''
+    ])
+
+    if (!userRole || NON_ADMIN_ROLES.has(userRole)) {
+      console.log(`[AUTH DENY] ❌ Role '${userRole}' tidak diizinkan mengakses admin panel`)
+      // Arahkan ke homepage publik, bukan ke login (mereka punya token tapi role salah)
+      return navigateTo('/')
+    }
+
     const userPermissions = auth.permissions.value
 
     // ── Route → Permission mapping ────────────────────────────────────────────
