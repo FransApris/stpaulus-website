@@ -59,10 +59,19 @@ export default defineEventHandler(async (event) => {
     }
 
     // ── Cek user yang akan diupdate ──────────────────────────────────────────
-    const existingUser = await getQuery(
-      'SELECT id, username, email, role_id FROM users WHERE id = ?',
-      [targetUserId]
-    ) as { id: number; username: string; email: string | null; role_id: number | null } | undefined
+    const existingUser = await getQuery(`
+      SELECT u.id, u.username, u.email, u.role_id,
+             COALESCE(r.name, 'user') AS role_name
+      FROM users u
+      LEFT JOIN roles r ON u.role_id = r.id
+      WHERE u.id = ?
+    `, [targetUserId]) as {
+      id: number
+      username: string
+      email: string | null
+      role_id: number | null
+      role_name: string
+    } | undefined
 
     if (!existingUser) {
       throw createError({ statusCode: 404, statusMessage: 'Pengguna tidak ditemukan' })
@@ -161,41 +170,77 @@ export default defineEventHandler(async (event) => {
       const isAdminKomsos = adminUser.role_name === 'admin_komsos'
       const komsosSafeRoles = ['user', 'kontributor_berita', 'user_kontributor']
 
+      // Edge case fix: jika admin tidak punya hak ubah role TAPI role yang dikirim
+      // sama persis dengan role user saat ini → skip silently (tidak perlu diubah).
+      // Ini mencegah admin_sekretariat mendapat 403 palsu saat edit profil biasa
+      // dan frontend-nya selalu menyertakan field 'role' dalam payload.
+      const existingRoleName = existingUser.role_name ?? 'user'
+      const roleIsUnchanged = normalizedRole === existingRoleName.toLowerCase()
+
       if (!isSuperAdmin) {
         if (!isAdminKomsos || !komsosSafeRoles.includes(normalizedRole)) {
-          throw createError({
-            statusCode: 403,
-            statusMessage: 'Anda tidak memiliki izin untuk mengubah role pengguna ini'
-          })
-        }
-      }
+          if (roleIsUnchanged) {
+            // Role sama, tidak perlu diubah — lewati blok ini tanpa error
+            console.log('[Update User] Role unchanged by non-privileged admin — skipping role update')
+          } else {
+            throw createError({
+              statusCode: 403,
+              statusMessage: 'Anda tidak memiliki izin untuk mengubah role pengguna ini'
+            })
+          }
+        } else {
+          // admin_komsos dengan safe role — proses perubahan
+          if (normalizedRole === 'user') {
+            updateData.role_id = null
+            updateData.role = 'user'
+          } else {
+            const roleRecord = await getQuery(
+              'SELECT id, name FROM roles WHERE LOWER(name) = ?',
+              [normalizedRole]
+            ) as { id?: number; name?: string } | undefined
 
-      if (normalizedRole === 'user') {
-        updateData.role_id = null
-        updateData.role = 'user'
+            if (!roleRecord?.id) {
+              console.error('[Update User] Invalid role:', normalizedRole)
+              throw createError({
+                statusCode: 400,
+                statusMessage: `Role tidak valid: ${role}. Pilihan: user, super_admin, admin_komsos, admin_sekretariat, kontributor_berita`
+              })
+            }
+
+            updateData.role_id = roleRecord.id
+            updateData.role = roleRecord.name || normalizedRole
+          }
+        }
       } else {
-        const roleRecord = await getQuery(
-          'SELECT id, name FROM roles WHERE LOWER(name) = ?',
-          [normalizedRole]
-        ) as { id?: number; name?: string } | undefined
+        // super_admin — semua role boleh diubah
+        if (normalizedRole === 'user') {
+          updateData.role_id = null
+          updateData.role = 'user'
+        } else {
+          const roleRecord = await getQuery(
+            'SELECT id, name FROM roles WHERE LOWER(name) = ?',
+            [normalizedRole]
+          ) as { id?: number; name?: string } | undefined
 
-        if (!roleRecord?.id) {
-          console.error('[Update User] Invalid role:', normalizedRole)
-          throw createError({
-            statusCode: 400,
-            statusMessage: `Role tidak valid: ${role}. Pilihan: user, super_admin, admin_komsos, admin_sekretariat, kontributor_berita`
-          })
+          if (!roleRecord?.id) {
+            console.error('[Update User] Invalid role:', normalizedRole)
+            throw createError({
+              statusCode: 400,
+              statusMessage: `Role tidak valid: ${role}. Pilihan: user, super_admin, admin_komsos, admin_sekretariat, kontributor_berita`
+            })
+          }
+
+          // Double-guard: hanya super_admin yang bisa assign role super_admin
+          if (roleRecord.name === 'super_admin' && !isSuperAdmin) {
+            throw createError({
+              statusCode: 403,
+              statusMessage: 'Hanya super admin yang dapat memberikan akses super admin'
+            })
+          }
+
+          updateData.role_id = roleRecord.id
+          updateData.role = roleRecord.name || normalizedRole
         }
-
-        if (roleRecord.name === 'super_admin' && !isSuperAdmin) {
-          throw createError({
-            statusCode: 403,
-            statusMessage: 'Hanya super admin yang dapat memberikan akses super admin'
-          })
-        }
-
-        updateData.role_id = roleRecord.id
-        updateData.role = roleRecord.name || normalizedRole
       }
     }
 
