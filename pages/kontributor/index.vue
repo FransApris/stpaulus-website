@@ -122,16 +122,16 @@ interface StatsData {
 }
 
 const { data: newsResponse, pending } = useAsyncData('kontributor-news', () => 
-  $fetch<{ success: boolean, data: NewsItem[] }>(`${apiBase}/api/kontributor/news`, {
+  ($fetch as any)(`${apiBase}/api/kontributor/news`, {
     headers: { Authorization: `Bearer ${getToken()}` }
-  }),
+  }) as Promise<{ success: boolean, data: NewsItem[] }>,
   { server: false }
 )
 
 const { data: statsResponse } = useAsyncData('kontributor-stats', () => 
-  $fetch<{ success: boolean, data: StatsData }>(`${apiBase}/api/kontributor/dashboard-stats`, {
+  ($fetch as any)(`${apiBase}/api/kontributor/dashboard-stats`, {
     headers: { Authorization: `Bearer ${getToken()}` }
-  }),
+  }) as Promise<{ success: boolean, data: StatsData }>,
   { server: false }
 )
 
