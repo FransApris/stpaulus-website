@@ -137,6 +137,14 @@ const migrations = ref<Migration[]>([
     result: null
   },
   {
+    key: '037_fix_role_id_foreign_key',
+    label: '037 - ⚠️ Perbaiki FK users.role_id (WAJIB dijalankan)',
+    description: 'Memperbaiki Foreign Key constraint pada kolom users.role_id yang masih menunjuk ke tabel user_roles (lama) padahal kode RBAC sudah menggunakan tabel roles (baru). Tanpa migration ini, update role pengguna dari Admin Panel akan selalu gagal dengan error 500. Langkah: (1) Sinkronisasi data roles → user_roles, (2) DROP FK lama, (3) ADD FK baru ke tabel roles.',
+    running: false,
+    done: false,
+    result: null
+  },
+  {
     key: '040_add_news_organization_filters',
     label: '040 - Tambah filter organisasi untuk berita (Wilayah, Lingkungan, Seksi, BGKP)',
     description: 'Membuat tabel seksi, news_wilayah_relations, news_lingkungan_relations, news_seksi_relations, dan menambah kolom is_bgkp di tabel news. Diperlukan untuk fitur kategorisasi dan filtering berita berdasarkan organisasi paroki.',
