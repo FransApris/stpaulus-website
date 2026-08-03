@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   // 1. Authenticate
   const decoded = requireAuth(event)
   
-  const allowedRoles = ['kontributor_berita', 'admin_komsos', 'super_admin']
+  const allowedRoles = ['kontributor_berita', 'user_kontributor', 'admin_komsos', 'super_admin']
   if (!allowedRoles.includes(decoded.role)) {
     throw createError({ statusCode: 403, statusMessage: 'Role tidak diizinkan membuat berita via portal kontributor' })
   }

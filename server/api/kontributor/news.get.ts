@@ -4,7 +4,7 @@ import { requireAuth } from '../../utils/auth'
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
   
-  const allowedRoles = ['kontributor_berita', 'admin_komsos', 'super_admin']
+  const allowedRoles = ['kontributor_berita', 'user_kontributor', 'admin_komsos', 'super_admin']
   if (!allowedRoles.includes(decoded.role)) {
     throw createError({ statusCode: 403, statusMessage: 'Role tidak diizinkan mengakses data ini' })
   }
