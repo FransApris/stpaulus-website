@@ -52,9 +52,6 @@ export default defineEventHandler(async (event) => {
     const inputOrigin = body.author_origin?.trim()
     
     let authorName = inputAuthor || decoded.username || 'Kontributor'
-    if (inputOrigin) {
-      authorName = `${authorName} (${inputOrigin})`
-    }
 
     const params = [
       title,
@@ -62,6 +59,7 @@ export default defineEventHandler(async (event) => {
       content,
       authorName,
       author_id,
+      inputOrigin || null,
       status,
       image || null,
       gallery_images ? JSON.stringify(gallery_images) : null,
@@ -75,11 +73,11 @@ export default defineEventHandler(async (event) => {
 
     const result = await runQuery(
       `INSERT INTO news (
-        title, slug, content, author, author_id, status, image, gallery_images,
+        title, slug, content, author, author_id, author_origin, status, image, gallery_images,
         when_date, when_time, where_location, who_participants, why_purpose, how_process,
         created_at, updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       params
     )
 

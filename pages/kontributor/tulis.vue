@@ -24,7 +24,7 @@
         <!-- Penulis & Asal -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Penulis / Pelapor <span class="text-red-500">*</span></label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Penulis / Kontributor <span class="text-red-500">*</span></label>
             <input type="text" v-model="form.author" required placeholder="Contoh: Budi Santoso" class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#882f1d] focus:border-[#882f1d] sm:text-sm px-4 py-2 border" />
           </div>
           <div>
