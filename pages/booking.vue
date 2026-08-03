@@ -2081,7 +2081,9 @@ const createBooking = async () => {
   bookingError.value = ''
 
   // Frontend validation
-  const eventDate = new Date(bookingForm.value.event_date)
+  // Bug fix: tambahkan suffix 'T00:00:00' agar YYYY-MM-DD diparse sebagai
+  // local midnight, bukan UTC midnight (yang akan +7 jam di WIB).
+  const eventDate = new Date(`${bookingForm.value.event_date}T00:00:00`)
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
@@ -2099,12 +2101,14 @@ const createBooking = async () => {
 
   // Validasi pemesanan berulang
   if (bookingForm.value.is_recurring) {
-    if (!bookingForm.value.repeat_until) {
+    // Bug fix: trim() agar string berisi spasi saja (' ') tidak lolos validasi
+    const repeatUntilTrimmed = (bookingForm.value.repeat_until || '').trim()
+    if (!repeatUntilTrimmed) {
       bookingError.value = 'Batas tanggal pengulangan wajib diisi untuk pemesanan rutin'
       bookingLoading.value = false
       return
     }
-    if (bookingForm.value.repeat_until <= bookingForm.value.event_date) {
+    if (repeatUntilTrimmed <= bookingForm.value.event_date) {
       bookingError.value = 'Batas tanggal pengulangan harus setelah tanggal acara pertama'
       bookingLoading.value = false
       return
@@ -2131,13 +2135,21 @@ const createBooking = async () => {
     return
   }
 
-  // Validasi tidak boleh waktu yang sudah lewat hari ini (Saran 4)
+  // Validasi tidak boleh waktu yang sudah lewat hari ini
   const isToday = bookingForm.value.event_date === getTodayDate()
   if (isToday) {
-    const now = new Date()
-    // Pastikan mengambil jam dan menit lokal, bukan UTC
-    const nowMinutes = now.getHours() * 60 + now.getMinutes()
-    if (startMinutes < nowMinutes) {
+    // Bug fix: gunakan Intl.DateTimeFormat dengan timezone Asia/Jakarta secara eksplisit
+    // sehingga validasi tidak bergantung pada timezone browser pengguna.
+    const nowWibParts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Jakarta',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).formatToParts(new Date())
+    const wibH = parseInt(nowWibParts.find(p => p.type === 'hour')?.value ?? '0', 10)
+    const wibM = parseInt(nowWibParts.find(p => p.type === 'minute')?.value ?? '0', 10)
+    const nowWibMinutes = wibH * 60 + wibM
+    if (startMinutes < nowWibMinutes) {
       bookingError.value = 'Waktu mulai tidak boleh di masa lalu'
       bookingLoading.value = false
       return

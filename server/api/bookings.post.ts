@@ -22,7 +22,10 @@ export default defineEventHandler(async (event) => {
     const userId = decoded.userId
 
     const body = await readBody(event)
-    const { room_id, event_name, requester_name, start_time, end_time, is_recurring, recurrence_pattern, repeat_until } = body
+    const { room_id, event_name, requester_name, start_time, end_time, is_recurring, recurrence_pattern } = body
+    // Bug fix: trim repeat_until agar nilai berisi spasi saja ('  ') tidak lolos
+    // validasi `if (is_recurring && recurrence_pattern && repeat_until)`.
+    const repeat_until: string = typeof body.repeat_until === 'string' ? body.repeat_until.trim() : (body.repeat_until ?? '')
 
     console.log('[CREATE BOOKING] Request:', { userId, room_id, event_name, requester_name, start_time, end_time, is_recurring, recurrence_pattern, repeat_until })
 
