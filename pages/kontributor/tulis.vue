@@ -21,6 +21,18 @@
           <p class="text-xs text-gray-400 mt-1 text-right">{{ form.title.length }}/500</p>
         </div>
 
+        <!-- Penulis & Asal -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Penulis / Pelapor <span class="text-red-500">*</span></label>
+            <input type="text" v-model="form.author" required placeholder="Contoh: Budi Santoso" class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#882f1d] focus:border-[#882f1d] sm:text-sm px-4 py-2 border" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Asal Penulis (Wilayah/Lingkungan)</label>
+            <input type="text" v-model="form.author_origin" placeholder="Contoh: Lingkungan Petrus 3" class="block w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#882f1d] focus:border-[#882f1d] sm:text-sm px-4 py-2 border" />
+          </div>
+        </div>
+
         <!-- Detail Kegiatan (Waktu & Tempat) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
           <div>
@@ -129,7 +141,9 @@ const form = ref({
   content: '',
   image: '',
   when_date: '',
-  where_location: ''
+  where_location: '',
+  author: '',
+  author_origin: ''
 })
 
 const submitting = ref(false)
@@ -186,8 +200,8 @@ const handleFileUpload = async (event: Event) => {
 }
 
 const submitNews = async () => {
-  if (!form.value.title || !form.value.content) {
-    errorMsg.value = 'Judul dan Isi Berita wajib diisi.'
+  if (!form.value.title || !form.value.content || !form.value.author) {
+    errorMsg.value = 'Judul, Isi Berita, dan Nama Penulis wajib diisi.'
     return
   }
 
@@ -204,7 +218,7 @@ const submitNews = async () => {
     })
 
     successMsg.value = 'Berita berhasil dikirim! Menunggu tinjauan Admin Komsos.'
-    form.value = { title: '', content: '', image: '', when_date: '', where_location: '' }
+    form.value = { title: '', content: '', image: '', when_date: '', where_location: '', author: '', author_origin: '' }
     setTimeout(() => navigateTo('/kontributor'), 2000)
   } catch (err: any) {
     errorMsg.value = err.data?.statusMessage || err.message || 'Gagal mengirim berita.'

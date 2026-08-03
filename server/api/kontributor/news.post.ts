@@ -46,9 +46,15 @@ export default defineEventHandler(async (event) => {
     // Status is FORCED to draft for contributors
     const status = 'draft'
     
-    // Set author details based on token
+    // Set author details based on token and form input
     const author_id = decoded.userId
-    const authorName = decoded.username || 'Kontributor'
+    const inputAuthor = body.author?.trim()
+    const inputOrigin = body.author_origin?.trim()
+    
+    let authorName = inputAuthor || decoded.username || 'Kontributor'
+    if (inputOrigin) {
+      authorName = `${authorName} (${inputOrigin})`
+    }
 
     const params = [
       title,
