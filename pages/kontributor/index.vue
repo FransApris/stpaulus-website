@@ -104,14 +104,31 @@ const getToken = () => {
   return ''
 }
 
-const { data: newsResponse, pending } = useFetch(`${apiBase}/api/kontributor/news`, {
+interface NewsItem {
+  id: number
+  title: string
+  slug: string
+  status: string
+  created_at: string
+  updated_at: string
+  published_at: string | null
+  image: string | null
+}
+
+interface StatsData {
+  total: number
+  drafts: number
+  published: number
+}
+
+const { data: newsResponse, pending } = useFetch<{ success: boolean, data: NewsItem[] }>(`${apiBase}/api/kontributor/news`, {
   server: false, // sessionStorage hanya tersedia di client, bukan SSR
   headers: {
     Authorization: `Bearer ${getToken()}`
   }
 })
 
-const { data: statsResponse } = useFetch(`${apiBase}/api/kontributor/dashboard-stats`, {
+const { data: statsResponse } = useFetch<{ success: boolean, data: StatsData }>(`${apiBase}/api/kontributor/dashboard-stats`, {
   server: false, // sessionStorage hanya tersedia di client, bukan SSR
   headers: {
     Authorization: `Bearer ${getToken()}`
