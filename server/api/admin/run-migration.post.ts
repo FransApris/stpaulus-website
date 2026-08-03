@@ -163,6 +163,26 @@ const MIGRATIONS: Record<string, string[]> = {
     `INSERT IGNORE INTO user_roles (id, name, slug, description, level) VALUES (33, 'User Kontributor', 'user-kontributor', 'User dan Kontributor', 13)`,
     // Hotfix: Ensure 035 role is also in user_roles just in case it was missed (double foreign key constraint)
     `INSERT IGNORE INTO user_roles (id, name, slug, description, level) VALUES (32, 'Kontributor Berita', 'kontributor-berita', 'Kontributor Berita', 12)`
+  ],
+  '037_fix_role_id_foreign_key': [
+    // Root cause: users.role_id FK masih menunjuk ke tabel 'user_roles' (tabel lama)
+    // sementara seluruh kode RBAC sudah menggunakan tabel 'roles'.
+    // Akibatnya setiap PUT /api/admin/users/[id] yang mengubah role_id
+    // langsung gagal dengan: "Cannot add or update a child row: a foreign key
+    // constraint fails (users, CONSTRAINT users_role_id_foreign FOREIGN KEY
+    // (role_id) REFERENCES user_roles (id))".
+    //
+    // Langkah 1: Sinkronisasi ID antara dua tabel terlebih dahulu
+    // (pastikan semua ID di roles ada juga di user_roles agar data existing aman)
+    `INSERT IGNORE INTO user_roles (id, name, slug, description, level)
+     SELECT r.id, r.display_name, r.name, r.description, r.id * 10
+     FROM roles r
+     WHERE r.id NOT IN (SELECT id FROM user_roles)`,
+    // Langkah 2: Hapus FK lama yang menunjuk ke user_roles
+    `ALTER TABLE users DROP FOREIGN KEY users_role_id_foreign`,
+    // Langkah 3: Tambah FK baru yang menunjuk ke tabel roles
+    `ALTER TABLE users ADD CONSTRAINT users_role_id_fk_roles
+     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL ON UPDATE CASCADE`
   ]
 }
 

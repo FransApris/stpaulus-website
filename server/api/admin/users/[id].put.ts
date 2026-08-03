@@ -3,6 +3,49 @@ import { requireAuth, requireUserManagementPermission, hashPassword } from '../.
 import { isCategoryUnlimited } from '../../../utils/quota'
 import { isoToMysql } from '../../../utils/datetime'
 
+/**
+ * Lookup role dari tabel 'roles' (tabel RBAC baru).
+ *
+ * WORKAROUND FK MISMATCH:
+ * users.role_id memiliki FK constraint ke tabel 'user_roles' (tabel lama),
+ * sementara seluruh kode RBAC menggunakan tabel 'roles'.
+ * Fungsi ini otomatis menyinkronkan ID ke 'user_roles' agar FK tidak gagal
+ * sambil menunggu migration '037_fix_role_id_foreign_key' dijalankan.
+ *
+ * Setelah migration 037 dijalankan, fungsi ini tetap aman dipakai
+ * (INSERT IGNORE tidak berbahaya jika sudah sinkron).
+ */
+async function lookupRoleAndSync(
+  normalizedRoleName: string
+): Promise<{ id: number; name: string } | null> {
+  const roleRecord = await getQuery(
+    'SELECT id, name, display_name FROM roles WHERE LOWER(name) = ?',
+    [normalizedRoleName]
+  ) as { id?: number; name?: string; display_name?: string } | undefined
+
+  if (!roleRecord?.id) return null
+
+  // Sync ke user_roles agar FK constraint users.role_id tidak gagal
+  try {
+    await runQuery(
+      `INSERT IGNORE INTO user_roles (id, name, slug, description, level)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        roleRecord.id,
+        roleRecord.display_name ?? roleRecord.name,
+        roleRecord.name,
+        roleRecord.display_name ?? roleRecord.name,
+        (roleRecord.id ?? 0) * 10
+      ]
+    )
+  } catch (syncErr: any) {
+    // Sync gagal tidak harus membatalkan update — log saja
+    console.warn('[Update User] user_roles sync warning:', syncErr?.message)
+  }
+
+  return { id: roleRecord.id, name: roleRecord.name ?? normalizedRoleName }
+}
+
 export default defineEventHandler(async (event) => {
   // ── Semua logika dibungkus try-catch agar tidak ada HTTP 500 anonim ────────
   try {
@@ -194,12 +237,9 @@ export default defineEventHandler(async (event) => {
             updateData.role_id = null
             updateData.role = 'user'
           } else {
-            const roleRecord = await getQuery(
-              'SELECT id, name FROM roles WHERE LOWER(name) = ?',
-              [normalizedRole]
-            ) as { id?: number; name?: string } | undefined
+            const roleRecord = await lookupRoleAndSync(normalizedRole)
 
-            if (!roleRecord?.id) {
+            if (!roleRecord) {
               console.error('[Update User] Invalid role:', normalizedRole)
               throw createError({
                 statusCode: 400,
@@ -208,7 +248,7 @@ export default defineEventHandler(async (event) => {
             }
 
             updateData.role_id = roleRecord.id
-            updateData.role = roleRecord.name || normalizedRole
+            updateData.role = roleRecord.name
           }
         }
       } else {
@@ -217,12 +257,9 @@ export default defineEventHandler(async (event) => {
           updateData.role_id = null
           updateData.role = 'user'
         } else {
-          const roleRecord = await getQuery(
-            'SELECT id, name FROM roles WHERE LOWER(name) = ?',
-            [normalizedRole]
-          ) as { id?: number; name?: string } | undefined
+          const roleRecord = await lookupRoleAndSync(normalizedRole)
 
-          if (!roleRecord?.id) {
+          if (!roleRecord) {
             console.error('[Update User] Invalid role:', normalizedRole)
             throw createError({
               statusCode: 400,
@@ -239,7 +276,7 @@ export default defineEventHandler(async (event) => {
           }
 
           updateData.role_id = roleRecord.id
-          updateData.role = roleRecord.name || normalizedRole
+          updateData.role = roleRecord.name
         }
       }
     }
