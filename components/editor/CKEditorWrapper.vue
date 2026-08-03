@@ -30,6 +30,7 @@
 
 <script setup>
 import { ref, shallowRef, computed, watch, onMounted } from '#imports'
+import 'ckeditor5/ckeditor5.css'
 
 const props = defineProps({
   modelValue: {
@@ -327,9 +328,7 @@ const onReady = (editorInstance) => {
 </script>
 
 <style>
-/* CKEditor 5 v42+ — import CSS dari paket ckeditor5 */
-/* Wajib diimpor agar toolbar dan konten tampil dengan benar */
-@import 'ckeditor5/ckeditor5.css';
+/* CSS di-import di script setup */
 </style>
 
 <style scoped>

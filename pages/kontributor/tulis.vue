@@ -38,9 +38,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">Isi Berita / Cerita Kegiatan <span class="text-red-500">*</span></label>
           <p class="text-xs text-gray-500 mb-3">Ceritakan apa saja yang terjadi, siapa yang terlibat, dan kesan dari acara tersebut.</p>
           <div class="border border-gray-300 rounded-lg overflow-hidden min-h-[300px]">
-            <ClientOnly fallback-tag="div" fallback="Memuat editor teks...">
-              <LazyCKEditorWrapper v-model="form.content" />
-            </ClientOnly>
+            <CKEditorWrapper v-model="form.content" />
           </div>
         </div>
 
