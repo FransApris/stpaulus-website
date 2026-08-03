@@ -305,7 +305,7 @@
                         </span>
                       </button>
                     </th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-semibold">Email</th>
+                    <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-semibold">Email</th>
                     <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       <button @click="sortBy('user_category')" class="flex items-center gap-1 hover:text-blue-600 transition-colors font-semibold">
                         Kategori
@@ -326,9 +326,9 @@
                         </span>
                       </button>
                     </th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-semibold">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-semibold">Kuota</th>
-                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider font-semibold">Aksi</th>
+                    <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-semibold">Status</th>
+                    <th class="px-4 py-3 text-left text-xs text-gray-500 uppercase tracking-wider font-semibold">Kuota</th>
+                    <th class="px-4 py-3 text-right text-xs text-gray-500 uppercase tracking-wider font-semibold">Aksi</th>
                   </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
