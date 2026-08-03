@@ -183,6 +183,9 @@ const MIGRATIONS: Record<string, string[]> = {
     // Langkah 3: Tambah FK baru yang menunjuk ke tabel roles
     `ALTER TABLE users ADD CONSTRAINT users_role_id_fk_roles
      FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL ON UPDATE CASCADE`
+  ],
+  '051_add_author_origin_to_news': [
+    `ALTER TABLE news ADD COLUMN author_origin VARCHAR(255) NULL`
   ]
 }
 
