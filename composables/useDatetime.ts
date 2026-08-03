@@ -11,6 +11,9 @@
  *   ✗  new Date(str) tanpa memastikan str mengandung 'Z' atau '+07:00'
  *   ✗  toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' }) inline
  *   ✗  str.replace(' ', 'T') + 'Z' inline
+ *   ✗  new Date("YYYY-MM-DD")         ← diparse sebagai UTC, bukan local!
+ *   ✗  new Date().getHours()          ← timezone browser, bukan WIB!
+ *   ✗  toISOString().split('T')[0]    ← UTC date, bisa beda 1 hari dari WIB!
  */
 
 export const WIB_TZ = 'Asia/Jakarta'
@@ -141,6 +144,48 @@ export function useDatetime() {
     return d < new Date()
   }
 
+  // ───────────────────────────────────────────────────────────────────────────
+  // FORM INPUT HELPERS (pengganti antipattern timezone-unsafe)
+  // ───────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Parse string YYYY-MM-DD dari input <input type="date"> sebagai local midnight.
+   * WAJIB digunakan sebagai pengganti: new Date("YYYY-MM-DD")
+   *
+   * Masalah: new Date("2026-08-03") → diparse sebagai UTC midnight
+   *          = jam 07:00 WIB, sehingga perbandingan dengan today (00:00 lokal)
+   *          selalu menghasilkan tanggal yang lebih besar dari seharusnya.
+   *
+   * @example
+   *   wibDateFromForm("2026-08-03") → Date(2026-08-03T00:00:00)  // local midnight ✅
+   *   new Date("2026-08-03")        → Date(2026-08-03T00:00:00Z) // UTC midnight ❌
+   */
+  const wibDateFromForm = (dateStr: string): Date => {
+    return new Date(`${dateStr}T00:00:00`)
+  }
+
+  /**
+   * Total menit sejak tengah malam WIB saat ini.
+   * WAJIB digunakan sebagai pengganti: new Date().getHours() * 60 + getMinutes()
+   *
+   * Masalah: getHours() bergantung pada timezone browser pengguna.
+   *          User yang browsing dari luar WIB akan mendapat validasi yang salah.
+   *
+   * @example
+   *   nowWibTotalMinutes() → 870  // kalau WIB 14:30 (14*60+30)
+   */
+  const nowWibTotalMinutes = (): number => {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: WIB_TZ,
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).formatToParts(new Date())
+    const h = parseInt(parts.find(p => p.type === 'hour')?.value   ?? '0', 10)
+    const m = parseInt(parts.find(p => p.type === 'minute')?.value ?? '0', 10)
+    return h * 60 + m
+  }
+
   return {
     toUtcDate,
     formatWibDate,
@@ -150,6 +195,9 @@ export function useDatetime() {
     formatWibDateTime,
     wibDateKey,
     todayWibStr,
-    isBookingPassed
+    isBookingPassed,
+    // Form helpers — gunakan ini, bukan inline
+    wibDateFromForm,
+    nowWibTotalMinutes
   }
 }

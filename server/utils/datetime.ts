@@ -10,7 +10,10 @@
  * DILARANG di file lain:
  *   ✗  String(s).replace(' ', 'T') + 'Z'
  *   ✗  new Date().toISOString().split('T')[0]
- *   ✗  toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' }) secara inline
+ *   ✗  toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' }) inline
+ *   ✗  new Date("YYYY-MM-DD")                  ← diparse sebagai UTC, bukan local!
+ *   ✗  new Date().getHours()                   ← timezone browser, bukan WIB!
+ *   ✗  toISOString().split('T')[0]             ← UTC date, bisa beda 1 hari dari WIB!
  */
 
 export const WIB_TZ = 'Asia/Jakarta'
@@ -200,4 +203,58 @@ export const localWibToUtcMysql = (wibDateStr: string, wibTimeStr: string): stri
  */
 export const isoToMysql = (isoStr: string): string => {
   return isoStr.slice(0, 19).replace('T', ' ')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JAM & MENIT WIB SAAT INI (pengganti getHours() yang timezone-dependent)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Jam dan menit saat ini dalam WIB.
+ * Gunakan ini sebagai pengganti new Date().getHours() yang bergantung
+ * pada timezone sistem/server — bukan timezone WIB.
+ *
+ * @returns { hour, minute } dalam WIB
+ *
+ * @example
+ *   nowWibHourMinute() → { hour: 14, minute: 30 }  // kalau WIB 14:30
+ */
+export const nowWibHourMinute = (): { hour: number; minute: number } => {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: WIB_TZ,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  }).formatToParts(new Date())
+  const hour   = parseInt(parts.find(p => p.type === 'hour')?.value   ?? '0', 10)
+  const minute = parseInt(parts.find(p => p.type === 'minute')?.value ?? '0', 10)
+  return { hour, minute }
+}
+
+/**
+ * Total menit sejak tengah malam WIB (untuk perbandingan waktu form HH:MM).
+ * Pengganti: now.getHours() * 60 + now.getMinutes()
+ *
+ * @example
+ *   nowWibTotalMinutes() → 870   // kalau WIB 14:30 (14*60+30)
+ */
+export const nowWibTotalMinutes = (): number => {
+  const { hour, minute } = nowWibHourMinute()
+  return hour * 60 + minute
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PARSE TANGGAL DARI FORM INPUT (pengganti new Date("YYYY-MM-DD"))
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Parse string YYYY-MM-DD dari input form sebagai local midnight (bukan UTC).
+ * Antipattern: new Date("2026-08-03") → UTC midnight → jam 07:00 WIB.
+ * Fungsi ini mengembalikan Date yang benar untuk perbandingan tanggal lokal.
+ *
+ * @example
+ *   wibDateFromForm("2026-08-03") → Date(2026-08-03T00:00:00)  // local midnight
+ */
+export const wibDateFromForm = (dateStr: string): Date => {
+  return new Date(`${dateStr}T00:00:00`)
 }

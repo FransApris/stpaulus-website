@@ -1354,7 +1354,9 @@ const {
   formatWibDateTime,
   wibDateKey,
   todayWibStr,
-  isBookingPassed
+  isBookingPassed,
+  wibDateFromForm,
+  nowWibTotalMinutes
 } = useDatetime()
 // Use composable to prevent horizontal scroll
 usePreventHorizontalScroll();
@@ -2081,11 +2083,8 @@ const createBooking = async () => {
   bookingError.value = ''
 
   // Frontend validation
-  // Bug fix: tambahkan suffix 'T00:00:00' agar YYYY-MM-DD diparse sebagai
-  // local midnight, bukan UTC midnight (yang akan +7 jam di WIB).
-  const eventDate = new Date(`${bookingForm.value.event_date}T00:00:00`)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const eventDate = wibDateFromForm(bookingForm.value.event_date)
+  const today = wibDateFromForm(todayWibStr())
 
   if (eventDate < today) {
     bookingError.value = 'Tanggal acara tidak boleh di masa lalu'
@@ -2138,18 +2137,9 @@ const createBooking = async () => {
   // Validasi tidak boleh waktu yang sudah lewat hari ini
   const isToday = bookingForm.value.event_date === getTodayDate()
   if (isToday) {
-    // Bug fix: gunakan Intl.DateTimeFormat dengan timezone Asia/Jakarta secara eksplisit
-    // sehingga validasi tidak bergantung pada timezone browser pengguna.
-    const nowWibParts = new Intl.DateTimeFormat('en-US', {
-      timeZone: 'Asia/Jakarta',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).formatToParts(new Date())
-    const wibH = parseInt(nowWibParts.find(p => p.type === 'hour')?.value ?? '0', 10)
-    const wibM = parseInt(nowWibParts.find(p => p.type === 'minute')?.value ?? '0', 10)
-    const nowWibMinutes = wibH * 60 + wibM
-    if (startMinutes < nowWibMinutes) {
+    // Gunakan nowWibTotalMinutes() dari composable — timezone-safe, tidak
+    // bergantung pada timezone browser pengguna.
+    if (startMinutes < nowWibTotalMinutes()) {
       bookingError.value = 'Waktu mulai tidak boleh di masa lalu'
       bookingLoading.value = false
       return
