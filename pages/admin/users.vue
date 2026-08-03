@@ -283,11 +283,11 @@
                     <span v-else class="text-gray-400 text-sm italic">-</span>
                   </td>
                   <td class="px-4 py-2">
-                    <span v-if="user.role_id && user.role_id > 0" class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                      🔐 Admin
-                    </span>
-                    <span v-else class="inline-block px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                      👤 User
+                    <span
+                      class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
+                      :class="getRoleBadge(user).class"
+                    >
+                      {{ getRoleBadge(user).icon }} {{ getRoleBadge(user).label }}
                     </span>
                   </td>
                   <td class="px-4 py-2">
@@ -678,6 +678,37 @@ const isAdminKomsos = computed(() => {
 const isAdminSekretariat = computed(() => {
   return currentUser.value?.role_name === 'admin_sekretariat'
 })
+
+/**
+ * Kembalikan badge config (label, icon, class Tailwind) berdasarkan role user.
+ * Prioritas: role_name (RBAC, dari JOIN roles) → role (kolom legacy) → role_id fallback.
+ */
+const getRoleBadge = (user: any) => {
+  // Gunakan role_name dari RBAC join, fallback ke legacy role field
+  const roleName = (user.role_name || user.role || '').toLowerCase()
+
+  if (roleName === 'super_admin') {
+    return { label: 'Super Admin', icon: '👑', class: 'bg-purple-100 text-purple-800' }
+  }
+  if (roleName === 'admin_komsos') {
+    return { label: 'Admin Komsos', icon: '📣', class: 'bg-indigo-100 text-indigo-800' }
+  }
+  if (roleName === 'admin_sekretariat') {
+    return { label: 'Admin Sekretariat', icon: '📋', class: 'bg-blue-100 text-blue-800' }
+  }
+  if (roleName === 'kontributor_berita') {
+    return { label: 'Kontributor', icon: '✍️', class: 'bg-red-100 text-red-800' }
+  }
+  if (roleName === 'user_kontributor') {
+    return { label: 'User & Kontributor', icon: '✍️', class: 'bg-orange-100 text-orange-800' }
+  }
+  // Fallback: jika role_id > 0 tapi nama role tidak dikenal (role baru di masa depan)
+  if (user.role_id && Number(user.role_id) > 0) {
+    return { label: user.role_display_name || user.role || 'Admin', icon: '🔐', class: 'bg-gray-100 text-gray-800' }
+  }
+  // Default: user biasa
+  return { label: 'User', icon: '👤', class: 'bg-green-100 text-green-800' }
+}
 
 // Clear all booking users
 const showClearModal = ref(false)
