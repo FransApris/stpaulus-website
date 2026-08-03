@@ -172,14 +172,16 @@
         >
           <div 
             v-if="isZoomed"
-            class="fixed inset-0 z-[9999] bg-black/90 cursor-zoom-out backdrop-blur-sm"
+            class="fixed inset-0 bg-black/90 cursor-zoom-out backdrop-blur-sm"
+            style="z-index: 2147483647 !important;"
             :class="isDeepZoomed ? 'overflow-auto p-4' : 'flex items-center justify-center p-4 sm:p-8'"
             @click="closeLightbox"
           >
             <!-- Tombol Close (X) -->
             <button 
               @click.stop="closeLightbox"
-              class="fixed top-4 right-4 sm:top-6 sm:right-6 p-2 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full transition-colors z-[10000]"
+              class="fixed top-4 right-4 sm:top-6 sm:right-6 p-2 text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full transition-colors"
+              style="z-index: 2147483647 !important;"
               aria-label="Tutup gambar"
             >
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
