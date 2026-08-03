@@ -23,7 +23,9 @@
             
             <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
               <div class="text-sm text-gray-700 hidden sm:block">
-                {{ displayName }}
+                <ClientOnly fallback="Kontributor">
+                  {{ displayName }}
+                </ClientOnly>
               </div>
               <button @click="logout" class="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors">
                 Keluar

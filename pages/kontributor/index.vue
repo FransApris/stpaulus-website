@@ -15,7 +15,8 @@
       </NuxtLink>
     </div>
 
-    <!-- Stats -->
+    <!-- Stats & List -->
+    <ClientOnly fallback-tag="div" fallback="Memuat dasbor...">
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" v-if="stats">
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
         <div class="text-sm font-medium text-gray-500 mb-1">Total Tulisan</div>
@@ -81,6 +82,7 @@
         </li>
       </ul>
     </div>
+    </ClientOnly>
   </div>
 </template>
 
