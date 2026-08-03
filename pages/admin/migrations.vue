@@ -175,6 +175,14 @@ const migrations = ref<Migration[]>([
     running: false,
     done: false,
     result: null
+  },
+  {
+    key: '051_add_author_origin_to_news',
+    label: '051 - Tambah Kolom author_origin',
+    description: 'Menambahkan kolom author_origin ke tabel news untuk melacak asal kontributor berita (misal: Wilayah atau Lingkungan).',
+    running: false,
+    done: false,
+    result: null
   }
 ])
 
