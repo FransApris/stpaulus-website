@@ -683,7 +683,7 @@ const isAdminSekretariat = computed(() => {
  * Kembalikan badge config (label, icon, class Tailwind) berdasarkan role user.
  * Prioritas: role_name (RBAC, dari JOIN roles) → role (kolom legacy) → role_id fallback.
  */
-const getRoleBadge = (user: any) => {
+const getRoleBadge = (user) => {
   // Gunakan role_name dari RBAC join, fallback ke legacy role field
   const roleName = (user.role_name || user.role || '').toLowerCase()
 
