@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      data: news || []
+      data: (news as Record<string, any>[]) || []
     }
   } catch (error: any) {
     throw createError({
