@@ -39,7 +39,7 @@
           <p class="text-xs text-gray-500 mb-3">Ceritakan apa saja yang terjadi, siapa yang terlibat, dan kesan dari acara tersebut.</p>
           <div class="border border-gray-300 rounded-lg overflow-hidden min-h-[300px]">
             <ClientOnly fallback-tag="div" fallback="Memuat editor teks...">
-              <EditorCKEditorWrapper v-model="form.content" />
+              <LazyCKEditorWrapper v-model="form.content" />
             </ClientOnly>
           </div>
         </div>
