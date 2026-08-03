@@ -121,19 +121,19 @@ interface StatsData {
   published: number
 }
 
-const { data: newsResponse, pending } = useFetch<{ success: boolean, data: NewsItem[] }>(`${apiBase}/api/kontributor/news`, {
-  server: false, // sessionStorage hanya tersedia di client, bukan SSR
-  headers: {
-    Authorization: `Bearer ${getToken()}`
-  }
-})
+const { data: newsResponse, pending } = useAsyncData('kontributor-news', () => 
+  $fetch<{ success: boolean, data: NewsItem[] }>(`${apiBase}/api/kontributor/news`, {
+    headers: { Authorization: `Bearer ${getToken()}` }
+  }),
+  { server: false }
+)
 
-const { data: statsResponse } = useFetch<{ success: boolean, data: StatsData }>(`${apiBase}/api/kontributor/dashboard-stats`, {
-  server: false, // sessionStorage hanya tersedia di client, bukan SSR
-  headers: {
-    Authorization: `Bearer ${getToken()}`
-  }
-})
+const { data: statsResponse } = useAsyncData('kontributor-stats', () => 
+  $fetch<{ success: boolean, data: StatsData }>(`${apiBase}/api/kontributor/dashboard-stats`, {
+    headers: { Authorization: `Bearer ${getToken()}` }
+  }),
+  { server: false }
+)
 
 const newsList = computed(() => newsResponse.value?.data || [])
 const stats = computed(() => statsResponse.value?.data || null)
