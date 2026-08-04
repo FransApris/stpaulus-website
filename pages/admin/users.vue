@@ -626,13 +626,57 @@
               <input v-model="editingUser.email" type="email" placeholder="Email (opsional)" class="border p-2 rounded" />
               <input v-model="editingUser.full_name" type="text" placeholder="Nama Lengkap" class="border p-2 rounded" required />
               <input v-model="editingUser.contact_phone" type="text" placeholder="No. Telepon" class="border p-2 rounded" />
-              <select v-model="editingUser.user_category" class="border p-2 rounded">
+              <select v-model="editingUser.user_category" @change="onCategoryChange" class="border p-2 rounded">
                 <option value="">Pilih Kategori</option>
                 <option v-for="category in userCategories.filter(c => c.is_active)" :key="category.id" :value="category.name">
                   {{ category.display_name }}
                 </option>
               </select>
               
+              <!-- Dropdown Unit Name (Cascading) -->
+              <div class="md:col-span-2">
+                <!-- WILAYAH ONLY -->
+                <template v-if="showWilayahDropdown">
+                  <select v-model="selectedWilayah" @change="onWilayahOnlyChange" class="border p-2 rounded w-full" required>
+                    <option value="">-- Pilih Wilayah --</option>
+                    <option v-for="w in wilayahList" :key="w" :value="w">{{ w }}</option>
+                  </select>
+                </template>
+
+                <!-- LINGKUNGAN (Wilayah -> Lingkungan) -->
+                <template v-else-if="showLingkunganDropdown">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <select v-model="selectedWilayah" @change="onWilayahChange" class="border p-2 rounded w-full" :disabled="lingkunganLoading" required>
+                      <option value="">{{ lingkunganLoading ? 'Memuat data...' : '-- Pilih Wilayah --' }}</option>
+                      <option v-for="w in wilayahList" :key="w" :value="w">{{ w }}</option>
+                    </select>
+                    <select v-if="selectedWilayah" v-model="selectedLingkungan" @change="onLingkunganChange" class="border p-2 rounded w-full" required>
+                      <option value="">-- Pilih Lingkungan --</option>
+                      <option v-for="ling in lingkunganByWilayah" :key="ling.id" :value="ling.nama">{{ ling.nama }}</option>
+                    </select>
+                  </div>
+                </template>
+
+                <!-- SEKSI (Bidang -> Seksi) -->
+                <template v-else-if="showSeksiDropdown">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <select v-model="selectedBidang" @change="onBidangChange" class="border p-2 rounded w-full" :disabled="seksiLoading" required>
+                      <option value="">{{ seksiLoading ? 'Memuat data...' : '-- Pilih Bidang --' }}</option>
+                      <option v-for="b in bidangList" :key="b" :value="b">{{ b }}</option>
+                    </select>
+                    <select v-if="selectedBidang" v-model="selectedSeksi" @change="onSeksiChange" class="border p-2 rounded w-full" required>
+                      <option value="">-- Pilih Seksi --</option>
+                      <option v-for="s in seksiByBidang" :key="s.id" :value="s.nama">{{ s.nama }}</option>
+                    </select>
+                  </div>
+                </template>
+
+                <!-- Text bebas untuk kategori lainnya -->
+                <template v-else-if="editingUser.user_category">
+                  <input v-model="editingUser.unit_name" type="text" placeholder="Nama Unit / Kelompok (opsional)" class="border p-2 rounded w-full" />
+                </template>
+              </div>
+
               <!-- Role / Tipe Pengguna -->
               <div class="md:col-span-2 p-3 bg-gray-50 border border-gray-200 rounded">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Pengguna (Role)</label>
@@ -732,6 +776,108 @@ const editingUser = ref({
 const editLoading = ref(false)
 const editMessage = ref('')
 const editError = ref('')
+
+// ── Cascading Dropdown State & Helpers (Edit Modal) ───────────
+const categoryContains = (catName, keyword) => (catName || '').toLowerCase().includes(keyword.toLowerCase())
+const WILAYAH_PAROKI = [
+    'Bartolomeus', 'Fransiskus Asisi', 'Maria Regina',
+    'Petrus', 'Simon', 'Theresia', 'Vincentius a Paulo', 'Yakobus',
+]
+const wilayahList = WILAYAH_PAROKI
+
+const allLingkungan = ref([])
+const lingkunganLoading = ref(false)
+const lingkunganLoaded = ref(false)
+
+const allSeksi = ref([])
+const seksiLoading = ref(false)
+const seksiLoaded = ref(false)
+
+const selectedWilayah = ref('')
+const selectedLingkungan = ref('')
+const selectedBidang = ref('')
+const selectedSeksi = ref('')
+
+const showWilayahDropdown = computed(() =>
+    categoryContains(editingUser.value.user_category, 'wilayah') &&
+    !categoryContains(editingUser.value.user_category, 'lingkungan')
+)
+const showLingkunganDropdown = computed(() => categoryContains(editingUser.value.user_category, 'lingkungan'))
+const showSeksiDropdown = computed(() => categoryContains(editingUser.value.user_category, 'seksi'))
+const needsLingkunganData = computed(() => showWilayahDropdown.value || showLingkunganDropdown.value)
+
+const lingkunganByWilayah = computed(() => {
+    if (!selectedWilayah.value || allLingkungan.value.length === 0) return []
+    const target = selectedWilayah.value.toLowerCase()
+    const byRelasi = allLingkungan.value.filter(l => {
+        const w = ((l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')).trim().toLowerCase()
+        return w === target
+    })
+    if (byRelasi.length > 0) return byRelasi.sort((a, b) => (a.no || 0) - (b.no || 0))
+    const byNama = allLingkungan.value.filter(l => (l.nama || '').toLowerCase().includes(target))
+    return byNama.sort((a, b) => (a.no || 0) - (b.no || 0))
+})
+
+const bidangList = computed(() => {
+    const seen = new Set()
+    return allSeksi.value
+        .map(s => (s.bidang || '').trim())
+        .filter(b => b && !seen.has(b) && seen.add(b))
+        .sort((a, b) => a.localeCompare(b, 'id'))
+})
+
+const seksiByBidang = computed(() => {
+    if (!selectedBidang.value) return []
+    const seenNama = new Set()
+    return allSeksi.value
+        .filter(s => (s.bidang || '').trim() === selectedBidang.value)
+        .filter(s => {
+            const key = (s.nama || '').trim().toLowerCase()
+            if (seenNama.has(key)) return false
+            seenNama.add(key)
+            return true
+        })
+        .sort((a, b) => (a.nama || '').localeCompare(b.nama || '', 'id'))
+})
+
+const loadLingkungan = async () => {
+    if (lingkunganLoaded.value) return
+    lingkunganLoading.value = true
+    try {
+        const res = await $fetch('/api/lingkungan')
+        allLingkungan.value = Array.isArray(res) ? res : (res?.data || [])
+        lingkunganLoaded.value = true
+    } catch (err) { console.error('Gagal load lingkungan', err) } 
+    finally { lingkunganLoading.value = false }
+}
+
+const loadSeksi = async () => {
+    if (seksiLoaded.value) return
+    seksiLoading.value = true
+    try {
+        const rawList = await $fetch('/api/seksi')
+        allSeksi.value = Array.isArray(rawList) ? rawList : []
+        seksiLoaded.value = true
+    } catch (err) { console.error('Gagal load seksi', err) } 
+    finally { seksiLoading.value = false }
+}
+
+const onCategoryChange = async () => {
+    selectedWilayah.value = ''
+    selectedLingkungan.value = ''
+    selectedBidang.value = ''
+    selectedSeksi.value = ''
+    editingUser.value.unit_name = ''
+    
+    if (needsLingkunganData.value) await loadLingkungan()
+    if (showSeksiDropdown.value) await loadSeksi()
+}
+
+const onWilayahOnlyChange = () => { editingUser.value.unit_name = selectedWilayah.value }
+const onWilayahChange = () => { selectedLingkungan.value = ''; editingUser.value.unit_name = '' }
+const onLingkunganChange = () => { editingUser.value.unit_name = selectedLingkungan.value }
+const onBidangChange = () => { selectedSeksi.value = ''; editingUser.value.unit_name = '' }
+const onSeksiChange = () => { editingUser.value.unit_name = selectedSeksi.value }
 
 // Current user info
 const currentUser = useState('admin-users-current-user', () => null)
@@ -1100,15 +1246,45 @@ const createUser = async () => {
   }
 }
 
-const editUser = (user) => {
+const editUser = async (user) => {
   // Populate edit form with user data
   editingUser.value = { 
     ...user,
     // Use role_name from RBAC if available, fallback to legacy role field
     role: user.role_name || user.role
   }
+
+  // Pre-fill dropdown selections
+  selectedWilayah.value = ''
+  selectedLingkungan.value = ''
+  selectedBidang.value = ''
+  selectedSeksi.value = ''
+
+  if (categoryContains(user.user_category, 'wilayah') && !categoryContains(user.user_category, 'lingkungan')) {
+    selectedWilayah.value = user.unit_name || ''
+    await loadLingkungan()
+  } else if (categoryContains(user.user_category, 'lingkungan')) {
+    selectedLingkungan.value = user.unit_name || ''
+    await loadLingkungan()
+    const foundLing = allLingkungan.value.find(l => l.nama === user.unit_name)
+    if (foundLing) {
+      selectedWilayah.value = (foundLing.wilayah_display || foundLing.wilayah_nama || foundLing.wilayah_text || '').trim()
+    } else if (user.unit_name) {
+      const matchedW = WILAYAH_PAROKI.find(w => user.unit_name.toLowerCase().includes(w.toLowerCase()))
+      if (matchedW) selectedWilayah.value = matchedW
+    }
+  } else if (categoryContains(user.user_category, 'seksi')) {
+    selectedSeksi.value = user.unit_name || ''
+    await loadSeksi()
+    const foundSeksi = allSeksi.value.find(s => s.nama === user.unit_name)
+    if (foundSeksi) {
+      selectedBidang.value = (foundSeksi.bidang || '').trim()
+    }
+  }
+
   showEditModal.value = true
 }
+
 
 const deleteUser = async (user, force = false) => {
   // Guard: prevent double-click
@@ -1222,6 +1398,7 @@ const updateUser = async () => {
     full_name: userData.full_name,
     contact_phone: userData.contact_phone,
     user_category: userData.user_category,
+    unit_name: userData.unit_name,
     role: userData.role
   }
   
