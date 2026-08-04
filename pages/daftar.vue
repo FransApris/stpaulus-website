@@ -120,8 +120,26 @@
                         </p>
                     </div>
 
-                    <!-- ═══ CASCADING DROPDOWN: LINGKUNGAN ═══ -->
-                    <template v-if="showLingkunganDropdown">
+                    <!-- ═══ DROPDOWN: WILAYAH (satu level) ═══ -->
+                    <template v-if="showWilayahDropdown">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Pilih Wilayah <span class="text-red-500">*</span>
+                            </label>
+                            <select v-model="selectedWilayah" @change="onWilayahOnlyChange"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none bg-white"
+                                required>
+                                <option value="">-- Pilih Wilayah --</option>
+                                <option v-for="w in wilayahList" :key="w" :value="w">{{ w }}</option>
+                            </select>
+                            <p v-if="form.unit_name" class="mt-1.5 text-xs text-green-700 font-medium">
+                                ✅ Terpilih: <span class="font-semibold">{{ form.unit_name }}</span>
+                            </p>
+                        </div>
+                    </template>
+
+                    <!-- ═══ CASCADING DROPDOWN: LINGKUNGAN (dua level) ═══ -->
+                    <template v-else-if="showLingkunganDropdown">
                         <!-- Level 1: Pilih Wilayah -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -312,11 +330,21 @@ const errorMsg = ref('')
 const success  = ref(false)
 
 // ── Computed: jenis dropdown yang aktif ─────────────────────────────────────
+// Wilayah-only: kategori mengandung 'wilayah' tapi BUKAN 'lingkungan'
+const showWilayahDropdown = computed(() =>
+    categoryContains(form.value.user_category, 'wilayah') &&
+    !categoryContains(form.value.user_category, 'lingkungan')
+)
+// Lingkungan dua-level: kategori mengandung 'lingkungan'
 const showLingkunganDropdown = computed(() =>
     categoryContains(form.value.user_category, 'lingkungan')
 )
 const showSeksiDropdown = computed(() =>
     categoryContains(form.value.user_category, 'seksi')
+)
+// Apakah perlu load data lingkungan? (untuk wilayah-only ATAU dua-level)
+const needsLingkunganData = computed(() =>
+    showWilayahDropdown.value || showLingkunganDropdown.value
 )
 
 // ── Daftar Wilayah: pakai konstanta statis (lebih andal dari API) ───────────
@@ -388,8 +416,8 @@ const unitNameHelper = computed(() => {
 // ── Computed: validasi tambahan sebelum submit ──────────────────────────────
 const isFormValid = computed(() => {
     if (!form.value.user_category) return false
-    // Untuk kategori dengan dropdown: unit_name wajib terisi (berarti user sudah memilih)
-    if (showLingkunganDropdown.value || showSeksiDropdown.value) {
+    // Untuk kategori dengan dropdown: unit_name wajib terisi
+    if (showWilayahDropdown.value || showLingkunganDropdown.value || showSeksiDropdown.value) {
         return !!form.value.unit_name
     }
     return true
@@ -405,8 +433,8 @@ const onCategoryChange = async () => {
     form.value.unit_name     = ''
     errorMsg.value           = ''
 
-    // Lazy-load data hanya saat dibutuhkan
-    if (showLingkunganDropdown.value && !lingkunganLoaded.value) {
+    // Lazy-load data lingkungan jika perlu (wilayah-only ATAU lingkungan dua-level)
+    if (needsLingkunganData.value && !lingkunganLoaded.value) {
         await loadLingkungan()
     }
     if (showSeksiDropdown.value && !seksiLoaded.value) {
@@ -418,6 +446,10 @@ const onCategoryChange = async () => {
 const onWilayahChange = () => {
     selectedLingkungan.value = ''
     form.value.unit_name     = ''
+}
+// Handler khusus untuk kategori Wilayah (satu level) — langsung simpan ke unit_name
+const onWilayahOnlyChange = () => {
+    form.value.unit_name = selectedWilayah.value
 }
 const onLingkunganChange = () => {
     // Simpan nama lingkungan ke form.unit_name → dikirim ke backend
