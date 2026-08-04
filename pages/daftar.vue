@@ -260,10 +260,11 @@ useHead({
 })
 
 // ── Pemetaan kategori → jenis dropdown ─────────────────────────────────────
-// Nilai ini harus cocok dengan kolom `name` di tabel user_categories.
-// Sesuaikan jika nama kategori di DB Anda berbeda.
-const KATEGORI_LINGKUNGAN = ['lingkungan']
-const KATEGORI_SEKSI      = ['seksi', 'omk', 'wkri', 'legio_maria', 'kelompok_kategorial']
+// Menggunakan substring matching case-insensitive pada kolom `name`
+// agar tidak bergantung pada nilai exact dari database.
+// Contoh: 'lingkungan', 'umat_lingkungan', 'Lingkungan_Paroki' → semua cocok
+const categoryContains = (catName, keyword) =>
+    (catName || '').toLowerCase().includes(keyword.toLowerCase())
 
 // ── Form state utama ────────────────────────────────────────────────────────
 const form = ref({
@@ -300,10 +301,10 @@ const success  = ref(false)
 
 // ── Computed: jenis dropdown yang aktif ─────────────────────────────────────
 const showLingkunganDropdown = computed(() =>
-    KATEGORI_LINGKUNGAN.includes(form.value.user_category)
+    categoryContains(form.value.user_category, 'lingkungan')
 )
 const showSeksiDropdown = computed(() =>
-    KATEGORI_SEKSI.includes(form.value.user_category)
+    categoryContains(form.value.user_category, 'seksi')
 )
 
 // ── Computed: Daftar Wilayah (distinct) ─────────────────────────────────────
@@ -440,6 +441,8 @@ onMounted(async () => {
         if (!categories.value || categories.value.length === 0) {
             categoriesError.value = true
         }
+        // Debug: lihat nama kategori aktual di DB
+        console.log('[daftar] Kategori dari DB:', categories.value?.map(c => `${c.name} (${c.display_name})`))
     } catch (err) {
         console.error('Failed to load categories', err)
         categoriesError.value = true
