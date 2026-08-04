@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
     console.log('[Create User] ===== START CREATE USER =====')
     console.log('[Create User] Request body:', JSON.stringify(body, null, 2))
     
-    const { username, email, password, full_name, contact_phone, user_category, role } = body
+    const { username, email, password, full_name, contact_phone, user_category, unit_name, role } = body
 
     console.log('[Create User] Parsed fields:', {
       username,
@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
       full_name,
       contact_phone,
       user_category,
+      unit_name,
       role
     })
 
@@ -141,6 +142,7 @@ export default defineEventHandler(async (event) => {
       // For optional fields, explicitly set to null if empty
       contact_phone: contact_phone ? String(contact_phone) : null,
       user_category: user_category || null,
+      unit_name: unit_name ? String(unit_name).trim() : null,
       roleString: roleString || 'user',
       roleId: roleId === undefined || roleId === null ? null : roleId
     }
@@ -160,7 +162,7 @@ export default defineEventHandler(async (event) => {
 
     // Insert user — admin-created users are immediately ACTIVE
     const result = await runQuery(
-      'INSERT INTO users (username, email, password_hash, full_name, contact_phone, user_category, role, role_id, account_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO users (username, email, password_hash, full_name, contact_phone, user_category, unit_name, role, role_id, account_status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         sanitizedData.username,
         sanitizedData.email,
@@ -168,6 +170,7 @@ export default defineEventHandler(async (event) => {
         sanitizedData.full_name,
         sanitizedData.contact_phone,
         sanitizedData.user_category,
+        sanitizedData.unit_name,
         sanitizedData.roleString,
         sanitizedData.roleId,
         'ACTIVE'
