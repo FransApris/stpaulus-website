@@ -89,8 +89,17 @@ export default defineEventHandler(async (event) => {
         published_at: news.published_at,
         created_at: news.created_at,
         updated_at: news.updated_at,
+        // when_date = tanggal kejadian yang diisi admin di form 5W1H
+        // Fallback: when_date → published_at → created_at
+        when_date: news.when_date || null,
         slug: effectiveSlug,
-        date: new Date((news.published_at || news.created_at).toString().replace(' ', 'T') + 'Z').toLocaleDateString('id-ID', {
+        date: new Date(
+          // Prioritas: tanggal kejadian (when_date) > tanggal publish > tanggal buat
+          ((news.when_date || news.published_at || news.created_at) as string)
+            .toString()
+            .replace(' ', 'T')
+            .replace(/Z?$/, 'Z')
+        ).toLocaleDateString('id-ID', {
           timeZone: 'Asia/Jakarta',
           year: 'numeric',
           month: 'long',
