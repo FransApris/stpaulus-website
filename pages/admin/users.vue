@@ -123,12 +123,55 @@
         <input v-model="newUser.password" type="password" placeholder="Password *" class="border p-2 rounded" required minlength="6" />
         <input v-model="newUser.full_name" type="text" placeholder="Nama Lengkap *" class="border p-2 rounded" required />
         <input v-model="newUser.contact_phone" type="text" placeholder="No. Telepon" class="border p-2 rounded" />
-        <select v-model="newUser.user_category" class="border p-2 rounded" required>
+        <select v-model="newUser.user_category" @change="onNewCategoryChange" class="border p-2 rounded" required>
           <option value="">Pilih Kategori *</option>
           <option v-for="category in userCategories.filter(c => c.is_active)" :key="category.id" :value="category.name">
             {{ category.display_name }}
           </option>
         </select>
+
+        <!-- Dropdown Unit Name (Cascading) for New User -->
+        <div class="md:col-span-2 mb-4" v-if="newUser.user_category">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Unit / Kelompok (Sesuai Kategori)</label>
+          
+          <template v-if="showNewWilayahDropdown">
+            <select v-model="newSelectedWilayah" @change="onNewWilayahOnlyChange" class="border p-2 rounded w-full" required>
+              <option value="">-- Pilih Wilayah --</option>
+              <option v-for="w in wilayahList" :key="w" :value="w">{{ w }}</option>
+            </select>
+          </template>
+
+          <template v-else-if="showNewLingkunganDropdown">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <select v-model="newSelectedWilayah" @change="onNewWilayahChange" class="border p-2 rounded w-full" :disabled="lingkunganLoading" required>
+                <option value="">{{ lingkunganLoading ? 'Memuat data...' : '-- Pilih Wilayah --' }}</option>
+                <option v-for="w in wilayahList" :key="w" :value="w">{{ w }}</option>
+              </select>
+              <select v-if="newSelectedWilayah" v-model="newSelectedLingkungan" @change="onNewLingkunganChange" class="border p-2 rounded w-full" required>
+                <option value="">-- Pilih Lingkungan --</option>
+                <option v-for="ling in newLingkunganByWilayah" :key="ling.id" :value="ling.nama">{{ ling.nama }}</option>
+              </select>
+            </div>
+          </template>
+
+          <template v-else-if="showNewSeksiDropdown">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <select v-model="newSelectedBidang" @change="onNewBidangChange" class="border p-2 rounded w-full" :disabled="seksiLoading" required>
+                <option value="">{{ seksiLoading ? 'Memuat data...' : '-- Pilih Bidang --' }}</option>
+                <option v-for="b in bidangList" :key="b" :value="b">{{ b }}</option>
+              </select>
+              <select v-if="newSelectedBidang" v-model="newSelectedSeksi" @change="onNewSeksiChange" class="border p-2 rounded w-full" required>
+                <option value="">-- Pilih Seksi --</option>
+                <option v-for="s in newSeksiByBidang" :key="s.id" :value="s.nama">{{ s.nama }}</option>
+              </select>
+            </div>
+          </template>
+
+          <template v-else>
+            <input v-model="newUser.unit_name" type="text" placeholder="Nama Unit / Kelompok (opsional)" class="border p-2 rounded w-full" />
+          </template>
+        </div>
+
         <button type="submit" :disabled="loading" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 md:col-span-2">
           {{ loading ? 'Membuat...' : (newUser.role === 'admin' ? '🔐 Buat Admin' : newUser.role === 'kontributor_berita' ? '✍️ Buat Kontributor' : '👤 Buat User') }}
         </button>
@@ -734,6 +777,7 @@ const newUser = ref({
   full_name: '',
   contact_phone: '',
   user_category: '',
+  unit_name: '',
   role: 'user',
   adminRole: ''
 })
@@ -878,6 +922,63 @@ const onWilayahChange = () => { selectedLingkungan.value = ''; editingUser.value
 const onLingkunganChange = () => { editingUser.value.unit_name = selectedLingkungan.value }
 const onBidangChange = () => { selectedSeksi.value = ''; editingUser.value.unit_name = '' }
 const onSeksiChange = () => { editingUser.value.unit_name = selectedSeksi.value }
+
+// ── Cascading Dropdown State (Add User) ───────────
+const newSelectedWilayah = ref('')
+const newSelectedLingkungan = ref('')
+const newSelectedBidang = ref('')
+const newSelectedSeksi = ref('')
+
+const showNewWilayahDropdown = computed(() =>
+    categoryContains(newUser.value.user_category, 'wilayah') &&
+    !categoryContains(newUser.value.user_category, 'lingkungan')
+)
+const showNewLingkunganDropdown = computed(() => categoryContains(newUser.value.user_category, 'lingkungan'))
+const showNewSeksiDropdown = computed(() => categoryContains(newUser.value.user_category, 'seksi'))
+const needsNewLingkunganData = computed(() => showNewWilayahDropdown.value || showNewLingkunganDropdown.value)
+
+const newLingkunganByWilayah = computed(() => {
+    if (!newSelectedWilayah.value || allLingkungan.value.length === 0) return []
+    const target = newSelectedWilayah.value.toLowerCase()
+    const byRelasi = allLingkungan.value.filter(l => {
+        const w = ((l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')).trim().toLowerCase()
+        return w === target
+    })
+    if (byRelasi.length > 0) return byRelasi.sort((a, b) => (a.no || 0) - (b.no || 0))
+    const byNama = allLingkungan.value.filter(l => (l.nama || '').toLowerCase().includes(target))
+    return byNama.sort((a, b) => (a.no || 0) - (b.no || 0))
+})
+
+const newSeksiByBidang = computed(() => {
+    if (!newSelectedBidang.value) return []
+    const seenNama = new Set()
+    return allSeksi.value
+        .filter(s => (s.bidang || '').trim() === newSelectedBidang.value)
+        .filter(s => {
+            const key = (s.nama || '').trim().toLowerCase()
+            if (seenNama.has(key)) return false
+            seenNama.add(key)
+            return true
+        })
+        .sort((a, b) => (a.nama || '').localeCompare(b.nama || '', 'id'))
+})
+
+const onNewCategoryChange = async () => {
+    newSelectedWilayah.value = ''
+    newSelectedLingkungan.value = ''
+    newSelectedBidang.value = ''
+    newSelectedSeksi.value = ''
+    newUser.value.unit_name = ''
+    
+    if (needsNewLingkunganData.value) await loadLingkungan()
+    if (showNewSeksiDropdown.value) await loadSeksi()
+}
+
+const onNewWilayahOnlyChange = () => { newUser.value.unit_name = newSelectedWilayah.value }
+const onNewWilayahChange = () => { newSelectedLingkungan.value = ''; newUser.value.unit_name = '' }
+const onNewLingkunganChange = () => { newUser.value.unit_name = newSelectedLingkungan.value }
+const onNewBidangChange = () => { newSelectedSeksi.value = ''; newUser.value.unit_name = '' }
+const onNewSeksiChange = () => { newUser.value.unit_name = newSelectedSeksi.value }
 
 // Current user info
 const currentUser = useState('admin-users-current-user', () => null)
@@ -1196,6 +1297,7 @@ const createUser = async () => {
     full_name: userData.full_name || '',
     contact_phone: userData.contact_phone || '',
     user_category: userData.user_category || '',
+    unit_name: userData.unit_name || '',
     role: roleToSend || 'user'
   }
 
@@ -1213,6 +1315,7 @@ const createUser = async () => {
     full_name: '',
     contact_phone: '',
     user_category: '',
+    unit_name: '',
     role: 'user',
     adminRole: ''
   }
@@ -1261,7 +1364,8 @@ const editUser = async (user) => {
   selectedSeksi.value = ''
 
   if (categoryContains(user.user_category, 'wilayah') && !categoryContains(user.user_category, 'lingkungan')) {
-    selectedWilayah.value = user.unit_name || ''
+    const matched = WILAYAH_PAROKI.find(w => w === (user.unit_name || '').trim())
+    selectedWilayah.value = matched || ''
     await loadLingkungan()
   } else if (categoryContains(user.user_category, 'lingkungan')) {
     selectedLingkungan.value = user.unit_name || ''
