@@ -173,44 +173,88 @@
             </div>
           </div>
 
-          <!-- Tab navigation -->
-          <div class="flex gap-2 mb-4 border-b border-gray-200">
-            <button
-              @click="activeTab = 'active'"
-              :class="[
-                'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
-                activeTab === 'active' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800'
-              ]"
-            >Aktif</button>
-            <button
-              @click="activeTab = 'pending'"
-              :class="[
-                'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors flex items-center gap-1',
-                activeTab === 'pending' ? 'border-yellow-500 text-yellow-700 bg-yellow-50' : 'border-transparent text-gray-600 hover:text-gray-800'
-              ]"
-            >
-              ⏳ Menunggu
-              <span v-if="pendingCount > 0" class="bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {{ pendingCount }}
-              </span>
-            </button>
-            <button
-              @click="activeTab = 'inactive'"
-              :class="[
-                'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
-                activeTab === 'inactive' ? 'border-red-500 text-red-700 bg-red-50' : 'border-transparent text-gray-600 hover:text-gray-800'
-              ]"
-            >Nonaktif</button>
-            <button
-              @click="activeTab = 'all'"
-              :class="[
-                'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
-                activeTab === 'all' ? 'border-gray-500 text-gray-700 bg-gray-50' : 'border-transparent text-gray-600 hover:text-gray-800'
-              ]"
-            >Semua</button>
+          <!-- Tab navigation + Search bar -->
+          <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+            <!-- Tab pills -->
+            <div class="flex gap-2 border-b border-gray-200 flex-shrink-0">
+              <button
+                @click="activeTab = 'active'"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                  activeTab === 'active' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800'
+                ]"
+              >Aktif</button>
+              <button
+                @click="activeTab = 'pending'"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors flex items-center gap-1',
+                  activeTab === 'pending' ? 'border-yellow-500 text-yellow-700 bg-yellow-50' : 'border-transparent text-gray-600 hover:text-gray-800'
+                ]"
+              >
+                ⏳ Menunggu
+                <span v-if="pendingCount > 0" class="bg-yellow-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {{ pendingCount }}
+                </span>
+              </button>
+              <button
+                @click="activeTab = 'inactive'"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                  activeTab === 'inactive' ? 'border-red-500 text-red-700 bg-red-50' : 'border-transparent text-gray-600 hover:text-gray-800'
+                ]"
+              >Nonaktif</button>
+              <button
+                @click="activeTab = 'all'"
+                :class="[
+                  'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                  activeTab === 'all' ? 'border-gray-500 text-gray-700 bg-gray-50' : 'border-transparent text-gray-600 hover:text-gray-800'
+                ]"
+              >Semua</button>
+            </div>
+
+            <!-- Search bar -->
+            <div class="relative w-full sm:w-72">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <svg class="h-4 w-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <input
+                id="user-search"
+                v-model="searchQuery"
+                type="text"
+                placeholder="Cari nama, username, email…"
+                class="block w-full rounded-lg border border-gray-300 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+              />
+              <!-- Clear button -->
+              <button
+                v-if="searchQuery"
+                @click="searchQuery = ''"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                title="Hapus pencarian"
+                type="button"
+              >
+                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                </svg>
+              </button>
+            </div>
           </div>
-          
+
           <div v-if="users.length === 0" class="text-gray-500">Belum ada pengguna.</div>
+
+          <!-- Empty state: data ada tapi hasil pencarian/filter kosong -->
+          <div v-else-if="sortedUsers.length === 0" class="flex flex-col items-center justify-center py-12 text-gray-400">
+            <svg class="h-12 w-12 mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 15.803a7.5 7.5 0 0 0 10.607 0Z" />
+            </svg>
+            <p class="text-sm font-medium">Tidak ada hasil ditemukan</p>
+            <p class="text-xs mt-1">Coba ubah kata kunci atau filter tab yang aktif</p>
+            <button v-if="searchQuery" @click="searchQuery = ''" class="mt-3 text-xs text-blue-600 hover:underline" type="button">
+              Hapus pencarian
+            </button>
+          </div>
+
           <div v-else>
             <!-- Mobile/Tablet Card View -->
             <div class="xl:hidden space-y-4 mb-4">
@@ -748,6 +792,9 @@ const getRoleBadge = (user) => {
 // Clear all booking users
 const showClearModal = ref(false)
 
+// ── Search query untuk filter tabel pengguna ──────────────────────────────────
+const searchQuery = ref('')
+
 // ── Quota Override Modal (Super Admin) ────────────────────────────────────────
 const showQuotaModal      = ref(false)
 const quotaTargetUser     = ref(null)
@@ -846,7 +893,17 @@ const sortedUsers = computed(() => {
     filtered = filtered.filter(u => !u.account_status || u.account_status === 'ACTIVE')
   }
   // 'all' — no filter
-  
+
+  // ── Filter by search query (nama, username, email) — case-insensitive ────────
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q) {
+    filtered = filtered.filter(u =>
+      (u.full_name  || '').toLowerCase().includes(q) ||
+      (u.username   || '').toLowerCase().includes(q) ||
+      (u.email      || '').toLowerCase().includes(q)
+    )
+  }
+
   const sorted = [...filtered].sort((a, b) => {
     let aValue = a[sortField.value]
     let bValue = b[sortField.value]
@@ -963,7 +1020,7 @@ onMounted(async () => {
   await loadUsers()
 })
 
-watch([sortField, sortOrder, activeTab], () => {
+watch([sortField, sortOrder, activeTab, searchQuery], () => {
   currentPage.value = 1
 })
 
