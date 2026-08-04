@@ -341,7 +341,10 @@
                 <div class="grid grid-cols-2 gap-4 text-sm">
                   <div class="bg-gray-50 rounded-lg p-3">
                     <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Kategori</p>
-                    <p class="text-gray-900 font-medium">{{ user.user_category || '-' }}</p>
+                    <p class="text-gray-900 font-medium">
+                      {{ user.user_category || '-' }}
+                      <span v-if="user.unit_name" class="block text-xs text-blue-600 mt-0.5 font-semibold">{{ user.unit_name }}</span>
+                    </p>
                   </div>
                   <div class="bg-gray-50 rounded-lg p-3">
                     <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Status</p>
@@ -429,7 +432,10 @@
                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.full_name }}</td>
                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ user.email }}</td>
                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span v-if="user.user_category" class="text-sm">{{ user.user_category }}</span>
+                      <div v-if="user.user_category">
+                        <span class="text-sm font-medium">{{ user.user_category }}</span>
+                        <span v-if="user.unit_name" class="block text-xs text-blue-600 mt-0.5 font-semibold">{{ user.unit_name }}</span>
+                      </div>
                       <span v-else class="text-gray-400 text-sm italic">-</span>
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
