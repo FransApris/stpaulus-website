@@ -311,18 +311,19 @@ const showSeksiDropdown = computed(() =>
 const wilayahList = computed(() => {
     const seen = new Set()
     return allLingkungan.value
-        .map(l => l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')
+        .map(l => ((l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')).trim())
         .filter(w => w && !seen.has(w) && seen.add(w))
-        .sort()
+        .sort((a, b) => a.localeCompare(b, 'id'))
 })
 
 // ── Computed: Lingkungan dalam wilayah terpilih ─────────────────────────────
 const lingkunganByWilayah = computed(() => {
     if (!selectedWilayah.value) return []
     return allLingkungan.value
-        .filter(l =>
-            (l.wilayah_display || l.wilayah_nama || l.wilayah_text) === selectedWilayah.value
-        )
+        .filter(l => {
+            const w = ((l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')).trim()
+            return w === selectedWilayah.value
+        })
         .sort((a, b) => (a.no || 0) - (b.no || 0))
 })
 
@@ -330,17 +331,24 @@ const lingkunganByWilayah = computed(() => {
 const bidangList = computed(() => {
     const seen = new Set()
     return allSeksi.value
-        .map(s => s.bidang || '')
+        .map(s => (s.bidang || '').trim())
         .filter(b => b && !seen.has(b) && seen.add(b))
-        .sort()
+        .sort((a, b) => a.localeCompare(b, 'id'))
 })
 
 // ── Computed: Seksi dalam bidang terpilih ───────────────────────────────────
 const seksiByBidang = computed(() => {
     if (!selectedBidang.value) return []
+    const seenNama = new Set()
     return allSeksi.value
-        .filter(s => s.bidang === selectedBidang.value)
-        .sort((a, b) => a.nama.localeCompare(b.nama))
+        .filter(s => (s.bidang || '').trim() === selectedBidang.value)
+        .filter(s => {
+            const key = (s.nama || '').trim().toLowerCase()
+            if (seenNama.has(key)) return false
+            seenNama.add(key)
+            return true
+        })
+        .sort((a, b) => (a.nama || '').localeCompare(b.nama || '', 'id'))
 })
 
 // ── Computed: helper text untuk input teks bebas ────────────────────────────
@@ -409,9 +417,15 @@ const loadLingkungan = async () => {
     lingkunganLoading.value = true
     try {
         const res = await $fetch('/api/lingkungan')
-        // /api/lingkungan mengembalikan { data: [...], stats: {...} }
-        allLingkungan.value  = Array.isArray(res) ? res : (res?.data || [])
+        const rawList = Array.isArray(res) ? res : (res?.data || [])
+        allLingkungan.value = rawList
         lingkunganLoaded.value = true
+        // Debug
+        const wilayahUnik = [...new Set(rawList.map(l =>
+            ((l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')).trim()
+        ).filter(Boolean))]
+        console.log('[daftar] Lingkungan loaded:', rawList.length, 'item, wilayah:', wilayahUnik)
+        if (rawList.length > 0) console.log('[daftar] Contoh item[0]:', JSON.stringify(rawList[0]))
     } catch (err) {
         console.error('[daftar] Gagal load lingkungan', err)
         errorMsg.value = 'Gagal memuat daftar lingkungan. Silakan muat ulang halaman.'
@@ -423,9 +437,12 @@ const loadLingkungan = async () => {
 const loadSeksi = async () => {
     seksiLoading.value = true
     try {
-        // /api/seksi mengembalikan array langsung
-        allSeksi.value  = await $fetch('/api/seksi') || []
+        const rawList = await $fetch('/api/seksi')
+        allSeksi.value = Array.isArray(rawList) ? rawList : []
         seksiLoaded.value = true
+        // Debug
+        const bidangUnik = [...new Set(allSeksi.value.map(s => (s.bidang || '').trim()).filter(Boolean))]
+        console.log('[daftar] Seksi loaded:', allSeksi.value.length, 'item, bidang:', bidangUnik)
     } catch (err) {
         console.error('[daftar] Gagal load seksi', err)
         errorMsg.value = 'Gagal memuat daftar seksi. Silakan muat ulang halaman.'
