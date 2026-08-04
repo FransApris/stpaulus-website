@@ -17,7 +17,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const categories = await allQuery(`
-    SELECT id, name, display_name, description, is_active, display_order, created_at, updated_at
+    SELECT id, name, display_name, description, is_active, is_unlimited,
+           monthly_quota, display_order, created_at, updated_at
     FROM user_categories
     ORDER BY display_order ASC, display_name ASC
   `)

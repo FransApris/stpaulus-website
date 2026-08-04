@@ -350,9 +350,16 @@ const updateCategory = async () => {
     })
     
     // Optimistic update - update in list immediately
+    // Normalisasi tipe data (MySQL TINYINT → boolean, quota → number)
+    // agar konsisten dengan loadCategories()
     const index = categories.value.findIndex(c => c.id === categoryId)
     if (index !== -1) {
-      categories.value[index] = result
+      categories.value[index] = {
+        ...result,
+        is_active    : Boolean(result.is_active),
+        is_unlimited : Boolean(result.is_unlimited),
+        monthly_quota: Number(result.monthly_quota ?? 3)
+      }
     }
     
     setTimeout(() => {
