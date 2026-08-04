@@ -266,6 +266,18 @@ useHead({
 const categoryContains = (catName, keyword) =>
     (catName || '').toLowerCase().includes(keyword.toLowerCase())
 
+// ── 8 Wilayah Paroki St. Paulus Juanda (hardcoded karena data master) ───────
+const WILAYAH_PAROKI = [
+    'Bartolomeus',
+    'Fransiskus Asisi',
+    'Maria Regina',
+    'Petrus',
+    'Simon',
+    'Theresia',
+    'Vincentius a Paulo',
+    'Yakobus',
+]
+
 // ── Form state utama ────────────────────────────────────────────────────────
 const form = ref({
     full_name:       '',
@@ -307,24 +319,32 @@ const showSeksiDropdown = computed(() =>
     categoryContains(form.value.user_category, 'seksi')
 )
 
-// ── Computed: Daftar Wilayah (distinct) ─────────────────────────────────────
-const wilayahList = computed(() => {
-    const seen = new Set()
-    return allLingkungan.value
-        .map(l => ((l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')).trim())
-        .filter(w => w && !seen.has(w) && seen.add(w))
-        .sort((a, b) => a.localeCompare(b, 'id'))
-})
+// ── Daftar Wilayah: pakai konstanta statis (lebih andal dari API) ───────────
+const wilayahList = WILAYAH_PAROKI
 
-// ── Computed: Lingkungan dalam wilayah terpilih ─────────────────────────────
+// ── Lingkungan dalam wilayah terpilih ───────────────────────────────────────
+// Strategi multi-level:
+// 1. Coba cocokkan wilayah_display / wilayah_nama / wilayah_text
+// 2. Fallback: nama lingkungan mengandung nama wilayah (jika relasi DB kosong)
 const lingkunganByWilayah = computed(() => {
-    if (!selectedWilayah.value) return []
-    return allLingkungan.value
-        .filter(l => {
-            const w = ((l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')).trim()
-            return w === selectedWilayah.value
-        })
-        .sort((a, b) => (a.no || 0) - (b.no || 0))
+    if (!selectedWilayah.value || allLingkungan.value.length === 0) return []
+    const target = selectedWilayah.value.toLowerCase()
+
+    // Strategi 1: cocokkan field wilayah (relasi DB tersedia)
+    const byRelasi = allLingkungan.value.filter(l => {
+        const w = ((l.wilayah_display || l.wilayah_nama || l.wilayah_text || '')).trim().toLowerCase()
+        return w === target
+    })
+    if (byRelasi.length > 0) {
+        return byRelasi.sort((a, b) => (a.no || 0) - (b.no || 0))
+    }
+
+    // Strategi 2: fallback — nama lingkungan mengandung nama wilayah
+    // Contoh: 'Bartolomeus 1', 'Bartolomeus 2' → cocok dengan wilayah 'Bartolomeus'
+    const byNama = allLingkungan.value.filter(l =>
+        (l.nama || '').toLowerCase().includes(target)
+    )
+    return byNama.sort((a, b) => (a.no || 0) - (b.no || 0))
 })
 
 // ── Computed: Daftar Bidang (distinct) ──────────────────────────────────────
