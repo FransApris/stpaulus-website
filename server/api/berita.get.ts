@@ -41,7 +41,7 @@ export default defineEventHandler(async (event) => {
       LEFT JOIN article_categories ac ON ncr.category_id = ac.id
       ${whereClause}
       GROUP BY n.id
-      ORDER BY n.published_at DESC, n.created_at DESC
+      ORDER BY COALESCE(n.when_date, n.published_at, n.created_at) DESC
     `
 
     const newsList = await allQuery(sql, params);
