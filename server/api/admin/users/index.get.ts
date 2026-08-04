@@ -33,7 +33,9 @@ export default defineEventHandler(async (event) => {
         u.account_status,
         r.name as role_name, 
         r.display_name as role_display_name, 
-        u.created_at
+        u.created_at,
+        u.monthly_quota_override,
+        u.quota_is_unlimited_override
       FROM users u
       LEFT JOIN roles r ON u.role_id = r.id
     `

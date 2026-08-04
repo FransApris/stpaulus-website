@@ -58,10 +58,11 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // quota_is_unlimited_override: must be null | true | false
-  let unlimitedOverride: boolean | null = null
+  // quota_is_unlimited_override: must be null | 1 | 0 (TINYINT kompatibel MySQL)
+  // Kirim null = reset ke default kategori, 1 = unlimited, 0 = tidak unlimited
+  let unlimitedOverride: number | null = null
   if (quota_is_unlimited_override !== null && quota_is_unlimited_override !== undefined) {
-    unlimitedOverride = Boolean(quota_is_unlimited_override)
+    unlimitedOverride = quota_is_unlimited_override ? 1 : 0
   }
 
   // ── Apply update ──────────────────────────────────────────────────────────────

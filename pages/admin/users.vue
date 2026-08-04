@@ -777,8 +777,10 @@ const saveQuotaOverride = async () => {
   try {
     const token = sessionStorage.getItem('admin_access_token')
     const payload = {
-      // If unlimited is checked, ignore quota number
-      quota_is_unlimited_override: quotaForm.value.quota_is_unlimited_override || null,
+      // Kirim nilai boolean eksplisit — jangan gunakan `false || null` karena
+      // false || null = null yang diinterpretasikan backend sebagai "reset ke default"
+      quota_is_unlimited_override: quotaForm.value.quota_is_unlimited_override === true ? true : false,
+      // Jika unlimited aktif, paksa monthly_quota_override = null
       monthly_quota_override     : quotaForm.value.quota_is_unlimited_override
         ? null
         : (quotaForm.value.monthly_quota_override || null)
@@ -788,13 +790,14 @@ const saveQuotaOverride = async () => {
       headers: { Authorization: `Bearer ${token}` },
       body   : payload
     })
-    // Update local list
+    // Update local state dari response server (bukan dari payload)
+    // agar tipe data konsisten dengan apa yang tersimpan di DB
     const idx = users.value.findIndex(u => u.id === quotaTargetUser.value.id)
-    if (idx !== -1) {
+    if (idx !== -1 && result?.user) {
       users.value[idx] = {
         ...users.value[idx],
-        monthly_quota_override      : payload.monthly_quota_override,
-        quota_is_unlimited_override : payload.quota_is_unlimited_override
+        monthly_quota_override      : result.user.monthly_quota_override,
+        quota_is_unlimited_override : result.user.quota_is_unlimited_override
       }
     }
     quotaModalMsg.value = 'Kuota berhasil disimpan'
