@@ -170,6 +170,11 @@
           <template v-else>
             <input v-model="newUser.unit_name" type="text" placeholder="Nama Unit / Kelompok (opsional)" class="border p-2 rounded w-full" />
           </template>
+
+          <!-- Indikator unit terpilih (New User) -->
+          <div v-if="newUser.unit_name" class="text-xs text-green-700 mt-1 bg-green-50 p-1.5 rounded border border-green-200">
+            ✅ Terpilih: <span class="font-semibold">{{ newUser.unit_name }}</span>
+          </div>
         </div>
 
         <button type="submit" :disabled="loading" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 md:col-span-2">
@@ -677,7 +682,7 @@
               </select>
               
               <!-- Dropdown Unit Name (Cascading) -->
-              <div class="md:col-span-2">
+              <div class="flex flex-col gap-2" v-if="editingUser.user_category">
                 <!-- WILAYAH ONLY -->
                 <template v-if="showWilayahDropdown">
                   <select v-model="selectedWilayah" @change="onWilayahOnlyChange" class="border p-2 rounded w-full" required>
@@ -688,37 +693,41 @@
 
                 <!-- LINGKUNGAN (Wilayah -> Lingkungan) -->
                 <template v-else-if="showLingkunganDropdown">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <select v-model="selectedWilayah" @change="onWilayahChange" class="border p-2 rounded w-full" :disabled="lingkunganLoading" required>
-                      <option value="">{{ lingkunganLoading ? 'Memuat data...' : '-- Pilih Wilayah --' }}</option>
-                      <option v-for="w in wilayahList" :key="w" :value="w">{{ w }}</option>
-                    </select>
-                    <select v-if="selectedWilayah" v-model="selectedLingkungan" @change="onLingkunganChange" class="border p-2 rounded w-full" required>
-                      <option value="">-- Pilih Lingkungan --</option>
-                      <option v-for="ling in lingkunganByWilayah" :key="ling.id" :value="ling.nama">{{ ling.nama }}</option>
-                    </select>
-                  </div>
+                  <select v-model="selectedWilayah" @change="onWilayahChange" class="border p-2 rounded w-full" :disabled="lingkunganLoading" required>
+                    <option value="">{{ lingkunganLoading ? 'Memuat data...' : '-- Pilih Wilayah --' }}</option>
+                    <option v-for="w in wilayahList" :key="w" :value="w">{{ w }}</option>
+                  </select>
+                  <select v-if="selectedWilayah" v-model="selectedLingkungan" @change="onLingkunganChange" class="border p-2 rounded w-full" required>
+                    <option value="">-- Pilih Lingkungan --</option>
+                    <option v-for="ling in lingkunganByWilayah" :key="ling.id" :value="ling.nama">{{ ling.nama }}</option>
+                  </select>
                 </template>
 
                 <!-- SEKSI (Bidang -> Seksi) -->
                 <template v-else-if="showSeksiDropdown">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <select v-model="selectedBidang" @change="onBidangChange" class="border p-2 rounded w-full" :disabled="seksiLoading" required>
-                      <option value="">{{ seksiLoading ? 'Memuat data...' : '-- Pilih Bidang --' }}</option>
-                      <option v-for="b in bidangList" :key="b" :value="b">{{ b }}</option>
-                    </select>
-                    <select v-if="selectedBidang" v-model="selectedSeksi" @change="onSeksiChange" class="border p-2 rounded w-full" required>
-                      <option value="">-- Pilih Seksi --</option>
-                      <option v-for="s in seksiByBidang" :key="s.id" :value="s.nama">{{ s.nama }}</option>
-                    </select>
-                  </div>
+                  <select v-model="selectedBidang" @change="onBidangChange" class="border p-2 rounded w-full" :disabled="seksiLoading" required>
+                    <option value="">{{ seksiLoading ? 'Memuat data...' : '-- Pilih Bidang --' }}</option>
+                    <option v-for="b in bidangList" :key="b" :value="b">{{ b }}</option>
+                  </select>
+                  <select v-if="selectedBidang" v-model="selectedSeksi" @change="onSeksiChange" class="border p-2 rounded w-full" required>
+                    <option value="">-- Pilih Seksi --</option>
+                    <option v-for="s in seksiByBidang" :key="s.id" :value="s.nama">{{ s.nama }}</option>
+                  </select>
                 </template>
 
                 <!-- Text bebas untuk kategori lainnya -->
-                <template v-else-if="editingUser.user_category">
+                <template v-else>
                   <input v-model="editingUser.unit_name" type="text" placeholder="Nama Unit / Kelompok (opsional)" class="border p-2 rounded w-full" />
                 </template>
+
+                <!-- Indikator unit terpilih -->
+                <div v-if="editingUser.unit_name" class="text-xs text-green-700 mt-1 bg-green-50 p-1.5 rounded border border-green-200">
+                  ✅ Terpilih: <span class="font-semibold">{{ editingUser.unit_name }}</span>
+                </div>
               </div>
+
+              <!-- Kosongkan kolom jika kategori belum dipilih agar role tetap di bawah -->
+              <div v-else></div>
 
               <!-- Role / Tipe Pengguna -->
               <div class="md:col-span-2 p-3 bg-gray-50 border border-gray-200 rounded">
