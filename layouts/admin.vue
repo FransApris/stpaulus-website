@@ -444,7 +444,7 @@
                   </svg>
                   Pengaturan Footer
                 </NuxtLink>
-                <NuxtLink v-if="user?.role_name === 'super_admin'" to="/admin/maintenance"
+                <NuxtLink v-if="menuVisibility.maintenance" to="/admin/maintenance"
                   class="flex items-center px-3 py-2 text-sm font-bold rounded-lg transition-colors duration-200"
                   :class="$route.path === '/admin/maintenance' ? 'bg-[#882f1d] text-white shadow-xs' : 'text-gray-800 hover:bg-[#882f1d]/10 hover:text-[#882f1d]'">
                   <svg class="w-4 h-4 mr-2.5 flex-shrink-0" :class="$route.path === '/admin/maintenance' ? 'text-white' : 'text-[#882f1d]'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -639,6 +639,7 @@ const menuVisibility = computed(() => {
       articleCategories: true,
       news: true,
       gallery: true,
+      galleryCategories: true,
       agenda: true,
       regularMassSchedules: true,
       agendaCategories: true,
@@ -664,6 +665,7 @@ const menuVisibility = computed(() => {
       documents: true,
       footerSettings: true,
       parishStatistics: true,
+      maintenance: true,
       backup: true,
       restore: true,
       migrations: true,
@@ -672,7 +674,7 @@ const menuVisibility = computed(() => {
     }
   }
 
-  // Admin Komsos: Akses ke Kelompok 1 - 7, serta Tema Hero, Footer, Laporan Konten di Kelompok 8
+  // Admin Komsos: Fokus Media, Publikasi, Galeri, Desain Tema & Konten
   else if (user.value?.role_name === 'admin_komsos') {
     return {
       dashboard: true,
@@ -682,7 +684,7 @@ const menuVisibility = computed(() => {
       bgkp: true,
       teritorial: true,
       parishStatistics: true,
-      // Kelompok 2: Publikasi & Konten Media
+      // Kelompok 2: Publikasi & Konten Media (HANYA KOMSOS & SUPERADMIN)
       articles: true,
       articleCategories: true,
       news: true,
@@ -695,17 +697,17 @@ const menuVisibility = computed(() => {
       regularMassSchedules: true,
       massSchedules: true,
       liturgyTypes: true,
-      // Kelompok 4: Layanan Pemesanan Ruang
-      bookings: true,
-      rooms: true,
-      bookingReport: true,
+      // Kelompok 4: Layanan Pemesanan Ruang (HANYA SEKRETARIAT & SUPERADMIN -> DITUTUP)
+      bookings: false,
+      rooms: false,
+      bookingReport: false,
       // Kelompok 5: Kronik Paroki
       kronikEntries: true,
       kronikSections: true,
       // Kelompok 6: Dokumen & Interaksi Umat
-      documents: true,
-      documentCategories: true,
-      contactMessages: true,
+      documents: false,
+      documentCategories: false,
+      contactMessages: false,
       chatbotFaqs: true,
       chatbotFaqCategories: true,
       // Kelompok 7: Pengaturan Sistem & Akses
@@ -715,13 +717,14 @@ const menuVisibility = computed(() => {
       footerSettings: true,
       contentReport: true,
       signage: true,
+      maintenance: false,
       backup: false,
       restore: false,
       migrations: false
     }
   }
 
-  // Admin Sekretariat: Akses ke Kelompok 1 - 7, serta Kelola Pengguna di Kelompok 8
+  // Admin Sekretariat: Fokus Administrasi, Pemesanan Ruangan, Dokumen & Pesan Umat
   else if (user.value?.role_name === 'admin_sekretariat') {
     return {
       dashboard: true,
@@ -731,27 +734,27 @@ const menuVisibility = computed(() => {
       bgkp: true,
       teritorial: true,
       parishStatistics: true,
-      // Kelompok 2: Publikasi & Konten Media
-      articles: true,
-      articleCategories: true,
-      news: true,
-      gallery: true,
-      galleryCategories: true,
-      announcements: true,
+      // Kelompok 2: Publikasi & Konten Media (HANYA KOMSOS & SUPERADMIN -> DITUTUP)
+      articles: false,
+      articleCategories: false,
+      news: false,
+      gallery: false,
+      galleryCategories: false,
+      announcements: false,
       // Kelompok 3: Peribadatan & Agenda
       agenda: true,
       agendaCategories: true,
       regularMassSchedules: true,
       massSchedules: true,
       liturgyTypes: true,
-      // Kelompok 4: Layanan Pemesanan Ruang
+      // Kelompok 4: Layanan Pemesanan Ruang (HANYA SEKRETARIAT & SUPERADMIN -> DIBUKA)
       bookings: true,
       rooms: true,
       bookingReport: true,
       // Kelompok 5: Kronik Paroki
       kronikEntries: true,
       kronikSections: true,
-      // Kelompok 6: Dokumen & Interaksi Umat
+      // Kelompok 6: Dokumen & Interaksi Umat (HANYA SEKRETARIAT & SUPERADMIN -> DIBUKA)
       documents: true,
       documentCategories: true,
       contactMessages: true,
@@ -764,33 +767,53 @@ const menuVisibility = computed(() => {
       footerSettings: false,
       contentReport: false,
       signage: true,
+      maintenance: false,
       backup: false,
       restore: false,
       migrations: false
     }
   }
 
-  // Default for other roles or no user: only Dashboard
+  // Default for other roles or no user: only Dashboard, all others false
   else {
     return {
       dashboard: true,
+      pastors: false,
+      dpp: false,
+      bgkp: false,
+      teritorial: false,
+      parishStatistics: false,
       articles: false,
       articleCategories: false,
       news: false,
       gallery: false,
+      galleryCategories: false,
+      announcements: false,
       agenda: false,
       regularMassSchedules: false,
       agendaCategories: false,
-      contactMessages: false,
-      users: false,
-      rooms: false,
+      liturgyTypes: false,
+      massSchedules: false,
       bookings: false,
-      chatbotFaqCategories: false,
-      chatbotFaqs: false,
-      heroThemes: false,
-      pastors: false,
+      rooms: false,
+      bookingReport: false,
+      kronikEntries: false,
+      kronikSections: false,
+      documents: false,
       documentCategories: false,
-      documents: false
+      contactMessages: false,
+      chatbotFaqs: false,
+      chatbotFaqCategories: false,
+      users: false,
+      userCategories: false,
+      heroThemes: false,
+      footerSettings: false,
+      contentReport: false,
+      signage: false,
+      maintenance: false,
+      backup: false,
+      restore: false,
+      migrations: false
     }
   }
 })
@@ -799,12 +822,12 @@ const menuVisibility = computed(() => {
 const groupVisibility = computed(() => {
   return {
     profil_paroki: menuVisibility.value.pastors || menuVisibility.value.dpp || menuVisibility.value.bgkp || menuVisibility.value.teritorial || menuVisibility.value.parishStatistics,
-    publikasi: menuVisibility.value.news || menuVisibility.value.articles || menuVisibility.value.articleCategories || menuVisibility.value.gallery || menuVisibility.value.announcements,
+    publikasi: menuVisibility.value.news || menuVisibility.value.articles || menuVisibility.value.articleCategories || menuVisibility.value.gallery || menuVisibility.value.galleryCategories || menuVisibility.value.announcements,
     peribadatan: menuVisibility.value.massSchedules || menuVisibility.value.liturgyTypes || menuVisibility.value.agenda || menuVisibility.value.agendaCategories,
     booking: menuVisibility.value.bookings || menuVisibility.value.rooms || menuVisibility.value.bookingReport,
     kronik: menuVisibility.value.kronikEntries || menuVisibility.value.kronikSections,
     dokumen_interaksi: menuVisibility.value.documents || menuVisibility.value.documentCategories || menuVisibility.value.contactMessages || menuVisibility.value.chatbotFaqs || menuVisibility.value.chatbotFaqCategories,
-    pengaturan_sistem: menuVisibility.value.users || menuVisibility.value.userCategories || menuVisibility.value.heroThemes || menuVisibility.value.footerSettings || menuVisibility.value.backup || menuVisibility.value.restore || menuVisibility.value.migrations || menuVisibility.value.contentReport
+    pengaturan_sistem: menuVisibility.value.users || menuVisibility.value.userCategories || menuVisibility.value.heroThemes || menuVisibility.value.footerSettings || menuVisibility.value.maintenance || menuVisibility.value.backup || menuVisibility.value.restore || menuVisibility.value.migrations || menuVisibility.value.contentReport
   }
 })
 
