@@ -519,17 +519,7 @@
         <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <div>
-              <div class="flex items-center gap-3">
-                <h2 class="text-2xl font-cinzel text-gray-900 font-bold uppercase">{{ pageTitle }}</h2>
-                <!-- Live Indicator -->
-                <div v-if="$route.path === '/admin/dashboard'" class="hidden sm:flex items-center gap-2 px-3 py-1 bg-gray-50 border border-gray-100 rounded-full" title="Pembaruan Otomatis Aktif">
-                  <div class="relative flex h-2.5 w-2.5">
-                    <span :class="['animate-ping absolute inline-flex h-full w-full rounded-full opacity-75', isRefreshing ? 'bg-amber-400' : 'bg-green-400']"></span>
-                    <span :class="['relative inline-flex rounded-full h-2.5 w-2.5', isRefreshing ? 'bg-amber-500' : 'bg-green-500']"></span>
-                  </div>
-                  <span class="text-xs font-medium text-gray-600">{{ isRefreshing ? 'Memperbarui...' : 'Live' }}</span>
-                </div>
-              </div>
+              <h2 class="text-2xl font-cinzel text-gray-900 font-bold">{{ pageTitle }}</h2>
               <p class="text-sm text-gray-600">Selamat datang di panel admin CMS</p>
               <p v-if="user" class="text-xs text-[#882f1d] font-semibold mt-0.5">Anda login sebagai: {{ user.role_display_name }}</p>
             </div>
@@ -552,9 +542,6 @@
 
 // User state
 const user = useState('admin-layout-user', () => null)
-
-// Global state for live indicator
-const isRefreshing = useState('isRefreshing', () => false)
 
 // Group toggle states (8 Terstruktur)
 const openGroups = reactive({

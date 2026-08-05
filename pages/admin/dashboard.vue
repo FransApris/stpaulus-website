@@ -6,7 +6,17 @@
     <ClientOnly>
       <div class="flex items-center justify-between">
         <div class="flex-1">
-          <h2 class="text-2xl font-bold text-gray-900">Selamat Datang, {{ auth.user.value?.username || 'Admin' }}!</h2>
+          <div class="flex items-center gap-3">
+            <h2 class="text-2xl font-bold text-gray-900 uppercase">Selamat Datang, {{ auth.user.value?.username || 'Admin' }}!</h2>
+            <!-- Live Indicator -->
+            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-full" title="Pembaruan Otomatis Aktif">
+              <div class="relative flex h-2.5 w-2.5">
+                <span :class="['animate-ping absolute inline-flex h-full w-full rounded-full opacity-75', isRefreshing ? 'bg-amber-400' : 'bg-green-400']"></span>
+                <span :class="['relative inline-flex rounded-full h-2.5 w-2.5', isRefreshing ? 'bg-amber-500' : 'bg-green-500']"></span>
+              </div>
+              <span class="text-xs font-medium text-gray-600">{{ isRefreshing ? 'Memperbarui...' : 'Live' }}</span>
+            </div>
+          </div>
           <p class="text-gray-600 mt-1">Dashboard {{ getRoleName(userRole) }}</p>
         </div>
         <div class="flex items-center gap-3">
