@@ -23,6 +23,12 @@ export default defineEventHandler(async (event) => {
     ) as any
     result.pendingBookings = Number(pendingRows?.cnt) || 0
 
+    // Pending user activations
+    const pendingUsersRows = await dbGetOne(
+      `SELECT COUNT(*) as cnt FROM users WHERE account_status = 'PENDING'`, []
+    ) as any
+    result.pendingUsers = Number(pendingUsersRows?.cnt) || 0
+
     // Upcoming agenda (next 7 days)
     const upcomingAgenda = await allQuery(`
       SELECT title, start_date as event_date, location
@@ -51,12 +57,6 @@ export default defineEventHandler(async (event) => {
 
   // ── Super Admin only ─────────────────────────────────────────────
   if (role === 'super_admin') {
-    // Pending user activations
-    const pendingUsersRows = await dbGetOne(
-      `SELECT COUNT(*) as cnt FROM users WHERE account_status = 'PENDING'`, []
-    ) as any
-    result.pendingUsers = Number(pendingUsersRows?.cnt) || 0
-
     // Recent admin activity (last 5 content changes)
     const recentActivity = await allQuery(`
       SELECT 'artikel' as type, title, author, updated_at FROM articles

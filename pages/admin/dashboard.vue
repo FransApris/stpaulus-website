@@ -40,37 +40,42 @@
 
       <!-- Super Admin & Sekretariat: Pending items banner -->
       <div v-if="widgets.pendingBookings > 0 || widgets.pendingUsers > 0"
-        class="flex flex-wrap gap-4">
-        <NuxtLink v-if="widgets.pendingBookings > 0" to="/admin/bookings-new"
-          class="flex items-center gap-3 bg-yellow-50 border border-yellow-300 rounded-lg px-5 py-4 hover:bg-yellow-100 transition-colors flex-1 min-w-[200px]">
-          <div class="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="text-2xl font-bold text-yellow-700">{{ widgets.pendingBookings }}</div>
-            <div class="text-sm text-yellow-600 font-medium">Pemesanan menunggu persetujuan</div>
-          </div>
-          <svg class="w-5 h-5 text-yellow-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
-        </NuxtLink>
-
+        class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        
         <NuxtLink v-if="widgets.pendingUsers > 0" to="/admin/users"
-          class="flex items-center gap-3 bg-blue-50 border border-blue-300 rounded-lg px-5 py-4 hover:bg-blue-100 transition-colors flex-1 min-w-[200px]">
-          <div class="w-10 h-10 rounded-full bg-blue-400 flex items-center justify-center shrink-0">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          class="flex items-center gap-4 bg-blue-50 border border-blue-200 rounded-xl p-5 hover:bg-blue-100 transition-colors shadow-sm cursor-pointer">
+          <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shrink-0 shadow-sm">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
             </svg>
           </div>
-          <div>
-            <div class="text-2xl font-bold text-blue-700">{{ widgets.pendingUsers }}</div>
-            <div class="text-sm text-blue-600 font-medium">User menunggu aktivasi</div>
+          <div class="flex-1">
+            <div class="text-3xl font-bold text-blue-700 leading-tight">{{ widgets.pendingUsers }}</div>
+            <div class="text-sm text-blue-600 font-medium">User Menunggu Aktivasi</div>
           </div>
-          <svg class="w-5 h-5 text-blue-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-          </svg>
+          <div class="text-blue-400 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </NuxtLink>
+
+        <NuxtLink v-if="widgets.pendingBookings > 0" to="/admin/bookings-new"
+          class="flex items-center gap-4 bg-amber-50 border border-amber-200 rounded-xl p-5 hover:bg-amber-100 transition-colors shadow-sm cursor-pointer">
+          <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center shrink-0 shadow-sm">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="text-3xl font-bold text-amber-700 leading-tight">{{ widgets.pendingBookings }}</div>
+            <div class="text-sm text-amber-700 font-medium">Pemesanan Ruangan Pending</div>
+          </div>
+          <div class="text-amber-400 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+          </div>
         </NuxtLink>
       </div>
 
