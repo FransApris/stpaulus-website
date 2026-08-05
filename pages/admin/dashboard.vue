@@ -693,6 +693,7 @@ const bookings = ref([])
 const widgets = ref(null)
 const loading = ref(false)
 const loadingBookings = ref(false)
+const isRefreshing = useState('isRefreshing', () => false)
 const currentPage = ref(1)
 const itemsPerPage = 5
 
@@ -861,12 +862,12 @@ const fetchStats = async () => {
 }
 
 // Fetch articles and news - only if user has content permissions
-const fetchContent = async () => {
+const fetchContent = async (isBackground = false) => {
   if (!canViewContent.value) {
     return // Skip fetching if user doesn't have content permissions
   }
 
-  loading.value = true
+  if (!isBackground) loading.value = true
   try {
     const [articlesResponse, newsResponse] = await Promise.all([
       $fetch('/api/admin/articles', {
@@ -891,17 +892,17 @@ const fetchContent = async () => {
     }
     console.error('Failed to fetch content:', error)
   } finally {
-    loading.value = false
+    if (!isBackground) loading.value = false
   }
 }
 
 // Fetch bookings - only for superadmin and admin_sekretariat
-const fetchBookings = async () => {
+const fetchBookings = async (isBackground = false) => {
   if (!canViewBookingList.value) {
     return // Skip fetching if user is not superadmin or admin_sekretariat
   }
 
-  loadingBookings.value = true
+  if (!isBackground) loadingBookings.value = true
   try {
     const response = await $fetch('/api/admin/bookings', {
       headers: {
@@ -928,7 +929,7 @@ const fetchBookings = async () => {
     console.error('Failed to fetch bookings:', error)
     bookings.value = []
   } finally {
-    loadingBookings.value = false
+    if (!isBackground) loadingBookings.value = false
   }
 }
 
@@ -1055,6 +1056,9 @@ watch([articles, news], () => {
   currentPage.value = 1
 })
 
+// Polling Interval Reference
+let pollingInterval = null
+
 // Watch for auth user changes and fetch data when user is ready
 watch(() => auth.user.value, (newUser, oldUser) => {
   if (newUser && !oldUser) {
@@ -1067,8 +1071,38 @@ watch(() => auth.user.value, (newUser, oldUser) => {
 
 // Fetch data on mount (middleware already checks auth)
 onMounted(async () => {
-  if (auth.user.value) {
+  // Hanya fetch data awal jika di-mounted belum ada data,
+  // (meskipun watcher immediate:true mungkin sudah berjalan).
+  // Untuk mencegah double fetching, kita asumsikan widget sudah ada atau kita biarkan logic aslinya:
+  if (auth.user.value && !widgets.value) {
     await Promise.all([fetchStats(), fetchContent(), fetchBookings(), fetchWidgets()])
+  }
+
+  // Mulai interval polling setiap 15 detik secara background (silent refresh)
+  pollingInterval = setInterval(async () => {
+    if (auth.user.value) {
+      isRefreshing.value = true
+      try {
+        await Promise.all([
+          fetchStats(),
+          fetchWidgets(),
+          fetchContent(true), // true = isBackground agar loading indikator tidak muncul
+          fetchBookings(true) // true = isBackground agar loading indikator tidak muncul
+        ])
+      } finally {
+        // Biarkan sedikit delay agar transisi indikator tetap terlihat walau koneksi sangat cepat
+        setTimeout(() => {
+          isRefreshing.value = false
+        }, 500)
+      }
+    }
+  }, 15000)
+})
+
+onUnmounted(() => {
+  // Membersihkan interval saat admin pindah ke halaman lain
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
   }
 })
 </script>
