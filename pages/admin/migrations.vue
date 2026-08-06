@@ -1,54 +1,77 @@
 <template>
-  <div class="p-6 max-w-2xl mx-auto">
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">Database Migrations</h1>
-      <p class="text-gray-500 mt-1 text-sm">Jalankan migration SQL yang pending. Hanya super_admin.</p>
+  <div class="space-y-6 w-full max-w-3xl">
+    <!-- Header -->
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Database Migrations</h1>
+      <p class="text-sm sm:text-base text-gray-600">Jalankan migration SQL yang pending. Khusus Super Admin.</p>
     </div>
 
     <!-- Email Test Tool -->
-    <div class="bg-white rounded-xl shadow-sm border border-blue-200 p-5 mb-6">
-      <div class="font-medium text-gray-900 mb-1">🔧 Test Konfigurasi Email (SMTP)</div>
-      <p class="text-sm text-gray-500 mb-3">Kirim email percobaan untuk memverifikasi konfigurasi SMTP sudah benar.</p>
-      <div class="flex gap-3 items-start">
-        <input v-model="testEmailTo" type="email" placeholder="Masukkan email tujuan"
-          class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-        <button @click="runTestEmail" :disabled="testEmailRunning"
-          class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
+    <div class="bg-white rounded-lg shadow p-4 sm:p-6 border border-blue-100">
+      <div class="font-semibold text-gray-900 text-sm sm:text-base mb-1">🔧 Test Konfigurasi Email (SMTP)</div>
+      <p class="text-xs sm:text-sm text-gray-500 mb-4">Kirim email percobaan untuk memverifikasi konfigurasi SMTP sudah benar.</p>
+      <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <input
+          v-model="testEmailTo"
+          type="email"
+          placeholder="Masukkan email tujuan"
+          class="w-full sm:flex-1 border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+        />
+        <button
+          @click="runTestEmail"
+          :disabled="testEmailRunning || !testEmailTo.trim()"
+          class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
           {{ testEmailRunning ? 'Mengirim...' : 'Kirim Test Email' }}
         </button>
       </div>
-      <div v-if="testEmailResult" class="mt-3 text-sm px-3 py-2 rounded-lg"
-        :class="testEmailResult.success ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'">
-        <p class="font-medium">{{ testEmailResult.success ? '✅' : '❌' }} {{ testEmailResult.message }}</p>
-        <div v-if="testEmailResult.config" class="mt-2 space-y-0.5">
-          <p v-for="(val, key) in testEmailResult.config" :key="key" class="font-mono text-xs">{{ key }}: {{ val }}</p>
+      <div
+        v-if="testEmailResult"
+        class="mt-4 text-xs sm:text-sm p-3.5 rounded-lg border"
+        :class="testEmailResult.success ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'"
+      >
+        <p class="font-semibold break-words">{{ testEmailResult.success ? '✅' : '❌' }} {{ testEmailResult.message }}</p>
+        <div v-if="testEmailResult.config" class="mt-2 space-y-0.5 overflow-x-auto">
+          <p v-for="(val, key) in testEmailResult.config" :key="key" class="font-mono text-xs break-all">{{ key }}: {{ val }}</p>
         </div>
       </div>
     </div>
 
+    <!-- Migrations List -->
     <div class="space-y-4">
-      <div v-for="m in migrations" :key="m.key"
-        class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex items-start justify-between gap-4">
-        <div class="flex-1">
-          <div class="font-medium text-gray-900">{{ m.label }}</div>
-          <div class="text-sm text-gray-500 mt-0.5">{{ m.description }}</div>
+      <div
+        v-for="m in migrations"
+        :key="m.key"
+        class="bg-white rounded-lg shadow p-4 sm:p-6 flex flex-col sm:flex-row sm:items-start justify-between gap-4 border border-gray-100"
+      >
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm sm:text-base text-gray-900 break-words">{{ m.label }}</div>
+          <div class="text-xs sm:text-sm text-gray-500 mt-1 break-words leading-relaxed">{{ m.description }}</div>
           <!-- Result -->
           <div v-if="m.result" class="mt-3 space-y-1">
-            <div v-for="(r, i) in m.result.results" :key="i" class="text-xs font-mono px-2 py-1 rounded"
-              :class="r.status === 'ok' ? 'bg-green-50 text-green-800' : r.status.startsWith('skipped') ? 'bg-yellow-50 text-yellow-800' : 'bg-red-50 text-red-800'">
-              <span class="font-semibold">[{{ r.status }}]</span> {{ r.statement }}
+            <div
+              v-for="(r, i) in m.result.results"
+              :key="i"
+              class="text-xs font-mono px-2.5 py-1.5 rounded break-all"
+              :class="r.status === 'ok' ? 'bg-green-50 text-green-800' : r.status.startsWith('skipped') ? 'bg-yellow-50 text-yellow-800' : 'bg-red-50 text-red-800'"
+            >
+              <span class="font-bold">[{{ r.status }}]</span> {{ r.statement }}
             </div>
-            <p :class="m.result.success ? 'text-green-700' : 'text-red-700'" class="text-sm font-medium mt-2">
+            <p :class="m.result.success ? 'text-green-700' : 'text-red-700'" class="text-xs sm:text-sm font-medium mt-2 break-words">
               {{ m.result.message }}
             </p>
           </div>
         </div>
-        <button @click="run(m)" :disabled="m.running || m.done"
-          class="px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap" :class="m.done
+        <button
+          @click="run(m)"
+          :disabled="m.running || m.done"
+          class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
+          :class="m.done
             ? 'bg-green-100 text-green-700 cursor-default'
             : m.running
               ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-              : 'bg-[#882f1d] text-white hover:bg-[#6d2517]'">
+              : 'bg-[#882f1d] text-white hover:bg-[#6d2517]'"
+        >
           {{ m.done ? '✓ Selesai' : m.running ? 'Running...' : 'Jalankan' }}
         </button>
       </div>
