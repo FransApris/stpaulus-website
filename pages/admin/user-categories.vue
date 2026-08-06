@@ -20,58 +20,116 @@
     <div class="bg-white p-6 rounded-lg shadow">
       <h2 class="text-lg font-semibold mb-4">Daftar Kategori Pengguna</h2>
       <div v-if="categories.length === 0" class="text-gray-500">Belum ada kategori pengguna.</div>
-      <div v-else class="overflow-x-auto">
+      <div v-else>
         <div class="mb-3 text-sm text-gray-600">Total: {{ totalItems }} kategori</div>
-        <table class="min-w-full table-auto">
-          <thead>
-            <tr class="bg-gray-50">
-              <th class="px-4 py-2 text-left">Nama</th>
-              <th class="px-4 py-2 text-left">Nama Tampilan</th>
-              <th class="px-4 py-2 text-left">Deskripsi</th>
-              <th class="px-4 py-2 text-left">Urutan</th>
-              <th class="px-4 py-2 text-left">Status</th>
-              <th class="px-4 py-2 text-left">Kuota/Bulan</th>
-              <th class="px-4 py-2 text-left">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="category in paginatedCategories" :key="category.id" class="border-t">
-              <td class="px-4 py-2">{{ category.name }}</td>
-              <td class="px-4 py-2">{{ category.display_name }}</td>
-              <td class="px-4 py-2">{{ category.description }}</td>
-              <td class="px-4 py-2">{{ category.display_order }}</td>
-              <td class="px-4 py-2">
-                <span :class="category.is_active ? 'text-green-600' : 'text-red-600'">
-                  {{ category.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                </span>
-              </td>
-              <!-- Kuota column -->
-              <td class="px-4 py-2">
-                <span
-                  v-if="category.is_unlimited"
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800"
-                >
+
+        <!-- ── Desktop: Tabel standar (md ke atas) ── -->
+        <div class="hidden md:block overflow-x-auto">
+          <table class="min-w-full table-auto">
+            <thead>
+              <tr class="bg-gray-50">
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nama Tampilan</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Urutan</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kuota/Bulan</th>
+                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="category in paginatedCategories" :key="category.id" class="border-t">
+                <td class="px-4 py-2 text-sm">{{ category.name }}</td>
+                <td class="px-4 py-2 text-sm">{{ category.display_name }}</td>
+                <td class="px-4 py-2 text-sm">{{ category.description }}</td>
+                <td class="px-4 py-2 text-sm">{{ category.display_order }}</td>
+                <td class="px-4 py-2">
+                  <span :class="category.is_active ? 'text-green-600' : 'text-red-600'" class="text-sm font-medium">
+                    {{ category.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                  </span>
+                </td>
+                <td class="px-4 py-2">
+                  <span v-if="category.is_unlimited"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
+                    ♾️ Unlimited
+                  </span>
+                  <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                    📅 {{ category.monthly_quota ?? 3 }}×/bln
+                  </span>
+                </td>
+                <td class="px-4 py-2">
+                  <button @click="editCategory(category)" title="Edit" class="text-blue-600 hover:text-blue-800 mr-2 p-1 inline-flex items-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                  <button @click="deleteCategory(category)" title="Hapus" class="text-red-600 hover:text-red-800 p-1 inline-flex items-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ── Mobile: Card layout (di bawah md) ── -->
+        <div class="md:hidden space-y-3">
+          <div v-for="category in paginatedCategories" :key="category.id"
+            class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+            <!-- Header kartu: nama tampilan + badge status -->
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <p class="font-semibold text-gray-900">{{ category.display_name }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">{{ category.name }}</p>
+              </div>
+              <span :class="category.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
+                class="text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ml-2">
+                {{ category.is_active ? 'Aktif' : 'Nonaktif' }}
+              </span>
+            </div>
+            <!-- Detail rows -->
+            <div class="space-y-1.5 text-sm border-t border-gray-100 pt-3">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Deskripsi</span>
+                <span class="text-gray-800 text-right max-w-[60%]">{{ category.description || '-' }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Urutan</span>
+                <span class="text-gray-800">{{ category.display_order }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Kuota/Bulan</span>
+                <span v-if="category.is_unlimited"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
                   ♾️ Unlimited
                 </span>
                 <span v-else class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
                   📅 {{ category.monthly_quota ?? 3 }}×/bln
                 </span>
-              </td>
-              <td class="px-4 py-2">
-                <button @click="editCategory(category)" title="Edit" class="text-blue-600 hover:text-blue-800 mr-2 p-1 inline-flex items-center">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                  </svg>
-                </button>
-                <button @click="deleteCategory(category)" title="Hapus" class="text-red-600 hover:text-red-800 p-1 inline-flex items-center">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+            </div>
+            <!-- Tombol aksi -->
+            <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+              <button @click="editCategory(category)"
+                class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 text-xs font-medium rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                Edit
+              </button>
+              <button @click="deleteCategory(category)"
+                class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-50 text-red-700 hover:bg-red-100 text-xs font-medium rounded-lg transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t pt-4">
           <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
           <div class="flex items-center gap-2">
