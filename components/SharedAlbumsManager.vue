@@ -866,7 +866,21 @@ onMounted(() => {
   }
 
   .album-actions {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: center;
+    gap: 16px;
+    padding: 12px;
+  }
+  
+  .album-actions button {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    background: #f9fafb;
   }
 }
 </style>
