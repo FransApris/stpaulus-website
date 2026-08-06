@@ -19,6 +19,11 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 
   const cleanPath = to.path.replace(/\/$/, '')
 
+  // ── Bypass: halaman 403 selalu diizinkan (mencegah redirect loop) ────────────
+  // Jika middleware menolak akses dan redirect ke /admin/forbidden, tanpa ini
+  // middleware akan terpanggil lagi untuk /admin/forbidden dan menghasilkan loop.
+  if (cleanPath === '/admin/forbidden') return
+
   try {
     const auth = useAuth()
 
@@ -68,6 +73,7 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       '/admin/rooms': ['manage_rooms'],
       '/admin/bookings': ['manage_bookings'],
       '/admin/bookings-new': ['manage_bookings'],
+      '/admin/bookings-report': ['manage_bookings'],
       '/admin/documents': ['manage_documents'],
       '/admin/document-categories': ['manage_document_categories'],
       '/admin/contact-messages': ['manage_contact_messages'],
@@ -83,7 +89,10 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
       '/admin/church-announcements': ['manage_church_announcements'],
       '/admin/backup': ['manage_content'],
       '/admin/restore': ['manage_content'],
+      '/admin/migrations': ['manage_content'],
+      '/admin/content-report': ['manage_content', 'manage_news'],
       '/admin/kronik': ['kronik.gereja.view', 'kronik.dpp.view', 'kronik.bgkp.view', 'kronik.wilayah.view', 'kronik.lingkungan.view'],
+      '/admin/kronik/sections': ['kronik.dpp.view', 'kronik.bgkp.view'],
       '/admin/bgkp': ['kronik.bgkp.view'],
       '/admin/dpp': ['kronik.dpp.view'],
       '/admin/teritorial': ['kronik.wilayah.view', 'kronik.lingkungan.view'],
@@ -113,8 +122,8 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
     console.log(`[AUTH CHECK] ${cleanPath} | required: ${JSON.stringify(requiredPermissions)} | perms: ${userPermissions.length} | access: ${hasAccess}`)
 
     if (!hasAccess) {
-      console.log(`[AUTH DENY] ❌ ${cleanPath} → redirecting to dashboard`)
-      return navigateTo('/admin/dashboard')
+      console.log(`[AUTH DENY] ❌ ${cleanPath} → 403 Forbidden (role tidak punya permission)`)
+      return navigateTo('/admin/forbidden')
     }
 
     console.log(`[AUTH ALLOW] ✅ ${cleanPath}`)

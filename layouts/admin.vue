@@ -143,8 +143,8 @@ const filteredMenus = computed(() => {
   if (!currentRole) return []
 
   return ADMIN_NAVIGATION.map(group => {
-    // 1. Cek apakah role diizinkan melihat grup ini
-    if (!group.allowedRoles.includes(currentRole)) {
+    // 1. Cek apakah role diizinkan melihat grup ini (optional chaining: aman jika allowedRoles undefined)
+    if (!group.allowedRoles?.includes(currentRole)) {
       return null
     }
 
@@ -228,13 +228,16 @@ const hasPermission = (permission: string) => {
   return user.value?.permissions?.includes(permission) || false
 }
 
-// Menentukan judul halaman secara dinamis dari konfigurasi menu
+// Menentukan judul halaman secara dinamis dari konfigurasi menu yang sudah difilter
+// (menggunakan filteredMenus bukan ADMIN_NAVIGATION global agar tidak bocorkan
+// nama halaman yang tidak diizinkan untuk role saat ini)
 const pageTitle = computed(() => {
   const currentPath = route.path
   if (currentPath === '/admin/dashboard') return 'Dashboard'
   if (currentPath === '/admin/kronik/create') return 'Buat Kronik Baru'
+  if (currentPath === '/admin/forbidden') return 'Akses Ditolak'
 
-  for (const group of ADMIN_NAVIGATION) {
+  for (const group of filteredMenus.value) {
     if (group.children) {
       const match = group.children.find(child => isChildActive(child.route) || currentPath === child.route)
       if (match) return match.title
