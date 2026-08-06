@@ -1,12 +1,12 @@
-﻿<template>
+<template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="bg-white p-6 rounded-lg shadow">
-      <h1 class="text-2xl font-bold text-gray-900 mb-2">Pengelola Tema Hero</h1>
-      <p class="text-gray-600">Kelola gambar hero section halaman depan</p>
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Pengelola Tema Hero</h1>
+      <p class="text-sm sm:text-base text-gray-600">Kelola gambar hero section halaman depan</p>
 
       <!-- Image Guidelines -->
-      <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <div class="mt-4 p-3.5 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <h3 class="text-sm font-semibold text-blue-800 mb-2">Rekomendasi Ukuran Gambar Hero</h3>
         <ul class="text-sm text-blue-700 space-y-1">
           <li><strong>Lebar:</strong> 1920px (Full HD)</li>
@@ -32,67 +32,149 @@
     </div>
 
     <!-- Add Theme Button -->
-    <div class="bg-white p-6 rounded-lg shadow">
-      <button @click="showCreateModal = true" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-        Tambah Tema Baru
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow">
+      <button @click="showCreateModal = true" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm sm:text-base font-medium hover:bg-blue-700 transition-colors shadow-sm">
+        + Tambah Tema Baru
       </button>
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="bg-white p-6 rounded-lg shadow">
+    <div v-if="loading" class="bg-white p-4 sm:p-6 rounded-lg shadow">
       <p class="text-gray-500">Loading...</p>
     </div>
 
     <!-- Themes List -->
-    <div v-else-if="themes.length > 0" class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-lg font-semibold mb-4">Daftar Tema Hero</h2>
-      <div class="overflow-x-auto">
+    <div v-else-if="themes.length > 0" class="bg-white p-4 sm:p-6 rounded-lg shadow">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-900">Daftar Tema Hero</h2>
+        <span class="text-xs text-gray-500 font-medium">{{ themes.length }} tema</span>
+      </div>
+
+      <!-- Mobile Card View (md:hidden) -->
+      <div class="md:hidden space-y-3">
+        <div 
+          v-for="theme in themes" 
+          :key="'card-' + theme.id"
+          class="bg-white border rounded-xl p-3.5 shadow-sm transition-all"
+          :class="theme.is_active ? 'border-green-300 ring-1 ring-green-200' : 'border-gray-200'"
+        >
+          <div class="flex gap-3 items-start">
+            <!-- Thumbnail Image -->
+            <div class="relative flex-shrink-0 group cursor-pointer" @click="openPreviewModal(theme)">
+              <img 
+                :src="resolveThemeImage(theme.image_path)"
+                :alt="theme.name"
+                class="w-24 h-16 object-cover rounded-lg shadow-xs border border-gray-100"
+                @error="handleImageError"
+              />
+              <div class="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </div>
+            </div>
+
+            <!-- Info & Status -->
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm font-bold text-gray-900 leading-snug break-words">{{ theme.name }}</h3>
+              <div class="mt-1.5 flex items-center gap-2">
+                <span 
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
+                  :class="theme.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="theme.is_active ? 'bg-green-500' : 'bg-gray-400'"></span>
+                  {{ theme.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons Horizontal Bar -->
+          <div class="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-end gap-2">
+            <button 
+              v-if="!theme.is_active" 
+              @click="activateTheme(theme.id)" 
+              class="px-2.5 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-medium flex items-center gap-1 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Aktifkan</span>
+            </button>
+            <button 
+              @click="openEditModal(theme)" 
+              class="p-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg transition-colors"
+              title="Edit Tema"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2M4 20h4l10-10a2.828 2.828 0 00-4-4L4 16v4z" />
+              </svg>
+            </button>
+            <button 
+              @click="deleteTheme(theme.id)" 
+              class="p-1.5 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg transition-colors"
+              title="Hapus Tema"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop Table View (hidden md:block) -->
+      <div class="hidden md:block overflow-x-auto">
         <table class="min-w-full table-auto">
           <thead>
-            <tr class="bg-gray-50">
-              <th class="px-4 py-2 text-left">Preview</th>
-              <th class="px-4 py-2 text-left">Nama</th>
-              <th class="px-4 py-2 text-left">Status</th>
-              <th class="px-4 py-2 text-left">Aksi</th>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Preview</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Nama</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+              <th class="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Aksi</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="theme in themes" :key="theme.id" class="border-t">
-              <td class="px-4 py-2">
-                <div class="relative group">
+          <tbody class="divide-y divide-gray-100">
+            <tr v-for="theme in themes" :key="theme.id" class="hover:bg-gray-50/70 transition-colors">
+              <td class="px-4 py-3">
+                <div class="relative group inline-block">
                   <img 
                     :src="resolveThemeImage(theme.image_path)"
                     :alt="theme.name"
-                    class="w-24 h-16 object-cover rounded shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                    class="w-24 h-16 object-cover rounded-lg shadow-xs cursor-pointer hover:shadow-md transition-shadow"
                     @click="openPreviewModal(theme)"
                     @error="handleImageError"
                   />
-                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded transition-all flex items-center justify-center">
+                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-lg transition-all flex items-center justify-center">
                     <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                     </svg>
                   </div>
                 </div>
               </td>
-              <td class="px-4 py-2">{{ theme.name }}</td>
-              <td class="px-4 py-2">
-                <span :class="theme.is_active ? 'text-green-600' : 'text-gray-500'">
+              <td class="px-4 py-3 font-medium text-gray-900">{{ theme.name }}</td>
+              <td class="px-4 py-3">
+                <span 
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  :class="theme.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full mr-1.5" :class="theme.is_active ? 'bg-green-500' : 'bg-gray-400'"></span>
                   {{ theme.is_active ? 'Aktif' : 'Tidak Aktif' }}
                 </span>
               </td>
-              <td class="px-4 py-2">
-                <div class="flex space-x-2">
-                  <button @click="openEditModal(theme)" title="Edit" class="text-indigo-600 hover:text-indigo-800 p-1">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2M4 20h4l10-10a2.828 2.828 0 00-4-4L4 16v4z" />
-                    </svg>
-                  </button>
-                  <button v-if="!theme.is_active" @click="activateTheme(theme.id)" title="Aktifkan" class="text-green-600 hover:text-green-800 p-1">
+              <td class="px-4 py-3 text-right">
+                <div class="flex items-center justify-end space-x-2">
+                  <button v-if="!theme.is_active" @click="activateTheme(theme.id)" title="Aktifkan" class="text-green-600 hover:text-green-800 p-1.5 hover:bg-green-50 rounded-md transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </button>
-                  <button @click="deleteTheme(theme.id)" title="Hapus" class="text-red-600 hover:text-red-800 p-1">
+                  <button @click="openEditModal(theme)" title="Edit" class="text-indigo-600 hover:text-indigo-800 p-1.5 hover:bg-indigo-50 rounded-md transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5h2M4 20h4l10-10a2.828 2.828 0 00-4-4L4 16v4z" />
+                    </svg>
+                  </button>
+                  <button @click="deleteTheme(theme.id)" title="Hapus" class="text-red-600 hover:text-red-800 p-1.5 hover:bg-red-50 rounded-md transition-colors">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
@@ -106,7 +188,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else class="bg-white p-6 rounded-lg shadow">
+    <div v-else class="bg-white p-4 sm:p-6 rounded-lg shadow">
       <p class="text-gray-500">Belum ada tema hero. Klik tombol "Tambah Tema Baru" untuk membuat tema pertama!</p>
     </div>
 
