@@ -361,12 +361,20 @@
                   <div class="col-span-2 bg-gray-50 rounded-lg p-3">
                     <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Kuota</p>
                     <template v-if="!user.role_id || user.role_id === 0">
-                      <span v-if="user.quota_is_unlimited_override === true || user.quota_is_unlimited_override === 1"
+                      <!-- Unlimited: calculated_quota === null -->
+                      <span
+                        v-if="user.calculated_quota === null"
                         class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800"
-                        title="Override: Unlimited">♾️ Unlimited*</span>
-                      <span v-else-if="user.monthly_quota_override !== null && user.monthly_quota_override !== undefined"
-                        class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800"
-                        :title="'Override: ' + user.monthly_quota_override + '/bln'">📅 {{ user.monthly_quota_override }}*</span>
+                        :title="user.quota_source === 'override' ? 'Override Individu: Unlimited' : 'Default Kategori: Unlimited'"
+                      >∞ Unlimited<span v-if="user.quota_source === 'override'" class="ml-0.5 text-purple-500">*</span></span>
+                      <!-- Angka: calculated_quota adalah number -->
+                      <span
+                        v-else-if="typeof user.calculated_quota === 'number'"
+                        class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold"
+                        :class="user.quota_source === 'override' ? 'bg-blue-100 text-blue-800' : 'bg-teal-100 text-teal-800'"
+                        :title="user.quota_source === 'override' ? 'Override Individu: ' + user.calculated_quota + '/bln' : 'Default Kategori: ' + user.calculated_quota + '/bln'"
+                      >{{ user.calculated_quota }}×/bln<span v-if="user.quota_source === 'override'" class="ml-0.5">*</span></span>
+                      <!-- Tidak ada data kuota sama sekali -->
                       <span v-else class="text-xs text-gray-400">–</span>
                     </template>
                     <span v-else class="text-xs text-gray-300">–</span>
@@ -453,12 +461,20 @@
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
                       <template v-if="!user.role_id || user.role_id === 0">
-                        <span v-if="user.quota_is_unlimited_override === true || user.quota_is_unlimited_override === 1"
+                        <!-- Unlimited: calculated_quota === null -->
+                        <span
+                          v-if="user.calculated_quota === null"
                           class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800"
-                          title="Override: Unlimited">♾️ Unlimited*</span>
-                        <span v-else-if="user.monthly_quota_override !== null && user.monthly_quota_override !== undefined"
-                          class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800"
-                          :title="'Override: ' + user.monthly_quota_override + '/bln'">📅 {{ user.monthly_quota_override }}*</span>
+                          :title="user.quota_source === 'override' ? 'Override Individu: Unlimited' : 'Default Kategori: Unlimited'"
+                        >∞ Unlimited<span v-if="user.quota_source === 'override'" class="ml-0.5 text-purple-500">*</span></span>
+                        <!-- Angka: calculated_quota adalah number -->
+                        <span
+                          v-else-if="typeof user.calculated_quota === 'number'"
+                          class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold"
+                          :class="user.quota_source === 'override' ? 'bg-blue-100 text-blue-800' : 'bg-teal-100 text-teal-800'"
+                          :title="user.quota_source === 'override' ? 'Override Individu: ' + user.calculated_quota + '/bln' : 'Default Kategori: ' + user.calculated_quota + '/bln'"
+                        >{{ user.calculated_quota }}×/bln<span v-if="user.quota_source === 'override'" class="ml-0.5">*</span></span>
+                        <!-- Tidak ada data kuota sama sekali -->
                         <span v-else class="text-xs text-gray-400">–</span>
                       </template>
                       <span v-else class="text-xs text-gray-300">–</span>
@@ -1103,10 +1119,32 @@ const saveQuotaOverride = async () => {
     // agar tipe data konsisten dengan apa yang tersimpan di DB
     const idx = users.value.findIndex(u => u.id === quotaTargetUser.value.id)
     if (idx !== -1 && result?.user) {
+      const u = result.user
+      // Hitung ulang calculated_quota dan quota_source secara lokal
+      // setelah override disimpan, agar UI langsung terupdate tanpa reload
+      let calculated_quota: number | null | undefined
+      let quota_source: 'override' | 'category' | 'none' = 'none'
+      if (u.quota_is_unlimited_override === true || u.quota_is_unlimited_override === 1) {
+        calculated_quota = null; quota_source = 'override'
+      } else if (u.monthly_quota_override !== null && u.monthly_quota_override !== undefined) {
+        calculated_quota = Number(u.monthly_quota_override); quota_source = 'override'
+      } else {
+        // Reset ke default kategori — ambil dari data user yang sudah ada
+        const existing = users.value[idx] as any
+        if (existing.category_is_unlimited === true || existing.category_is_unlimited === 1) {
+          calculated_quota = null; quota_source = 'category'
+        } else if (existing.category_monthly_quota !== null && existing.category_monthly_quota !== undefined) {
+          calculated_quota = Number(existing.category_monthly_quota); quota_source = 'category'
+        } else {
+          calculated_quota = undefined; quota_source = 'none'
+        }
+      }
       users.value[idx] = {
         ...users.value[idx],
-        monthly_quota_override      : result.user.monthly_quota_override,
-        quota_is_unlimited_override : result.user.quota_is_unlimited_override
+        monthly_quota_override      : u.monthly_quota_override,
+        quota_is_unlimited_override : u.quota_is_unlimited_override,
+        calculated_quota,
+        quota_source
       }
     }
     quotaModalMsg.value = 'Kuota berhasil disimpan'
