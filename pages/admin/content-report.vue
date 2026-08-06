@@ -2,40 +2,87 @@
   <div class="space-y-6">
 
     <!-- Header -->
-    <div class="bg-white p-6 rounded-lg shadow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-800">Laporan Konten</h1>
-        <p class="text-gray-500 mt-1 text-sm">Statistik artikel, berita, galeri & kronik</p>
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900">Laporan Konten</h1>
+        <p class="text-xs sm:text-sm text-gray-500 mt-1">Statistik artikel, berita, galeri & kronik</p>
       </div>
-      <div class="flex flex-wrap items-center gap-2 no-print">
-        <input type="date" v-model="filterStart"
-          class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <span class="text-gray-500 text-sm">s/d</span>
-        <input type="date" v-model="filterEnd"
-          class="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-        <button @click="loadReport"
-          class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
-          Terapkan
-        </button>
-        <button @click="resetFilter"
-          class="bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm hover:bg-gray-200 transition-colors">
-          Reset
-        </button>
-        <div class="w-px h-6 bg-gray-300"></div>
-        <button @click="exportXLS" :disabled="!report"
-          class="flex items-center gap-1 bg-green-600 text-white px-4 py-2 rounded-md text-sm hover:bg-green-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-          </svg>
-          Export Excel
-        </button>
-        <button @click="exportPDF" :disabled="!report"
-          class="flex items-center gap-1 bg-red-600 text-white px-4 py-2 rounded-md text-sm hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-          </svg>
-          Export PDF
-        </button>
+
+      <!-- Filter Controls & Buttons -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 no-print">
+        <!-- Kotak Tanggal (Satu Baris) -->
+        <div class="flex items-center gap-2">
+          <input
+            type="date"
+            v-model="filterStart"
+            class="flex-1 sm:w-36 border border-gray-300 rounded-lg px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          />
+          <span class="text-xs sm:text-sm text-gray-500 font-medium flex-shrink-0">s/d</span>
+          <input
+            type="date"
+            v-model="filterEnd"
+            class="flex-1 sm:w-36 border border-gray-300 rounded-lg px-2.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          />
+        </div>
+
+        <!-- Tombol Aksi (Terapkan, Reset, Single Export Dropdown) -->
+        <div class="flex items-center gap-2">
+          <button
+            @click="loadReport"
+            class="flex-1 sm:flex-none inline-flex items-center justify-center bg-blue-600 text-white px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            Terapkan
+          </button>
+          
+          <button
+            @click="resetFilter"
+            class="inline-flex items-center justify-center bg-gray-100 text-gray-700 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-gray-200 transition-colors"
+          >
+            Reset
+          </button>
+
+          <!-- Single Export Dropdown Button -->
+          <div class="relative" ref="exportDropdownRef">
+            <button
+              @click="showExportMenu = !showExportMenu"
+              :disabled="!report"
+              class="inline-flex items-center gap-1.5 bg-emerald-600 text-white px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <span>Export</span>
+              <svg class="w-3.5 h-3.5 transition-transform" :class="showExportMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div
+              v-if="showExportMenu"
+              class="absolute right-0 mt-2 w-44 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-30"
+            >
+              <button
+                @click="exportXLS(); showExportMenu = false"
+                class="w-full text-left px-3.5 py-2 text-xs sm:text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-2 transition-colors"
+              >
+                <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Export Excel (.xlsx)</span>
+              </button>
+              <button
+                @click="exportPDF(); showExportMenu = false"
+                class="w-full text-left px-3.5 py-2 text-xs sm:text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 flex items-center gap-2 transition-colors"
+              >
+                <svg class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <span>Export PDF (.pdf)</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -311,13 +358,25 @@ const loadReport = async () => {
   }
 }
 
+const showExportMenu = ref(false)
+const exportDropdownRef = ref(null)
+
 const resetFilter = () => {
   filterStart.value = ''
   filterEnd.value = ''
   loadReport()
 }
 
-onMounted(loadReport)
+onMounted(() => {
+  loadReport()
+  const handleClickOutside = (e) => {
+    if (exportDropdownRef.value && !exportDropdownRef.value.contains(e.target)) {
+      showExportMenu.value = false
+    }
+  }
+  document.addEventListener('click', handleClickOutside)
+  onUnmounted(() => document.removeEventListener('click', handleClickOutside))
+})
 
 // Computed max values for bar charts
 const maxMonthly = computed(() => {
