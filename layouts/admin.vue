@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 flex relative w-full">
+  <div class="h-screen h-[100dvh] bg-gray-50 flex overflow-hidden relative w-full">
     <!-- Mobile Sidebar Backdrop -->
     <div 
       v-show="isMobileMenuOpen" 
@@ -10,7 +10,7 @@
     <!-- Sidebar -->
     <ClientOnly>
       <div id="admin-sidebar" 
-           class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl flex-shrink-0 transform transition-transform duration-300 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0"
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl flex-shrink-0 transform transition-transform duration-300 ease-in-out md:static md:translate-x-0 h-full flex flex-col"
            :class="isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'">
         <div class="flex flex-col h-full">
           <!-- Logo/Header -->
@@ -85,10 +85,10 @@
       </div>
     </ClientOnly>
 
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col min-w-0 md:w-auto w-full">
-      <!-- Sticky Topbar & Header -->
-      <div class="sticky top-0 z-30 flex-shrink-0 bg-white">
+    <!-- Main Content Column -->
+    <div class="flex-1 flex flex-col min-w-0 h-full overflow-hidden w-full">
+      <!-- Fixed Header Wrapper (Topbar & Header) -->
+      <div class="flex-shrink-0 bg-white z-20 shadow-sm">
         <!-- Mobile Topbar -->
         <div class="md:hidden bg-[#882f1d] flex items-center justify-between px-4 py-3 shadow-md">
           <div class="flex items-center">
@@ -103,7 +103,7 @@
         </div>
 
         <!-- Header -->
-        <header id="admin-topheader" class="bg-white shadow-sm border-b border-gray-100">
+        <header id="admin-topheader" class="bg-white border-b border-gray-100">
           <div class="px-4 md:px-6 py-3.5">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-3">
               <div>
@@ -119,8 +119,8 @@
         </header>
       </div>
 
-      <!-- Page Content -->
-      <main class="flex-1 p-4 md:p-6 overflow-x-hidden">
+      <!-- Scrollable Page Content -->
+      <main ref="mainContentRef" class="flex-1 overflow-y-auto p-4 md:p-6">
         <slot />
       </main>
     </div>
@@ -131,6 +131,7 @@
 import { ADMIN_NAVIGATION, type AdminNavGroup } from '~/utils/adminMenu'
 
 const isMobileMenuOpen = ref(false)
+const mainContentRef = ref<HTMLElement | null>(null)
 
 interface AdminUser {
   id: string | number
@@ -142,6 +143,13 @@ interface AdminUser {
 // User state
 const user = useState<AdminUser | null>('admin-layout-user', () => null)
 const route = useRoute()
+
+watch(() => route.path, () => {
+  if (mainContentRef.value) {
+    mainContentRef.value.scrollTop = 0
+  }
+  isMobileMenuOpen.value = false
+})
 
 // Group toggle states
 const openGroups = reactive<Record<string, boolean>>({
