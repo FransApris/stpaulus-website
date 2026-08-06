@@ -413,16 +413,9 @@
   <!-- Booking Status Section - Only for superadmin and admin_sekretariat -->
   <ClientOnly>
     <div v-if="canViewBookingList" class="mb-8 bg-white shadow rounded-lg">
-      <div class="px-6 py-5">
+      <div class="p-4 sm:p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg leading-6 font-medium text-gray-900">Status Pemesanan Ruangan</h3>
-          <!-- Link disabled - bookings page not yet created -->
-          <!-- <NuxtLink 
-          to="/admin/bookings" 
-          class="text-sm text-[#882f1d] hover:text-[#6b2416] font-medium"
-        >
-          Lihat Semua →
-        </NuxtLink> -->
         </div>
 
         <!-- Loading State -->
@@ -433,52 +426,69 @@
 
         <!-- Bookings Table -->
         <div v-else-if="bookings.length > 0">
-          <div class="overflow-x-auto">
+          <!-- Desktop: Tabel standar (md ke atas) -->
+          <div class="hidden md:block overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
-                    Pemesan
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan
-                  </th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
-                  </th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pemesan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruangan</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    #{{ booking.id }}
-                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{{ booking.id }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ booking.user_name || booking.name }}</div>
                     <div class="text-sm text-gray-500">{{ booking.user_email || booking.email }}</div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ booking.room_name }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ formatBookingDate(booking.booking_date) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}
-                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ booking.room_name }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatBookingDate(booking.booking_date) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span :class="getBookingStatusClass(booking.status)"
-                      class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
-                      {{ getBookingStatusText(booking.status) }}
-                    </span>
+                    <span :class="getBookingStatusClass(booking.status)" class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">{{ getBookingStatusText(booking.status) }}</span>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <!-- Booking Pagination - Always show if there are bookings -->
+          <!-- Mobile: Card layout (di bawah md) -->
+          <div class="md:hidden space-y-3">
+            <div v-for="booking in paginatedBookings" :key="booking.id"
+              class="bg-gray-50/70 border border-gray-200 rounded-lg p-3.5 space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div>
+                  <div class="font-semibold text-gray-900 text-sm">{{ booking.room_name }}</div>
+                  <div class="text-xs text-gray-500">ID: #{{ booking.id }}</div>
+                </div>
+                <span :class="getBookingStatusClass(booking.status)"
+                  class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full shrink-0">
+                  {{ getBookingStatusText(booking.status) }}
+                </span>
+              </div>
+              <div class="border-t border-gray-200/60 pt-2 space-y-1 text-xs">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Pemesan:</span>
+                  <span class="font-medium text-gray-800 text-right">{{ booking.user_name || booking.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Tanggal:</span>
+                  <span class="text-gray-800">{{ formatBookingDate(booking.booking_date) }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Waktu:</span>
+                  <span class="text-gray-800">{{ formatTime(booking.start_time) }} - {{ formatTime(booking.end_time) }} WIB</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Booking Pagination -->
           <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
             <div class="flex-1 flex justify-between sm:hidden">
               <button @click="currentBookingPage > 1 && currentBookingPage--" :disabled="currentBookingPage === 1"
@@ -554,7 +564,7 @@
   <!-- Recent Content Section - Only for users with content permissions -->
   <ClientOnly>
     <div v-if="canViewContent" class="bg-white shadow rounded-lg">
-      <div class="px-6 py-5">
+      <div class="p-4 sm:p-6">
         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Konten Terbaru</h3>
 
         <!-- Loading State -->
@@ -564,45 +574,70 @@
         </div>
 
         <!-- Content Table -->
-        <div v-else-if="paginatedContent.length > 0" class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penulis</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal
-                  Dibuat
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="item in paginatedContent" :key="item.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="item.type === 'article' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
-                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
-                    {{ item.type === 'article' ? 'Artikel' : 'Berita' }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ item.title }}</div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ item.author || 'Tidak diketahui' }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span :class="getStatusClass(item.status)"
-                    class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
-                    {{ getStatusText(item.status) }}
-                  </span>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ formatDate(item.created_at) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div v-else-if="paginatedContent.length > 0">
+          <!-- Desktop: Tabel standar (md ke atas) -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penulis</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Dibuat</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="item in paginatedContent" :key="item.id" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="item.type === 'article' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
+                      class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ item.type === 'article' ? 'Artikel' : 'Berita' }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900 truncate max-w-xs">{{ item.title }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ item.author || 'Tidak diketahui' }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="getStatusClass(item.status)"
+                      class="inline-flex px-2 py-1 text-xs font-semibold rounded-full">
+                      {{ getStatusText(item.status) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{ formatDate(item.created_at) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile: Card layout (di bawah md) -->
+          <div class="md:hidden space-y-3">
+            <div v-for="item in paginatedContent" :key="item.id"
+              class="bg-gray-50/70 border border-gray-200 rounded-lg p-3.5 space-y-2">
+              <div class="flex items-center justify-between gap-2">
+                <span :class="item.type === 'article' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'"
+                  class="inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full">
+                  {{ item.type === 'article' ? 'Artikel' : 'Berita' }}
+                </span>
+                <span :class="getStatusClass(item.status)"
+                  class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full">
+                  {{ getStatusText(item.status) }}
+                </span>
+              </div>
+              <h4 class="text-sm font-semibold text-gray-900 leading-snug break-words">
+                {{ item.title }}
+              </h4>
+              <div class="flex items-center justify-between text-xs text-gray-500 border-t border-gray-200/60 pt-2">
+                <span class="truncate max-w-[50%]">✍️ {{ item.author || 'Anonim' }}</span>
+                <span>📅 {{ formatDate(item.created_at) }}</span>
+              </div>
+            </div>
+          </div>
 
           <!-- Pagination -->
           <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
