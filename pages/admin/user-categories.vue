@@ -130,21 +130,25 @@
           </div>
         </div>
 
-        <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t pt-4">
-          <p class="text-sm text-gray-600">Halaman {{ currentPage }} dari {{ totalPages }}</p>
-          <div class="flex items-center gap-2">
+        <div v-if="totalPages > 1" class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-gray-200 pt-4">
+          <p class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
+            Halaman <span class="font-semibold text-gray-800">{{ currentPage }}</span> dari <span class="font-semibold text-gray-800">{{ totalPages }}</span>
+          </p>
+          <div class="flex items-center justify-center sm:justify-end gap-1.5 sm:gap-2 flex-wrap">
             <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
-              Sebelumnya
+              class="px-2.5 sm:px-3 py-1.5 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm">
+              <span class="sm:hidden">← Prev</span>
+              <span class="hidden sm:inline">Sebelumnya</span>
             </button>
             <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
-              class="px-3 py-1 rounded border text-sm"
-              :class="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'hover:bg-gray-50'">
+              class="min-w-[32px] sm:min-w-[36px] h-8 sm:h-9 px-2 sm:px-3 flex items-center justify-center rounded-lg border text-xs sm:text-sm font-medium transition-colors shadow-sm"
+              :class="page === currentPage ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'">
               {{ page }}
             </button>
             <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-              class="px-3 py-1 rounded border text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
-              Berikutnya
+              class="px-2.5 sm:px-3 py-1.5 rounded-lg border border-gray-300 text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm">
+              <span class="sm:hidden">Next →</span>
+              <span class="hidden sm:inline">Berikutnya</span>
             </button>
           </div>
         </div>

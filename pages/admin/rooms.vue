@@ -245,23 +245,25 @@
         </table>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <p class="text-sm text-gray-600">
+        <div v-if="totalPages > 1" class="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <p class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
             Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}–{{ Math.min(currentPage * pageLimit, totalItems) }} dari {{ totalItems }} ruangan
           </p>
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center justify-center sm:justify-end gap-1.5 flex-wrap">
             <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-                    class="px-3 py-1.5 rounded-lg border text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors">
-              Sebelumnya
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs sm:text-sm font-medium text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors shadow-sm">
+              <span class="sm:hidden">← Prev</span>
+              <span class="hidden sm:inline">Sebelumnya</span>
             </button>
             <button v-for="page in visiblePages" :key="page" @click="goToPage(page)"
-                    class="px-3.5 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                    class="min-w-[32px] sm:min-w-[36px] h-8 sm:h-9 px-2 sm:px-3 flex items-center justify-center rounded-lg text-xs sm:text-sm font-medium transition-colors shadow-sm"
                     :class="page === currentPage ? 'bg-[#882f1d] text-white' : 'border text-gray-700 hover:bg-gray-50'">
               {{ page }}
             </button>
             <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-                    class="px-3.5 py-1.5 rounded-lg border text-sm font-medium text-gray-700 disabled:opacity-50 hover:bg-gray-50 transition-colors">
-              Berikutnya
+                    class="px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs sm:text-sm font-medium text-gray-700 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors shadow-sm">
+              <span class="sm:hidden">Next →</span>
+              <span class="hidden sm:inline">Berikutnya</span>
             </button>
           </div>
         </div>
