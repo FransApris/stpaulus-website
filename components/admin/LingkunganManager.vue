@@ -487,7 +487,7 @@
                 <div v-if="group.lingkungan.length === 0" class="px-6 py-8 text-center text-gray-500 text-sm">
                     Belum ada lingkungan di wilayah ini
                 </div>
-            </div>    </div>
+            </div>
 
             <!-- Empty State for Grouped View -->
             <div v-if="lingkunganGroupedByWilayah.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
