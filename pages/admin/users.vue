@@ -1273,20 +1273,39 @@ const visiblePages = computed(() => {
   return pages
 })
 
-const goToPage = (page) => {
-  if (page < 1 || page > totalPages.value) return
-  currentPage.value = page
+const scrollToTop = () => {
   nextTick(() => {
     const target = document.getElementById('user-list-section')
     if (target) {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const mainEl = target.closest('main') || document.querySelector('main')
+      if (mainEl && typeof target.offsetTop === 'number') {
+        mainEl.scrollTo({
+          top: Math.max(0, target.offsetTop - 12),
+          behavior: 'smooth'
+        })
+      }
+    } else {
+      const mainEl = document.querySelector('main')
+      if (mainEl) {
+        mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
     }
   })
 }
 
-// Reset page ke 1 saat ganti tab atau mencari
-watch([activeTab, searchQuery], () => {
+const goToPage = (page) => {
+  if (page < 1 || page > totalPages.value) return
+  currentPage.value = page
+  scrollToTop()
+}
+
+// Reset page ke 1 saat ganti tab, mencari, atau mengubah sorting
+watch([activeTab, searchQuery, sortField, sortOrder], () => {
   currentPage.value = 1
+  scrollToTop()
 })
 
 // Sort function

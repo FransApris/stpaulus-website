@@ -69,7 +69,7 @@
         </div>
 
         <!-- BGKP Table & Mobile Cards -->
-        <div v-else class="bg-white rounded-lg shadow overflow-hidden">
+        <div v-else id="bgkp-list-section" class="bg-white rounded-lg shadow overflow-hidden scroll-mt-4">
             <!-- Desktop Table View -->
             <div class="hidden md:block overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -512,10 +512,40 @@ const visiblePages = computed(() => {
     return pages
 })
 
+const scrollToTop = () => {
+    nextTick(() => {
+        const target = document.getElementById('bgkp-list-section')
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            const mainEl = target.closest('main') || document.querySelector('main')
+            if (mainEl && typeof target.offsetTop === 'number') {
+                mainEl.scrollTo({
+                    top: Math.max(0, target.offsetTop - 12),
+                    behavior: 'smooth'
+                })
+            }
+        } else {
+            const mainEl = document.querySelector('main')
+            if (mainEl) {
+                mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+        }
+    })
+}
+
 const goToPage = (page: number) => {
     if (page < 1 || page > totalPages.value) return
     currentPage.value = page
+    scrollToTop()
 }
+
+// Reset page ke 1 saat filter atau pencarian berubah
+watch(filters, () => {
+    currentPage.value = 1
+    scrollToTop()
+}, { deep: true })
 
 // Methods
 const fetchMembers = async () => {

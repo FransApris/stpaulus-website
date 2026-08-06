@@ -76,7 +76,7 @@
         </div>
 
         <!-- Pastors List Container -->
-        <div v-else class="bg-white rounded-lg shadow overflow-hidden">
+        <div v-else id="pastors-list-section" class="bg-white rounded-lg shadow overflow-hidden scroll-mt-4">
             <!-- Desktop Table View -->
             <div class="hidden md:block overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -559,9 +559,33 @@ const visiblePages = computed(() => {
     return pages
 })
 
+const scrollToTop = () => {
+    nextTick(() => {
+        const target = document.getElementById('pastors-list-section')
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            const mainEl = target.closest('main') || document.querySelector('main')
+            if (mainEl && typeof target.offsetTop === 'number') {
+                mainEl.scrollTo({
+                    top: Math.max(0, target.offsetTop - 12),
+                    behavior: 'smooth'
+                })
+            }
+        } else {
+            const mainEl = document.querySelector('main')
+            if (mainEl) {
+                mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+        }
+    })
+}
+
 const goToPage = (page) => {
     if (page < 1 || page > totalPages.value) return
     currentPage.value = page
+    scrollToTop()
 }
 
 // Modal State
@@ -650,6 +674,7 @@ const fetchPastors = async () => {
 watch(filters, () => {
     currentPage.value = 1
     fetchPastors()
+    scrollToTop()
 }, { deep: true })
 
 watch(totalPages, (pageCount) => {

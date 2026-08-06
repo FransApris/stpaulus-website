@@ -64,7 +64,7 @@
     </div>
 
     <!-- Main Container Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+    <div id="rooms-list-section" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden scroll-mt-4">
       <!-- Toolbar: Search, Filters & Action Button -->
       <div class="p-6 border-b border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <!-- Search and Filters -->
@@ -643,11 +643,41 @@ const visiblePages = computed(() => {
   return pages
 })
 
+const scrollToTop = () => {
+  nextTick(() => {
+    const target = document.getElementById('rooms-list-section')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const mainEl = target.closest('main') || document.querySelector('main')
+      if (mainEl && typeof target.offsetTop === 'number') {
+        mainEl.scrollTo({
+          top: Math.max(0, target.offsetTop - 12),
+          behavior: 'smooth'
+        })
+      }
+    } else {
+      const mainEl = document.querySelector('main')
+      if (mainEl) {
+        mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  })
+}
+
 const goToPage = (page) => {
   if (page >= 1 && page <= totalPages.value) {
     currentPage.value = page
+    scrollToTop()
   }
 }
+
+// Reset page ke 1 saat filter atau pencarian berubah
+watch([searchQuery, selectedLocationFilter, selectedStatusFilter, selectedApprovalFilter, sortField, sortOrder], () => {
+  currentPage.value = 1
+  scrollToTop()
+})
 
 const sortBy = (field) => {
   if (sortField.value === field) {

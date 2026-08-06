@@ -17,7 +17,7 @@
     </div>
 
     <!-- Categories List -->
-    <div class="bg-white p-6 rounded-lg shadow">
+    <div id="categories-list-section" class="bg-white p-6 rounded-lg shadow scroll-mt-4">
       <h2 class="text-lg font-semibold mb-4">Daftar Kategori Pengguna</h2>
       <div v-if="categories.length === 0" class="text-gray-500">Belum ada kategori pengguna.</div>
       <div v-else>
@@ -270,9 +270,33 @@ const visiblePages = computed(() => {
   return pages
 })
 
+const scrollToTop = () => {
+  nextTick(() => {
+    const target = document.getElementById('categories-list-section')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const mainEl = target.closest('main') || document.querySelector('main')
+      if (mainEl && typeof target.offsetTop === 'number') {
+        mainEl.scrollTo({
+          top: Math.max(0, target.offsetTop - 12),
+          behavior: 'smooth'
+        })
+      }
+    } else {
+      const mainEl = document.querySelector('main')
+      if (mainEl) {
+        mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  })
+}
+
 const goToPage = (page) => {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
+  scrollToTop()
 }
 
 // Load categories
