@@ -147,7 +147,7 @@
                 <div class="font-medium text-gray-800">{{ b.room_name }}</div>
                 <div class="text-xs text-gray-400">{{ b.user_name }} — {{ b.event_name }}</div>
               </div>
-              <div class="text-xs text-gray-500 shrink-0 ml-2">{{ formatTime(b.start_time) }}–{{ formatTime(b.end_time) }}</div>
+              <div class="text-xs text-gray-500 shrink-0 ml-2">{{ formatWibTimeRange(b.start_time, b.end_time) }} WIB</div>
             </div>
           </div>
           <p v-else class="text-gray-400 text-sm">Tidak ada pemesanan hari ini.</p>
@@ -684,6 +684,16 @@ definePageMeta({
 // Import auth composable
 const auth = useAuth()
 
+// ── Datetime helpers (Single Source of Truth — useDatetime) ──────────────────
+// Selalu gunakan fungsi dari composable ini untuk format tanggal/waktu.
+// Jangan membuat konversi inline agar tidak ada timezone bug.
+const {
+  formatWibDate,
+  formatWibTime,
+  formatWibTimeRange,
+  formatWibDateTime
+} = useDatetime()
+
 const stats = ref({
   articles: 0,
   news: 0,
@@ -943,37 +953,26 @@ const fetchBookings = async (isBackground = false) => {
   }
 }
 
-// Helper functions
-const formatDate = (dateString) => {
-  if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('id-ID', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
+// ── Format helpers — dialihkan ke useDatetime (UTC-aware, WIB-safe) ──────────
 
-// Format tanggal pendek untuk dashboard booking
-const formatBookingDate = (dateString) => {
-  if (!dateString) return '-'
-  const date = new Date(dateString)
-  return date.toLocaleDateString('id-ID', {
+// Format tanggal panjang: "6 Agustus 2026"
+const formatDate = formatWibDateTime
+
+// Format tanggal pendek untuk kronik: "06 Agu 2026"
+const formatBookingDate = (s) => {
+  const d = useDatetime().toUtcDate(s)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('id-ID', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric'
+    year: 'numeric',
+    timeZone: 'Asia/Jakarta'
   })
 }
 
-// Format waktu simple (HH:MM)
-const formatTime = (timeString) => {
-  if (!timeString) return '-'
-  // Jika format sudah HH:MM:SS, ambil hanya HH:MM
-  if (timeString.includes(':')) {
-    const parts = timeString.split(':')
-    return `${parts[0]}:${parts[1]}`
-  }
-  return timeString
-}
+// Format waktu WIB: "08:00" (bukan "01:00" UTC!)
+// GANTI dari: split(':') raw string → sekarang: konversi UTC→WIB via Intl
+const formatTime = formatWibTime
 
 const getStatusClass = (status) => {
   switch (status) {
@@ -1050,15 +1049,17 @@ const fetchWidgets = async () => {
   }
 }
 
-// Date helpers for agenda mini-calendar
-const formatAgendaDay = (dateString) => {
-  if (!dateString) return '-'
-  return new Date(dateString).toLocaleDateString('id-ID', { day: '2-digit' })
+// Date helpers for agenda mini-calendar (UTC-aware via useDatetime)
+const formatAgendaDay = (s) => {
+  const d = useDatetime().toUtcDate(s)
+  if (isNaN(d.getTime())) return '-'
+  return d.toLocaleDateString('id-ID', { day: '2-digit', timeZone: 'Asia/Jakarta' })
 }
 
-const formatAgendaMonth = (dateString) => {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleDateString('id-ID', { month: 'short' })
+const formatAgendaMonth = (s) => {
+  const d = useDatetime().toUtcDate(s)
+  if (isNaN(d.getTime())) return ''
+  return d.toLocaleDateString('id-ID', { month: 'short', timeZone: 'Asia/Jakarta' })
 }
 
 // Watch for page changes and reset to first page when content changes
