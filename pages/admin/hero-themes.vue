@@ -400,7 +400,8 @@ const resolveThemeImage = (imagePath) => {
 
 const handleImageError = (event) => {
   const target = event?.target
-  if (target && target.src !== fallbackThemeImage) {
+  if (target && !target.dataset.fallbackApplied) {
+    target.dataset.fallbackApplied = 'true'
     target.src = fallbackThemeImage
   }
 }

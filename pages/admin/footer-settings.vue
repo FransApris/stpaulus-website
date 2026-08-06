@@ -254,7 +254,7 @@ import { ref, onMounted } from '#imports'
 
 definePageMeta({
   layout: 'admin',
-  middleware: 'admin-auth'
+  middleware: 'auth'
 })
 
 // Reactive data
