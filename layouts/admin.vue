@@ -10,7 +10,7 @@
     <!-- Sidebar -->
     <ClientOnly>
       <div id="admin-sidebar" 
-           class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl flex-shrink-0 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0"
+           class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-xl flex-shrink-0 transform transition-transform duration-300 ease-in-out md:sticky md:top-0 md:h-screen md:translate-x-0"
            :class="isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'">
         <div class="flex flex-col h-full">
           <!-- Logo/Header -->
@@ -87,34 +87,37 @@
 
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0 md:w-auto w-full">
-      <!-- Mobile Topbar -->
-      <div class="md:hidden bg-[#882f1d] flex items-center justify-between px-4 py-3 flex-shrink-0 shadow-md relative z-30">
-        <div class="flex items-center">
-          <img src="/images/logo-paulus-juanda.png" alt="Logo Paroki St. Paulus" class="h-8 w-auto mr-2" />
-          <h1 class="text-lg font-cinzel text-white font-bold truncate">CMS Admin</h1>
+      <!-- Sticky Topbar & Header -->
+      <div class="sticky top-0 z-30 flex-shrink-0 bg-white">
+        <!-- Mobile Topbar -->
+        <div class="md:hidden bg-[#882f1d] flex items-center justify-between px-4 py-3 shadow-md">
+          <div class="flex items-center">
+            <img src="/images/logo-paulus-juanda.png" alt="Logo Paroki St. Paulus" class="h-8 w-auto mr-2" />
+            <h1 class="text-lg font-cinzel text-white font-bold truncate">CMS Admin</h1>
+          </div>
+          <button @click="isMobileMenuOpen = true" class="text-white p-1 focus:outline-none rounded-md hover:bg-white/10 transition-colors" aria-label="Buka Menu">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          </button>
         </div>
-        <button @click="isMobileMenuOpen = true" class="text-white p-1 focus:outline-none rounded-md hover:bg-white/10 transition-colors">
-          <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
-        </button>
-      </div>
 
-      <!-- Header -->
-      <header id="admin-topheader" class="bg-white shadow-sm flex-shrink-0 relative z-20">
-        <div class="px-4 md:px-6 py-4">
-          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div>
-              <h2 class="text-xl md:text-2xl font-cinzel text-gray-900 font-bold">{{ pageTitle }}</h2>
-              <p class="text-xs md:text-sm text-gray-600">Selamat datang di panel admin CMS</p>
-              <p v-if="user" class="text-xs text-[#882f1d] font-semibold mt-0.5">Anda login sebagai: {{ user.role_display_name }}</p>
-            </div>
-            <div class="text-xs md:text-sm text-gray-500 font-medium hidden sm:block">
-              {{ currentDate }}
+        <!-- Header -->
+        <header id="admin-topheader" class="bg-white shadow-sm border-b border-gray-100">
+          <div class="px-4 md:px-6 py-3.5">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 md:gap-3">
+              <div>
+                <h2 class="text-xl md:text-2xl font-cinzel text-gray-900 font-bold leading-tight">{{ pageTitle }}</h2>
+                <p class="text-xs md:text-sm text-gray-600">Selamat datang di panel admin CMS</p>
+                <p v-if="user" class="text-xs text-[#882f1d] font-semibold mt-0.5">Anda login sebagai: {{ user.role_display_name }}</p>
+              </div>
+              <div class="text-xs md:text-sm text-gray-500 font-medium hidden sm:block">
+                {{ currentDate }}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      </div>
 
       <!-- Page Content -->
       <main class="flex-1 p-4 md:p-6 overflow-x-hidden">
