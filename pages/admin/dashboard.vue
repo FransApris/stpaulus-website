@@ -2,35 +2,35 @@
   <!-- Single root wrapper required by Vue/Nuxt <Transition> -->
   <div>
   <!-- Welcome Header with Role Badge -->
-  <div class="mb-6 bg-white shadow rounded-lg p-6">
+  <div class="mb-6 bg-white shadow rounded-lg p-4 sm:p-6">
     <ClientOnly>
-      <div class="flex items-center justify-between">
-        <div class="flex-1">
-          <div class="flex items-center gap-3">
-            <h2 class="text-2xl font-bold text-gray-900 uppercase">Selamat Datang, {{ auth.user.value?.username || 'Admin' }}!</h2>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 uppercase">Selamat Datang, {{ auth.user.value?.username || 'Admin' }}!</h2>
             <!-- Live Indicator -->
-            <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-full" title="Pembaruan Otomatis Aktif">
-              <div class="relative flex h-2.5 w-2.5">
+            <div class="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 border border-gray-100 rounded-full" title="Pembaruan Otomatis Aktif">
+              <div class="relative flex h-2 w-2">
                 <span :class="['animate-ping absolute inline-flex h-full w-full rounded-full opacity-75', isRefreshing ? 'bg-amber-400' : 'bg-green-400']"></span>
-                <span :class="['relative inline-flex rounded-full h-2.5 w-2.5', isRefreshing ? 'bg-amber-500' : 'bg-green-500']"></span>
+                <span :class="['relative inline-flex rounded-full h-2 w-2', isRefreshing ? 'bg-amber-500' : 'bg-green-500']"></span>
               </div>
               <span class="text-xs font-medium text-gray-600">{{ isRefreshing ? 'Memperbarui...' : 'Live' }}</span>
             </div>
           </div>
-          <p class="text-gray-600 mt-1">Dashboard {{ getRoleName(userRole) }}</p>
+          <p class="text-sm text-gray-600 mt-1">Dashboard {{ getRoleName(userRole) }}</p>
         </div>
-        <div class="flex items-center gap-3">
-          <div class="px-4 py-2 rounded-full" :class="getRoleBadgeClass(userRole)">
-            <span class="text-sm font-semibold">{{ getRoleName(userRole) }}</span>
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full whitespace-nowrap" :class="getRoleBadgeClass(userRole)">
+            <span class="text-xs sm:text-sm font-semibold">{{ getRoleName(userRole) }}</span>
           </div>
           <button @click="handleLogout"
-            class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
+            class="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 hover:bg-red-700 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors whitespace-nowrap">
             Logout
           </button>
         </div>
       </div>
       <template #fallback>
-        <div class="flex items-center justify-between animate-pulse">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-pulse">
           <div class="flex-1">
             <div class="h-8 bg-gray-200 rounded w-64 mb-2"></div>
             <div class="h-5 bg-gray-200 rounded w-48"></div>
