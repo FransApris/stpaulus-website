@@ -1,285 +1,261 @@
-﻿<template>
-  <div class="min-h-screen bg-gray-50">
-    <AdminLayout>
-      <div class="px-4 py-6 sm:px-0">
-        <div class="mb-8">
-          <h1 class="text-3xl font-bold text-gray-900">Pengaturan Footer</h1>
-          <p class="mt-2 text-sm text-gray-600">
-            Kelola konten footer website termasuk tautan, media sosial, dan teks hak cipta
-          </p>
+<template>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow">
+      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Pengaturan Footer</h1>
+      <p class="text-sm sm:text-base text-gray-600">
+        Kelola konten footer website termasuk tautan, media sosial, dan teks hak cipta
+      </p>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="loading" class="bg-white p-6 rounded-lg shadow flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+          </svg>
         </div>
-
-        <!-- Loading State -->
-        <div v-if="loading" class="flex justify-center items-center py-12">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div class="ml-3">
+          <h3 class="text-sm font-medium text-red-800">Error</h3>
+          <div class="mt-2 text-sm text-red-700">{{ error }}</div>
         </div>
+      </div>
+    </div>
 
-        <!-- Error State -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-          <div class="flex">
-            <div class="flex-shrink-0">
-              <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-              </svg>
+    <!-- Main Content -->
+    <div v-else class="space-y-6">
+      <!-- Footer Settings -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Pengaturan Footer</h3>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label for="copyright_entity" class="block text-sm font-medium text-gray-700">
+                Nama Entitas Hak Cipta
+              </label>
+              <input
+                type="text"
+                id="copyright_entity"
+                v-model="formData.copyright_entity"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="KOMSOS Paroki St. Paulus - Juanda"
+              />
+              <p class="mt-2 text-sm text-gray-500">
+                Teks yang akan ditampilkan setelah simbol © dan tahun. Contoh: © 2023 - {{ new Date().getFullYear() }} [Nama Entitas]
+              </p>
             </div>
-            <div class="ml-3">
-              <h3 class="text-sm font-medium text-red-800">Error</h3>
-              <div class="mt-2 text-sm text-red-700">{{ error }}</div>
+            <div>
+              <label for="footer_description" class="block text-sm font-medium text-gray-700">
+                Deskripsi Footer
+              </label>
+              <textarea
+                id="footer_description"
+                v-model="formData.footer_description"
+                rows="3"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Deskripsi singkat tentang paroki atau informasi penting lainnya..."
+                maxlength="1000"
+              ></textarea>
+              <p class="mt-2 text-sm text-gray-500">
+                Deskripsi yang akan ditampilkan di bagian atas footer. Maksimal 1000 karakter.
+              </p>
             </div>
-          </div>
-        </div>
-
-        <!-- Main Content -->
-        <div v-else class="space-y-6">
-          <!-- Footer Settings -->
-          <div class="bg-white shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Pengaturan Footer</h3>
-              <div class="grid grid-cols-1 gap-4">
-                <div>
-                  <label for="copyright_entity" class="block text-sm font-medium text-gray-700">
-                    Nama Entitas Hak Cipta
-                  </label>
-                  <input
-                    type="text"
-                    id="copyright_entity"
-                    v-model="formData.copyright_entity"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="KOMSOS Paroki St. Paulus - Juanda"
-                  />
-                  <p class="mt-2 text-sm text-gray-500">
-                    Teks yang akan ditampilkan setelah simbol © dan tahun. Contoh: © 2023 - {{ new Date().getFullYear() }} [Nama Entitas]
-                  </p>
-                </div>
-                <div>
-                  <label for="footer_description" class="block text-sm font-medium text-gray-700">
-                    Deskripsi Footer
-                  </label>
-                  <textarea
-                    id="footer_description"
-                    v-model="formData.footer_description"
-                    rows="3"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Deskripsi singkat tentang paroki atau informasi penting lainnya..."
-                    maxlength="1000"
-                  ></textarea>
-                  <p class="mt-2 text-sm text-gray-500">
-                    Deskripsi yang akan ditampilkan di bagian atas footer. Maksimal 1000 karakter.
-                  </p>
-                </div>
-                <div>
-                  <label for="physical_address" class="block text-sm font-medium text-gray-700">
-                    Alamat Fisik
-                  </label>
-                  <textarea
-                    id="physical_address"
-                    v-model="formData.physical_address"
-                    rows="2"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Jl. Contoh No. 123, Kota, Provinsi, Kode Pos"
-                    maxlength="500"
-                  ></textarea>
-                  <p class="mt-2 text-sm text-gray-500">
-                    Alamat lengkap gereja yang akan ditampilkan di footer. Maksimal 500 karakter.
-                  </p>
-                </div>
-              </div>
+            <div>
+              <label for="physical_address" class="block text-sm font-medium text-gray-700">
+                Alamat Fisik
+              </label>
+              <textarea
+                id="physical_address"
+                v-model="formData.physical_address"
+                rows="2"
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Jl. Contoh No. 123, Kota, Provinsi, Kode Pos"
+                maxlength="500"
+              ></textarea>
+              <p class="mt-2 text-sm text-gray-500">
+                Alamat lengkap gereja yang akan ditampilkan di footer. Maksimal 500 karakter.
+              </p>
             </div>
-          </div>
-
-          <!-- Social Media Links -->
-          <div class="bg-white shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Tautan Media Sosial</h3>
-                <button
-                  @click="addSocialLink"
-                  title="Tambah Tautan Media Sosial"
-                  aria-label="Tambah Tautan Media Sosial"
-                  class="inline-flex items-center justify-center w-10 h-10 border border-transparent rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-
-              <div class="space-y-4">
-                <div v-for="(link, index) in formData.social_links" :key="index" class="flex items-center space-x-4 p-4 border border-gray-200 rounded-md">
-                  <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label :for="`platform_name_${index}`" class="block text-sm font-medium text-gray-700">
-                        Nama Platform
-                      </label>
-                      <input
-                        type="text"
-                        :id="`platform_name_${index}`"
-                        v-model="link.platform_name"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Instagram"
-                      />
-                    </div>
-                    <div>
-                      <label :for="`platform_icon_${index}`" class="block text-sm font-medium text-gray-700">
-                        Ikon Kelas
-                      </label>
-                      <input
-                        type="text"
-                        :id="`platform_icon_${index}`"
-                        v-model="link.platform_icon"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="fab fa-instagram"
-                      />
-                    </div>
-                    <div>
-                      <label :for="`url_${index}`" class="block text-sm font-medium text-gray-700">
-                        URL
-                      </label>
-                      <input
-                        type="url"
-                        :id="`url_${index}`"
-                        v-model="link.url"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="https://instagram.com/username"
-                      />
-                    </div>
-                  </div>
-                  <div class="flex items-center space-x-2">
-                    <button
-                      @click="editSocialLink(index)"
-                      title="Edit Tautan Media Sosial"
-                      aria-label="Edit Tautan Media Sosial"
-                      class="text-blue-600 hover:text-blue-900"
-                    >
-                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M17.414 2.586a2 2 0 010 2.828l-8.79 8.79a1 1 0 01-.39.242l-3 1a1 1 0 01-1.265-1.265l1-3a1 1 0 01.242-.39l8.79-8.79a2 2 0 012.828 0zM15 4l1 1" />
-                      </svg>
-                    </button>
-                    <button
-                      @click="removeSocialLink(index)"
-                      title="Hapus Tautan Media Sosial"
-                      aria-label="Hapus Tautan Media Sosial"
-                      class="text-red-600 hover:text-red-900"
-                    >
-                      <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Footer Links -->
-          <div class="bg-white shadow rounded-lg">
-            <div class="px-4 py-5 sm:p-6">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Tautan Footer</h3>
-                <button
-                  @click="addFooterLink"
-                  title="Tambah Tautan Footer"
-                  aria-label="Tambah Tautan Footer"
-                  class="inline-flex items-center justify-center w-10 h-10 border border-transparent rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-                  </svg>
-                </button>
-              </div>
-
-              <div class="space-y-4">
-                <div v-for="(link, index) in formData.footer_links" :key="index" class="p-4 border border-gray-200 rounded-md">
-                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label :for="`title_${index}`" class="block text-sm font-medium text-gray-700">
-                        Judul
-                      </label>
-                      <input
-                        type="text"
-                        :id="`title_${index}`"
-                        v-model="link.title"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="Kebijakan Privasi"
-                      />
-                    </div>
-                    <div>
-                      <label :for="`url_${index}`" class="block text-sm font-medium text-gray-700">
-                        URL
-                      </label>
-                      <input
-                        type="text"
-                        :id="`url_${index}`"
-                        v-model="link.url"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        placeholder="/privacy-policy"
-                      />
-                    </div>
-                    <div>
-                      <label :for="`column_type_${index}`" class="block text-sm font-medium text-gray-700">
-                        Kolom
-                      </label>
-                      <select
-                        :id="`column_type_${index}`"
-                        v-model="link.column_type"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      >
-                        <option value="legal">Legal</option>
-                        <option value="support">Dukungan</option>
-                        <option value="content">Konten</option>
-                      </select>
-                    </div>
-                    <div class="flex items-end space-x-2">
-                      <button
-                        @click="editFooterLink(index)"
-                        title="Edit Tautan Footer"
-                        aria-label="Edit Tautan Footer"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                      >
-                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M17.414 2.586a2 2 0 010 2.828l-8.79 8.79a1 1 0 01-.39.242l-3 1a1 1 0 01-1.265-1.265l1-3a1 1 0 01.242-.39l8.79-8.79a2 2 0 012.828 0zM15 4l1 1" />
-                        </svg>
-                      </button>
-                      <button
-                        @click="removeFooterLink(index)"
-                        title="Hapus Tautan Footer"
-                        aria-label="Hapus Tautan Footer"
-                        class="inline-flex items-center justify-center w-8 h-8 rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                      >
-                        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Save Button -->
-          <div class="flex justify-end">
-            <button
-              @click="saveSettings"
-              :disabled="saving"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg v-if="saving" class="-ml-1 mr-3 h-4 w-4 animate-spin" fill="currentColor" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ saving ? 'Menyimpan...' : 'Simpan Pengaturan' }}
-            </button>
           </div>
         </div>
       </div>
-    </AdminLayout>
+
+      <!-- Social Media Links -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Tautan Media Sosial</h3>
+            <button
+              @click="addSocialLink"
+              title="Tambah Tautan Media Sosial"
+              aria-label="Tambah Tautan Media Sosial"
+              class="inline-flex items-center justify-center w-10 h-10 border border-transparent rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <div v-if="formData.social_links.length === 0" class="text-sm text-gray-500 italic">
+            Belum ada tautan media sosial. Klik tombol + untuk menambahkan.
+          </div>
+          <div v-else class="space-y-4">
+            <div
+              v-for="(link, index) in formData.social_links"
+              :key="index"
+              class="flex items-center space-x-2 p-3 bg-gray-50 rounded-md"
+            >
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 flex-grow">
+                <div class="sm:col-span-4">
+                  <label :for="`platform_${index}`" class="sr-only">Platform</label>
+                  <select
+                    :id="`platform_${index}`"
+                    v-model="link.platform"
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  >
+                    <option value="">Pilih Platform</option>
+                    <option value="facebook">Facebook</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="youtube">YouTube</option>
+                    <option value="twitter">Twitter</option>
+                    <option value="tiktok">TikTok</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="telegram">Telegram</option>
+                    <option value="spotify">Spotify</option>
+                  </select>
+                </div>
+                <div class="sm:col-span-8">
+                  <label :for="`url_${index}`" class="sr-only">URL</label>
+                  <input
+                    :id="`url_${index}`"
+                    type="url"
+                    v-model="link.url"
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+              <button
+                @click="removeSocialLink(index)"
+                title="Hapus Tautan Media Sosial"
+                aria-label="Hapus Tautan Media Sosial"
+                class="text-red-600 hover:text-red-800 p-2"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Links (grouped by column) -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Tautan Footer (Menu Tambahan)</h3>
+            <button
+              @click="addFooterLink"
+              title="Tambah Tautan Footer"
+              aria-label="Tambah Tautan Footer"
+              class="inline-flex items-center justify-center w-10 h-10 border border-transparent rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+            </button>
+          </div>
+          <div v-if="formData.footer_links.length === 0" class="text-sm text-gray-500 italic">
+            Belum ada tautan footer. Klik tombol + untuk menambahkan.
+          </div>
+          <div v-else class="space-y-4">
+            <div
+              v-for="(link, index) in formData.footer_links"
+              :key="index"
+              class="p-4 bg-gray-50 rounded-md border border-gray-200"
+            >
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                <div class="sm:col-span-4">
+                  <label :for="`title_${index}`" class="block text-xs font-medium text-gray-700 mb-1">Judul Tautan</label>
+                  <input
+                    :id="`title_${index}`"
+                    type="text"
+                    v-model="link.title"
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="Contoh: Kebijakan Privasi"
+                  />
+                </div>
+                <div class="sm:col-span-5">
+                  <label :for="`link_url_${index}`" class="block text-xs font-medium text-gray-700 mb-1">URL / Path</label>
+                  <input
+                    :id="`link_url_${index}`"
+                    type="text"
+                    v-model="link.url"
+                    class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    placeholder="/kebijakan-privasi atau https://..."
+                  />
+                </div>
+                <div class="sm:col-span-3 flex items-end justify-between">
+                  <div class="flex items-center">
+                    <input
+                      :id="`target_${index}`"
+                      type="checkbox"
+                      v-model="link.is_external"
+                      class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label :for="`target_${index}`" class="ml-2 block text-xs text-gray-700">Tab Baru</label>
+                  </div>
+                  <div class="flex space-x-1">
+                    <button
+                      @click="removeFooterLink(index)"
+                      title="Hapus Tautan Footer"
+                      aria-label="Hapus Tautan Footer"
+                      class="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save Button -->
+      <div class="flex justify-end">
+        <button
+          @click="saveSettings"
+          :disabled="saving"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg v-if="saving" class="-ml-1 mr-3 h-4 w-4 animate-spin" fill="currentColor" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ saving ? 'Menyimpan...' : 'Simpan Pengaturan' }}
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from '#imports'
-import AdminLayout from '~/layouts/admin.vue'
+
+definePageMeta({
+  layout: 'admin',
+  middleware: 'admin-auth'
+})
 
 // Reactive data
 const loading = ref(true)
