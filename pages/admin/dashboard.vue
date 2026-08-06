@@ -230,179 +230,179 @@
       <div class="px-6 py-5">
         <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Statistik</h3>
         <ClientOnly>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div class="grid grid-cols-3 gap-2.5 sm:gap-4">
             <!-- Artikel - Super Admin & Admin Komsos -->
-            <div v-if="canViewContent" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewContent" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Artikel</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.articles || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Artikel</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.articles || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Berita - Super Admin & Admin Komsos -->
-            <div v-if="canViewContent" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewContent" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Berita</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.news || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Berita</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.news || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Album - Super Admin & Admin Komsos -->
-            <div v-if="canViewGallery" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewGallery" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Album</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.albums || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Album</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.albums || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Foto - Super Admin & Admin Komsos -->
-            <div v-if="canViewGallery" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewGallery" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Foto</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.photos || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Foto</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.photos || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Agenda - Super Admin & Admin Sekretariat -->
-            <div v-if="canViewAgenda" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewAgenda" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Agenda</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.agenda || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Agenda</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.agenda || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Bookings - Super Admin & Admin Sekretariat -->
-            <div v-if="canViewBookings" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewBookings" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Bookings</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.bookings || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Bookings</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.bookings || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Ruangan - Super Admin & Admin Sekretariat -->
-            <div v-if="canViewRooms" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewRooms" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Ruangan</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.rooms || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Ruangan</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.rooms || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Dokumen - Super Admin & Admin Sekretariat -->
-            <div v-if="canViewDocuments" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewDocuments" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Dokumen</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.documents || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Dokumen</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.documents || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Users - Super Admin Only -->
-            <div v-if="auth.isSuperAdmin.value" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="auth.isSuperAdmin.value" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Users</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.users || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Users</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.users || 0 }}</dd>
                 </div>
               </div>
             </div>
 
             <!-- Contact Messages - Super Admin & Admin Sekretariat -->
-            <div v-if="canViewContactMessages" class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex items-center">
+            <div v-if="canViewContactMessages" class="bg-gray-50 p-2.5 sm:p-4 rounded-lg">
+              <div class="flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left">
                 <div class="flex-shrink-0">
-                  <svg class="h-8 w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-6 w-6 sm:h-8 sm:w-8 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
                     </path>
                   </svg>
                 </div>
-                <div class="ml-4">
-                  <dt class="text-sm font-medium text-gray-500 truncate">Pesan</dt>
-                  <dd class="text-lg font-semibold text-gray-900">{{ stats.contactMessages || 0 }}</dd>
+                <div class="mt-1 sm:mt-0 sm:ml-4 min-w-0 w-full">
+                  <dt class="text-xs sm:text-sm font-medium text-gray-500 truncate">Pesan</dt>
+                  <dd class="text-base sm:text-lg font-semibold text-gray-900">{{ stats.contactMessages || 0 }}</dd>
                 </div>
               </div>
             </div>
           </div>
           <template #fallback>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 animate-pulse">
-              <div v-for="i in 8" :key="i" class="bg-gray-100 p-4 rounded-lg h-24"></div>
+            <div class="grid grid-cols-3 gap-2.5 sm:gap-4 animate-pulse">
+              <div v-for="i in 9" :key="i" class="bg-gray-100 p-2.5 sm:p-4 rounded-lg h-20 sm:h-24"></div>
             </div>
           </template>
         </ClientOnly>
