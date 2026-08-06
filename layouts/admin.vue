@@ -222,7 +222,12 @@ onMounted(async () => {
       return
     }
 
-    const decoded = JSON.parse(atob(token.split('.')[1]))
+    const tokenParts = token.split('.')
+    if (tokenParts.length < 2) {
+      navigateTo('/admin/login')
+      return
+    }
+    const decoded = JSON.parse(atob(tokenParts[1] as string))
 
     let resolvedRole = decoded.role
     let resolvedPermissions: string[] = []
