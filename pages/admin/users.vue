@@ -1122,15 +1122,15 @@ const saveQuotaOverride = async () => {
       const u = result.user
       // Hitung ulang calculated_quota dan quota_source secara lokal
       // setelah override disimpan, agar UI langsung terupdate tanpa reload
-      let calculated_quota: number | null | undefined
-      let quota_source: 'override' | 'category' | 'none' = 'none'
+      let calculated_quota
+      let quota_source = 'none'
       if (u.quota_is_unlimited_override === true || u.quota_is_unlimited_override === 1) {
         calculated_quota = null; quota_source = 'override'
       } else if (u.monthly_quota_override !== null && u.monthly_quota_override !== undefined) {
         calculated_quota = Number(u.monthly_quota_override); quota_source = 'override'
       } else {
         // Reset ke default kategori — ambil dari data user yang sudah ada
-        const existing = users.value[idx] as any
+        const existing = users.value[idx]
         if (existing.category_is_unlimited === true || existing.category_is_unlimited === 1) {
           calculated_quota = null; quota_source = 'category'
         } else if (existing.category_monthly_quota !== null && existing.category_monthly_quota !== undefined) {
