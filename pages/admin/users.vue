@@ -342,39 +342,48 @@
                   </div>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                  <div class="bg-gray-50 rounded-lg p-3">
-                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Kategori</p>
-                    <p class="text-gray-900 font-medium">
-                      {{ user.user_category || '-' }}
-                      <span v-if="user.unit_name" class="block text-xs text-blue-600 mt-0.5 font-semibold">{{ user.unit_name }}</span>
-                    </p>
-                  </div>
-                  <div class="bg-gray-50 rounded-lg p-3">
+                <!-- Kategori Box -->
+                <div class="bg-gray-50 rounded-lg p-2.5 sm:p-3 mb-2.5">
+                  <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Kategori</p>
+                  <p class="text-gray-900 font-medium text-xs sm:text-sm">
+                    {{ user.user_category || '-' }}
+                    <span v-if="user.unit_name" class="inline-block sm:block text-xs text-blue-600 font-semibold ml-1 sm:ml-0">{{ user.unit_name }}</span>
+                  </p>
+                </div>
+
+                <!-- 3 Kolom: Status, Tipe Role, Kuota -->
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                  <!-- Status -->
+                  <div class="bg-gray-50 rounded-lg p-2 sm:p-2.5 flex flex-col justify-center items-center">
                     <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Status</p>
-                    <span v-if="!user.account_status || user.account_status === 'ACTIVE'" class="inline-block px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Aktif</span>
-                    <span v-else-if="user.account_status === 'PENDING'" class="inline-block px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-medium">Menunggu</span>
-                    <span v-else class="inline-block px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-medium">Nonaktif</span>
+                    <span v-if="!user.account_status || user.account_status === 'ACTIVE'" class="inline-block px-1.5 py-0.5 bg-green-100 text-green-700 rounded text-[11px] font-medium">Aktif</span>
+                    <span v-else-if="user.account_status === 'PENDING'" class="inline-block px-1.5 py-0.5 bg-yellow-100 text-yellow-700 rounded text-[11px] font-medium">Menunggu</span>
+                    <span v-else class="inline-block px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[11px] font-medium">Nonaktif</span>
                   </div>
-                  <div class="col-span-2 bg-gray-50 rounded-lg p-3">
+
+                  <!-- Tipe Role -->
+                  <div class="bg-gray-50 rounded-lg p-2 sm:p-2.5 flex flex-col justify-center items-center overflow-hidden">
                     <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Tipe Role</p>
-                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium" :class="getRoleBadge(user).class">
-                      {{ getRoleBadge(user).icon }} {{ getRoleBadge(user).label }}
+                    <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-medium truncate max-w-full" :class="getRoleBadge(user).class" :title="getRoleBadge(user).label">
+                      <span>{{ getRoleBadge(user).icon }}</span>
+                      <span class="truncate">{{ getRoleBadge(user).label }}</span>
                     </span>
                   </div>
-                  <div class="col-span-2 bg-gray-50 rounded-lg p-3">
+
+                  <!-- Kuota -->
+                  <div class="bg-gray-50 rounded-lg p-2 sm:p-2.5 flex flex-col justify-center items-center">
                     <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Kuota</p>
                     <template v-if="!user.role_id || user.role_id === 0">
                       <!-- Unlimited: calculated_quota === null -->
                       <span
                         v-if="user.calculated_quota === null"
-                        class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-purple-100 text-purple-800"
+                        class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-100 text-purple-800"
                         :title="user.quota_source === 'override' ? 'Override Individu: Unlimited' : 'Default Kategori: Unlimited'"
-                      >∞ Unlimited<span v-if="user.quota_source === 'override'" class="ml-0.5 text-purple-500">*</span></span>
+                      >∞<span class="hidden xs:inline"> Unlimited</span><span v-if="user.quota_source === 'override'" class="ml-0.5 text-purple-500">*</span></span>
                       <!-- Angka: calculated_quota adalah number -->
                       <span
                         v-else-if="typeof user.calculated_quota === 'number'"
-                        class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold"
+                        class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] font-semibold"
                         :class="user.quota_source === 'override' ? 'bg-blue-100 text-blue-800' : 'bg-teal-100 text-teal-800'"
                         :title="user.quota_source === 'override' ? 'Override Individu: ' + user.calculated_quota + '/bln' : 'Default Kategori: ' + user.calculated_quota + '/bln'"
                       >{{ user.calculated_quota }}×/bln<span v-if="user.quota_source === 'override'" class="ml-0.5">*</span></span>
