@@ -184,7 +184,7 @@
       <p v-if="message" class="mt-2 text-green-600">{{ message }}</p>
       <p v-if="error" class="mt-2 text-red-600">{{ error }}</p>
     </div>        <!-- Users List -->
-        <div class="bg-white p-4 sm:p-6 rounded-lg shadow">
+        <div id="user-list-section" class="bg-white p-4 sm:p-6 rounded-lg shadow scroll-mt-4">
           <!-- Pending approval banner -->
           <div v-if="pendingCount > 0 && activeTab !== 'pending'" class="mb-4 bg-yellow-50 border border-yellow-300 rounded-lg p-3 flex items-center justify-between">
             <div class="flex items-center gap-2 text-yellow-800">
@@ -1276,7 +1276,18 @@ const visiblePages = computed(() => {
 const goToPage = (page) => {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
+  nextTick(() => {
+    const target = document.getElementById('user-list-section')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  })
 }
+
+// Reset page ke 1 saat ganti tab atau mencari
+watch([activeTab, searchQuery], () => {
+  currentPage.value = 1
+})
 
 // Sort function
 const sortBy = (field) => {
