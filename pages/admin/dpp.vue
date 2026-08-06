@@ -1,37 +1,37 @@
 <template>
-    <div class="p-6">
+    <div class="space-y-6">
         <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="bg-white p-4 sm:p-6 rounded-lg shadow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-1">Kelola DPP Paroki</h1>
-                <p class="text-gray-600">Manajemen data Dewan Pastoral Paroki</p>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Kelola DPP Paroki</h1>
+                <p class="text-xs sm:text-sm text-gray-600">Manajemen data Dewan Pastoral Paroki</p>
             </div>
             <button @click="openCreateModal"
-                class="bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416] transition-colors flex items-center gap-2">
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#882f1d] text-white px-4 py-2.5 rounded-lg hover:bg-[#6b2416] transition-colors font-medium text-sm shadow-sm flex-shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Tambah Anggota
+                <span>Tambah Anggota</span>
             </button>
         </div>
 
         <!-- View Mode Toggle -->
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-4">
-            <div class="flex items-center gap-4">
-                <label class="text-sm font-medium text-gray-700">Tampilan:</label>
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <label class="text-xs sm:text-sm font-medium text-gray-700">Tampilan:</label>
                 <div class="flex gap-2">
                     <button @click="viewMode = 'grouped'" :class="[
-                        'px-4 py-2 rounded-lg transition-colors text-sm font-medium',
+                        'flex-1 sm:flex-initial px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium',
                         viewMode === 'grouped'
-                            ? 'bg-[#882f1d] text-white'
+                            ? 'bg-[#882f1d] text-white shadow-sm'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     ]">
                         Per Bidang
                     </button>
                     <button @click="viewMode = 'list'" :class="[
-                        'px-4 py-2 rounded-lg transition-colors text-sm font-medium',
+                        'flex-1 sm:flex-initial px-4 py-2 rounded-lg transition-colors text-xs sm:text-sm font-medium',
                         viewMode === 'list'
-                            ? 'bg-[#882f1d] text-white'
+                            ? 'bg-[#882f1d] text-white shadow-sm'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     ]">
                         Semua (List)
@@ -41,17 +41,17 @@
         </div>
 
         <!-- Filters & Search -->
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cari Nama</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Cari Nama</label>
                     <input v-model="filters.search" type="text" placeholder="Cari nama anggota..."
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent" />
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none" />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Bidang</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Bidang</label>
                     <select v-model="filters.bidang"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white">
                         <option value="all">Semua Bidang</option>
                         <option value="pengurus_inti">Pengurus Inti</option>
                         <option value="Pembinaan">Pembinaan</option>
@@ -61,9 +61,9 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Kategori</label>
                     <select v-model="filters.position_category"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white">
                         <option value="all">Semua Kategori</option>
                         <option value="pengurus_inti">Pengurus Inti</option>
                         <option value="ketua_bidang">Ketua Bidang</option>
@@ -74,18 +74,18 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select v-model="filters.is_active"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white">
                         <option value="all">Semua Status</option>
                         <option value="true">Aktif</option>
                         <option value="false">Tidak Aktif</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Urutkan</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Urutkan</label>
                     <select v-model="filters.sort"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white">
                         <option value="display_order">Urutan Tampil</option>
                         <option value="name">Nama</option>
                         <option value="created_at">Tanggal Dibuat</option>
@@ -98,397 +98,453 @@
         <div v-if="loading" class="text-center py-12">
             <div class="inline-block w-8 h-8 border-4 border-[#882f1d] border-t-transparent rounded-full animate-spin">
             </div>
-            <p class="text-gray-600 mt-3">Memuat data...</p>
+            <p class="text-gray-600 mt-3 text-sm">Memuat data...</p>
         </div>
 
         <!-- Error -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
             <strong>Error:</strong> {{ error }}
         </div>
 
         <!-- Grouped View (Per Bidang) -->
         <div v-else-if="viewMode === 'grouped'" class="space-y-6">
             <!-- Pengurus Inti -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="bg-[#882f1d] px-6 py-4 cursor-pointer hover:bg-[#6b2416] transition-colors" @click="toggleSection('pengurus_inti')">
-                    <h2 class="text-xl font-bold text-white flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5 transition-transform duration-200" :class="{ 'rotate-180': isSectionCollapsed('pengurus_inti') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="bg-[#882f1d] p-3 sm:px-6 sm:py-4 cursor-pointer hover:bg-[#6b2416] transition-colors" @click="toggleSection('pengurus_inti')">
+                    <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <svg class="w-5 h-5 text-white flex-shrink-0 transition-transform duration-200" :class="{ 'rotate-180': isSectionCollapsed('pengurus_inti') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
-                            <span>Pengurus Inti</span>
+                            <h2 class="text-base sm:text-xl font-bold text-white truncate">Pengurus Inti</h2>
                         </div>
-                        <div class="flex items-center gap-3" @click.stop>
-                            <span class="text-sm font-normal bg-white/20 px-3 py-1 rounded-full">
+                        <div class="flex items-center gap-2 flex-shrink-0" @click.stop>
+                            <span class="text-xs font-medium bg-white/20 text-white px-2.5 py-1 rounded-full whitespace-nowrap">
                                 {{ groupedMembers.pengurus_inti?.length || 0 }} anggota
                             </span>
                             <button @click="openCreateForPengurusInti"
-                                class="bg-white text-[#882f1d] px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1.5 text-sm font-semibold"
+                                class="bg-white text-[#882f1d] px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1 text-xs sm:text-sm font-semibold shadow-sm"
                                 title="Tambah Pengurus Inti">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Tambah
-                            </button>
-                        </div>
-                    </h2>
-                </div>
-                <div v-if="!isSectionCollapsed('pengurus_inti')">
-                <div v-if="groupedMembers.pengurus_inti && groupedMembers.pengurus_inti.length > 0" class="divide-y divide-gray-200">
-                    <div v-for="member in groupedMembers.pengurus_inti" :key="member.id"
-                        class="px-6 py-4 hover:bg-gray-50 flex items-center justify-between">
-                        <div class="flex-1">
-                            <div class="font-medium text-gray-900">{{ member.name }}</div>
-                            <div class="text-sm text-gray-600">{{ member.position }}</div>
-                            <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold mt-1">Ex
-                                Officio</div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span :class="[
-                                'px-2 py-1 text-xs font-semibold rounded-full',
-                                member.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            ]">
-                                {{ member.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                            </span>
-                            <button @click="editMember(member)"
-                                class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
-                            <button @click="confirmDelete(member)"
-                                class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
+                                <span>Tambah</span>
                             </button>
                         </div>
                     </div>
                 </div>
-                <div v-else class="px-6 py-8 text-center text-gray-500">
-                    Tidak ada anggota
-                </div>
+                <div v-if="!isSectionCollapsed('pengurus_inti')">
+                    <div v-if="groupedMembers.pengurus_inti && groupedMembers.pengurus_inti.length > 0" class="divide-y divide-gray-200">
+                        <div v-for="member in groupedMembers.pengurus_inti" :key="member.id"
+                            class="p-3.5 sm:px-6 sm:py-4 hover:bg-gray-50 flex items-start sm:items-center justify-between gap-3 transition-colors">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-gray-900 text-sm sm:text-base break-words">{{ member.name }}</div>
+                                <div class="text-xs sm:text-sm text-gray-600 break-words">{{ member.position }}</div>
+                                <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold mt-0.5">Ex Officio</div>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                                <span :class="[
+                                    'px-2 py-0.5 sm:py-1 text-xs font-semibold rounded-full',
+                                    member.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                ]">
+                                    {{ member.is_active ? 'Aktif' : 'Non-aktif' }}
+                                </span>
+                                <button @click="editMember(member)"
+                                    class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button @click="confirmDelete(member)"
+                                    class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="px-6 py-8 text-center text-gray-500 text-sm">
+                        Tidak ada anggota
+                    </div>
                 </div>
             </div>
 
             <!-- Bidang-bidang -->
-            <div v-for="bidang in bidangList" :key="bidang" class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="bg-indigo-600 px-6 py-4 cursor-pointer hover:bg-indigo-700 transition-colors" @click="toggleSection(bidang)">
-                    <h2 class="text-xl font-bold text-white flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5 transition-transform duration-200" :class="{ 'rotate-180': isSectionCollapsed(bidang) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div v-for="bidang in bidangList" :key="bidang" class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="bg-indigo-600 p-3 sm:px-6 sm:py-4 cursor-pointer hover:bg-indigo-700 transition-colors" @click="toggleSection(bidang)">
+                    <div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <svg class="w-5 h-5 text-white flex-shrink-0 transition-transform duration-200" :class="{ 'rotate-180': isSectionCollapsed(bidang) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
-                            <span>Bidang {{ bidang }}</span>
+                            <h2 class="text-base sm:text-xl font-bold text-white truncate">Bidang {{ bidang }}</h2>
                         </div>
-                        <div class="flex items-center gap-3" @click.stop>
-                            <span class="text-sm font-normal bg-white/20 px-3 py-1 rounded-full">
+                        <div class="flex items-center gap-2 flex-shrink-0" @click.stop>
+                            <span class="text-xs font-medium bg-white/20 text-white px-2.5 py-1 rounded-full whitespace-nowrap">
                                 {{ groupedMembers[bidang]?.length || 0 }} anggota
                             </span>
                             <button @click="openCreateForBidang(bidang)"
-                                class="bg-white text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1.5 text-sm font-semibold"
+                                class="bg-white text-indigo-600 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1 text-xs sm:text-sm font-semibold shadow-sm"
                                 :title="`Tambah Anggota Bidang ${bidang}`">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Tambah
-                            </button>
-                        </div>
-                    </h2>
-                </div>
-                <div v-if="!isSectionCollapsed(bidang)">
-                <div v-if="groupedMembers[bidang] && groupedMembers[bidang].length > 0" class="divide-y divide-gray-200">
-                    <div v-for="member in groupedMembers[bidang]" :key="member.id"
-                        class="px-6 py-4 hover:bg-gray-50 flex items-center justify-between">
-                        <div class="flex-1">
-                            <div class="font-medium text-gray-900">{{ member.name }}</div>
-                            <div class="text-sm text-gray-600">{{ member.position }}</div>
-                            <div v-if="member.seksi_name" class="text-xs text-gray-500 mt-1">
-                                Seksi: {{ member.seksi_name }}
-                                <span v-if="member.sub_seksi_name"> • {{ member.sub_seksi_name }}</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span :class="[
-                                'px-2 py-1 text-xs font-semibold rounded-full',
-                                member.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            ]">
-                                {{ member.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                            </span>
-                            <button @click="editMember(member)"
-                                class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
-                            <button @click="confirmDelete(member)"
-                                class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
+                                <span>Tambah</span>
                             </button>
                         </div>
                     </div>
                 </div>
-                <div v-else class="px-6 py-8 text-center text-gray-500">
-                    Tidak ada anggota
-                </div>
+                <div v-if="!isSectionCollapsed(bidang)">
+                    <div v-if="groupedMembers[bidang] && groupedMembers[bidang].length > 0" class="divide-y divide-gray-200">
+                        <div v-for="member in groupedMembers[bidang]" :key="member.id"
+                            class="p-3.5 sm:px-6 sm:py-4 hover:bg-gray-50 flex items-start sm:items-center justify-between gap-3 transition-colors">
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-gray-900 text-sm sm:text-base break-words">{{ member.name }}</div>
+                                <div class="text-xs sm:text-sm text-gray-600 break-words">{{ member.position }}</div>
+                                <div v-if="member.seksi_name" class="text-xs text-gray-500 mt-0.5 break-words">
+                                    Seksi: {{ member.seksi_name }}
+                                    <span v-if="member.sub_seksi_name"> • {{ member.sub_seksi_name }}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+                                <span :class="[
+                                    'px-2 py-0.5 sm:py-1 text-xs font-semibold rounded-full',
+                                    member.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                ]">
+                                    {{ member.is_active ? 'Aktif' : 'Non-aktif' }}
+                                </span>
+                                <button @click="editMember(member)"
+                                    class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button @click="confirmDelete(member)"
+                                    class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
+                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="px-6 py-8 text-center text-gray-500 text-sm">
+                        Tidak ada anggota
+                    </div>
                 </div>
             </div>
 
             <!-- Ketua Wilayah & Lingkungan -->
-            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div class="bg-teal-600 px-6 py-4 cursor-pointer hover:bg-teal-700 transition-colors" @click="toggleSection('wilayah_lingkungan')">
-                    <h2 class="text-xl font-bold text-white flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5 transition-transform duration-200" :class="{ 'rotate-180': isSectionCollapsed('wilayah_lingkungan') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                            <span>Ketua Wilayah & Lingkungan</span>
-                        </div>
-                        <div class="flex items-center gap-3" @click.stop>
-                            <span class="text-sm font-normal bg-white/20 px-3 py-1 rounded-full">
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="bg-teal-600 p-3 sm:px-6 sm:py-4 cursor-pointer hover:bg-teal-700 transition-colors" @click="toggleSection('wilayah_lingkungan')">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center justify-between sm:justify-start gap-2.5">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <svg class="w-5 h-5 text-white flex-shrink-0 transition-transform duration-200" :class="{ 'rotate-180': isSectionCollapsed('wilayah_lingkungan') }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                                <h2 class="text-base sm:text-xl font-bold text-white">Ketua Wilayah & Lingkungan</h2>
+                            </div>
+                            <span class="text-xs font-medium bg-white/20 text-white px-2.5 py-1 rounded-full whitespace-nowrap sm:hidden">
                                 {{ groupedMembers.ketua_wilayah?.length || 0 }} anggota
                             </span>
-                            <div class="flex gap-2">
-                                <button @click="openCreateForKetuaWilayah"
-                                    class="bg-white text-teal-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1.5 text-sm font-semibold"
-                                    title="Tambah Ketua Wilayah">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Ketua Wilayah
-                                </button>
-                                <button @click="openCreateForKetuaLingkunganDefault"
-                                    class="bg-white text-teal-600 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1.5 text-sm font-semibold"
-                                    title="Tambah Ketua Lingkungan">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Ketua Lingkungan
-                                </button>
-                            </div>
                         </div>
-                    </h2>
-                </div>
-                <div v-if="!isSectionCollapsed('wilayah_lingkungan')">
-                <div v-if="wilayahGroupsAdmin.length > 0" class="divide-y divide-gray-200">
-                    <!-- Loop per Wilayah -->
-                    <div v-for="wilayahGroup in wilayahGroupsAdmin" :key="wilayahGroup.name" 
-                        class="border-b border-gray-200 last:border-b-0">
-                        
-                        <!-- Wilayah Header -->
-                        <div class="px-6 py-3 bg-teal-50 border-l-4 border-teal-600 cursor-pointer hover:bg-teal-100 transition-colors" @click="toggleWilayah(wilayahGroup.name)">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <svg class="w-4 h-4 text-teal-600 transition-transform duration-200" :class="{ 'rotate-180': isWilayahCollapsed(wilayahGroup.name) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                    <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                                    </svg>
-                                    <div class="font-bold text-teal-900 text-lg">Wilayah {{ wilayahGroup.name }}</div>
-                                </div>
-                                <div class="flex items-center gap-3 text-sm text-teal-700">
-                                    <span>{{ wilayahGroup.lingkungan.length }} Lingkungan</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Wilayah Content (Collapsible) -->
-                        <div v-if="!isWilayahCollapsed(wilayahGroup.name)">
-                        <!-- Ketua Wilayah -->
-                        <div v-if="wilayahGroup.ketua" class="px-6 py-3 bg-white border-l-4 border-teal-200">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <svg class="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                    </svg>
-                                    <div>
-                                        <div class="text-xs text-gray-500 font-medium">Ketua Wilayah</div>
-                                        <div class="font-semibold text-gray-900">{{ wilayahGroup.ketua.name }}</div>
-                                        <div class="text-xs text-gray-600 mt-0.5">{{ wilayahGroup.ketua.position }}</div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <span :class="[
-                                        'px-2 py-1 text-xs font-semibold rounded-full',
-                                        wilayahGroup.ketua.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                    ]">
-                                        {{ wilayahGroup.ketua.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                                    </span>
-                                    <button @click="editMember(wilayahGroup.ketua)"
-                                        class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                        </svg>
-                                    </button>
-                                    <button @click="confirmDelete(wilayahGroup.ketua)"
-                                        class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="px-6 py-2 bg-amber-50 border-l-4 border-amber-400">
-                            <div class="flex items-center gap-2 text-amber-800 text-sm">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        <div class="flex flex-wrap items-center gap-2" @click.stop>
+                            <span class="hidden sm:inline-block text-xs font-medium bg-white/20 text-white px-3 py-1 rounded-full whitespace-nowrap">
+                                {{ groupedMembers.ketua_wilayah?.length || 0 }} anggota
+                            </span>
+                            <button @click="openCreateForKetuaWilayah"
+                                class="flex-1 sm:flex-initial bg-white text-teal-600 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm font-semibold shadow-sm"
+                                title="Tambah Ketua Wilayah">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
-                                <span>Belum ada Ketua Wilayah - Silakan tambah dari tombol "Ketua Wilayah" di atas</span>
-                            </div>
-                        </div>
-
-                        <!-- List Lingkungan (Ketua Lingkungan from DPP) -->
-                        <div v-if="wilayahGroup.lingkungan.length > 0" class="px-6 py-4 bg-gray-50">
-                            <div class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                <span>+ Wilayah</span>
+                            </button>
+                            <button @click="openCreateForKetuaLingkunganDefault"
+                                class="flex-1 sm:flex-initial bg-white text-teal-600 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-1 text-xs sm:text-sm font-semibold shadow-sm"
+                                title="Tambah Ketua Lingkungan">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
-                                Ketua Lingkungan ({{ wilayahGroup.lingkungan.length }})
-                            </div>
-                            <div class="space-y-2">
-                                <div v-for="ling in wilayahGroup.lingkungan" :key="ling.id"
-                                    class="flex items-center justify-between py-3 px-4 bg-white rounded-lg border border-gray-200 hover:border-teal-300 transition-colors">
-                                    <div class="flex items-center gap-4">
-                                        <svg class="w-5 h-5 text-teal-600" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                        </svg>
-                                        <div>
-                                            <div class="font-medium text-gray-900">{{ ling.name }}</div>
-                                            <div class="text-xs text-gray-600 mt-0.5">{{ ling.position }}</div>
-                                            <div class="text-xs text-gray-500 mt-0.5">Lingkungan {{ wilayahGroup.name }} {{ ling.lingkungan_number }}</div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Actions -->
-                                    <div class="flex items-center gap-2">
-                                        <span :class="[
-                                            'px-2 py-1 text-xs font-semibold rounded-full',
-                                            ling.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                        ]">
-                                            {{ ling.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                                        </span>
-                                        <button @click="editMember(ling)"
-                                            class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                            </svg>
-                                        </button>
-                                        <button @click="confirmDelete(ling)"
-                                            class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="px-6 py-4 bg-gray-50 text-center text-gray-500 text-sm">
-                            Belum ada Ketua Lingkungan - Silakan tambah dari tombol "Ketua Lingkungan" di atas
-                        </div>
+                                <span>+ Lingkungan</span>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <div v-else class="px-6 py-8 text-center text-gray-500">
-                    Tidak ada anggota
-                </div>
+                <div v-if="!isSectionCollapsed('wilayah_lingkungan')">
+                    <div v-if="wilayahGroupsAdmin.length > 0" class="divide-y divide-gray-200">
+                        <!-- Loop per Wilayah -->
+                        <div v-for="wilayahGroup in wilayahGroupsAdmin" :key="wilayahGroup.name" 
+                            class="border-b border-gray-200 last:border-b-0">
+                            
+                            <!-- Wilayah Header -->
+                            <div class="p-3 sm:px-6 sm:py-3 bg-teal-50 border-l-4 border-teal-600 cursor-pointer hover:bg-teal-100 transition-colors" @click="toggleWilayah(wilayahGroup.name)">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2.5 min-w-0">
+                                        <svg class="w-4 h-4 text-teal-600 transition-transform duration-200 flex-shrink-0" :class="{ 'rotate-180': isWilayahCollapsed(wilayahGroup.name) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                        <svg class="w-5 h-5 text-teal-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                                        </svg>
+                                        <div class="font-bold text-teal-900 text-sm sm:text-base truncate">Wilayah {{ wilayahGroup.name }}</div>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-xs sm:text-sm text-teal-700 flex-shrink-0">
+                                        <span>{{ wilayahGroup.lingkungan.length }} Lingkungan</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Wilayah Content (Collapsible) -->
+                            <div v-if="!isWilayahCollapsed(wilayahGroup.name)">
+                                <!-- Ketua Wilayah -->
+                                <div v-if="wilayahGroup.ketua" class="p-3 sm:px-6 sm:py-3 bg-white border-l-4 border-teal-200">
+                                    <div class="flex items-start sm:items-center justify-between gap-3">
+                                        <div class="flex items-center gap-3 min-w-0">
+                                            <svg class="w-5 h-5 text-teal-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                            </svg>
+                                            <div class="min-w-0">
+                                                <div class="text-[11px] text-gray-500 font-medium">Ketua Wilayah</div>
+                                                <div class="font-semibold text-gray-900 text-sm sm:text-base break-words">{{ wilayahGroup.ketua.name }}</div>
+                                                <div class="text-xs text-gray-600 mt-0.5 break-words">{{ wilayahGroup.ketua.position }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                                            <span :class="[
+                                                'px-2 py-0.5 text-xs font-semibold rounded-full',
+                                                wilayahGroup.ketua.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                            ]">
+                                                {{ wilayahGroup.ketua.is_active ? 'Aktif' : 'Non-aktif' }}
+                                            </span>
+                                            <button @click="editMember(wilayahGroup.ketua)"
+                                                class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
+                                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                            </button>
+                                            <button @click="confirmDelete(wilayahGroup.ketua)"
+                                                class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
+                                                <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="p-3 sm:px-6 sm:py-2 bg-amber-50 border-l-4 border-amber-400">
+                                    <div class="flex items-center gap-2 text-amber-800 text-xs sm:text-sm">
+                                        <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span>Belum ada Ketua Wilayah - Silakan tambah dari tombol "+ Wilayah" di atas</span>
+                                    </div>
+                                </div>
+
+                                <!-- List Lingkungan (Ketua Lingkungan from DPP) -->
+                                <div v-if="wilayahGroup.lingkungan.length > 0" class="p-3 sm:px-6 sm:py-4 bg-gray-50">
+                                    <div class="text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        <span>Ketua Lingkungan ({{ wilayahGroup.lingkungan.length }})</span>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div v-for="ling in wilayahGroup.lingkungan" :key="ling.id"
+                                            class="flex items-start sm:items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-teal-300 transition-colors gap-3">
+                                            <div class="flex items-start gap-2.5 min-w-0">
+                                                <svg class="w-5 h-5 text-teal-600 flex-shrink-0 mt-0.5 sm:mt-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                                </svg>
+                                                <div class="min-w-0">
+                                                    <div class="font-semibold text-gray-900 text-sm break-words">{{ ling.name }}</div>
+                                                    <div class="text-xs text-gray-600 mt-0.5 break-words">{{ ling.position }}</div>
+                                                    <div class="text-xs text-gray-500 mt-0.5 break-words">Lingkungan {{ wilayahGroup.name }} {{ ling.lingkungan_number }}</div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Actions -->
+                                            <div class="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                                                <span :class="[
+                                                    'px-2 py-0.5 text-xs font-semibold rounded-full',
+                                                    ling.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                                ]">
+                                                    {{ ling.is_active ? 'Aktif' : 'Non-aktif' }}
+                                                </span>
+                                                <button @click="editMember(ling)"
+                                                    class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
+                                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                    </svg>
+                                                </button>
+                                                <button @click="confirmDelete(ling)"
+                                                    class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
+                                                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="p-3 sm:px-6 sm:py-4 bg-gray-50 text-center text-gray-500 text-xs sm:text-sm">
+                                    Belum ada Ketua Lingkungan - Silakan tambah dari tombol "+ Lingkungan" di atas
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="px-6 py-8 text-center text-gray-500 text-sm">
+                        Tidak ada anggota
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- DPP Table (List View) -->
-        <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Jabatan
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masa
-                            Jabatan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Urutan</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="member in paginatedDisplayedMembers" :key="member.id" class="hover:bg-gray-50">
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-gray-900">{{ member.name }}</div>
-                            <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold">Ex Officio
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span :class="[
-                                'px-2 py-1 text-xs font-semibold rounded-full',
-                                getPositionTypeClass(member.position_type)
-                            ]">
-                                {{ getPositionTypeName(member.position_type) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ member.position_level || '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div v-if="member.period_start_date">
-                                {{ formatDate(member.period_start_date) }} -
-                                {{ member.period_end_date ? formatDate(member.period_end_date) : 'Sekarang' }}
-                            </div>
-                            <div v-else>-</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span :class="[
-                                'px-2 py-1 text-xs font-semibold rounded-full',
-                                member.is_active
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-100 text-gray-800'
-                            ]">
-                                {{ member.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ member.display_order }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <button @click="editMember(member)"
-                                class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
-                            <button @click="confirmDelete(member)"
-                                class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div v-else class="bg-white rounded-lg shadow overflow-hidden">
+            <!-- Desktop Table View -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masa Jabatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Urutan</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="member in paginatedDisplayedMembers" :key="member.id" class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-semibold text-gray-900">{{ member.name }}</div>
+                                <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold">Ex Officio</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span :class="[
+                                    'px-2.5 py-1 text-xs font-semibold rounded-full',
+                                    getPositionTypeClass(member.position_type)
+                                ]">
+                                    {{ getPositionTypeName(member.position_type) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ member.position_level || '-' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <div v-if="member.period_start_date">
+                                    {{ formatDate(member.period_start_date) }} -
+                                    {{ member.period_end_date ? formatDate(member.period_end_date) : 'Sekarang' }}
+                                </div>
+                                <div v-else>-</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span :class="[
+                                    'px-2.5 py-1 text-xs font-semibold rounded-full',
+                                    member.is_active
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                ]">
+                                    {{ member.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ member.display_order }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <button @click="editMember(member)"
+                                    class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button @click="confirmDelete(member)"
+                                    class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Card View (Untuk layar HP agar tidak terpotong) -->
+            <div class="md:hidden divide-y divide-gray-200">
+                <div v-for="member in paginatedDisplayedMembers" :key="member.id" class="p-4 space-y-3 bg-white hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-bold text-gray-900 break-words">{{ member.name }}</div>
+                            <div class="text-xs text-gray-600 break-words mt-0.5">{{ member.position || getPositionTypeName(member.position_type) }}</div>
+                            <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold mt-0.5">Ex Officio</div>
+                        </div>
+                        <span :class="[
+                            'px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0',
+                            member.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        ]">
+                            {{ member.is_active ? 'Aktif' : 'Non-aktif' }}
+                        </span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                        <span :class="[
+                            'px-2 py-0.5 rounded-full font-medium',
+                            getPositionTypeClass(member.position_type)
+                        ]">
+                            {{ getPositionTypeName(member.position_type) }}
+                        </span>
+                        <span v-if="member.position_level" class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full font-medium">
+                            Level: {{ member.position_level }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-gray-500 pt-1 border-t border-gray-100">
+                        <div>
+                            <span class="font-medium text-gray-700">Masa Jabatan:</span>
+                            {{ member.period_start_date ? formatDate(member.period_start_date) : '-' }}
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-700">Urutan:</span> {{ member.display_order }}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-1">
+                        <button @click="editMember(member)"
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Edit</span>
+                        </button>
+                        <button @click="confirmDelete(member)"
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-medium transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span>Hapus</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Empty State -->
             <div v-if="displayedMembers.length === 0" class="text-center py-12">
@@ -497,9 +553,9 @@
                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Tidak Ada Data</h3>
-                <p class="text-gray-500 mb-4">Belum ada data anggota DPP yang ditambahkan.</p>
+                <p class="text-gray-500 mb-4 text-sm">Belum ada data anggota DPP yang ditambahkan.</p>
                 <button @click="openCreateModal"
-                    class="inline-flex items-center gap-2 bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416] transition-colors">
+                    class="inline-flex items-center gap-2 bg-[#882f1d] text-white px-4 py-2.5 rounded-lg hover:bg-[#6b2416] transition-colors text-sm font-medium">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
@@ -507,17 +563,18 @@
                 </button>
             </div>
 
-            <div v-if="displayedMembers.length > pageLimit" class="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <p class="text-sm text-gray-600">
+            <!-- Pagination -->
+            <div v-if="displayedMembers.length > pageLimit" class="p-4 sm:px-6 sm:py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p class="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                     Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
                     {{ Math.min(currentPage * pageLimit, displayedMembers.length) }}
                     dari {{ displayedMembers.length }} anggota
                 </p>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center justify-center gap-1.5 sm:gap-2">
                     <button
                         @click="goToPage(currentPage - 1)"
                         :disabled="currentPage === 1"
-                        class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        class="px-2.5 sm:px-3 py-1.5 rounded-lg border border-gray-300 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                     >
                         Sebelumnya
                     </button>
@@ -526,7 +583,7 @@
                         :key="page"
                         @click="goToPage(page)"
                         :class="[
-                            'px-3 py-1.5 rounded-lg border text-sm',
+                            'px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs sm:text-sm transition-colors',
                             currentPage === page
                                 ? 'bg-[#882f1d] text-white border-[#882f1d]'
                                 : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -537,13 +594,13 @@
                     <button
                         @click="goToPage(currentPage + 1)"
                         :disabled="currentPage >= totalPages"
-                        class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        class="px-2.5 sm:px-3 py-1.5 rounded-lg border border-gray-300 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                     >
                         Berikutnya
                     </button>
                 </div>
             </div>
-        </div>
+        </div>v>
 
         <!-- Create/Edit Modal -->
         <Teleport to="body">

@@ -1,32 +1,32 @@
 <template>
-    <div class="p-6">
+    <div class="space-y-6">
         <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="bg-white p-4 sm:p-6 rounded-lg shadow flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-gray-800 mb-1">Kelola BGKP Paroki</h1>
-                <p class="text-gray-600">Manajemen data Badan Gereja Katolik Paroki</p>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Kelola BGKP Paroki</h1>
+                <p class="text-xs sm:text-sm text-gray-600">Manajemen data Badan Gereja Katolik Paroki</p>
             </div>
             <button @click="openCreateModal"
-                class="bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416] transition-colors flex items-center gap-2">
+                class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#882f1d] text-white px-4 py-2.5 rounded-lg hover:bg-[#6b2416] transition-colors font-medium text-sm shadow-sm flex-shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Tambah Anggota
+                <span>Tambah Anggota</span>
             </button>
         </div>
 
         <!-- Filters & Search -->
-        <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-lg shadow p-4 sm:p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cari Nama</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Cari Nama</label>
                     <input v-model="filters.search" type="text" placeholder="Cari nama anggota..."
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent" />
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none" />
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jabatan</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Jabatan</label>
                     <select v-model="filters.position_type"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white">
                         <option value="all">Semua Jabatan</option>
                         <option value="ketua">Ketua</option>
                         <option value="wakil_ketua">Wakil Ketua</option>
@@ -36,18 +36,18 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select v-model="filters.is_active"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white">
                         <option value="all">Semua Status</option>
                         <option value="true">Aktif</option>
                         <option value="false">Tidak Aktif</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Urutkan</label>
+                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Urutkan</label>
                     <select v-model="filters.sort"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                        class="w-full px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white">
                         <option value="display_order">Urutan Tampil</option>
                         <option value="name">Nama</option>
                         <option value="created_at">Tanggal Dibuat</option>
@@ -60,93 +60,147 @@
         <div v-if="loading" class="text-center py-12">
             <div class="inline-block w-8 h-8 border-4 border-[#882f1d] border-t-transparent rounded-full animate-spin">
             </div>
-            <p class="text-gray-600 mt-3">Memuat data...</p>
+            <p class="text-gray-600 mt-3 text-sm">Memuat data...</p>
         </div>
 
         <!-- Error -->
-        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+        <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm">
             <strong>Error:</strong> {{ error }}
         </div>
 
-        <!-- BGKP Table -->
-        <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Jabatan
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masa
-                            Jabatan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Urutan</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="member in paginatedMembers" :key="member.id" class="hover:bg-gray-50">
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-gray-900">{{ member.name }}</div>
-                            <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold">Ex Officio
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span :class="[
-                                'px-2 py-1 text-xs font-semibold rounded-full',
-                                getPositionTypeClass(member.position_type)
-                            ]">
-                                {{ getPositionTypeName(member.position_type) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ member.position_level || '-' }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div v-if="member.period_start_date">
-                                {{ formatDate(member.period_start_date) }} -
-                                {{ member.period_end_date ? formatDate(member.period_end_date) : 'Sekarang' }}
-                            </div>
-                            <div v-else>-</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span :class="[
-                                'px-2 py-1 text-xs font-semibold rounded-full',
-                                member.is_active
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-100 text-gray-800'
-                            ]">
-                                {{ member.is_active ? 'Aktif' : 'Tidak Aktif' }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ member.display_order }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <button @click="editMember(member)"
-                                class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
-                            <button @click="confirmDelete(member)"
-                                class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <!-- BGKP Table & Mobile Cards -->
+        <div v-else class="bg-white rounded-lg shadow overflow-hidden">
+            <!-- Desktop Table View -->
+            <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jabatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Level</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masa Jabatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Urutan</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="member in paginatedMembers" :key="member.id" class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-semibold text-gray-900">{{ member.name }}</div>
+                                <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold">Ex Officio</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span :class="[
+                                    'px-2.5 py-1 text-xs font-semibold rounded-full',
+                                    getPositionTypeClass(member.position_type)
+                                ]">
+                                    {{ getPositionTypeName(member.position_type) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ member.position_level || '-' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <div v-if="member.period_start_date">
+                                    {{ formatDate(member.period_start_date) }} -
+                                    {{ member.period_end_date ? formatDate(member.period_end_date) : 'Sekarang' }}
+                                </div>
+                                <div v-else>-</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span :class="[
+                                    'px-2.5 py-1 text-xs font-semibold rounded-full',
+                                    member.is_active
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                ]">
+                                    {{ member.is_active ? 'Aktif' : 'Tidak Aktif' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ member.display_order }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <button @click="editMember(member)"
+                                    class="text-blue-600 hover:text-blue-800 transition-colors p-1" title="Edit">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button @click="confirmDelete(member)"
+                                    class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="md:hidden divide-y divide-gray-200">
+                <div v-for="member in paginatedMembers" :key="member.id" class="p-4 space-y-3 bg-white hover:bg-gray-50 transition-colors">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-bold text-gray-900 break-words">{{ member.name }}</div>
+                            <div class="text-xs text-gray-600 break-words mt-0.5">{{ member.position || getPositionTypeName(member.position_type) }}</div>
+                            <div v-if="member.is_ex_officio" class="text-xs text-[#882f1d] font-semibold mt-0.5">Ex Officio</div>
+                        </div>
+                        <span :class="[
+                            'px-2 py-0.5 text-xs font-semibold rounded-full flex-shrink-0',
+                            member.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        ]">
+                            {{ member.is_active ? 'Aktif' : 'Non-aktif' }}
+                        </span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-1.5 text-xs">
+                        <span :class="[
+                            'px-2 py-0.5 rounded-full font-medium',
+                            getPositionTypeClass(member.position_type)
+                        ]">
+                            {{ getPositionTypeName(member.position_type) }}
+                        </span>
+                        <span v-if="member.position_level" class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-full font-medium">
+                            Level: {{ member.position_level }}
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between text-xs text-gray-500 pt-1 border-t border-gray-100">
+                        <div>
+                            <span class="font-medium text-gray-700">Masa Jabatan:</span>
+                            {{ member.period_start_date ? formatDate(member.period_start_date) : '-' }}
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-700">Urutan:</span> {{ member.display_order }}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 pt-1">
+                        <button @click="editMember(member)"
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Edit</span>
+                        </button>
+                        <button @click="confirmDelete(member)"
+                            class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-medium transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            <span>Hapus</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Empty State -->
             <div v-if="displayedMembers.length === 0" class="text-center py-12">
@@ -155,9 +209,9 @@
                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Tidak Ada Data</h3>
-                <p class="text-gray-500 mb-4">Belum ada data anggota BGKP yang ditambahkan.</p>
+                <p class="text-gray-500 mb-4 text-sm">Belum ada data anggota BGKP yang ditambahkan.</p>
                 <button @click="openCreateModal"
-                    class="inline-flex items-center gap-2 bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416] transition-colors">
+                    class="inline-flex items-center gap-2 bg-[#882f1d] text-white px-4 py-2.5 rounded-lg hover:bg-[#6b2416] transition-colors text-sm font-medium">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
@@ -165,17 +219,18 @@
                 </button>
             </div>
 
-            <div v-if="displayedMembers.length > pageLimit" class="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <p class="text-sm text-gray-600">
+            <!-- Pagination -->
+            <div v-if="displayedMembers.length > pageLimit" class="p-4 sm:px-6 sm:py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p class="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                     Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
                     {{ Math.min(currentPage * pageLimit, displayedMembers.length) }}
                     dari {{ displayedMembers.length }} anggota
                 </p>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center justify-center gap-1.5 sm:gap-2">
                     <button
                         @click="goToPage(currentPage - 1)"
                         :disabled="currentPage === 1"
-                        class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        class="px-2.5 sm:px-3 py-1.5 rounded-lg border border-gray-300 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                     >
                         Sebelumnya
                     </button>
@@ -184,7 +239,7 @@
                         :key="page"
                         @click="goToPage(page)"
                         :class="[
-                            'px-3 py-1.5 rounded-lg border text-sm',
+                            'px-2.5 sm:px-3 py-1.5 rounded-lg border text-xs sm:text-sm transition-colors',
                             currentPage === page
                                 ? 'bg-[#882f1d] text-white border-[#882f1d]'
                                 : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -195,7 +250,7 @@
                     <button
                         @click="goToPage(currentPage + 1)"
                         :disabled="currentPage >= totalPages"
-                        class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        class="px-2.5 sm:px-3 py-1.5 rounded-lg border border-gray-300 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                     >
                         Berikutnya
                     </button>
