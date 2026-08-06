@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <!-- Add User Form -->
-    <div class="bg-white p-6 rounded-lg shadow">
+    <div class="bg-white p-4 sm:p-6 rounded-lg shadow">
       <h2 class="text-lg font-semibold mb-2">Tambah Pengguna Baru</h2>
       <form @submit.prevent="createUser" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Tipe User Selection -->
@@ -184,7 +184,7 @@
       <p v-if="message" class="mt-2 text-green-600">{{ message }}</p>
       <p v-if="error" class="mt-2 text-red-600">{{ error }}</p>
     </div>        <!-- Users List -->
-        <div class="bg-white p-6 rounded-lg shadow">
+        <div class="bg-white p-4 sm:p-6 rounded-lg shadow">
           <!-- Pending approval banner -->
           <div v-if="pendingCount > 0 && activeTab !== 'pending'" class="mb-4 bg-yellow-50 border border-yellow-300 rounded-lg p-3 flex items-center justify-between">
             <div class="flex items-center gap-2 text-yellow-800">
@@ -196,17 +196,18 @@
             </button>
           </div>
 
-          <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-semibold">Daftar Pengguna</h2>
-            <div class="flex items-center gap-4">
-              <div class="text-xs text-gray-500">
-                Total: {{ totalItems }} pengguna
-              </div>
-              <div class="text-sm text-gray-600">
-                <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 rounded mr-2">
+          <!-- Header Section -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <div>
+              <h2 class="text-lg font-semibold text-gray-900">Daftar Pengguna</h2>
+              <div class="text-xs text-gray-500 mt-0.5">Total: {{ totalItems }} pengguna</div>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+              <div class="flex items-center gap-1.5 text-xs">
+                <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
                   🔐 Admin
                 </span>
-                <span class="inline-block px-2 py-1 bg-green-100 text-green-800 rounded">
+                <span class="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 rounded font-medium">
                   👤 User Booking
                 </span>
               </div>
@@ -214,7 +215,7 @@
               <button
                 v-if="isSuperAdmin"
                 @click="showClearModal = true; clearConfirmText = ''"
-                class="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 transition-colors"
+                class="px-2.5 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 transition-colors flex items-center gap-1"
               >
                 🗑️ Hapus Semua User Booking
               </button>
@@ -224,18 +225,18 @@
           <!-- Tab navigation + Search bar -->
           <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
             <!-- Tab pills -->
-            <div class="flex gap-2 border-b border-gray-200 flex-shrink-0">
+            <div class="flex gap-1 sm:gap-2 border-b border-gray-200 overflow-x-auto pb-px">
               <button
                 @click="activeTab = 'active'"
                 :class="[
-                  'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                  'px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors whitespace-nowrap',
                   activeTab === 'active' ? 'border-blue-600 text-blue-700 bg-blue-50' : 'border-transparent text-gray-600 hover:text-gray-800'
                 ]"
               >Aktif</button>
               <button
                 @click="activeTab = 'pending'"
                 :class="[
-                  'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors flex items-center gap-1',
+                  'px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors flex items-center gap-1 whitespace-nowrap',
                   activeTab === 'pending' ? 'border-yellow-500 text-yellow-700 bg-yellow-50' : 'border-transparent text-gray-600 hover:text-gray-800'
                 ]"
               >
@@ -247,14 +248,14 @@
               <button
                 @click="activeTab = 'inactive'"
                 :class="[
-                  'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                  'px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors whitespace-nowrap',
                   activeTab === 'inactive' ? 'border-red-500 text-red-700 bg-red-50' : 'border-transparent text-gray-600 hover:text-gray-800'
                 ]"
               >Nonaktif</button>
               <button
                 @click="activeTab = 'all'"
                 :class="[
-                  'px-4 py-2 text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors',
+                  'px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-t-md border-b-2 -mb-px transition-colors whitespace-nowrap',
                   activeTab === 'all' ? 'border-gray-500 text-gray-700 bg-gray-50' : 'border-transparent text-gray-600 hover:text-gray-800'
                 ]"
               >Semua</button>
@@ -306,14 +307,17 @@
           <div v-else>
             <!-- Mobile/Tablet Card View -->
             <div class="xl:hidden space-y-4 mb-4">
-              <div v-for="user in paginatedUsers" :key="'card-'+user.id" class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-100">
-                  <div class="flex-1 pr-4">
-                    <h3 class="text-lg font-bold text-gray-900 leading-tight">{{ user.full_name }}</h3>
-                    <div class="text-sm text-gray-500 mt-1">{{ user.email }}</div>
-                    <div class="text-xs text-gray-400 mt-1 font-mono">@{{ user.username }}</div>
+              <div v-for="user in paginatedUsers" :key="'card-'+user.id" class="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
+                <!-- User Header & Horizontal Action Icons -->
+                <div class="mb-4 pb-3 border-b border-gray-100">
+                  <div>
+                    <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-tight">{{ user.full_name }}</h3>
+                    <div class="text-xs sm:text-sm text-gray-500 mt-1 break-all">{{ user.email }}</div>
+                    <div class="text-xs text-gray-400 mt-0.5 font-mono">@{{ user.username }}</div>
                   </div>
-                  <div class="flex flex-col space-y-2">
+
+                  <!-- Horizontal Action Icons Below Email -->
+                  <div class="flex items-center flex-wrap gap-2 mt-3 pt-2.5 border-t border-gray-100">
                     <template v-if="user.account_status === 'PENDING' && (isSuperAdmin || isAdminSekretariat)">
                       <button @click="approveUser(user)" title="Setujui" class="text-green-600 hover:text-green-800 p-2 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
