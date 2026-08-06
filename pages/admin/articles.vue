@@ -44,12 +44,14 @@
           <p class="mt-1 text-sm text-gray-500">Mulai dengan membuat artikel pertama Anda.</p>
         </div>
 
-        <div v-else class="space-y-4">
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
           <div v-for="article in articles" :key="article.id"
-            class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50">
-            <div class="flex justify-between items-start gap-4">
+            class="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 hover:shadow-md hover:border-[#882f1d]/30 transition-all duration-200 group flex flex-col sm:flex-row gap-4 sm:gap-5 items-start">
+            
+            <!-- Thumbnail & Main Info Wrapper (for mobile row) -->
+            <div class="flex flex-row gap-4 flex-1 w-full min-w-0">
               <!-- Thumbnail Preview -->
-              <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200">
+              <div class="w-20 h-20 sm:w-28 sm:h-20 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-200 shadow-sm group-hover:shadow-md transition-shadow">
                 <img 
                   v-if="article.image && article.image !== '/images/default-article.jpg'" 
                   :src="article.image" 
@@ -57,36 +59,63 @@
                   class="w-full h-full object-cover" 
                 />
                 <div v-else class="w-full h-full bg-gradient-to-br from-red-800 to-amber-700 flex items-center justify-center text-white">
-                  <svg class="w-6 h-6 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  <svg class="w-8 h-8 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                   </svg>
                 </div>
               </div>
 
-              <div class="flex-1 min-w-0">
-                <h4 class="text-lg font-medium text-gray-900 truncate">{{ article.title }}</h4>
-                <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ article.excerpt || 'Tidak ada ringkasan' }}</p>
-                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
-                  <span>Penulis: {{ article.author || 'Tidak diketahui' }}</span>
-                  <span>Dibuat: {{ formatDate(article.created_at) }}</span>
-                  <span :class="getStatusClass(article.status)" class="px-2 py-1 rounded-full text-xs font-medium">
+              <!-- Info -->
+              <div class="flex-1 min-w-0 flex flex-col justify-center">
+                <h4 class="text-base sm:text-lg font-bold text-gray-900 group-hover:text-[#882f1d] transition-colors line-clamp-2">
+                  {{ article.title }}
+                </h4>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-1.5 line-clamp-2">
+                  {{ article.excerpt || 'Tidak ada ringkasan' }}
+                </p>
+                
+                <!-- Desktop Meta (hidden on mobile to save space) -->
+                <div class="hidden sm:flex items-center flex-wrap gap-x-4 gap-y-2 mt-2.5 text-xs text-gray-500 font-medium">
+                  <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>{{ article.author || 'Tidak diketahui' }}</span>
+                  <span class="flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>{{ formatDate(article.created_at) }}</span>
+                  <span
+                    :class="getStatusClass(article.status)"
+                    class="px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider shadow-sm"
+                  >
                     {{ getStatusText(article.status) }}
                   </span>
                 </div>
               </div>
-              <div class="flex space-x-2 ml-2 flex-shrink-0">
+            </div>
+
+            <!-- Mobile Meta (visible only on mobile) -->
+            <div class="sm:hidden w-full flex items-center justify-between flex-wrap gap-2 pt-3 border-t border-gray-100">
+                <div class="flex flex-col gap-1 text-[11px] text-gray-500 font-medium">
+                  <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>{{ article.author || 'Tidak diketahui' }}</span>
+                  <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>{{ formatDate(article.created_at) }}</span>
+                </div>
+                <span
+                  :class="getStatusClass(article.status)"
+                  class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm"
+                >
+                  {{ getStatusText(article.status) }}
+                </span>
+            </div>
+
+            <!-- Actions -->
+            <div class="w-full sm:w-auto flex items-center justify-end space-x-2 pt-3 sm:pt-0 sm:pl-4 border-t sm:border-t-0 sm:border-l border-gray-100 sm:border-gray-200 mt-2 sm:mt-0 flex-shrink-0">
                 <button @click="editArticle(article)" title="Edit"
-                  class="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded text-sm inline-flex items-center">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="flex-1 sm:flex-none bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-transparent p-2 sm:p-2.5 rounded-lg text-sm inline-flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
                 <button @click="togglePublish(article)"
                   :title="article.status === 'published' ? 'Unpublish' : 'Publish'"
-                  :class="article.status === 'published' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'"
-                  class="text-white p-2 rounded text-sm inline-flex items-center">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  :class="article.status === 'published' ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-600 border-yellow-200' : 'bg-green-50 text-green-600 hover:bg-green-600 border-green-200'"
+                  class="flex-1 sm:flex-none hover:text-white border hover:border-transparent p-2 sm:p-2.5 rounded-lg text-sm inline-flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path v-if="article.status === 'published'" stroke-linecap="round" stroke-linejoin="round"
                       stroke-width="2"
                       d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
@@ -95,13 +124,12 @@
                   </svg>
                 </button>
                 <button @click="deleteArticle(article)" title="Hapus"
-                  class="bg-red-600 hover:bg-red-700 text-white p-2 rounded text-sm inline-flex items-center">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  class="flex-1 sm:flex-none bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 hover:border-transparent p-2 sm:p-2.5 rounded-lg text-sm inline-flex items-center justify-center transition-colors">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
                 </button>
-              </div>
             </div>
           </div>
         </div>
