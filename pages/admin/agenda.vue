@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
@@ -213,7 +213,7 @@
 
       <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <div class="hidden lg:block overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300">
               <thead class="bg-gray-50">
                 <tr>
@@ -309,6 +309,90 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile Cards -->
+          <div class="lg:hidden space-y-4 px-2">
+            <!-- Select All Checkbox for Mobile -->
+            <div class="flex items-center gap-2 mb-4 px-2">
+              <input type="checkbox" :checked="allVisibleSelected" @change="toggleSelectAll"
+                class="h-4 w-4 rounded border-gray-300 text-[#882f1d] focus:ring-[#882f1d]" id="selectAllMobile" />
+              <label for="selectAllMobile" class="text-sm font-medium text-gray-700">Pilih Semua di Halaman Ini</label>
+            </div>
+
+            <div v-for="agenda in paginatedAgendas" :key="`mobile-${agenda.id}`"
+              :class="['bg-white border rounded-xl shadow-sm p-4 relative overflow-hidden', selectedAgendas.includes(agenda.id) ? 'border-[#882f1d] ring-1 ring-[#882f1d]' : 'border-gray-200']">
+              
+              <!-- Checkbox (Absolute top-left) -->
+              <div class="absolute top-4 right-4 z-10">
+                <input type="checkbox" :checked="selectedAgendas.includes(agenda.id)" @change="toggleSelect(agenda.id)"
+                  class="h-5 w-5 rounded border-gray-300 text-[#882f1d] focus:ring-[#882f1d] cursor-pointer" />
+              </div>
+
+              <!-- Content -->
+              <div class="pr-10">
+                <!-- Badges -->
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                  <span :class="getStatusClass(agenda)" class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold uppercase tracking-wide">
+                    <svg class="-ml-0.5 mr-1 h-1.5 w-1.5" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" /></svg>
+                    {{ getStatusText(agenda) }}
+                  </span>
+                  <span :class="getCategoryClass(agenda)" class="inline-flex rounded-full px-2 py-0.5 text-xs font-semibold leading-5 uppercase tracking-wide">
+                    {{ agenda.category }}
+                  </span>
+                </div>
+                
+                <!-- Title & Desc -->
+                <h4 @click="openPreview(agenda)" class="text-[17px] font-bold text-gray-900 hover:text-blue-600 cursor-pointer leading-snug mb-1.5">
+                  {{ agenda.title }}
+                </h4>
+                <div class="text-sm text-gray-500 mb-4 line-clamp-2">{{ agenda.description || 'Tidak ada deskripsi' }}</div>
+
+                <!-- Info Grid -->
+                <div class="grid grid-cols-1 gap-2.5 text-sm text-gray-700 mb-5 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                  <div class="flex items-start gap-2.5">
+                    <svg class="w-4.5 h-4.5 mt-0.5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <div class="leading-tight">
+                      <span class="font-bold text-gray-900">{{ formatDate(agenda.start_date) }}</span>
+                      <div class="text-gray-500 mt-0.5 text-xs">
+                        {{ formatTime(agenda.start_date) }}
+                        <span v-if="agenda.end_date"> s/d {{ formatTime(agenda.end_date) }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2.5">
+                    <svg class="w-4.5 h-4.5 mt-0.5 flex-shrink-0 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span class="font-medium text-gray-800">{{ agenda.location }}</span>
+                  </div>
+                  <div v-if="agenda.liturgy_type_name" class="flex items-start gap-2.5">
+                    <span class="w-4.5 h-4.5 mt-0.5 flex-shrink-0 text-gray-400 flex items-center justify-center font-bold">{{ agenda.liturgy_type_icon }}</span>
+                    <span class="text-gray-600">{{ agenda.liturgy_type_name }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actions (Horizontal Buttons) -->
+              <div class="flex items-center justify-between gap-2.5 pt-3 border-t border-gray-100">
+                <NuxtLink :to="`/admin/announcements?from_agenda=1&agenda_id=${agenda.id}&agenda_title=${encodeURIComponent(agenda.title)}&event_date=${agenda.start_date?.slice(0,10)}&event_time=${agenda.start_date?.slice(11,16) || ''}`"
+                  class="flex-1 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white border border-indigo-200 hover:border-transparent py-2.5 px-2 rounded-lg text-sm flex justify-center items-center transition-colors" title="Buat Pengumuman">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                </NuxtLink>
+                <button @click="editAgenda(agenda)" :disabled="deleting === agenda.id"
+                  class="flex-1 bg-orange-50 text-[#882f1d] hover:bg-orange-600 hover:text-white border border-orange-200 hover:border-transparent py-2.5 px-2 rounded-lg text-sm flex justify-center items-center transition-colors disabled:opacity-50" title="Edit">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                </button>
+                <button @click="showDeleteConfirm(agenda)" :disabled="deleting === agenda.id"
+                  class="flex-1 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 hover:border-transparent py-2.5 px-2 rounded-lg text-sm flex justify-center items-center transition-colors disabled:opacity-50" title="Hapus">
+                  <svg class="w-5 h-5" :class="deleting === agenda.id ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
           <div v-if="totalPages > 1" class="mt-4 flex items-center justify-between border-t border-gray-200 pt-4">
             <p class="text-sm text-gray-600">Menampilkan {{ paginatedAgendas.length }} dari {{ totalItems }} agenda</p>
