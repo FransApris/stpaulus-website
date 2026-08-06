@@ -1,17 +1,20 @@
 <template>
     <div>
         <!-- Header with Add Button -->
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+            <div class="relative flex-1 max-w-md">
                 <input v-model="searchQuery" type="text" placeholder="Cari wilayah..."
-                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent w-64" />
+                    class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white" />
+                <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
             </div>
             <button @click="openCreateModal"
-                class="bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416] transition-colors flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                class="bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416] transition-colors flex items-center justify-center gap-2 text-sm font-medium shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Tambah Wilayah
+                <span>Tambah Wilayah</span>
             </button>
         </div>
 
@@ -19,66 +22,95 @@
         <div v-if="loading" class="text-center py-12">
             <div class="inline-block w-8 h-8 border-4 border-[#882f1d] border-t-transparent rounded-full animate-spin">
             </div>
-            <p class="text-gray-600 mt-3">Memuat data...</p>
+            <p class="text-gray-600 mt-3 text-sm">Memuat data...</p>
         </div>
 
-        <!-- Table -->
-        <div v-else class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Wilayah</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Keterangan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Urutan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="wilayah in filteredWilayah" :key="wilayah.id" class="hover:bg-gray-50">
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-gray-900">{{ wilayah.nama }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-gray-500">{{ wilayah.keterangan || '-' }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ wilayah.display_order }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+        <!-- Table & Mobile Cards -->
+        <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Desktop Table -->
+            <div class="overflow-x-auto hidden sm:block">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wilayah</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Urutan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="wilayah in filteredWilayah" :key="wilayah.id" class="hover:bg-gray-50/80 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-semibold text-gray-900">{{ wilayah.nama }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm text-gray-500">{{ wilayah.keterangan || '-' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                {{ wilayah.display_order }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span :class="[
+                                    'px-2.5 py-0.5 text-xs font-semibold rounded-full',
+                                    wilayah.is_visible
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                ]">
+                                    {{ wilayah.is_visible ? 'Visible' : 'Hidden' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-1">
+                                <button @click="editWilayah(wilayah)"
+                                    class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1.5 rounded hover:bg-orange-50" title="Edit">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button @click="confirmDelete(wilayah)"
+                                    class="text-red-600 hover:text-red-800 transition-colors p-1.5 rounded hover:bg-red-50" title="Hapus">
+                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div class="sm:hidden divide-y divide-gray-200">
+                <div v-for="wilayah in filteredWilayah" :key="wilayah.id" class="p-4 space-y-2.5">
+                    <div class="flex items-center justify-between gap-2">
+                        <h4 class="text-sm font-bold text-gray-900">{{ wilayah.nama }}</h4>
+                        <div class="flex items-center gap-1">
                             <span :class="[
-                                'px-2 py-1 text-xs font-semibold rounded-full',
-                                wilayah.is_visible
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-100 text-gray-800'
+                                'px-2 py-0.5 text-xs font-semibold rounded-full',
+                                wilayah.is_visible ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                             ]">
                                 {{ wilayah.is_visible ? 'Visible' : 'Hidden' }}
                             </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <button @click="editWilayah(wilayah)"
-                                class="text-[#882f1d] hover:text-[#6b2416] transition-colors" title="Edit">
-                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <button @click="editWilayah(wilayah)" class="p-1 text-[#882f1d] hover:bg-orange-50 rounded">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </button>
-                            <button @click="confirmDelete(wilayah)"
-                                class="text-red-600 hover:text-red-800 transition-colors" title="Hapus">
-                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <button @click="confirmDelete(wilayah)" class="p-1 text-red-600 hover:bg-red-50 rounded">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
                             </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                    <p v-if="wilayah.keterangan" class="text-xs text-gray-600">{{ wilayah.keterangan }}</p>
+                    <div class="text-xs text-gray-500 flex items-center gap-2">
+                        <span>Urutan: <strong>{{ wilayah.display_order }}</strong></span>
+                    </div>
+                </div>
+            </div>
 
             <!-- Empty State -->
             <div v-if="filteredWilayah.length === 0" class="text-center py-12">
@@ -87,7 +119,7 @@
                         d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Tidak Ada Data</h3>
-                <p class="text-gray-500">Belum ada wilayah yang ditambahkan.</p>
+                <p class="text-gray-500 text-sm">Belum ada wilayah yang ditambahkan.</p>
             </div>
         </div>
 

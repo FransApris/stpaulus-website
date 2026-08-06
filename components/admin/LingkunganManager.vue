@@ -21,18 +21,28 @@
         </div>
 
         <!-- Header with Search & Filter -->
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-4">
-                <input v-model="searchQuery" type="text" placeholder="Cari lingkungan, ketua, wilayah..."
-                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent w-80" />
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-6">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 flex-1">
+                <!-- Search Box -->
+                <div class="relative flex-1 min-w-[200px]">
+                    <input v-model="searchQuery" type="text" placeholder="Cari lingkungan, ketua, wilayah..."
+                        class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white" />
+                    <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <!-- Wilayah Filter -->
                 <select v-model="filterWilayah"
-                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent">
+                    class="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-none bg-white">
                     <option value="all">Semua Wilayah</option>
                     <option v-for="w in wilayahOptions" :key="w.id" :value="w.id">{{ w.nama }}</option>
                 </select>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                 <!-- Bulk Edit Toggle -->
                 <button @click="toggleBulkMode" :class="[
-                    'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
+                    'px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shadow-sm',
                     bulkSelectionMode
                         ? 'bg-amber-600 text-white hover:bg-amber-700'
                         : 'bg-purple-600 text-white hover:bg-purple-700'
@@ -43,63 +53,63 @@
                         <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M6 18L18 6M6 6l12 12" />
                     </svg>
-                    {{ bulkSelectionMode ? 'Batal' : 'Edit Massal' }}
+                    <span>{{ bulkSelectionMode ? 'Batal' : 'Edit Massal' }}</span>
                 </button>
                 <button v-if="bulkSelectionMode && selectedLingkungan.length > 0" @click="openBulkEditModal"
-                    class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center gap-2">
+                    class="px-3.5 py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors flex items-center gap-1.5 shadow-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                    Edit {{ selectedLingkungan.length }} Lingkungan
+                    <span>Edit ({{ selectedLingkungan.length }})</span>
                 </button>
                 <!-- View Mode Toggle -->
-                <div class="flex rounded-lg border border-gray-300 overflow-hidden">
+                <div class="flex rounded-lg border border-gray-300 overflow-hidden shadow-sm">
                     <button @click="viewMode = 'grouped'" :class="[
-                        'px-4 py-2 text-sm font-medium transition-colors',
+                        'px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1',
                         viewMode === 'grouped'
                             ? 'bg-[#882f1d] text-white'
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                     ]">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                         </svg>
-                        Group
+                        <span>Group</span>
                     </button>
                     <button @click="viewMode = 'list'" :class="[
-                        'px-4 py-2 text-sm font-medium transition-colors',
+                        'px-3 py-1.5 text-xs sm:text-sm font-medium transition-colors flex items-center gap-1',
                         viewMode === 'list'
                             ? 'bg-[#882f1d] text-white'
                             : 'bg-white text-gray-700 hover:bg-gray-50'
                     ]">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
-                        List
+                        <span>List</span>
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Statistics Cards (Data from Lingkungan + DPP) -->
-        <div class="grid grid-cols-4 gap-4 mb-6">
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg">
-                <div class="text-2xl font-bold text-blue-600">{{ stats.totalLingkungan }}</div>
-                <div class="text-sm text-blue-800">Total Lingkungan</div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100/80 p-3.5 sm:p-4 rounded-xl border border-blue-200/50 shadow-sm">
+                <div class="text-xl sm:text-2xl font-bold text-blue-700">{{ stats.totalLingkungan }}</div>
+                <div class="text-xs sm:text-sm text-blue-900/80 font-medium mt-0.5">Total Lingkungan</div>
             </div>
-            <div class="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg">
-                <div class="text-2xl font-bold text-green-600">{{ stats.totalKK }}</div>
-                <div class="text-sm text-green-800">Total KK</div>
+            <div class="bg-gradient-to-br from-green-50 to-green-100/80 p-3.5 sm:p-4 rounded-xl border border-green-200/50 shadow-sm">
+                <div class="text-xl sm:text-2xl font-bold text-green-700">{{ stats.totalKK }}</div>
+                <div class="text-xs sm:text-sm text-green-900/80 font-medium mt-0.5">Total KK</div>
             </div>
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg">
-                <div class="text-2xl font-bold text-purple-600">{{ stats.totalJiwa }}</div>
-                <div class="text-sm text-purple-800">Total Jiwa</div>
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100/80 p-3.5 sm:p-4 rounded-xl border border-purple-200/50 shadow-sm">
+                <div class="text-xl sm:text-2xl font-bold text-purple-700">{{ stats.totalJiwa }}</div>
+                <div class="text-xs sm:text-sm text-purple-900/80 font-medium mt-0.5">Total Jiwa</div>
             </div>
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg">
-                <div class="text-2xl font-bold text-orange-600">{{ stats.avgKKPerLingkungan }}</div>
-                <div class="text-sm text-orange-800">Lingkungan dengan Ketua</div>
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100/80 p-3.5 sm:p-4 rounded-xl border border-orange-200/50 shadow-sm">
+                <div class="text-xl sm:text-2xl font-bold text-orange-700">{{ stats.avgKKPerLingkungan }}</div>
+                <div class="text-xs sm:text-sm text-orange-900/80 font-medium mt-0.5">Lingkungan dg Ketua</div>
             </div>
         </div>
 
@@ -107,203 +117,182 @@
         <div v-if="loading" class="text-center py-12">
             <div class="inline-block w-8 h-8 border-4 border-[#882f1d] border-t-transparent rounded-full animate-spin">
             </div>
-            <p class="text-gray-600 mt-3">Memuat data...</p>
+            <p class="text-gray-600 mt-3 text-sm">Memuat data...</p>
         </div>
 
         <!-- Table (List View) -->
-        <div v-if="viewMode === 'list'" class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th v-if="bulkSelectionMode" class="px-4 py-3 text-left">
-                            <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected"
-                                class="w-4 h-4 text-[#882f1d] border-gray-300 rounded focus:ring-[#882f1d]" />
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Lingkungan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Wilayah</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ketua
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KK /
-                            Jiwa
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="ling in filteredLingkungan" :key="ling.id" class="hover:bg-gray-50">
-                        <td v-if="bulkSelectionMode" class="px-4 py-4">
-                            <input type="checkbox" :value="ling" v-model="selectedLingkungan"
-                                :disabled="ling.source === 'database'"
-                                class="w-4 h-4 text-[#882f1d] border-gray-300 rounded focus:ring-[#882f1d] disabled:opacity-30" />
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="flex items-center">
-                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                                    :style="{ backgroundColor: ling.color }">
-                                    {{ ling.no }}
+        <div v-else-if="viewMode === 'list'" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th v-if="bulkSelectionMode" class="px-4 py-3 text-left">
+                                <input type="checkbox" @change="toggleSelectAll" :checked="isAllSelected"
+                                    class="w-4 h-4 text-[#882f1d] border-gray-300 rounded focus:ring-[#882f1d]" />
+                            </th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lingkungan</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wilayah</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ketua</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KK / Jiwa</th>
+                            <th class="px-4 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-4 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="ling in filteredLingkungan" :key="ling.id" class="hover:bg-gray-50/80 transition-colors">
+                            <td v-if="bulkSelectionMode" class="px-4 py-4">
+                                <input type="checkbox" :value="ling" v-model="selectedLingkungan"
+                                    :disabled="ling.source === 'database'"
+                                    class="w-4 h-4 text-[#882f1d] border-gray-300 rounded focus:ring-[#882f1d] disabled:opacity-30" />
+                            </td>
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm"
+                                        :style="{ backgroundColor: ling.color }">
+                                        {{ ling.no }}
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm font-medium text-gray-900">{{ ling.nama }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-gray-500">{{ ling.wilayah_nama || ling.wilayah_text || '-' }}</div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-sm text-gray-900">{{ ling.ketua || '-' }}</div>
-                            <div v-if="ling.telp" class="text-xs text-gray-500">📞 {{ ling.telp }}</div>
-                            <div v-if="ling.no_hp_pengurus" class="text-xs text-blue-600">
-                                <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                        d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                                </svg>
-                                Pengurus: {{ ling.no_hp_pengurus }}
-                            </div>
-                            <div v-else class="text-xs text-amber-600 italic">
-                                <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                        d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                                </svg>
-                                Pengurus: [Belum diisi]
-                            </div>
-                            <div v-if="ling.has_dpp_ketua" class="text-xs text-teal-600 mt-0.5">✓ Data dari DPP</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ ling.jumlah_kk || 0 }} KK / {{ ling.jumlah_jiwa || 0 }} jiwa
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span :class="[
-                                'px-2 py-1 text-xs font-semibold rounded-full',
-                                ling.is_visible
-                                    ? 'bg-green-100 text-green-800'
-                                    : 'bg-gray-100 text-gray-800'
-                            ]">
-                                {{ ling.is_visible ? 'Aktif' : 'Tidak Aktif' }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                            <button v-if="ling.source === 'database'" @click="editLingkungan(ling)"
-                                class="text-[#882f1d] hover:text-[#6b2416] transition-colors"
-                                title="Edit Data Lingkungan">
-                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
-                            <div v-else class="inline-flex items-center gap-2">
-                                <button @click="editLingkunganLimited(ling)"
-                                    class="text-[#882f1d] hover:text-[#6b2416] transition-colors"
-                                    title="Edit KK, Jiwa, No. HP Kontak">
-                                    <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </td>
+                            <td class="px-4 sm:px-6 py-4">
+                                <div class="text-sm font-semibold text-gray-900">{{ ling.nama }}</div>
+                                <div v-if="ling.keterangan" class="text-xs text-gray-500">{{ ling.keterangan }}</div>
+                            </td>
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-600">{{ ling.wilayah_nama || ling.wilayah_text || '-' }}</div>
+                            </td>
+                            <td class="px-4 sm:px-6 py-4 min-w-[200px]">
+                                <div class="text-sm font-medium text-gray-900">{{ ling.ketua || '-' }}</div>
+                                <div v-if="ling.telp" class="text-xs text-gray-500 mt-0.5">📞 {{ ling.telp }}</div>
+                                <div v-if="ling.no_hp_pengurus" class="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                                    <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                     </svg>
-                                </button>
-                                <a href="/admin/dpp"
-                                    class="text-teal-600 hover:text-teal-800 transition-colors inline-flex items-center gap-1"
-                                    title="Data Ketua dari DPP - Edit Ketua di DPP">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    <span>Pengurus: {{ ling.no_hp_pengurus }}</span>
+                                </div>
+                                <div v-else class="text-xs text-amber-600 italic mt-0.5 flex items-center gap-1">
+                                    <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                     </svg>
-                                    <span class="text-xs">DPP</span>
-                                </a>
-                            </div>
-                            <button v-if="ling.source === 'database'" @click="confirmDelete(ling)"
-                                class="text-red-600 hover:text-red-800 transition-colors" title="Hapus">
-                                <svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
-                            <span v-else class="text-xs text-gray-400" title="Data dari DPP - hapus di halaman DPP">
-                                Data DPP
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                                    <span>Pengurus: [Belum diisi]</span>
+                                </div>
+                                <div v-if="ling.has_dpp_ketua" class="text-xs text-teal-600 mt-0.5 font-medium">✓ Data dari DPP</div>
+                            </td>
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span class="font-medium">{{ ling.jumlah_kk || 0 }}</span> KK / <span class="font-medium">{{ ling.jumlah_jiwa || 0 }}</span> Jiwa
+                            </td>
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                <div class="flex flex-col gap-1 items-start">
+                                    <span :class="[
+                                        'px-2 py-0.5 text-xs font-semibold rounded-full',
+                                        ling.is_visible
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                    ]">
+                                        {{ ling.is_visible ? 'Aktif' : 'Tidak Aktif' }}
+                                    </span>
+                                    <span v-if="ling.source === 'dpp'"
+                                        class="px-2 py-0.5 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
+                                        Data DPP
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-4 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="inline-flex items-center gap-1.5 justify-end">
+                                    <button v-if="ling.source === 'database'" @click="editLingkungan(ling)"
+                                        class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1.5 rounded hover:bg-orange-50"
+                                        title="Edit Data Lingkungan">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button v-else @click="editLingkunganLimited(ling)"
+                                        class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1.5 rounded hover:bg-orange-50" title="Edit">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button v-if="ling.source === 'database'" @click="confirmDelete(ling)"
+                                        class="text-red-600 hover:text-red-800 transition-colors p-1.5 rounded hover:bg-red-50" title="Hapus">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <!-- Empty State -->
+            <!-- Empty State for List View -->
             <div v-if="filteredLingkungan.length === 0" class="text-center py-12">
                 <svg class="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                 </svg>
                 <h3 class="text-lg font-semibold text-gray-700 mb-2">Tidak Ada Data</h3>
-                <p class="text-gray-500">Belum ada lingkungan yang ditambahkan atau tidak sesuai filter.</p>
+                <p class="text-gray-500 text-sm">Belum ada lingkungan yang ditambahkan atau tidak sesuai filter.</p>
             </div>
         </div>
 
         <!-- Grouped View -->
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-6">
             <div v-for="group in lingkunganGroupedByWilayah" :key="group.wilayah"
-                class="bg-white rounded-lg shadow-sm overflow-hidden">
+                class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <!-- Wilayah Header -->
-                <div class="bg-gradient-to-r from-[#882f1d] to-[#6b2416] px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="bg-gradient-to-r from-[#882f1d] to-[#6b2416] px-4 py-3 sm:px-6 sm:py-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
+                        <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
                             </svg>
-                            <h3 class="text-xl font-bold text-white">{{ group.wilayah || 'Tanpa Wilayah' }}</h3>
+                            <h3 class="text-base sm:text-lg md:text-xl font-bold text-white truncate">{{ group.wilayah || 'Tanpa Wilayah' }}</h3>
                         </div>
-                        <div class="flex items-center gap-4 text-white">
-                            <div class="text-sm">
-                                <span class="font-semibold">{{ group.lingkungan.length }}</span> Lingkungan
-                            </div>
-                            <div class="text-sm">
-                                <span class="font-semibold">{{ group.totalKK }}</span> KK
-                            </div>
-                            <div class="text-sm">
-                                <span class="font-semibold">{{ group.totalJiwa }}</span> Jiwa
-                            </div>
+                        <div class="flex items-center flex-wrap gap-2 sm:gap-3 text-white text-xs sm:text-sm">
+                            <span class="bg-white/20 px-2.5 py-1 rounded-full font-medium"><strong class="font-bold">{{ group.lingkungan.length }}</strong> Lingkungan</span>
+                            <span class="bg-white/20 px-2.5 py-1 rounded-full font-medium"><strong class="font-bold">{{ group.totalKK }}</strong> KK</span>
+                            <span class="bg-white/20 px-2.5 py-1 rounded-full font-medium"><strong class="font-bold">{{ group.totalJiwa }}</strong> Jiwa</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Pengurus Wilayah (Ketua Wilayah) -->
                 <div v-if="getPengurusWilayah(group.wilayah)"
-                    class="bg-gradient-to-r from-amber-50 to-orange-50 border-b-2 border-orange-200 px-6 py-4">
-                    <div class="flex items-center gap-4">
-                        <div
-                            class="w-12 h-12 rounded-full bg-gradient-to-br from-[#882f1d] to-[#6b2416] flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                            {{ group.wilayah.charAt(0) }}
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4 text-[#882f1d]" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                <span class="text-xs font-semibold text-gray-600 uppercase">Ketua Wilayah</span>
+                    class="bg-gradient-to-r from-amber-50 to-orange-50 border-b-2 border-orange-200/80 px-4 py-3 sm:px-6 sm:py-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div
+                                class="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-[#882f1d] to-[#6b2416] flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 shadow-sm">
+                                {{ group.wilayah.charAt(0) }}
                             </div>
-                            <div class="font-bold text-gray-900 text-lg mt-1">{{ getPengurusWilayah(group.wilayah).name
-                                }}</div>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                                    <svg class="w-3.5 h-3.5 text-[#882f1d]" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                    <span>Ketua Wilayah</span>
+                                </div>
+                                <div class="font-bold text-gray-900 text-sm sm:text-base mt-0.5 truncate">{{ getPengurusWilayah(group.wilayah).name }}</div>
+                            </div>
                         </div>
-                        <div class="flex flex-col gap-2">
+                        <div class="flex flex-wrap sm:flex-col sm:items-end gap-2 text-xs sm:text-sm text-gray-700">
                             <div v-if="getPengurusWilayah(group.wilayah).telp"
-                                class="flex items-center gap-2 text-sm text-gray-700">
-                                <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                class="flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-lg border border-orange-200/60 shadow-xs">
+                                <svg class="w-3.5 h-3.5 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </svg>
                                 <span class="font-medium">{{ getPengurusWilayah(group.wilayah).telp }}</span>
                             </div>
                             <div v-if="getPengurusWilayah(group.wilayah).email"
-                                class="flex items-center gap-2 text-sm text-gray-700">
-                                <svg class="w-4 h-4 text-[#882f1d]" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                class="flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-lg border border-orange-200/60 shadow-xs">
+                                <svg class="w-3.5 h-3.5 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
@@ -316,62 +305,60 @@
                 <!-- Lingkungan List -->
                 <div class="divide-y divide-gray-200">
                     <div v-for="ling in group.lingkungan" :key="ling.id"
-                        class="px-6 py-4 hover:bg-gray-50 transition-colors">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-4 flex-1">
+                        class="p-4 sm:px-6 sm:py-4 hover:bg-gray-50/80 transition-colors">
+                        
+                        <!-- Desktop View (md and up) -->
+                        <div class="hidden md:flex items-center justify-between gap-4">
+                            <div class="flex items-center gap-4 flex-1 min-w-0">
                                 <!-- Bulk Select Checkbox -->
                                 <input v-if="bulkSelectionMode" type="checkbox" :value="ling"
                                     v-model="selectedLingkungan" :disabled="ling.source === 'database'"
-                                    class="w-5 h-5 text-[#882f1d] border-gray-300 rounded focus:ring-[#882f1d] disabled:opacity-30" />
+                                    class="w-5 h-5 text-[#882f1d] border-gray-300 rounded focus:ring-[#882f1d] disabled:opacity-30 flex-shrink-0" />
+                                
                                 <!-- Number Badge -->
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-sm"
                                     :style="{ backgroundColor: ling.color }">
                                     {{ ling.no }}
                                 </div>
 
-                                <!-- Info -->
-                                <div class="flex-1 grid grid-cols-3 gap-4">
-                                    <div>
-                                        <div class="text-sm font-semibold text-gray-900">{{ ling.nama }}</div>
-                                        <div v-if="ling.keterangan" class="text-xs text-gray-500">{{ ling.keterangan }}
-                                        </div>
+                                <!-- Info 3-Cols -->
+                                <div class="flex-1 grid grid-cols-3 gap-4 min-w-0">
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold text-gray-900 truncate">{{ ling.nama }}</div>
+                                        <div v-if="ling.keterangan" class="text-xs text-gray-500 truncate">{{ ling.keterangan }}</div>
                                     </div>
-                                    <div>
+                                    <div class="min-w-0">
                                         <div class="text-xs text-gray-500 mb-0.5">Ketua Lingkungan:</div>
-                                        <div class="text-sm font-medium text-gray-900">{{ ling.ketua || '-' }}</div>
-                                        <div v-if="ling.telp" class="text-xs text-gray-500 mt-0.5">📞 {{ ling.telp }}
-                                        </div>
-                                        <div v-if="ling.no_hp_pengurus" class="text-xs text-blue-600 mt-0.5">
-                                            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                <path
-                                                    d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                        <div class="text-sm font-medium text-gray-900 truncate">{{ ling.ketua || '-' }}</div>
+                                        <div v-if="ling.telp" class="text-xs text-gray-500 mt-0.5">📞 {{ ling.telp }}</div>
+                                        <div v-if="ling.no_hp_pengurus" class="text-xs text-blue-600 mt-0.5 flex items-center gap-1">
+                                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                             </svg>
-                                            Pengurus: {{ ling.no_hp_pengurus }}
+                                            <span class="truncate">Pengurus: {{ ling.no_hp_pengurus }}</span>
                                         </div>
-                                        <div v-else class="text-xs text-amber-600 italic mt-0.5">
-                                            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                                <path
-                                                    d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                        <div v-else class="text-xs text-amber-600 italic mt-0.5 flex items-center gap-1">
+                                            <svg class="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                             </svg>
-                                            Pengurus: [Belum diisi]
+                                            <span>Pengurus: [Belum diisi]</span>
                                         </div>
-                                        <div v-if="ling.has_dpp_ketua" class="text-xs text-teal-600 mt-0.5">✓ Data dari
-                                            DPP</div>
+                                        <div v-if="ling.has_dpp_ketua" class="text-xs text-teal-600 mt-0.5 font-medium">✓ Data dari DPP</div>
                                     </div>
                                     <div>
                                         <div class="text-xs text-gray-500 mb-0.5">Jumlah:</div>
                                         <div class="text-sm text-gray-900">
-                                            <span class="font-medium">{{ ling.jumlah_kk || 0 }}</span> KK /
-                                            <span class="font-medium">{{ ling.jumlah_jiwa || 0 }}</span> Jiwa
+                                            <span class="font-semibold">{{ ling.jumlah_kk || 0 }}</span> KK /
+                                            <span class="font-semibold">{{ ling.jumlah_jiwa || 0 }}</span> Jiwa
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Actions -->
-                            <div class="flex items-center gap-3">
+                            <!-- Actions Desktop -->
+                            <div class="flex items-center gap-2.5 flex-shrink-0">
                                 <span :class="[
-                                    'px-2 py-1 text-xs font-semibold rounded-full',
+                                    'px-2.5 py-0.5 text-xs font-semibold rounded-full',
                                     ling.is_visible
                                         ? 'bg-green-100 text-green-800'
                                         : 'bg-gray-100 text-gray-800'
@@ -379,20 +366,20 @@
                                     {{ ling.is_visible ? 'Aktif' : 'Tidak Aktif' }}
                                 </span>
                                 <span v-if="ling.source === 'dpp'"
-                                    class="px-2 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
-                                    Data DPP
+                                    class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
+                                    DPP
                                 </span>
                                 <button v-if="ling.source === 'database'" @click="editLingkungan(ling)"
-                                    class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1"
+                                    class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1.5 rounded-lg hover:bg-gray-100"
                                     title="Edit Data Lingkungan">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
-                                <div v-else class="inline-flex items-center gap-2">
+                                <div v-else class="inline-flex items-center gap-1">
                                     <button @click="editLingkunganLimited(ling)"
-                                        class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1" title="Edit">
+                                        class="text-[#882f1d] hover:text-[#6b2416] transition-colors p-1.5 rounded-lg hover:bg-gray-100" title="Edit Data Lingkungan">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -400,7 +387,7 @@
                                     </button>
                                 </div>
                                 <button v-if="ling.source === 'database'" @click="confirmDelete(ling)"
-                                    class="text-red-600 hover:text-red-800 transition-colors p-1" title="Hapus">
+                                    class="text-red-600 hover:text-red-800 transition-colors p-1.5 rounded-lg hover:bg-red-50" title="Hapus">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -408,14 +395,99 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Mobile Card View (block md:hidden) -->
+                        <div class="md:hidden space-y-3">
+                            <!-- Card Header: Badge + Name + Actions -->
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-2.5 min-w-0">
+                                    <!-- Bulk Select Checkbox -->
+                                    <input v-if="bulkSelectionMode" type="checkbox" :value="ling"
+                                        v-model="selectedLingkungan" :disabled="ling.source === 'database'"
+                                        class="w-4 h-4 text-[#882f1d] border-gray-300 rounded focus:ring-[#882f1d] disabled:opacity-30 flex-shrink-0" />
+                                    
+                                    <!-- Number Badge -->
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 shadow-sm"
+                                        :style="{ backgroundColor: ling.color }">
+                                        {{ ling.no }}
+                                    </div>
+                                    <div class="min-w-0">
+                                        <h4 class="text-sm font-bold text-gray-900 truncate">{{ ling.nama }}</h4>
+                                        <p v-if="ling.keterangan" class="text-xs text-gray-500 truncate">{{ ling.keterangan }}</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1 flex-shrink-0">
+                                    <button v-if="ling.source === 'database'" @click="editLingkungan(ling)"
+                                        class="p-1.5 text-[#882f1d] hover:bg-orange-50 rounded-lg transition-colors"
+                                        title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button v-else @click="editLingkunganLimited(ling)"
+                                        class="p-1.5 text-[#882f1d] hover:bg-orange-50 rounded-lg transition-colors" title="Edit">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button v-if="ling.source === 'database'" @click="confirmDelete(ling)"
+                                        class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Mobile Card Body: Info Details -->
+                            <div class="bg-gray-50/80 rounded-lg p-3 text-xs space-y-2 border border-gray-100">
+                                <!-- Ketua Info -->
+                                <div>
+                                    <div class="text-gray-500 font-medium">Ketua Lingkungan:</div>
+                                    <div class="text-gray-900 font-semibold mt-0.5">{{ ling.ketua || '-' }}</div>
+                                    <div v-if="ling.telp" class="text-gray-600 mt-1 flex items-center gap-1">
+                                        <span>📞</span> <span>{{ ling.telp }}</span>
+                                    </div>
+                                    <div v-if="ling.no_hp_pengurus" class="text-blue-600 mt-1 flex items-center gap-1">
+                                        <span>📱</span> <span>Pengurus: {{ ling.no_hp_pengurus }}</span>
+                                    </div>
+                                    <div v-else class="text-amber-600 italic mt-1 flex items-center gap-1">
+                                        <span>📱</span> <span>Pengurus: [Belum diisi]</span>
+                                    </div>
+                                    <div v-if="ling.has_dpp_ketua" class="text-teal-600 font-medium mt-1">✓ Data dari DPP</div>
+                                </div>
+
+                                <!-- KK & Jiwa + Status Badges -->
+                                <div class="pt-2 border-t border-gray-200/60 flex items-center justify-between flex-wrap gap-2">
+                                    <div class="flex items-center gap-2 text-gray-700">
+                                        <span class="bg-white px-2 py-0.5 rounded border border-gray-200 font-medium"><strong>{{ ling.jumlah_kk || 0 }}</strong> KK</span>
+                                        <span class="bg-white px-2 py-0.5 rounded border border-gray-200 font-medium"><strong>{{ ling.jumlah_jiwa || 0 }}</strong> Jiwa</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span :class="[
+                                            'px-2 py-0.5 rounded-full font-semibold',
+                                            ling.is_visible ? 'bg-green-100 text-green-800' : 'bg-gray-200 text-gray-700'
+                                        ]">
+                                            {{ ling.is_visible ? 'Aktif' : 'Nonaktif' }}
+                                        </span>
+                                        <span v-if="ling.source === 'dpp'" class="px-2 py-0.5 rounded-full font-semibold bg-teal-100 text-teal-800">
+                                            DPP
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Empty wilayah -->
-                <div v-if="group.lingkungan.length === 0" class="px-6 py-8 text-center text-gray-500">
+                <div v-if="group.lingkungan.length === 0" class="px-6 py-8 text-center text-gray-500 text-sm">
                     Belum ada lingkungan di wilayah ini
                 </div>
-            </div>
+            </div>    </div>
 
             <!-- Empty State for Grouped View -->
             <div v-if="lingkunganGroupedByWilayah.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center">
