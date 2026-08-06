@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen h-[100dvh] bg-gray-50 flex overflow-hidden relative w-full">
+  <div class="h-[100dvh] bg-gray-50 flex overflow-hidden relative w-full">
     <!-- Mobile Sidebar Backdrop -->
     <div 
       v-show="isMobileMenuOpen" 
