@@ -173,9 +173,9 @@
                   </button>
                 </div>
               </div>
-              <div v-if="bookingTotalPages > 1" class="flex items-center justify-between border-t pt-4">
+              <div v-if="bookingTotalPages > 1" class="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-4">
                 <p class="text-sm text-gray-600">Halaman {{ bookingPage }} dari {{ bookingTotalPages }}</p>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center justify-center gap-2">
                   <button @click="goToBookingPage(bookingPage - 1)" :disabled="bookingPage === 1"
                     class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
                     Sebelumnya
@@ -264,9 +264,9 @@
               </div>
             </div>
 
-            <div v-if="auditTotalPages > 1" class="flex items-center justify-between border-t pt-4">
+            <div v-if="auditTotalPages > 1" class="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-4">
               <p class="text-sm text-gray-600">Halaman {{ auditPage }} dari {{ auditTotalPages }}</p>
-              <div class="flex items-center gap-2">
+              <div class="flex flex-wrap items-center justify-center gap-2">
                 <button @click="goToAuditPage(auditPage - 1)" :disabled="auditPage === 1"
                   class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
                   Sebelumnya
@@ -324,9 +324,9 @@
                   </div>
                 </div>
               </div>
-              <div v-if="deletedTotalPages > 1" class="flex items-center justify-between border-t pt-4">
+              <div v-if="deletedTotalPages > 1" class="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-4">
                 <p class="text-sm text-gray-600">Halaman {{ deletedPage }} dari {{ deletedTotalPages }}</p>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center justify-center gap-2">
                   <button @click="goToDeletedPage(deletedPage - 1)" :disabled="deletedPage === 1"
                     class="rounded border px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50 hover:bg-gray-50">
                     Sebelumnya
