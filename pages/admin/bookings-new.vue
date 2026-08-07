@@ -9,16 +9,16 @@
     <!-- Tab Navigation -->
     <div class="bg-white rounded-lg shadow">
       <div class="border-b border-gray-200">
-        <nav class="flex -mb-px overflow-x-auto">
+        <nav class="flex -mb-px">
           <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
-            'flex items-center space-x-2 px-6 py-4 text-sm font-medium border-b-2 whitespace-nowrap transition-colors',
+            'flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-3 text-xs font-medium border-b-2 transition-colors sm:flex-row sm:space-x-2 sm:px-4 sm:py-4 sm:text-sm',
             activeTab === tab.id
               ? 'border-blue-600 text-blue-600'
               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
           ]">
-            <span>{{ tab.icon }}</span>
-            <span>{{ tab.label }}</span>
-            <span v-if="tab.count !== undefined" class="bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+            <span class="text-base sm:text-sm leading-none">{{ tab.icon }}</span>
+            <span class="whitespace-nowrap leading-tight text-center">{{ tab.label }}</span>
+            <span v-if="tab.count !== undefined" class="bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs">
               {{ tab.count }}
             </span>
           </button>
