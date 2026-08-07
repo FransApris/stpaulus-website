@@ -1,13 +1,12 @@
 <template>
+  <!-- Desktop Widget -->
   <Transition name="slide-fade">
-    <div v-if="isVisible" ref="widgetRef" class="fixed z-40 hidden lg:block"
-      :style="{ right: '5%', bottom: '120px' }">
+    <div v-if="isVisible" ref="widgetRef" class="fixed z-40 hidden md:block" :style="{ right: '5%', bottom: '120px' }">
       <div class="bg-white rounded-lg shadow-lg border border-[#882f1d] overflow-hidden" style="width: 168px;">
         <div class="bg-gradient-to-r from-[#882f1d] to-[#6b2416] p-1.5 flex items-center justify-between">
           <div class="flex items-center space-x-0.5 text-white">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <h3 class="font-bold text-xs">Misa Hari Ini</h3>
           </div>
@@ -32,11 +31,9 @@
           <div v-else-if="todaySchedule && todaySchedule.length > 0" class="space-y-1.5">
             <div v-for="(schedule, index) in todaySchedule" :key="index" :class="[
               'p-1.5 rounded transition-colors',
-              schedule.isSpecial
-                ? 'bg-amber-50 border border-amber-200 hover:bg-amber-100'
-                : schedule.isDevotion
-                  ? 'bg-purple-50 border border-purple-200 hover:bg-purple-100'
-                  : 'bg-gray-50 hover:bg-gray-100'
+              schedule.isSpecial ? 'bg-amber-50 border border-amber-200 hover:bg-amber-100' :
+              schedule.isDevotion ? 'bg-purple-50 border border-purple-200 hover:bg-purple-100' :
+              'bg-gray-50 hover:bg-gray-100'
             ]">
               <div class="flex items-center justify-between mb-0.5">
                 <div class="flex-1 min-w-0 mr-1">
@@ -44,9 +41,7 @@
                     <div :class="[
                       'font-semibold text-xs truncate',
                       schedule.isSpecial ? 'text-amber-900' : schedule.isDevotion ? 'text-purple-900' : 'text-gray-900'
-                    ]">
-                      {{ schedule.label }}
-                    </div>
+                    ]">{{ schedule.label }}</div>
                     <span v-if="schedule.isSpecial" class="text-[10px]">⭐</span>
                     <span v-else-if="schedule.isDevotion" class="text-[10px]">📿</span>
                   </div>
@@ -55,24 +50,19 @@
                   <div :class="[
                     'font-bold text-xs',
                     schedule.isSpecial ? 'text-amber-700' : schedule.isDevotion ? 'text-purple-700' : 'text-[#882f1d]'
-                  ]">
-                    {{ schedule.time }}
-                  </div>
+                  ]">{{ schedule.time }}</div>
                 </div>
               </div>
               <div v-if="schedule.type" :class="[
                 'text-[10px] leading-tight truncate',
                 schedule.isSpecial ? 'text-amber-700 font-medium' : schedule.isDevotion ? 'text-purple-700 font-medium' : 'text-gray-600'
-              ]">
-                {{ schedule.type }}
-              </div>
+              ]">{{ schedule.type }}</div>
             </div>
           </div>
           <div v-else class="text-center py-3">
             <p class="text-xs text-gray-500">Tidak ada</p>
           </div>
-          <NuxtLink to="/misa"
-            class="block mt-2 text-center text-white bg-[#882f1d] py-1.5 rounded hover:bg-[#6b2416] transition-colors text-xs font-semibold">
+          <NuxtLink to="/misa" class="block mt-2 text-center text-white bg-[#882f1d] py-1.5 rounded hover:bg-[#6b2416] transition-colors text-xs font-semibold">
             📅 Lengkap
           </NuxtLink>
         </div>
@@ -80,19 +70,110 @@
     </div>
   </Transition>
   <button v-if="!isVisible" @click="openWidget"
-    class="fixed bottom-28 right-4 z-40 bg-[#882f1d] text-white p-3 rounded-full shadow-lg hover:bg-[#6b2416] transition-all hover:scale-110 hidden lg:block"
+    class="fixed bottom-28 right-4 z-40 bg-[#882f1d] text-white p-3 rounded-full shadow-lg hover:bg-[#6b2416] transition-all hover:scale-110 hidden md:block"
     aria-label="Buka jadwal misa">
     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
     </svg>
   </button>
+
+  <!-- Mobile FAB -->
+  <button @click="isMobileSheetOpen = true"
+    class="fixed bottom-4 right-4 z-40 w-14 h-14 bg-[#882f1d] text-white rounded-full shadow-lg hover:bg-[#6b2416] transition-all hover:scale-110 md:hidden flex items-center justify-center"
+    aria-label="Jadwal Misa Hari Ini">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+    </svg>
+  </button>
+
+  <!-- Mobile Bottom Sheet Backdrop -->
+  <Transition name="fade">
+    <div v-if="isMobileSheetOpen" @click="isMobileSheetOpen = false" class="fixed inset-0 bg-black/50 z-50 md:hidden transition-opacity"></div>
+  </Transition>
+
+  <!-- Mobile Bottom Sheet Content -->
+  <Transition name="slide-up">
+    <div v-if="isMobileSheetOpen" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 md:hidden flex flex-col max-h-[85vh]">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-[#882f1d] to-[#6b2416] p-4 rounded-t-2xl flex items-center justify-between">
+        <div class="flex items-center space-x-2 text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h3 class="font-bold text-base">Misa Hari Ini</h3>
+        </div>
+        <button @click="isMobileSheetOpen = false" class="text-white hover:text-gray-200 transition-colors bg-white/10 rounded-full p-1" aria-label="Tutup">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="p-4 overflow-y-auto">
+        <div class="mb-3 text-center">
+          <div class="text-sm text-[#882f1d] font-semibold">{{ currentDay }}</div>
+        </div>
+        
+        <div v-if="loading" class="space-y-3">
+          <div v-for="i in 2" :key="i" class="animate-pulse">
+            <div class="h-4 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+        
+        <div v-else-if="error" class="text-center py-4">
+          <p class="text-sm text-red-600">Gagal memuat jadwal</p>
+        </div>
+        
+        <div v-else-if="todaySchedule && todaySchedule.length > 0" class="space-y-3">
+          <div v-for="(schedule, index) in todaySchedule" :key="index" :class="[
+            'p-3 rounded-lg border transition-colors',
+            schedule.isSpecial ? 'bg-amber-50 border-amber-200 hover:bg-amber-100' :
+            schedule.isDevotion ? 'bg-purple-50 border-purple-200 hover:bg-purple-100' :
+            'bg-gray-50 border-gray-200 hover:bg-gray-100'
+          ]">
+            <div class="flex items-center justify-between mb-1">
+              <div class="flex-1 min-w-0 mr-2">
+                <div class="flex items-center gap-1.5">
+                  <div :class="[
+                    'font-semibold text-sm truncate',
+                    schedule.isSpecial ? 'text-amber-900' : schedule.isDevotion ? 'text-purple-900' : 'text-gray-900'
+                  ]">{{ schedule.label }}</div>
+                  <span v-if="schedule.isSpecial" class="text-xs">⭐</span>
+                  <span v-else-if="schedule.isDevotion" class="text-xs">📿</span>
+                </div>
+              </div>
+              <div class="flex-shrink-0">
+                <div :class="[
+                  'font-bold text-sm',
+                  schedule.isSpecial ? 'text-amber-700' : schedule.isDevotion ? 'text-purple-700' : 'text-[#882f1d]'
+                ]">{{ schedule.time }}</div>
+              </div>
+            </div>
+            <div v-if="schedule.type" :class="[
+              'text-xs leading-tight',
+              schedule.isSpecial ? 'text-amber-700 font-medium' : schedule.isDevotion ? 'text-purple-700 font-medium' : 'text-gray-600'
+            ]">{{ schedule.type }}</div>
+          </div>
+        </div>
+        
+        <div v-else class="text-center py-6">
+          <p class="text-sm text-gray-500">Tidak ada jadwal hari ini</p>
+        </div>
+        
+        <NuxtLink to="/misa" @click="isMobileSheetOpen = false" class="block mt-4 text-center text-white bg-[#882f1d] py-2.5 rounded-lg hover:bg-[#6b2416] transition-colors text-sm font-semibold">
+          📅 Lihat Jadwal Lengkap
+        </NuxtLink>
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from '#imports'
 
 const isVisible = ref(true)
+const isMobileSheetOpen = ref(false)
 const loading = ref(true)
 const error = ref(false)
 const scheduleData = ref([])
@@ -257,6 +338,27 @@ onMounted(() => {
 
 .slide-fade-leave-to {
   transform: scale(0.95);
+  opacity: 0;
+}
+
+/* Mobile Bottom Sheet Transitions */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  transform: translateY(100%);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 
