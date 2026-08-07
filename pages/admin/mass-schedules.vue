@@ -102,7 +102,7 @@
       </div>
 
       <!-- Regular Schedules List -->
-      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
         <div v-if="loading" class="p-8 text-center">
           <div
             class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"
@@ -132,7 +132,7 @@
           </p>
         </div>
 
-        <div v-else class="overflow-x-auto">
+        <div v-else>
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50 sticky top-0 z-10">
               <tr>
@@ -283,7 +283,7 @@
       </div>
 
       <!-- Special Schedules List -->
-      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
         <div v-if="loading" class="p-8 text-center">
           <div
             class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"
@@ -313,7 +313,7 @@
           </p>
         </div>
 
-        <div v-else class="overflow-x-auto">
+        <div v-else>
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50 sticky top-0 z-10">
               <tr>
