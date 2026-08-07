@@ -228,10 +228,16 @@ export function useDatetime() {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
-    if (diffDays > 0) return `Menunggu selama ${diffDays} hari`
-    if (diffHours > 0) return `Menunggu selama ${diffHours} jam`
-    if (diffMinutes > 0) return `Menunggu selama ${diffMinutes} menit`
-    return 'Menunggu baru saja'
+    if (diffDays > 0) {
+      const remHours = diffHours % 24
+      if (remHours > 0) {
+        return `menunggu selama ${diffDays} hari ${remHours} jam`
+      }
+      return `menunggu selama ${diffDays} hari`
+    }
+    if (diffHours > 0) return `menunggu selama ${diffHours} jam`
+    if (diffMinutes > 0) return `menunggu selama ${diffMinutes} menit`
+    return 'baru diajukan'
   }
 
   return {
