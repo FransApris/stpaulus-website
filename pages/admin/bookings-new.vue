@@ -626,19 +626,33 @@ const bookingVisiblePages = computed(() => buildVisiblePages(bookingPage.value, 
 const auditVisiblePages = computed(() => buildVisiblePages(auditPage.value, auditTotalPages.value))
 const deletedVisiblePages = computed(() => buildVisiblePages(deletedPage.value, deletedTotalPages.value))
 
+const scrollToTop = () => {
+  nextTick(() => {
+    const mainEl = document.querySelector('main')
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  })
+}
+
 const goToBookingPage = (page) => {
   if (page < 1 || page > bookingTotalPages.value) return
   bookingPage.value = page
+  scrollToTop()
 }
 
 const goToAuditPage = (page) => {
   if (page < 1 || page > auditTotalPages.value) return
   auditPage.value = page
+  scrollToTop()
 }
 
 const goToDeletedPage = (page) => {
   if (page < 1 || page > deletedTotalPages.value) return
   deletedPage.value = page
+  scrollToTop()
 }
 
 // Load Data Functions
@@ -1129,6 +1143,11 @@ const getActionBadgeClass = (action) => {
 
 // Watch tab changes
 watch(activeTab, (newTab) => {
+  bookingPage.value = 1
+  auditPage.value = 1
+  deletedPage.value = 1
+  scrollToTop()
+
   if (newTab === 'audit' && auditLogs.value.length === 0) {
     loadAuditLogs()
   } else if (newTab === 'deleted' && deletedBookings.value.length === 0) {
@@ -1144,8 +1163,9 @@ onMounted(() => {
   loadStats()
 })
 
-watch(filterStatus, () => {
+watch([filterStatus, customStartDate, customEndDate], () => {
   bookingPage.value = 1
+  scrollToTop()
 })
 
 watch([bookingTotalPages, auditTotalPages, deletedTotalPages], ([bookingPages, auditPages, deletedPages]) => {
