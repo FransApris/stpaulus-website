@@ -26,7 +26,7 @@
             </div>
           </div>
           <div v-else-if="error" class="text-center py-2">
-            <p class="text-xs text-red-600">Error</p>
+            <p class="text-xs text-red-600">Gagal memuat</p>
           </div>
           <div v-else-if="todaySchedule && todaySchedule.length > 0" class="space-y-1.5">
             <div v-for="(schedule, index) in todaySchedule" :key="index" :class="[
@@ -78,7 +78,7 @@
   </button>
 
   <!-- Mobile FAB -->
-  <button v-if="!isMobileSheetOpen" @click="isMobileSheetOpen = true"
+  <button v-if="!isMobileSheetOpen" @click="openMobileSheet"
     class="fixed bottom-20 left-4 z-[90] w-14 h-14 bg-[#882f1d] text-white rounded-full shadow-xl border-2 border-white hover:bg-[#6b2416] transition-all hover:scale-110 md:hidden flex items-center justify-center"
     aria-label="Jadwal Misa Hari Ini">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@
 
   <!-- Mobile Bottom Sheet Backdrop -->
   <Transition name="fade">
-    <div v-if="isMobileSheetOpen" @click="isMobileSheetOpen = false" class="fixed inset-0 bg-black/60 z-[90] md:hidden transition-opacity"></div>
+    <div v-if="isMobileSheetOpen" @click="closeMobileSheet" class="fixed inset-0 bg-black/60 z-[90] md:hidden"></div>
   </Transition>
 
   <!-- Mobile Bottom Sheet Content -->
@@ -102,7 +102,7 @@
           </svg>
           <h3 class="font-bold text-base">Misa Hari Ini</h3>
         </div>
-        <button @click="isMobileSheetOpen = false" class="text-white hover:text-gray-200 transition-colors bg-white/10 rounded-full p-1" aria-label="Tutup">
+        <button @click="closeMobileSheet" class="text-white hover:text-gray-200 transition-colors bg-white/10 rounded-full p-1" aria-label="Tutup">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
@@ -114,17 +114,18 @@
         <div class="mb-3 text-center">
           <div class="text-sm text-[#882f1d] font-semibold">{{ currentDay }}</div>
         </div>
-        
+
         <div v-if="loading" class="space-y-3">
           <div v-for="i in 2" :key="i" class="animate-pulse">
             <div class="h-4 bg-gray-200 rounded"></div>
           </div>
         </div>
-        
+
         <div v-else-if="error" class="text-center py-4">
           <p class="text-sm text-red-600">Gagal memuat jadwal</p>
+          <button @click="fetchSchedule" class="mt-2 text-xs text-[#882f1d] underline">Coba lagi</button>
         </div>
-        
+
         <div v-else-if="todaySchedule && todaySchedule.length > 0" class="space-y-3">
           <div v-for="(schedule, index) in todaySchedule" :key="index" :class="[
             'p-3 rounded-lg border transition-colors',
@@ -156,12 +157,12 @@
             ]">{{ schedule.type }}</div>
           </div>
         </div>
-        
+
         <div v-else class="text-center py-6">
           <p class="text-sm text-gray-500">Tidak ada jadwal hari ini</p>
         </div>
-        
-        <NuxtLink to="/misa" @click="isMobileSheetOpen = false" class="block mt-4 text-center text-white bg-[#882f1d] py-2.5 rounded-lg hover:bg-[#6b2416] transition-colors text-sm font-semibold">
+
+        <NuxtLink to="/misa" @click="closeMobileSheet" class="block mt-4 text-center text-white bg-[#882f1d] py-2.5 rounded-lg hover:bg-[#6b2416] transition-colors text-sm font-semibold">
           📅 Lihat Jadwal Lengkap
         </NuxtLink>
       </div>
@@ -170,7 +171,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from '#imports'
+import { ref, computed, onMounted, onUnmounted } from '#imports'
 
 const isVisible = ref(true)
 const isMobileSheetOpen = ref(false)
@@ -298,27 +299,61 @@ const fetchSchedule = async () => {
 
 const closeWidget = () => {
   isVisible.value = false
-  if (process.client) localStorage.setItem('misaWidgetClosed', 'true')
+  localStorage.setItem('misaWidgetClosed', 'true')
 }
 
 const openWidget = () => {
   isVisible.value = true
-  if (process.client) localStorage.removeItem('misaWidgetClosed')
+  localStorage.removeItem('misaWidgetClosed')
+}
+
+// BUG FIX #1: Centralized open/close untuk mobile sheet
+// agar body scroll lock dikelola di satu tempat — tidak tersebar
+const openMobileSheet = () => {
+  isMobileSheetOpen.value = true
+  // BUG FIX #2: Lock body scroll saat bottom sheet terbuka di mobile
+  document.body.style.overflow = 'hidden'
+}
+
+const closeMobileSheet = () => {
+  isMobileSheetOpen.value = false
+  // BUG FIX #2: Kembalikan scroll body saat bottom sheet ditutup
+  document.body.style.overflow = ''
+}
+
+// BUG FIX #3: Listener Escape key untuk menutup bottom sheet
+// — dengan cleanup di onUnmounted agar tidak memory leak
+const handleKeydown = (e) => {
+  if (e.key === 'Escape' && isMobileSheetOpen.value) {
+    closeMobileSheet()
+  }
 }
 
 onMounted(() => {
   // Inisialisasi tanggal & hari di client (bukan SSR) agar timezone WIB akurat
-  // Menggunakan 'sv-SE' locale untuk mendapatkan format YYYY-MM-DD yang konsisten
+  // BUG FIX #4: Menghapus redundansi — onMounted SUDAH pasti client-only,
+  // sehingga guard `if (process.client)` di dalam onMounted tidak perlu.
   const now = new Date()
   todayDayIndex.value = now.getDay()
   todayDateStr.value = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
 
-  if (process.client) {
-    const wasClosed = localStorage.getItem('misaWidgetClosed')
-    if (wasClosed === 'true') isVisible.value = false
-  }
+  const wasClosed = localStorage.getItem('misaWidgetClosed')
+  if (wasClosed === 'true') isVisible.value = false
+
+  // BUG FIX #3: Daftarkan listener Escape key
+  window.addEventListener('keydown', handleKeydown)
 
   fetchSchedule()
+})
+
+onUnmounted(() => {
+  // BUG FIX #3: Hapus listener saat komponen unmount untuk mencegah memory leak
+  window.removeEventListener('keydown', handleKeydown)
+
+  // BUG FIX #2: Pastikan body scroll dikembalikan jika komponen unmount saat sheet masih terbuka
+  if (isMobileSheetOpen.value) {
+    document.body.style.overflow = ''
+  }
 })
 </script>
 
@@ -342,14 +377,16 @@ onMounted(() => {
 }
 
 /* Mobile Bottom Sheet Transitions */
+/* BUG FIX #5: Tambah opacity ke transition agar tidak melompat */
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
 }
 
 .slide-up-enter-from,
 .slide-up-leave-to {
   transform: translateY(100%);
+  opacity: 0;
 }
 
 .fade-enter-active,
@@ -360,9 +397,5 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.cursor-move {
-  user-select: none;
 }
 </style>
