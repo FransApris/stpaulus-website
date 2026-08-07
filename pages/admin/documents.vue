@@ -1,54 +1,54 @@
 <template>
   <div>
     <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-3xl font-cinzel font-bold text-gray-900 mb-2">Kelola Dokumen</h1>
-      <p class="text-gray-600">Kelola dokumen paroki dan unggah file baru</p>
+    <div class="mb-6">
+      <h1 class="text-2xl sm:text-3xl font-cinzel font-bold text-gray-900 mb-2">Kelola Dokumen</h1>
+      <p class="text-sm sm:text-base text-gray-600">Kelola dokumen paroki dan unggah file baru</p>
     </div>
 
     <!-- Action Buttons -->
-    <div class="mb-6 flex flex-wrap gap-2 items-center">
+    <div class="mb-6 flex flex-wrap gap-2.5 items-center">
       <button
         @click="openModal()"
-        class="bg-[#882f1d] text-white px-4 py-2 rounded-md hover:bg-[#6b2416] transition-colors duration-200 flex items-center"
+        class="bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416] transition-colors duration-200 inline-flex items-center text-sm font-medium shadow-sm"
       >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
         </svg>
-        Tambah Dokumen
+        <span>Tambah Dokumen</span>
       </button>
 
       <!-- Migrate to Cloud button -->
       <button
         @click="migrateToCloud"
         :disabled="migrating"
-        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors duration-200 flex items-center"
+        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors duration-200 inline-flex items-center text-sm font-medium shadow-sm"
         title="Pindahkan semua dokumen yang masih tersimpan di server lokal ke Cloudinary agar tidak hilang saat Railway restart"
       >
-        <svg class="w-5 h-5 mr-2" :class="{ 'animate-spin': migrating }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 mr-2 shrink-0" :class="{ 'animate-spin': migrating }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
         </svg>
-        {{ migrating ? 'Memigrasikan...' : 'Migrate ke Cloud' }}
+        <span>{{ migrating ? 'Memigrasikan...' : 'Migrate ke Cloud' }}</span>
       </button>
 
       <!-- Fix Document Permissions button -->
       <button
         @click="fixDocumentPermissions"
         :disabled="fixing"
-        class="bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 disabled:opacity-50 transition-colors duration-200 flex items-center"
+        class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 disabled:opacity-50 transition-colors duration-200 inline-flex items-center text-sm font-medium shadow-sm"
         title="Perbaiki dokumen lama yang tidak bisa dibuka karena tersimpan dengan akses terbatas di Cloudinary"
       >
-        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="w-4 h-4 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
         </svg>
-        {{ fixing ? 'Memperbaiki...' : 'Perbaiki Akses Dokumen' }}
+        <span>{{ fixing ? 'Memperbaiki...' : 'Perbaiki Akses Dokumen' }}</span>
       </button>
 
       <!-- Local docs warning badge -->
-      <span v-if="localDocCount > 0" class="text-xs bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-full px-3 py-1">
+      <span v-if="localDocCount > 0" class="text-xs bg-yellow-100 text-yellow-800 border border-yellow-300 rounded-full px-3 py-1 font-medium inline-flex items-center">
         ⚠ {{ localDocCount }} dokumen belum di cloud
       </span>
-      <span v-else-if="documents.length > 0" class="text-xs bg-green-100 text-green-800 border border-green-300 rounded-full px-3 py-1">
+      <span v-else-if="documents.length > 0" class="text-xs bg-green-100 text-green-800 border border-green-300 rounded-full px-3 py-1 font-medium inline-flex items-center">
         ✓ Semua dokumen sudah di Cloudinary
       </span>
     </div>
@@ -59,7 +59,7 @@
       <select
         v-model="selectedCategory"
         @change="fetchDocuments"
-        class="rounded-md border-gray-300 shadow-sm focus:border-[#882f1d] focus:ring-[#882f1d]"
+        class="rounded-lg border-gray-300 shadow-sm focus:border-[#882f1d] focus:ring-[#882f1d] text-sm"
       >
         <option value="">Semua Kategori</option>
         <option v-for="category in categories" :key="category.id" :value="category.id">
@@ -68,8 +68,8 @@
       </select>
     </div>
 
-    <!-- Documents Table -->
-    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <!-- Documents Table & Mobile Cards -->
+    <div id="documents-list-section" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-4">
       <div v-if="loading" class="p-8 text-center">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#882f1d] mx-auto"></div>
         <p class="mt-2 text-gray-600">Memuat dokumen...</p>
@@ -85,59 +85,84 @@
 
       <div v-else>
         <!-- Mobile/Tablet Card View -->
-        <div class="xl:hidden space-y-4 mb-4">
-          <div v-for="document in paginatedDocuments" :key="'card-'+document.id" class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-100">
-              <div class="flex-1 pr-4">
-                <h3 class="text-lg font-bold text-gray-900 leading-tight">{{ document.title }}</h3>
-                <div v-if="document.description" class="text-sm text-gray-500 mt-2">
-                  <div v-if="isDescriptionExpanded(document.id)">{{ document.description }}</div>
-                  <div v-else>{{ truncateDescription(document.description, 80) }}</div>
-                  <button v-if="document.description && document.description.length > 80" @click="toggleDescription(document.id)" class="text-blue-600 hover:text-blue-800 text-xs mt-1 font-medium inline-flex items-center">
-                    {{ isDescriptionExpanded(document.id) ? 'Sembunyikan' : 'Lihat Detail' }}
-                    <svg class="w-3 h-3 ml-1 transition-transform" :class="{ 'rotate-180': isDescriptionExpanded(document.id) }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                  </button>
-                </div>
-                <div v-else class="text-xs text-gray-400 italic mt-2">Tidak ada deskripsi</div>
-              </div>
-              <div class="flex flex-col space-y-2">
-                <button @click="openModal(document)" title="Edit" class="text-blue-600 hover:text-blue-900 p-2 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                </button>
-                <button @click="deleteDocument(document.id)" title="Hapus" class="text-red-600 hover:text-red-900 p-2 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        <div class="xl:hidden p-3 sm:p-4 space-y-4">
+          <div v-for="document in paginatedDocuments" :key="'card-'+document.id" class="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
+            <!-- Card Header: Judul Dokumen & Deskripsi (Lebar Penuh) -->
+            <div class="mb-3.5 pb-3 border-b border-gray-100">
+              <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-snug">{{ document.title }}</h3>
+              <div v-if="document.description" class="text-xs sm:text-sm text-gray-500 mt-1.5 leading-relaxed">
+                <div v-if="isDescriptionExpanded(document.id)">{{ document.description }}</div>
+                <div v-else>{{ truncateDescription(document.description, 80) }}</div>
+                <button v-if="document.description && document.description.length > 80" @click="toggleDescription(document.id)" class="text-blue-600 hover:text-blue-800 text-xs mt-1 font-medium inline-flex items-center">
+                  {{ isDescriptionExpanded(document.id) ? 'Sembunyikan' : 'Lihat Detail' }}
+                  <svg class="w-3 h-3 ml-1 transition-transform" :class="{ 'rotate-180': isDescriptionExpanded(document.id) }" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
               </div>
+              <div v-else class="text-xs text-gray-400 italic mt-1.5">Tidak ada deskripsi</div>
             </div>
             
-            <div class="grid grid-cols-2 gap-4 text-sm">
-              <div class="bg-gray-50 rounded-lg p-3">
+            <!-- Card Body: Grid Informasi Dokumen -->
+            <div class="grid grid-cols-2 gap-2.5 text-xs mb-3.5">
+              <div class="bg-gray-50 rounded-lg p-2.5">
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Kategori</p>
-                <div class="flex items-center mt-1">
-                  <div class="flex-shrink-0 w-3 h-3 rounded mr-2" :style="{ backgroundColor: document.category_color }"></div>
-                  <span class="text-gray-900 font-medium">{{ document.category_name }}</span>
+                <div class="flex items-center mt-0.5">
+                  <div class="flex-shrink-0 w-2.5 h-2.5 rounded-full mr-1.5" :style="{ backgroundColor: document.category_color }"></div>
+                  <span class="text-gray-900 font-medium truncate">{{ document.category_name }}</span>
                 </div>
               </div>
-              <div class="bg-gray-50 rounded-lg p-3">
+              <div class="bg-gray-50 rounded-lg p-2.5 flex flex-col justify-center">
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Status</p>
-                <label class="inline-flex items-center mt-1">
+                <label class="inline-flex items-center cursor-pointer">
                   <input type="checkbox" :checked="document.is_featured || false" @change="toggleFeatured(document.id, $event.target.checked)" class="rounded border-gray-300 text-[#882f1d] focus:ring-[#882f1d]" />
-                  <span class="ml-2 text-gray-900 font-medium">Featured</span>
+                  <span class="ml-1.5 text-gray-900 font-medium text-xs">Featured</span>
                 </label>
               </div>
-              <div class="col-span-2 bg-gray-50 rounded-lg p-3">
+              <div class="col-span-2 bg-gray-50 rounded-lg p-2.5">
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Informasi File</p>
-                <p class="text-gray-900 font-medium break-all">{{ document.original_filename }}</p>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="text-gray-500 text-xs">{{ document.mime_type }} • {{ formatFileSize(document.file_size) }}</span>
-                  <span v-if="document.file_path && (document.file_path.startsWith('https://') || document.file_path.startsWith('http://'))" class="inline-flex items-center text-[10px] font-bold text-green-700 bg-green-100 rounded px-2 py-1 uppercase tracking-wider">☁ Cloud</span>
-                  <span v-else class="inline-flex items-center text-[10px] font-bold text-yellow-700 bg-yellow-100 rounded px-2 py-1 uppercase tracking-wider">💾 Lokal</span>
+                <p class="text-gray-900 font-medium break-all text-xs">{{ document.original_filename }}</p>
+                <div class="flex items-center justify-between mt-1.5">
+                  <span class="text-gray-500 text-[11px]">{{ document.mime_type }} • {{ formatFileSize(document.file_size) }}</span>
+                  <span v-if="document.file_path && (document.file_path.startsWith('https://') || document.file_path.startsWith('http://'))" class="inline-flex items-center text-[10px] font-bold text-green-700 bg-green-100 rounded px-1.5 py-0.5 uppercase tracking-wider">☁ Cloud</span>
+                  <span v-else class="inline-flex items-center text-[10px] font-bold text-yellow-700 bg-yellow-100 rounded px-1.5 py-0.5 uppercase tracking-wider">💾 Lokal</span>
                 </div>
               </div>
-              <div class="col-span-2 bg-gray-50 rounded-lg p-3">
+              <div class="col-span-2 bg-gray-50 rounded-lg p-2.5">
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Tanggal Upload</p>
-                <p class="text-gray-900 font-medium">{{ formatDate(document.created_at) }}</p>
+                <p class="text-gray-900 font-medium text-xs">{{ formatDate(document.created_at) }}</p>
               </div>
+            </div>
+
+            <!-- Card Footer: Tombol Aksi Horisontal di Bawah -->
+            <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
+              <a v-if="document.file_path" :href="document.file_path" target="_blank"
+                class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-medium transition-colors"
+                title="Buka / Unduh Dokumen">
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <span>Buka</span>
+              </a>
+              <button
+                @click="openModal(document)"
+                title="Edit Dokumen"
+                class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors"
+              >
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                <span>Edit</span>
+              </button>
+              <button
+                @click="deleteDocument(document.id)"
+                title="Hapus Dokumen"
+                class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-medium transition-colors"
+              >
+                <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                <span>Hapus</span>
+              </button>
             </div>
           </div>
         </div>
@@ -273,23 +298,23 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="totalPages > 1" class="flex items-center justify-between border-t border-gray-200 px-6 py-4">
+      <div v-if="totalPages > 1" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-gray-200 px-4 sm:px-6 py-4">
         <div class="text-sm text-gray-500">
           Halaman {{ currentPage }} dari {{ totalPages }}
-          ({{ (currentPage - 1) * pageLimit + 1 }}–{{ Math.min(currentPage * pageLimit, totalItems) }} dari {{ totalItems }})
+          ({{ (currentPage - 1) * pageLimit + 1 }}–{{ Math.min(currentPage * pageLimit, totalItems) }} dari {{ totalItems }} dokumen)
         </div>
-        <div class="flex items-center space-x-1">
+        <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
           <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-            class="px-3 py-1 rounded border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
             ‹
           </button>
           <button v-for="p in visiblePages" :key="p" @click="goToPage(p)"
-            :class="p === currentPage ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'hover:bg-gray-100 border-gray-300'"
-            class="px-3 py-1 rounded border text-sm min-w-[36px]">
+            :class="p === currentPage ? 'bg-[#882f1d] text-white border-[#882f1d]' : 'hover:bg-gray-50 border-gray-300 text-gray-700'"
+            class="px-3 py-1.5 rounded-lg border text-sm min-w-[36px]">
             {{ p }}
           </button>
           <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-            class="px-3 py-1 rounded border text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100">
+            class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50">
             ›
           </button>
         </div>
@@ -427,10 +452,45 @@ const visiblePages = computed(() => {
   for (let i = start; i <= end; i++) pages.push(i)
   return pages
 })
+const scrollToTop = () => {
+  nextTick(() => {
+    const target = document.getElementById('documents-list-section')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const mainEl = target.closest('main') || document.querySelector('main')
+      if (mainEl && typeof target.offsetTop === 'number') {
+        mainEl.scrollTo({
+          top: Math.max(0, target.offsetTop - 12),
+          behavior: 'smooth'
+        })
+      }
+    } else {
+      const mainEl = document.querySelector('main')
+      if (mainEl) {
+        mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  })
+}
+
 const goToPage = (page) => {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
+  scrollToTop()
 }
+
+watch(selectedCategory, () => {
+  currentPage.value = 1
+  scrollToTop()
+})
+
+watch(totalPages, (pages) => {
+  if (currentPage.value > pages) {
+    currentPage.value = pages
+  }
+})
 
 const form = ref({
   title: '',
