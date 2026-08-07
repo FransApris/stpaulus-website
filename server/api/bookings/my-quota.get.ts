@@ -23,24 +23,11 @@ export default defineEventHandler(async (event) => {
     // ── Resolve effective quota config (DB-driven, with overrides) ─────────────
     const quotaInfo = await getUserQuotaInfo(userId)
 
-    if (quotaInfo.isUnlimited) {
-      // DPP / BGKP or user-level unlimited override — no limit
-      return {
-        monthly_count : 0,
-        max_allowed   : null,           // null = tidak terbatas
-        remaining     : null,
-        can_book      : true,
-        is_unlimited  : true,
-        quota_source  : quotaInfo.source,
-        period        : getCurrentMonthLabel()
-      }
-    }
-
-    // ── Hitung pemesanan bulan ini (UTC boundaries) ─────────────────────────────
+    // ── Hitung pemesanan bulan ini (dipakai baik unlimited maupun terbatas) ─────
     const firstDay = getFirstDayOfMonth()
     const lastDay  = getLastDayOfMonth()
 
-    const result = await getQuery(`
+    const countResult = await getQuery(`
       SELECT COUNT(*) AS count
       FROM bookings
       WHERE user_id = ?
@@ -50,7 +37,22 @@ export default defineEventHandler(async (event) => {
         AND deleted_at IS NULL
     `, [userId, firstDay, lastDay]) as any
 
-    const monthlyCount = Number(result?.count ?? 0)
+    const monthlyCount = Number(countResult?.count ?? 0)
+
+    if (quotaInfo.isUnlimited) {
+      // DPP / BGKP or user-level unlimited override — no limit
+      // monthly_count tetap dihitung agar widget bisa menampilkan pemakaian aktual
+      return {
+        monthly_count : monthlyCount,
+        max_allowed   : null,           // null = tidak terbatas
+        remaining     : null,
+        can_book      : true,
+        is_unlimited  : true,
+        quota_source  : quotaInfo.source,
+        period        : getCurrentMonthLabel()
+      }
+    }
+
     const maxAllowed   = quotaInfo.maxMonthly
 
     return {

@@ -116,14 +116,16 @@
                     </svg>
                   </span>
                   <div>
-                    <p class="text-xs text-gray-400 leading-none">Kuota Bulan Ini</p>
+                    <p class="text-xs text-gray-400 leading-none">Pemakaian Bulan Ini</p>
                     <p class="text-sm font-medium mt-0.5"
                       :class="userQuota && !userQuota.is_unlimited && userQuota.monthly_count >= userQuota.max_allowed
                         ? 'text-red-600 font-bold'
                         : userQuota && userQuota.is_unlimited ? 'text-green-600' : 'text-gray-800'">
                       <template v-if="!userQuota">–</template>
-                      <template v-else-if="userQuota.is_unlimited">∞ Tidak Terbatas</template>
-                      <template v-else>{{ userQuota.monthly_count }} / {{ userQuota.max_allowed }}</template>
+                      <template v-else-if="userQuota.is_unlimited">
+                        Pemakaian: {{ userQuota.monthly_count }} <span class="text-xs font-normal">(Unlimited ∞)</span>
+                      </template>
+                      <template v-else>Pemakaian: {{ userQuota.monthly_count }} / {{ userQuota.max_allowed }}</template>
                     </p>
                     <p v-if="userQuota && userQuota.period" class="text-xs text-gray-400">{{ userQuota.period }}</p>
                   </div>

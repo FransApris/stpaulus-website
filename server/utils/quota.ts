@@ -35,6 +35,10 @@ export interface UserQuotaInfo {
 export async function getUserQuotaInfo(userId: number): Promise<UserQuotaInfo> {
   try {
     // Single query: join users + user_categories
+    // JOIN menggunakan nama kategori (u.user_category = uc.name) — sama persis
+    // dengan logika di /api/admin/users agar Single Source of Truth.
+    // CATATAN: tabel users TIDAK memiliki kolom deleted_at (hanya bookings yang punya).
+    // TRIM() di kedua sisi sebagai guard defensif terhadap spasi tidak sengaja di data.
     const row = await getQuery(`
       SELECT
         u.monthly_quota_override,
@@ -44,9 +48,8 @@ export async function getUserQuotaInfo(userId: number): Promise<UserQuotaInfo> {
         u.user_category
       FROM users u
       LEFT JOIN user_categories uc
-        ON UPPER(TRIM(uc.name)) = UPPER(TRIM(u.user_category))
+        ON TRIM(u.user_category) = TRIM(uc.name)
       WHERE u.id = ?
-        AND (u.deleted_at IS NULL OR u.deleted_at = '0000-00-00 00:00:00')
     `, [userId]) as any
 
     if (!row) {
@@ -70,9 +73,12 @@ export async function getUserQuotaInfo(userId: number): Promise<UserQuotaInfo> {
     // ── 2. Check category-level settings from DB ──────────────────────────────
     if (row.cat_is_unlimited !== null && row.cat_is_unlimited !== undefined) {
       const isUnlimited = Boolean(row.cat_is_unlimited)
+      // Ketika tidak unlimited: gunakan cat_monthly_quota sebagai default kategori.
+      // monthly_quota_override sudah ditangani di blok (1) di atas, jadi di sini
+      // sudah dipastikan tidak ada override individual.
       const maxMonthly  = isUnlimited
         ? 999
-        : (hasQuotaOverride ? Number(row.monthly_quota_override) : Number(row.cat_monthly_quota ?? FALLBACK_MAX_MONTHLY))
+        : Number(row.cat_monthly_quota ?? FALLBACK_MAX_MONTHLY)
       return { isUnlimited, maxMonthly, source: 'category_db' }
     }
 
