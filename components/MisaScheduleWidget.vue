@@ -78,22 +78,22 @@
   </button>
 
   <!-- Mobile FAB -->
-  <button @click="isMobileSheetOpen = true"
-    class="fixed bottom-4 right-4 z-40 w-14 h-14 bg-[#882f1d] text-white rounded-full shadow-lg hover:bg-[#6b2416] transition-all hover:scale-110 md:hidden flex items-center justify-center"
+  <button v-if="!isMobileSheetOpen" @click="isMobileSheetOpen = true"
+    class="fixed bottom-28 left-4 z-[90] w-14 h-14 bg-[#882f1d] text-white rounded-full shadow-xl border-2 border-white hover:bg-[#6b2416] transition-all hover:scale-110 md:hidden flex items-center justify-center"
     aria-label="Jadwal Misa Hari Ini">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
     </svg>
   </button>
 
   <!-- Mobile Bottom Sheet Backdrop -->
   <Transition name="fade">
-    <div v-if="isMobileSheetOpen" @click="isMobileSheetOpen = false" class="fixed inset-0 bg-black/50 z-50 md:hidden transition-opacity"></div>
+    <div v-if="isMobileSheetOpen" @click="isMobileSheetOpen = false" class="fixed inset-0 bg-black/60 z-[90] md:hidden transition-opacity"></div>
   </Transition>
 
   <!-- Mobile Bottom Sheet Content -->
   <Transition name="slide-up">
-    <div v-if="isMobileSheetOpen" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-50 md:hidden flex flex-col max-h-[85vh]">
+    <div v-if="isMobileSheetOpen" class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl z-[100] md:hidden flex flex-col max-h-[85vh]">
       <!-- Header -->
       <div class="bg-gradient-to-r from-[#882f1d] to-[#6b2416] p-4 rounded-t-2xl flex items-center justify-between">
         <div class="flex items-center space-x-2 text-white">
