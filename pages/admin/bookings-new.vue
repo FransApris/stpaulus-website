@@ -215,40 +215,62 @@
             <div v-if="auditLogs.length === 0" class="text-center py-8 text-gray-500">
               Belum ada log aktivitas.
             </div>
-            <div v-else class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Detail</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP Address</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  <tr v-for="log in paginatedAuditLogs" :key="log.id" class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ formatDateTime(log.created_at) }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {{ log.user_name || 'System' }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span :class="getActionBadgeClass(log.action)" class="px-2 py-1 text-xs rounded-full">
-                        {{ log.action }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-600 max-w-md truncate">
-                      {{ log.description }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {{ log.ip_address || '-' }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div v-else>
+              <!-- Mobile Card Layout -->
+              <div class="space-y-3 md:hidden">
+                <div v-for="log in paginatedAuditLogs" :key="log.id"
+                  class="bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
+                  <!-- Badge + Waktu -->
+                  <div class="flex items-center justify-between mb-2">
+                    <span :class="getActionBadgeClass(log.action)" class="px-2 py-1 text-xs rounded-full font-medium">
+                      {{ log.action }}
+                    </span>
+                    <span class="text-xs text-gray-400">{{ formatDateTime(log.created_at) }}</span>
+                  </div>
+                  <!-- User -->
+                  <p class="text-sm font-semibold text-gray-800 mb-1">
+                    👤 {{ log.user_name || 'System' }}
+                  </p>
+                  <!-- Description -->
+                  <p class="text-sm text-gray-600 mb-2 leading-relaxed">
+                    {{ log.description }}
+                  </p>
+                  <!-- IP Address -->
+                  <p class="text-xs text-gray-400">
+                    🌐 IP: {{ log.ip_address || '-' }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Desktop Table Layout -->
+              <div class="hidden md:block overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Detail</th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP Address</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white divide-y divide-gray-200">
+                    <tr v-for="log in paginatedAuditLogs" :key="log.id" class="hover:bg-gray-50">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ formatDateTime(log.created_at) }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ log.user_name || 'System' }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span :class="getActionBadgeClass(log.action)" class="px-2 py-1 text-xs rounded-full">
+                          {{ log.action }}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-sm text-gray-600 max-w-md truncate">{{ log.description }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ log.ip_address || '-' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
+
             <div v-if="auditTotalPages > 1" class="flex items-center justify-between border-t pt-4">
               <p class="text-sm text-gray-600">Halaman {{ auditPage }} dari {{ auditTotalPages }}</p>
               <div class="flex items-center gap-2">
