@@ -81,7 +81,7 @@
             <div class="text-3xl font-bold text-amber-700 leading-tight">{{ widgets.pendingBookings }}</div>
             <div class="text-sm text-amber-700 font-medium">Pemesanan Ruangan Pending</div>
             <p v-if="widgets.oldestPendingDate" class="text-xs text-amber-800/80 mt-1 leading-snug">
-              dibuat pada tanggal : <span class="font-medium text-amber-900">{{ formatWibDate(widgets.oldestPendingDate) }}</span> - pukul : <span class="font-medium text-amber-900">{{ formatWibTime(widgets.oldestPendingDate) }} WIB</span> ({{ formatWaitDuration(widgets.oldestPendingDate) }})
+              {{ widgets.pendingBookings > 1 ? 'Paling awal dibuat' : 'dibuat' }} pada tanggal : <span class="font-medium text-amber-900">{{ formatWibDate(widgets.oldestPendingDate) }}</span> - pukul : <span class="font-medium text-amber-900">{{ formatWibTime(widgets.oldestPendingDate) }} WIB</span> ({{ formatWaitDuration(widgets.oldestPendingDate) }})
             </p>
           </div>
           <div class="text-amber-400 shrink-0">
