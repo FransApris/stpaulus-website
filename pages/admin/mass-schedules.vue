@@ -333,7 +333,7 @@
               </div>
               <div>
                 <span class="text-gray-400 uppercase font-medium tracking-wide">Waktu</span>
-                <p class="text-gray-800 font-bold mt-0.5 text-[#882f1d]">{{ schedule.time }}</p>
+                <p class="text-[#882f1d] font-bold mt-0.5">{{ schedule.time }}</p>
               </div>
               <div>
                 <span class="text-gray-400 uppercase font-medium tracking-wide">Lokasi</span>
