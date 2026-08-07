@@ -325,12 +325,12 @@
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Judul
+                  Waktu
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
-                  Waktu
+                  Judul
                 </th>
                 <th
                   class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
@@ -368,14 +368,14 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {{ formatDate(schedule.date) }}
                 </td>
-                <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {{ schedule.time }}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-700">
                   {{ schedule.title }}
                   <p v-if="schedule.notes" class="text-xs text-gray-400 mt-0.5">
                     {{ schedule.notes }}
                   </p>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                  {{ schedule.time }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                   {{ schedule.location }}
