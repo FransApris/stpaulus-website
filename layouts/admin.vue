@@ -120,7 +120,7 @@
       </div>
 
       <!-- Scrollable Page Content -->
-      <main ref="mainContentRef" class="flex-1 overflow-y-auto p-4 md:p-6">
+      <main ref="mainContentRef" class="flex-1 overflow-y-auto overflow-x-hidden w-full p-4 md:p-6">
         <slot />
       </main>
     </div>
