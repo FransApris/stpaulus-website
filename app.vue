@@ -9,9 +9,28 @@
 // Scroll to top on route change
 const route = useRoute()
 
-watch(() => route.path, () => {
-  if (process.client) {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+const scrollToTop = () => {
+  if (typeof window !== 'undefined') {
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    if (document.documentElement) {
+      document.documentElement.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    }
+    if (document.body) {
+      document.body.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    }
+    const mainEl = document.querySelector('main')
+    if (mainEl) {
+      mainEl.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+    }
+  }
+}
+
+watch(() => route.fullPath, (newVal, oldVal) => {
+  if (process.client && newVal !== oldVal) {
+    scrollToTop()
+    nextTick(() => scrollToTop())
+    setTimeout(() => scrollToTop(), 150)
+    setTimeout(() => scrollToTop(), 350)
   }
 }, { immediate: false })
 

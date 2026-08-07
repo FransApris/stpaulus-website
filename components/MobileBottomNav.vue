@@ -7,8 +7,9 @@
         v-for="item in navItems"
         :key="item.path"
         :to="item.path"
+        @click="handleNavClick(item.path)"
         :class="getNavItemClasses(item.path)"
-        class="flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-all duration-200 min-h-[44px]"
+        class="flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-all duration-200 min-h-[44px] cursor-pointer"
       >
         <!-- Icon -->
         <div class="w-6 h-6 mb-1 flex items-center justify-center">
@@ -136,6 +137,33 @@ const getNavItemClasses = (itemPath) => {
   return isActive
     ? 'text-[#882f1d] bg-[#882f1d]/10 rounded-lg'
     : 'text-gray-600 hover:text-[#882f1d] hover:bg-gray-50'
+}
+
+// Smooth scroll to top when navigation item is clicked
+const handleNavClick = (targetPath) => {
+  if (process.client) {
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      if (document.documentElement) {
+        document.documentElement.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      }
+      if (document.body) {
+        document.body.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      }
+      const mainEl = document.querySelector('main')
+      if (mainEl) {
+        mainEl.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+      }
+    }
+
+    // Scroll immediately
+    scrollToTop()
+
+    // Scroll again after micro-tasks and route transition completes
+    nextTick(() => scrollToTop())
+    setTimeout(() => scrollToTop(), 150)
+    setTimeout(() => scrollToTop(), 350)
+  }
 }
 </script>
 

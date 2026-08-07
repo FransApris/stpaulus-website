@@ -21,7 +21,7 @@ export default <RouterConfig>{
       }
     }
 
-    // Default: Always scroll to top of the page on route change
-    return { top: 0, left: 0 }
+    // Default: Always scroll smoothly to top of the page on route change
+    return { top: 0, left: 0, behavior: 'smooth' }
   }
 }
