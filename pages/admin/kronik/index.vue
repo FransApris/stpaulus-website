@@ -47,7 +47,7 @@
     </div>
 
     <!-- Table and Cards -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div id="kronik-entries-section" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-4">
       <!-- Mobile/Tablet Card View -->
       <div class="xl:hidden p-3 sm:p-4 space-y-4">
         <div v-for="entry in paginatedEntries" :key="'card-'+entry.id" class="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
@@ -175,13 +175,13 @@
       </div>
 
       <div v-if="entries.length > pageLimit"
-        class="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        class="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <p class="text-sm text-gray-600">
           Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
           {{ Math.min(currentPage * pageLimit, entries.length) }}
           dari {{ entries.length }} kronik
         </p>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
           <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
             class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">
             Sebelumnya
@@ -248,13 +248,38 @@ const visiblePages = computed(() => {
   return pages
 })
 
+const scrollToTop = () => {
+  nextTick(() => {
+    const target = document.getElementById('kronik-entries-section')
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const mainEl = target.closest('main') || document.querySelector('main')
+      if (mainEl && typeof target.offsetTop === 'number') {
+        mainEl.scrollTo({
+          top: Math.max(0, target.offsetTop - 12),
+          behavior: 'smooth'
+        })
+      }
+    } else {
+      const mainEl = document.querySelector('main')
+      if (mainEl) {
+        mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    }
+  })
+}
+
 const goToPage = (page) => {
   if (page < 1 || page > totalPages.value) return
   currentPage.value = page
+  scrollToTop()
 }
 
 watch(filters, () => {
   currentPage.value = 1
+  scrollToTop()
 }, { deep: true })
 
 watch(totalPages, (pages) => {

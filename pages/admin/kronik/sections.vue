@@ -77,8 +77,8 @@
         </div>
       </div>
 
-      <!-- Sections Table -->
-      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <!-- Sections Table & Mobile Cards -->
+      <div id="sections-list-section" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-4">
         <div v-if="loading" class="p-8 text-center">
           <div
             class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-[#c58229]"
@@ -93,164 +93,151 @@
           <p>No sections found</p>
         </div>
 
-        <table v-else class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Name
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Category
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Slug
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Entries
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Status
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr
-              v-for="section in paginatedSections"
-              :key="section.id"
-              class="hover:bg-gray-50"
-            >
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
-                  {{ section.name }}
+        <div v-else>
+          <!-- Mobile/Tablet Card View -->
+          <div class="xl:hidden p-3 sm:p-4 space-y-4">
+            <div v-for="section in paginatedSections" :key="'card-'+section.id" class="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
+              <!-- Card Header: Nama & Kategori -->
+              <div class="mb-3.5 pb-3 border-b border-gray-100">
+                <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-snug">{{ section.name }}</h3>
+                <p v-if="section.description" class="text-xs sm:text-sm text-gray-500 mt-1 leading-relaxed">{{ section.description }}</p>
+                <div class="text-xs text-gray-500 mt-2 flex items-center gap-1.5 flex-wrap">
+                  <span class="inline-block font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded text-[11px]">
+                    {{ section.category_name }}
+                  </span>
+                  <span class="text-gray-400">&bull;</span>
+                  <span class="text-gray-500 font-mono text-[11px]">slug: {{ section.slug }}</span>
                 </div>
-                <div
-                  v-if="section.description"
-                  class="text-sm text-gray-500 truncate max-w-xs"
-                >
-                  {{ section.description }}
+              </div>
+
+              <!-- Card Body: Grid Informasi (Entries & Status) -->
+              <div class="grid grid-cols-2 gap-2.5 text-xs mb-3.5">
+                <div class="bg-gray-50 rounded-lg p-2.5">
+                  <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Entries</p>
+                  <p class="text-gray-900 font-medium text-xs">{{ section.entries_count || 0 }} data</p>
                 </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800"
-                >
-                  {{ section.category_name }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ section.slug }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ section.entries_count || 0 }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span
-                  :class="[
-                    'px-2 py-1 text-xs font-semibold rounded-full',
-                    section.is_active
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-gray-100 text-gray-800',
-                  ]"
-                >
-                  {{ section.is_active ? "Active" : "Inactive" }}
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="bg-gray-50 rounded-lg p-2.5 flex flex-col justify-center">
+                  <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Status</p>
+                  <span
+                    :class="[
+                      'inline-block text-center px-2 py-1 text-xs font-semibold rounded-md',
+                      section.is_active
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-gray-100 text-gray-800',
+                    ]"
+                  >
+                    {{ section.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Card Footer: Tombol Aksi Tersusun Horisontal di Bawah -->
+              <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
                 <button
                   @click="openEditModal(section)"
-                  title="Edit"
-                  class="text-[#c58229] hover:text-[#a66d1f] mr-3 p-1 inline-flex items-center"
+                  title="Edit Section"
+                  class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors"
                 >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                    />
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                   </svg>
+                  <span>Edit</span>
                 </button>
                 <button
                   @click="confirmDelete(section)"
-                  title="Delete"
-                  class="text-red-600 hover:text-red-800 p-1 inline-flex items-center"
+                  title="Delete Section"
+                  class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-medium transition-colors"
                 >
-                  <svg
-                    class="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                    />
+                  <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                   </svg>
+                  <span>Hapus</span>
                 </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+            </div>
+          </div>
 
-        <div
-          v-if="filteredSections.length > pageLimit"
-          class="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-        >
-          <p class="text-sm text-gray-600">
-            Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
-            {{ Math.min(currentPage * pageLimit, filteredSections.length) }}
-            dari {{ filteredSections.length }} section
-          </p>
-          <div class="flex items-center gap-2">
-            <button
-              @click="goToPage(currentPage - 1)"
-              :disabled="currentPage === 1"
-              class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Sebelumnya
-            </button>
-            <button
-              v-for="page in visiblePages"
-              :key="page"
-              @click="goToPage(page)"
-              :class="[
-                'px-3 py-1.5 rounded-lg border text-sm',
-                currentPage === page
-                  ? 'bg-[#c58229] text-white border-[#c58229]'
-                  : 'border-gray-300 text-gray-700 hover:bg-gray-50',
-              ]"
-            >
-              {{ page }}
-            </button>
-            <button
-              @click="goToPage(currentPage + 1)"
-              :disabled="currentPage >= totalPages"
-              class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Berikutnya
-            </button>
+          <!-- Desktop Table View -->
+          <div class="hidden xl:block w-full overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Slug</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entries</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="section in paginatedSections" :key="section.id" class="hover:bg-gray-50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm font-medium text-gray-900">{{ section.name }}</div>
+                    <div v-if="section.description" class="text-sm text-gray-500 truncate max-w-xs">{{ section.description }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{{ section.category_name }}</span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ section.slug }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ section.entries_count || 0 }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :class="['px-2 py-1 text-xs font-semibold rounded-full', section.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800']">
+                      {{ section.is_active ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button @click="openEditModal(section)" title="Edit" class="text-[#c58229] hover:text-[#a66d1f] mr-3 p-1 inline-flex items-center">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </button>
+                    <button @click="confirmDelete(section)" title="Delete" class="text-red-600 hover:text-red-800 p-1 inline-flex items-center">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div
+            v-if="filteredSections.length > pageLimit"
+            class="px-4 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+          >
+            <p class="text-sm text-gray-600">
+              Menampilkan {{ (currentPage - 1) * pageLimit + 1 }}-
+              {{ Math.min(currentPage * pageLimit, filteredSections.length) }}
+              dari {{ filteredSections.length }} section
+            </p>
+            <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+              <button
+                @click="goToPage(currentPage - 1)"
+                :disabled="currentPage === 1"
+                class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Sebelumnya
+              </button>
+              <button
+                v-for="page in visiblePages"
+                :key="page"
+                @click="goToPage(page)"
+                :class="[
+                  'px-3 py-1.5 rounded-lg border text-sm',
+                  currentPage === page
+                    ? 'bg-[#c58229] text-white border-[#c58229]'
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50',
+                ]"
+              >
+                {{ page }}
+              </button>
+              <button
+                @click="goToPage(currentPage + 1)"
+                :disabled="currentPage >= totalPages"
+                class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              >
+                Berikutnya
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -578,13 +565,38 @@ const visiblePages = computed(() => {
   return pages;
 });
 
+const scrollToTop = () => {
+  nextTick(() => {
+    const target = document.getElementById('sections-list-section');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const mainEl = target.closest('main') || document.querySelector('main');
+      if (mainEl && typeof target.offsetTop === 'number') {
+        mainEl.scrollTo({
+          top: Math.max(0, target.offsetTop - 12),
+          behavior: 'smooth',
+        });
+      }
+    } else {
+      const mainEl = document.querySelector('main');
+      if (mainEl) {
+        mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  });
+};
+
 const goToPage = (page: number) => {
   if (page < 1 || page > totalPages.value) return;
   currentPage.value = page;
+  scrollToTop();
 };
 
 watch([selectedCategory, searchQuery, statusFilter], () => {
   currentPage.value = 1;
+  scrollToTop();
 });
 
 watch(totalPages, (pages: number) => {
