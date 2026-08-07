@@ -494,14 +494,14 @@
               <div v-for="booking in paginatedBookings" :key="booking.id"
                 class="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300">
                 <!-- Event Name with Icon -->
-                <div class="flex items-center mb-4 pb-3 border-b-2 border-gray-100">
-                  <div class="bg-[#882f1d]/10 p-2 rounded-lg mr-3">
-                    <svg class="w-6 h-6 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex items-start mb-4 pb-3 border-b-2 border-gray-100 gap-3">
+                  <div class="bg-[#882f1d]/10 p-2.5 rounded-xl shrink-0 mt-0.5">
+                    <svg class="w-5 h-5 text-[#882f1d]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h3 class="text-xl font-bold text-gray-900 truncate flex-1">
+                  <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-snug flex-1 break-words">
                     {{ booking.event_name }}
                   </h3>
                 </div>

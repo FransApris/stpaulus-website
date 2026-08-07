@@ -825,8 +825,8 @@
                 @click="viewBookingDetail(booking)">
                 <div class="p-5">
                   <div class="flex justify-between items-start mb-3">
-                    <h3 class="font-bold text-lg text-gray-800 truncate flex-1 mr-2">{{ booking.event_name }}</h3>
-                    <div class="flex flex-col gap-1 items-end">
+                    <h3 class="font-bold text-base sm:text-lg text-gray-800 flex-1 mr-2 leading-snug break-words">{{ booking.event_name }}</h3>
+                    <div class="flex flex-col gap-1 items-end shrink-0">
                       <span :class="getStatusBadgeClass(booking.status)"
                         class="px-2.5 py-1 rounded-full text-xs font-semibold">
                         {{ getStatusText(booking.status, booking.start_time, booking.end_time) }}
