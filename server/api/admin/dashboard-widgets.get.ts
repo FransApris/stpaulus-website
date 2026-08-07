@@ -17,11 +17,20 @@ export default defineEventHandler(async (event) => {
 
   // ── Super Admin & Admin Sekretariat ──────────────────────────────
   if (role === 'super_admin' || role === 'admin_sekretariat') {
-    // Pending bookings count
+    // Pending bookings count & oldest pending date
     const pendingRows = await dbGetOne(
       `SELECT COUNT(*) as cnt FROM bookings WHERE status = 'PENDING' AND deleted_at IS NULL`, []
     ) as any
     result.pendingBookings = Number(pendingRows?.cnt) || 0
+
+    if (result.pendingBookings > 0) {
+      const oldestPending = await dbGetOne(
+        `SELECT created_at FROM bookings WHERE status = 'PENDING' AND deleted_at IS NULL ORDER BY created_at ASC LIMIT 1`, []
+      ) as any
+      result.oldestPendingDate = oldestPending?.created_at || null
+    } else {
+      result.oldestPendingDate = null
+    }
 
     // Pending user activations
     const pendingUsersRows = await dbGetOne(

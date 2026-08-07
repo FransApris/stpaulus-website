@@ -77,9 +77,12 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          <div class="flex-1">
+          <div class="flex-1 min-w-0">
             <div class="text-3xl font-bold text-amber-700 leading-tight">{{ widgets.pendingBookings }}</div>
             <div class="text-sm text-amber-700 font-medium">Pemesanan Ruangan Pending</div>
+            <p v-if="widgets.oldestPendingDate" class="text-xs text-amber-800/80 mt-1 leading-snug">
+              Pemesanan terlama: <span class="font-medium text-amber-900">{{ formatWibDate(widgets.oldestPendingDate) }}</span> ({{ formatWaitDuration(widgets.oldestPendingDate) }})
+            </p>
           </div>
           <div class="text-amber-400 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -726,7 +729,9 @@ const {
   formatWibDate,
   formatWibTime,
   formatWibTimeRange,
-  formatWibDateTime
+  formatWibDateTime,
+  formatTimeAgo,
+  formatWaitDuration
 } = useDatetime()
 
 const stats = ref({

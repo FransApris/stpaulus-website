@@ -186,6 +186,54 @@ export function useDatetime() {
     return h * 60 + m
   }
 
+  /**
+   * Hitung selisih waktu relatif (time ago / durasi menunggu) dalam bahasa Indonesia yang ramah.
+   * @example
+   *   formatTimeAgo("2026-08-05T10:00:00Z") → "2 hari yang lalu"
+   */
+  const formatTimeAgo = (s: any): string => {
+    const d = toUtcDate(s)
+    if (isNaN(d.getTime())) return '-'
+    const now = new Date()
+    const diffMs = now.getTime() - d.getTime()
+    if (diffMs < 0) return 'baru saja'
+
+    const diffSeconds = Math.floor(diffMs / 1000)
+    const diffMinutes = Math.floor(diffSeconds / 60)
+    const diffHours = Math.floor(diffMinutes / 60)
+    const diffDays = Math.floor(diffHours / 24)
+    const diffMonths = Math.floor(diffDays / 30)
+    const diffYears = Math.floor(diffDays / 365)
+
+    if (diffSeconds < 60) return 'baru saja'
+    if (diffMinutes < 60) return `${diffMinutes} menit yang lalu`
+    if (diffHours < 24) return `${diffHours} jam yang lalu`
+    if (diffDays === 1) return '1 hari yang lalu'
+    if (diffDays < 30) return `${diffDays} hari yang lalu`
+    if (diffMonths < 12) return `${diffMonths} bulan yang lalu`
+    return `${diffYears} tahun yang lalu`
+  }
+
+  /**
+   * Format durasi waktu tunggu dalam bahasa Indonesia.
+   * @example "Menunggu selama 2 hari"
+   */
+  const formatWaitDuration = (s: any): string => {
+    const d = toUtcDate(s)
+    if (isNaN(d.getTime())) return '-'
+    const now = new Date()
+    const diffMs = Math.max(0, now.getTime() - d.getTime())
+
+    const diffMinutes = Math.floor(diffMs / (1000 * 60))
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffDays > 0) return `Menunggu selama ${diffDays} hari`
+    if (diffHours > 0) return `Menunggu selama ${diffHours} jam`
+    if (diffMinutes > 0) return `Menunggu selama ${diffMinutes} menit`
+    return 'Menunggu baru saja'
+  }
+
   return {
     toUtcDate,
     formatWibDate,
@@ -193,6 +241,8 @@ export function useDatetime() {
     formatWibTimeRange,
     formatWibBookingTime,
     formatWibDateTime,
+    formatTimeAgo,
+    formatWaitDuration,
     wibDateKey,
     todayWibStr,
     isBookingPassed,
