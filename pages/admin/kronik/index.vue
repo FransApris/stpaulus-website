@@ -1,27 +1,29 @@
 <template>
-  <div class="p-6">
-    <div class="flex justify-between items-center mb-6">
+  <div class="p-4 sm:p-6 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
       <div>
-        <h1 class="text-3xl font-bold">Manajemen Kronik</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Manajemen Kronik</h1>
         <div class="mt-3 flex gap-3">
-          <NuxtLink to="/admin/kronik" class="text-[#c58229] border-b-2 border-[#c58229] pb-1 font-medium">
+          <NuxtLink to="/admin/kronik" class="text-[#c58229] border-b-2 border-[#c58229] pb-1 font-medium text-sm sm:text-base">
             Entries
           </NuxtLink>
-          <NuxtLink to="/admin/kronik/sections" class="text-gray-600 hover:text-[#c58229] pb-1 font-medium">
+          <NuxtLink to="/admin/kronik/sections" class="text-gray-600 hover:text-[#c58229] pb-1 font-medium text-sm sm:text-base">
             Sections
           </NuxtLink>
         </div>
       </div>
       <NuxtLink to="/admin/kronik/create"
-        class="bg-[#c58229] text-white px-6 py-3 rounded-lg hover:bg-[#882f1d] transition-colors font-medium">
-        + Tambah Kronik Baru
+        class="inline-flex items-center justify-center gap-2 bg-[#c58229] text-white px-5 py-2.5 rounded-lg hover:bg-[#882f1d] transition-colors font-medium text-sm sm:text-base shadow-sm self-start sm:self-auto">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span>Tambah Kronik Baru</span>
       </NuxtLink>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-lg shadow p-4 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <select v-model="filters.status" class="border rounded-lg px-4 py-2">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <select v-model="filters.status" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#c58229] focus:border-[#c58229] outline-none">
           <option value="">Semua Status</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
@@ -29,64 +31,79 @@
           <option value="archived">Archived</option>
         </select>
 
-        <select v-model="filters.category_id" class="border rounded-lg px-4 py-2">
+        <select v-model="filters.category_id" class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#c58229] focus:border-[#c58229] outline-none">
           <option value="">Semua Kategori</option>
           <option v-for="cat in categories" :key="cat.id" :value="cat.id">
             {{ cat.name }}
           </option>
         </select>
 
-        <input v-model="filters.search" type="text" placeholder="Cari kronik..." class="border rounded-lg px-4 py-2" />
+        <input v-model="filters.search" type="text" placeholder="Cari kronik..." class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#c58229] focus:border-[#c58229] outline-none" />
 
-        <button @click="loadEntries" class="bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416]">
+        <button @click="loadEntries" class="bg-[#882f1d] text-white px-4 py-2 rounded-lg hover:bg-[#6b2416] transition-colors text-sm font-medium">
           Filter
         </button>
       </div>
     </div>
 
     <!-- Table and Cards -->
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <!-- Mobile/Tablet Card View -->
-      <div class="xl:hidden p-4 space-y-4">
-        <div v-for="entry in paginatedEntries" :key="'card-'+entry.id" class="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-          <div class="flex justify-between items-start mb-4 pb-4 border-b border-gray-100">
-            <div class="flex-1 pr-4">
-              <h3 class="text-lg font-bold text-gray-900 leading-tight">{{ entry.what_title }}</h3>
-              <p class="text-sm text-gray-500 mt-1">{{ entry.category_name }} &bull; {{ entry.section_name || '-' }}</p>
-            </div>
-            <div class="flex flex-col space-y-2">
-              <div class="flex gap-2 justify-end">
-                <NuxtLink :to="`/kronik/${entry.category_slug}/${entry.id}`" target="_blank" class="text-green-600 hover:text-green-800 p-2 bg-green-50 rounded-lg hover:bg-green-100" title="Lihat">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                </NuxtLink>
-                <NuxtLink :to="`/admin/kronik/edit/${entry.id}`" class="text-blue-600 hover:text-blue-800 p-2 bg-blue-50 rounded-lg hover:bg-blue-100" title="Edit">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                </NuxtLink>
-                <button @click="deleteEntry(entry.id)" class="text-red-600 hover:text-red-800 p-2 bg-red-50 rounded-lg hover:bg-red-100" title="Hapus">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                </button>
-              </div>
+      <div class="xl:hidden p-3 sm:p-4 space-y-4">
+        <div v-for="entry in paginatedEntries" :key="'card-'+entry.id" class="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow">
+          <!-- Card Header: Judul & Kategori (Lebar penuh, tidak terhimpit) -->
+          <div class="mb-3.5 pb-3 border-b border-gray-100">
+            <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-snug">{{ entry.what_title }}</h3>
+            <div class="text-xs text-gray-500 mt-1.5 flex items-center gap-1.5 flex-wrap">
+              <span class="inline-block font-semibold text-[#882f1d] bg-amber-50 border border-amber-200/60 px-2 py-0.5 rounded text-[11px]">
+                {{ entry.category_name }}
+              </span>
+              <span v-if="entry.section_name" class="text-gray-400">&bull;</span>
+              <span v-if="entry.section_name" class="text-gray-600 font-medium text-[11px]">{{ entry.section_name }}</span>
             </div>
           </div>
           
-          <div class="grid grid-cols-2 gap-4 text-sm">
-            <div class="bg-gray-50 rounded-lg p-3">
+          <!-- Card Body: Grid Informasi (Tanggal, Status, Views) -->
+          <div class="grid grid-cols-2 gap-2.5 text-xs mb-3.5">
+            <div class="bg-gray-50 rounded-lg p-2.5">
               <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Tanggal</p>
-              <p class="text-gray-900 font-medium">{{ formatDate(entry.when_date) }}</p>
+              <p class="text-gray-900 font-medium text-xs">{{ formatDate(entry.when_date) }}</p>
             </div>
-            <div class="bg-gray-50 rounded-lg p-3">
+            <div class="bg-gray-50 rounded-lg p-2.5 flex flex-col justify-center">
               <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Status</p>
-              <select :value="entry.status" @change="updateStatus(entry, $event.target.value)" :class="getStatusSelectClass(entry.status)" class="rounded-full text-xs font-medium px-2 py-1 border-0 cursor-pointer focus:ring-2 focus:ring-offset-1 mt-1 block w-full">
+              <select :value="entry.status" @change="updateStatus(entry, $event.target.value)" :class="getStatusSelectClass(entry.status)" class="rounded-md text-xs font-medium px-2 py-1 border-0 cursor-pointer focus:ring-2 focus:ring-offset-1 block w-full">
                 <option value="published">published</option>
                 <option value="draft">draft</option>
                 <option value="pending">pending</option>
                 <option value="archived">archived</option>
               </select>
             </div>
-            <div class="col-span-2 bg-gray-50 rounded-lg p-3">
-              <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Views</p>
-              <p class="text-gray-900 font-medium">{{ entry.views_count }} tayangan</p>
+            <div class="col-span-2 bg-gray-50 rounded-lg p-2.5 flex items-center justify-between">
+              <span class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Tayangan / Views</span>
+              <span class="text-gray-900 font-semibold text-xs">{{ entry.views_count || 0 }} tayangan</span>
             </div>
+          </div>
+
+          <!-- Card Footer: Icon / Tombol Aksi Tersusun Horisontal di Bawah -->
+          <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
+            <NuxtLink :to="`/kronik/${entry.category_slug}/${entry.id}`" target="_blank"
+              class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-medium transition-colors"
+              title="Lihat Kronik">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              <span>Lihat</span>
+            </NuxtLink>
+            <NuxtLink :to="`/admin/kronik/edit/${entry.id}`"
+              class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-medium transition-colors"
+              title="Edit Kronik">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              <span>Edit</span>
+            </NuxtLink>
+            <button @click="deleteEntry(entry.id)"
+              class="flex-1 inline-flex items-center justify-center gap-1.5 py-2 px-3 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-medium transition-colors"
+              title="Hapus Kronik">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span>Hapus</span>
+            </button>
           </div>
         </div>
       </div>

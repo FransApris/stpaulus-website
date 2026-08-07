@@ -3,22 +3,22 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header -->
       <div class="mb-8">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900">Manage Sections</h1>
-            <p class="mt-2 text-gray-600">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Manage Sections</h1>
+            <p class="mt-2 text-gray-600 text-sm sm:text-base">
               Kelola bagian-bagian dari Wilayah, Lingkungan, DPP, dan BGKP
             </p>
             <div class="mt-3 flex gap-3">
               <NuxtLink
                 to="/admin/kronik"
-                class="text-gray-600 hover:text-[#c58229] pb-1 font-medium"
+                class="text-gray-600 hover:text-[#c58229] pb-1 font-medium text-sm sm:text-base"
               >
                 Entries
               </NuxtLink>
               <NuxtLink
                 to="/admin/kronik/sections"
-                class="text-[#c58229] border-b-2 border-[#c58229] pb-1 font-medium"
+                class="text-[#c58229] border-b-2 border-[#c58229] pb-1 font-medium text-sm sm:text-base"
               >
                 Sections
               </NuxtLink>
@@ -26,7 +26,7 @@
           </div>
           <button
             @click="openCreateModal"
-            class="px-4 py-2 bg-[#c58229] text-white rounded-lg hover:bg-[#a66d1f] transition-colors"
+            class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#c58229] text-white rounded-lg hover:bg-[#a66d1f] transition-colors font-medium text-sm sm:text-base shadow-sm self-start sm:self-auto"
           >
             + Add Section
           </button>
