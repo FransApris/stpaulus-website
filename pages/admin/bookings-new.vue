@@ -111,73 +111,66 @@
             <div v-else class="space-y-4">
               <div v-for="booking in paginatedBookings" :key="booking.id"
                 class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                  <div class="flex-1">
-                    <h3 class="font-semibold text-lg text-gray-800">{{ booking.event_name }}</h3>
-                    <div class="mt-2 space-y-1 text-sm text-gray-600">
-                      <p>🏢 Ruangan: <span class="font-medium">{{ booking.room_name }}</span></p>
-                      <p>👤 Pemesan: <span class="font-medium">{{ booking.user_name }}</span> ({{ booking.user_category
-                        }})</p>
-                      <p>🏛️ Unit: <span class="font-medium">{{ booking.unit_name }}</span></p>
-                      <p>📅 Tanggal: <span class="font-medium">{{ formatBookingDate(booking.start_time) }}</span></p>
-                      <p>⏰ Waktu: <span class="font-medium">{{ formatBookingTime(booking.start_time, booking.end_time)
-                          }}</span></p>
-                      <p>📊 Status: <span :class="getStatusClass(booking.status)">{{ booking.status }}</span></p>
-                      <p v-if="booking.recurrence_pattern || booking.parent_booking_id" class="text-purple-700 font-semibold flex items-center gap-1">
-                        🔄 Rutin: <span>{{ getRecurrenceLabel(booking.recurrence_pattern) }}</span>
-                        <span class="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-medium">{{ booking.parent_booking_id ? 'Jadwal Seri' : 'Jadwal Utama' }}</span>
-                      </p>
-                      <p v-if="booking.rejection_reason" class="text-red-600">❌ Alasan Penolakan: {{
-                        booking.rejection_reason }}</p>
-                      <p v-if="booking.cancellation_reason" class="text-orange-600">🚫 Alasan Pembatalan: {{
-                        booking.cancellation_reason }}</p>
-                    </div>
+                <!-- Card Body: Info -->
+                <div class="mb-3">
+                  <h3 class="font-semibold text-base text-gray-800 leading-snug">{{ booking.event_name }}</h3>
+                  <div class="mt-2 space-y-1 text-sm text-gray-600">
+                    <p>🏢 Ruangan: <span class="font-medium">{{ booking.room_name }}</span></p>
+                    <p>👤 Pemesan: <span class="font-medium">{{ booking.user_name }}</span> ({{ booking.user_category }})</p>
+                    <p>🏛️ Unit: <span class="font-medium">{{ booking.unit_name }}</span></p>
+                    <p>📅 Tanggal: <span class="font-medium">{{ formatBookingDate(booking.start_time) }}</span></p>
+                    <p>⏰ Waktu: <span class="font-medium">{{ formatBookingTime(booking.start_time, booking.end_time) }}</span></p>
+                    <p>📊 Status: <span :class="getStatusClass(booking.status)">{{ booking.status }}</span></p>
+                    <p v-if="booking.recurrence_pattern || booking.parent_booking_id" class="text-purple-700 font-semibold flex items-center gap-1">
+                      🔄 Rutin: <span>{{ getRecurrenceLabel(booking.recurrence_pattern) }}</span>
+                      <span class="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-medium">{{ booking.parent_booking_id ? 'Jadwal Seri' : 'Jadwal Utama' }}</span>
+                    </p>
+                    <p v-if="booking.rejection_reason" class="text-red-600">❌ Alasan Penolakan: {{ booking.rejection_reason }}</p>
+                    <p v-if="booking.cancellation_reason" class="text-orange-600">🚫 Alasan Pembatalan: {{ booking.cancellation_reason }}</p>
                   </div>
-                  <div class="ml-4 space-x-2 flex">
-                    <!-- View History Button -->
-                    <button @click="viewHistory(booking)" title="Lihat History"
-                      class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 inline-flex items-center">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button>
+                </div>
 
-                    <!-- Approve Button - Only for PENDING -->
-                    <button v-if="booking.status === 'PENDING'" @click="approveBooking(booking)" title="Setujui"
-                      class="bg-green-600 text-white p-2 rounded-lg hover:bg-green-700 inline-flex items-center">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </button>
+                <!-- Card Footer: Action Icons (horizontal, bottom) -->
+                <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
+                  <!-- View History Button -->
+                  <button @click="viewHistory(booking)" title="Lihat History"
+                    class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 inline-flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </button>
 
-                    <!-- Reject Button - Only for PENDING -->
-                    <button v-if="booking.status === 'PENDING'" @click="rejectBooking(booking)" title="Tolak"
-                      class="bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 inline-flex items-center">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
+                  <!-- Approve Button - Only for PENDING -->
+                  <button v-if="booking.status === 'PENDING'" @click="approveBooking(booking)" title="Setujui"
+                    class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 inline-flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </button>
 
-                    <!-- Cancel Button - Only for APPROVED -->
-                    <button v-if="booking.status === 'APPROVED'" @click="cancelBooking(booking)" title="Batalkan"
-                      class="bg-orange-600 text-white p-2 rounded-lg hover:bg-orange-700 inline-flex items-center">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                      </svg>
-                    </button>
+                  <!-- Reject Button - Only for PENDING -->
+                  <button v-if="booking.status === 'PENDING'" @click="rejectBooking(booking)" title="Tolak"
+                    class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 inline-flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
 
-                    <!-- Delete Button -->
-                    <button @click="confirmDeleteBooking(booking)" title="Hapus"
-                      class="bg-gray-600 text-white p-2 rounded-lg hover:bg-gray-700 inline-flex items-center">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
+                  <!-- Cancel Button - Only for APPROVED -->
+                  <button v-if="booking.status === 'APPROVED'" @click="cancelBooking(booking)" title="Batalkan"
+                    class="flex-1 bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 inline-flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                  </button>
+
+                  <!-- Delete Button -->
+                  <button @click="confirmDeleteBooking(booking)" title="Hapus"
+                    class="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 inline-flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
               </div>
               <div v-if="bookingTotalPages > 1" class="flex items-center justify-between border-t pt-4">
@@ -232,7 +225,7 @@
                     👤 {{ log.user_name || 'System' }}
                   </p>
                   <!-- Description -->
-                  <p class="text-sm text-gray-600 mb-2 leading-relaxed">
+                  <p class="text-sm text-gray-600 mb-2 leading-relaxed break-all">
                     {{ log.description }}
                   </p>
                   <!-- IP Address -->
