@@ -218,71 +218,86 @@
           </div>
 
           <!-- ── Kalender Mingguan ──────────────────────────────────────────── -->
-          <div class="mb-10">
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <h2 class="text-xl font-bold text-gray-800">📅 Jadwal Mingguan Ruangan</h2>
-              <div class="flex items-center gap-2">
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 mb-10">
+            <!-- Header & Week Controls -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5 pb-4 border-b border-gray-100">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl">🗓️</span>
+                  <h2 class="text-xl sm:text-2xl font-cinzel font-bold text-gray-900">Jadwal Mingguan Ruangan</h2>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-500 mt-1">Cek jadwal pemakaian dan ketersediaan ruangan setiap hari</p>
+              </div>
+
+              <!-- Week Navigation Bar -->
+              <div class="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 bg-gray-50 p-1.5 rounded-xl border border-gray-200">
                 <button @click="navigateWeek(-1)"
-                  class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-all" title="Minggu sebelumnya">
-                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                  class="p-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-[#882f1d] hover:text-white hover:border-[#882f1d] transition-all shadow-xs active:scale-95"
+                  title="Minggu sebelumnya">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <span class="text-sm font-medium text-gray-700 min-w-max">
+                <span class="text-xs sm:text-sm font-semibold text-gray-800 px-2 text-center whitespace-nowrap">
                   {{ weeklyData ? `${formatShortDate(weeklyData.week_start)} – ${formatShortDate(weeklyData.week_end)}` : 'Memuat...' }}
                 </span>
                 <button @click="navigateWeek(1)"
-                  class="p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-all" title="Minggu depan">
-                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  class="p-2 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-[#882f1d] hover:text-white hover:border-[#882f1d] transition-all shadow-xs active:scale-95"
+                  title="Minggu depan">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
                 <button @click="navigateWeek(0)"
-                  class="text-xs px-3 py-1.5 rounded-lg bg-[#882f1d] text-white hover:bg-[#6b2416] transition-all">
+                  class="text-xs font-semibold px-3 py-2 rounded-lg bg-[#882f1d] text-white hover:bg-[#6b2416] transition-all shadow-xs active:scale-95 ml-1 whitespace-nowrap">
                   Minggu Ini
                 </button>
               </div>
             </div>
 
             <!-- Loading -->
-            <div v-if="weeklyLoading" class="flex items-center justify-center py-10 text-gray-400">
-              <svg class="w-5 h-5 animate-spin mr-2 text-[#882f1d]" fill="none" viewBox="0 0 24 24">
+            <div v-if="weeklyLoading" class="flex items-center justify-center py-12 text-gray-500 gap-3">
+              <svg class="w-6 h-6 animate-spin text-[#882f1d]" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
               </svg>
-              Memuat jadwal...
+              <span class="text-sm font-medium">Memuat jadwal mingguan...</span>
             </div>
 
-            <!-- Calendar Grid (Desktop) -->
+            <!-- Calendar Grid (Desktop Tablet LG) -->
             <div v-if="weeklyData" class="overflow-x-auto rounded-xl border border-gray-200 hidden md:block">
               <table class="w-full text-xs border-collapse">
                 <thead>
                   <tr class="bg-gray-50">
-                    <th class="text-left px-3 py-3 text-gray-500 font-semibold border-b border-gray-200 min-w-[120px]">Ruangan</th>
+                    <th class="text-left px-3 py-3 text-gray-600 font-semibold border-b border-gray-200 min-w-[130px]">Ruangan</th>
                     <th v-for="day in weeklyData.days" :key="day"
-                      class="px-2 py-3 text-center text-gray-600 font-semibold border-b border-gray-200 min-w-[100px]"
-                      :class="isToday(day) ? 'bg-orange-50 text-[#882f1d]' : ''">
-                      <div>{{ getDayName(day) }}</div>
-                      <div class="text-xs font-normal text-gray-400">{{ formatShortDate(day) }}</div>
+                      class="px-2 py-3 text-center font-semibold border-b border-gray-200 min-w-[105px]"
+                      :class="isToday(day) ? 'bg-amber-50 text-[#882f1d]' : 'text-gray-700'">
+                      <div class="uppercase tracking-wider text-[11px] font-bold">{{ getDayName(day) }}</div>
+                      <div class="text-xs font-medium" :class="isToday(day) ? 'text-[#882f1d]' : 'text-gray-500'">{{ formatShortDate(day) }}</div>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="room in weeklyData.rooms" :key="room.id" class="border-b border-gray-100 hover:bg-gray-50/50">
-                    <td class="px-3 py-2 font-medium text-gray-700 align-top">{{ room.name }}</td>
+                  <tr v-for="room in weeklyData.rooms" :key="room.id" class="border-b border-gray-100 hover:bg-gray-50/60 transition-colors">
+                    <td class="px-3 py-2.5 font-medium text-gray-800 align-top">
+                      <div class="font-bold text-gray-900">{{ room.name }}</div>
+                      <div class="text-[11px] text-gray-400">📍 {{ room.location }}</div>
+                    </td>
                     <td v-for="day in weeklyData.days" :key="day"
-                      class="px-1 py-1 align-top border-l border-gray-100"
-                      :class="isToday(day) ? 'bg-orange-50/30' : ''">
-                      <div class="space-y-1">
+                      class="px-1.5 py-1.5 align-top border-l border-gray-100"
+                      :class="isToday(day) ? 'bg-amber-50/20' : ''">
+                      <div class="space-y-1.5">
                         <div v-for="b in getBookingsForCell(room.id, day)" :key="b.id"
-                          :class="b.status === 'APPROVED' ? 'bg-green-100 border-green-300 text-green-800' : 'bg-yellow-100 border-yellow-300 text-yellow-800'"
-                          class="border rounded px-1.5 py-1"
+                          :class="b.status === 'APPROVED' ? 'bg-emerald-50 border-emerald-300 text-emerald-900' : 'bg-amber-50 border-amber-300 text-amber-900'"
+                          class="border rounded-lg p-1.5 shadow-2xs"
                           :title="`${b.event_name} — ${b.requester_name} (${b.start_formatted}–${b.end_formatted})`">
-                          <div class="font-semibold truncate max-w-[90px]">{{ b.event_name }}</div>
-                          <div class="text-xs opacity-75">{{ b.start_formatted }}–{{ b.end_formatted }}</div>
+                          <div class="font-bold text-[11px] leading-tight break-words">{{ b.event_name }}</div>
+                          <div class="text-[10px] opacity-80 mt-0.5 font-medium">⏰ {{ b.start_formatted }}–{{ b.end_formatted }}</div>
+                          <div class="text-[9px] text-gray-500 truncate">👤 {{ b.requester_name }}</div>
                         </div>
                         <div v-if="getBookingsForCell(room.id, day).length === 0"
-                          class="text-gray-300 text-center py-1 text-xs">—</div>
+                          class="text-gray-300 text-center py-2 text-xs">—</div>
                       </div>
                     </td>
                   </tr>
@@ -290,36 +305,61 @@
               </table>
             </div>
 
-            <!-- Mobile: Day Selector Chips + Schedule Cards -->
-            <!-- Bug #2A fix: gunakan v-if terpisah (bukan v-else-if chained) agar keduanya bisa render -->
+            <!-- Mobile View: 7-Day Grid & Responsive Day Cards -->
             <div v-if="weeklyData" class="md:hidden space-y-4">
-              <!-- Day Selector Tabs (Horizontal Scroll) -->
-              <div class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-2 px-2">
+              <!-- 7-Day Interactive Grid Selector -->
+              <div class="grid grid-cols-7 gap-1 sm:gap-1.5">
                 <button
                   v-for="day in weeklyData.days"
                   :key="day"
                   @click="selectedMobileDay = day"
-                  :class="selectedMobileDay === day
-                    ? 'bg-[#882f1d] text-white font-bold shadow-md scale-[1.02]'
-                    : isToday(day)
-                      ? 'bg-orange-100 text-[#882f1d] border border-orange-300 font-semibold'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'"
-                  class="flex-shrink-0 px-3 py-2 rounded-xl text-xs transition-all text-center min-w-[64px]">
-                  <div class="text-[10px] uppercase opacity-80">{{ getDayName(day) }}</div>
-                  <div class="text-sm font-bold leading-none my-0.5">{{ formatShortDate(day).split(' ')[0] }}</div>
-                  <div class="text-[10px] opacity-75">{{ formatShortDate(day).split(' ')[1] }}</div>
+                  :class="[
+                    selectedMobileDay === day
+                      ? 'bg-gradient-to-b from-[#882f1d] to-[#6b2416] text-white shadow-md ring-2 ring-[#882f1d]/30 font-bold scale-[1.02]'
+                      : isToday(day)
+                        ? 'bg-amber-50 text-[#882f1d] border-2 border-[#882f1d]/40 font-semibold hover:bg-amber-100'
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+                  ]"
+                  class="flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all text-center relative group min-h-[58px]"
+                >
+                  <!-- Day Name (e.g. SEN, SEL) -->
+                  <span class="text-[10px] uppercase font-medium tracking-tight"
+                    :class="selectedMobileDay === day ? 'text-white/90' : 'text-gray-500'">
+                    {{ getDayName(day) }}
+                  </span>
+
+                  <!-- Date Number (e.g. 10, 11) -->
+                  <span class="text-sm font-bold leading-tight my-0.5">
+                    {{ formatShortDate(day).split(' ')[0] }}
+                  </span>
+
+                  <!-- Booking Indicator Dot -->
+                  <div class="flex items-center justify-center gap-0.5 mt-0.5">
+                    <span v-if="getDayBookingCount(day) > 0"
+                      :class="selectedMobileDay === day ? 'bg-amber-300' : 'bg-[#882f1d]'"
+                      class="w-1.5 h-1.5 rounded-full inline-block"></span>
+                    <span v-else class="w-1.5 h-1.5 rounded-full inline-block opacity-0"></span>
+                  </div>
                 </button>
               </div>
 
-              <!-- Active Day Banner -->
-              <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full bg-[#882f1d]"></span>
-                  <span class="font-bold text-gray-800 text-sm">
-                    {{ getDayName(selectedMobileDay) }}, {{ formatShortDate(selectedMobileDay) }}
-                  </span>
+              <!-- Active Day Status Banner -->
+              <div class="bg-gradient-to-r from-gray-50 to-amber-50/30 border border-gray-200 rounded-xl p-3.5 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-2.5 h-2.5 rounded-full bg-[#882f1d] ring-4 ring-[#882f1d]/20 shrink-0"></div>
+                  <div>
+                    <h3 class="font-bold text-gray-900 text-sm">
+                      {{ formatFullDate(selectedMobileDay) }}
+                    </h3>
+                    <p class="text-xs text-gray-500">
+                      {{ getDayBookingCount(selectedMobileDay) > 0 
+                        ? `${getDayBookingCount(selectedMobileDay)} agenda pemesanan terjadwal` 
+                        : 'Semua ruangan bebas dipesan' }}
+                    </p>
+                  </div>
                 </div>
-                <span v-if="isToday(selectedMobileDay)" class="text-[10px] font-bold px-2 py-0.5 bg-orange-100 text-[#882f1d] rounded-full">
+                <span v-if="isToday(selectedMobileDay)" 
+                  class="text-[10px] font-bold px-2.5 py-1 bg-amber-100 text-[#882f1d] rounded-full border border-amber-300 shrink-0 shadow-2xs">
                   HARI INI
                 </span>
               </div>
@@ -328,35 +368,38 @@
               <div class="space-y-3">
                 <template v-for="room in weeklyData.rooms" :key="room.id">
                   <div v-if="getBookingsForCell(room.id, selectedMobileDay).length > 0"
-                    class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs hover:shadow-md transition-shadow">
                     <!-- Room Header -->
-                    <div class="bg-gray-50 px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
-                      <span class="font-bold text-gray-800 text-sm">{{ room.name }}</span>
-                      <span class="text-xs text-gray-500 bg-white px-2 py-0.5 rounded border border-gray-200">
+                    <div class="bg-gradient-to-r from-gray-50 to-white px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="text-base">🏢</span>
+                        <span class="font-bold text-gray-800 text-sm">{{ room.name }}</span>
+                      </div>
+                      <span class="text-xs text-gray-600 bg-white px-2.5 py-0.5 rounded-full border border-gray-200 shadow-2xs font-medium">
                         📍 {{ room.location }}
                       </span>
                     </div>
 
                     <!-- Room Bookings -->
-                    <div class="p-3 space-y-2">
+                    <div class="p-3 space-y-2.5">
                       <div v-for="b in getBookingsForCell(room.id, selectedMobileDay)" :key="b.id"
-                        :class="b.status === 'APPROVED' ? 'bg-green-50/80 border-green-200' : 'bg-yellow-50/80 border-yellow-200'"
-                        class="p-3 rounded-lg border flex flex-col gap-1.5">
+                        :class="b.status === 'APPROVED' ? 'bg-emerald-50/80 border-emerald-200' : 'bg-amber-50/80 border-amber-200'"
+                        class="p-3 rounded-xl border flex flex-col gap-2">
                         <div class="flex items-start justify-between gap-2">
-                          <span class="font-bold text-gray-900 text-sm leading-snug">{{ b.event_name }}</span>
-                          <span :class="b.status === 'APPROVED' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'"
-                            class="px-2 py-0.5 rounded text-[10px] font-bold flex-shrink-0">
-                            {{ b.status === 'APPROVED' ? 'DISETUJUI' : 'MENUNGGU' }}
+                          <span class="font-bold text-gray-900 text-sm leading-snug break-words flex-1">{{ b.event_name }}</span>
+                          <span :class="b.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
+                            class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border shrink-0">
+                            {{ b.status === 'APPROVED' ? '✓ DISETUJUI' : '⏳ MENUNGGU' }}
                           </span>
                         </div>
-                        <div class="flex items-center justify-between text-xs text-gray-600 pt-1.5 border-t border-black/5">
-                          <span class="flex items-center gap-1 text-gray-700">
+                        <div class="flex flex-wrap items-center justify-between text-xs text-gray-600 pt-2 border-t border-black/5 gap-2">
+                          <span class="flex items-center gap-1.5 text-gray-700 font-medium">
                             <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             {{ b.requester_name }}
                           </span>
-                          <span class="font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200 shadow-2xs">
+                          <span class="font-bold text-gray-800 bg-white px-2.5 py-1 rounded-lg border border-gray-200 shadow-2xs">
                             ⏰ {{ b.start_formatted }} – {{ b.end_formatted }} WIB
                           </span>
                         </div>
@@ -367,23 +410,25 @@
 
                 <!-- Empty State for Selected Day -->
                 <div v-if="weeklyData.rooms && !weeklyData.rooms.some(r => getBookingsForCell(r.id, selectedMobileDay).length > 0)"
-                  class="bg-gray-50 rounded-xl border border-dashed border-gray-300 py-8 px-4 text-center">
-                  <svg class="w-8 h-8 text-gray-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <p class="text-sm font-semibold text-gray-600">Tidak ada pemesanan ruangan pada hari ini</p>
-                  <p class="text-xs text-gray-400 mt-0.5">Semua ruangan bebas dipesan</p>
+                  class="bg-gradient-to-b from-gray-50/50 to-emerald-50/30 rounded-2xl border border-dashed border-gray-300 p-6 sm:p-8 text-center">
+                  <div class="w-12 h-12 rounded-full bg-emerald-100/80 text-emerald-700 flex items-center justify-center mx-auto mb-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h4 class="text-sm sm:text-base font-bold text-gray-800">Tidak ada pemesanan ruangan pada hari ini</h4>
+                  <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">Semua ruangan kosong dan bebas untuk diajukan pemesanan.</p>
                 </div>
               </div>
             </div>
 
             <!-- Legend -->
-            <div class="flex items-center gap-4 mt-3 text-xs text-gray-500">
+            <div class="flex items-center gap-4 mt-5 pt-3 border-t border-gray-100 text-xs text-gray-500">
               <div class="flex items-center gap-1.5">
-                <span class="w-3 h-3 rounded bg-green-200 border border-green-300 inline-block"></span> Disetujui
+                <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span> Disetujui
               </div>
               <div class="flex items-center gap-1.5">
-                <span class="w-3 h-3 rounded bg-yellow-200 border border-yellow-300 inline-block"></span> Menunggu
+                <span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span> Menunggu
               </div>
             </div>
           </div>
@@ -1471,11 +1516,24 @@ const formatShortDate = (dateStr) => {
   return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', timeZone: 'Asia/Jakarta' })
 }
 
-// Day name for header
+// Format YYYY-MM-DD to "Selasa, 11 Agustus 2026"
+const formatFullDate = (dateStr) => {
+  if (!dateStr) return ''
+  const d = new Date(`${dateStr}T00:00:00`)
+  return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' })
+}
+
+// Day name for header (e.g. "Sen", "Sel")
 const getDayName = (dateStr) => {
   if (!dateStr) return ''
   const d = new Date(`${dateStr}T00:00:00`)
   return d.toLocaleDateString('id-ID', { weekday: 'short', timeZone: 'Asia/Jakarta' })
+}
+
+// Hitung total booking aktif pada tanggal tertentu
+const getDayBookingCount = (dateKey) => {
+  if (!weeklyData.value?.bookings) return 0
+  return weeklyData.value.bookings.filter((b) => b.date_key === dateKey).length
 }
 
 // Check if a date string equals today
