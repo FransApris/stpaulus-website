@@ -205,9 +205,9 @@
         <div v-else-if="newsError" class="text-center text-red-500">
           Gagal memuat berita terbaru.
         </div>
-        <div v-else-if="latestNews && latestNews.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div v-else-if="latestNews && latestNews.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible">
           <ArticleCard v-for="(news, idx) in latestNews.slice(0, 3)" :key="news.id"
-            class="reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
+            class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
             :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url"
             :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" />
         </div>
