@@ -585,121 +585,149 @@
     </div>
 
     <!-- History Modal -->
-    <div v-if="showHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-lg font-semibold">📜 History Pemesanan</h3>
-          <button @click="showHistoryModal = false" class="text-gray-500 hover:text-gray-700">✕</button>
-        </div>
+    <Transition name="modal">
+      <div v-if="showHistoryModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto" @click="showHistoryModal = false">
+        <div class="modal-content-box bg-white p-6 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto border border-gray-100 my-auto" @click.stop>
+          <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">📜 History Pemesanan</h3>
+            <button @click="showHistoryModal = false" class="text-gray-400 hover:text-gray-700 hover:bg-gray-100 p-1.5 rounded-lg transition-colors">✕</button>
+          </div>
 
-        <div v-if="selectedBooking" class="mb-4 p-4 bg-gray-50 rounded">
-          <h4 class="font-semibold">{{ selectedBooking.event_name }}</h4>
-          <p class="text-sm text-gray-600">{{ selectedBooking.room_name }}</p>
-        </div>
+          <div v-if="selectedBooking" class="mb-4 p-4 bg-gray-50 border border-gray-100 rounded-xl">
+            <h4 class="font-bold text-gray-900">{{ selectedBooking.event_name }}</h4>
+            <p class="text-sm text-gray-600 mt-0.5">{{ selectedBooking.room_name }}</p>
+          </div>
 
-        <div v-if="bookingHistory.length === 0" class="text-center py-8 text-gray-500">
-          Belum ada history untuk pemesanan ini.
-        </div>
-        <div v-else class="space-y-4">
-          <div v-for="(history, index) in bookingHistory" :key="history.id" class="relative pl-8 pb-4">
-            <!-- Timeline Line -->
-            <div v-if="index !== bookingHistory.length - 1" class="absolute left-2 top-8 bottom-0 w-0.5 bg-gray-300">
-            </div>
-
-            <!-- Timeline Dot -->
-            <div class="absolute left-0 top-2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white"></div>
-
-            <!-- History Content -->
-            <div class="bg-white border border-gray-200 rounded-lg p-4">
-              <div class="flex justify-between items-start mb-2">
-                <span :class="getStatusClass(history.new_status)" class="text-sm font-semibold">
-                  {{ history.old_status }} → {{ history.new_status }}
-                </span>
-                <span class="text-xs text-gray-500">{{ formatDateTime(history.changed_at) }}</span>
+          <div v-if="bookingHistory.length === 0" class="text-center py-8 text-gray-500">
+            Belum ada history untuk pemesanan ini.
+          </div>
+          <div v-else class="space-y-4">
+            <div v-for="(history, index) in bookingHistory" :key="history.id" class="relative pl-8 pb-4">
+              <!-- Timeline Line -->
+              <div v-if="index !== bookingHistory.length - 1" class="absolute left-2 top-8 bottom-0 w-0.5 bg-gray-200">
               </div>
-              <p class="text-sm text-gray-600">Oleh: {{ history.changed_by_name }}</p>
-              <p v-if="history.change_reason" class="text-sm text-gray-700 mt-2 bg-gray-50 p-2 rounded">
-                {{ history.change_reason }}
-              </p>
+
+              <!-- Timeline Dot -->
+              <div class="absolute left-0 top-2 w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-xs"></div>
+
+              <!-- History Content -->
+              <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-2xs">
+                <div class="flex justify-between items-start mb-2">
+                  <span :class="getStatusClass(history.new_status)" class="text-xs font-bold px-2.5 py-1 rounded-full">
+                    {{ history.old_status }} → {{ history.new_status }}
+                  </span>
+                  <span class="text-xs text-gray-400">{{ formatDateTime(history.changed_at) }}</span>
+                </div>
+                <p class="text-sm text-gray-600">Oleh: <strong class="text-gray-800">{{ history.changed_by_name }}</strong></p>
+                <p v-if="history.change_reason" class="text-sm text-gray-700 mt-2 bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                  {{ history.change_reason }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
 
     <!-- Reject Modal -->
-    <div v-if="showRejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h3 class="text-lg font-semibold mb-4">Tolak Pemesanan</h3>
-        <p class="mb-4">Alasan penolakan:</p>
-        <textarea v-model="rejectionReason"
-          class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-red-500" rows="3"
-          required></textarea>
-        <div class="flex justify-end space-x-2 mt-4">
-          <button @click="showRejectModal = false"
-            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Batal</button>
-          <button @click="confirmReject"
-            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Tolak</button>
+    <Transition name="modal">
+      <div v-if="showRejectModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto" @click="showRejectModal = false">
+        <div class="modal-content-box bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full border border-gray-100 my-auto" @click.stop>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Tolak Pemesanan</h3>
+          </div>
+          <p class="text-sm text-gray-600 mb-3">Mohon masukkan alasan penolakan pemesanan ini:</p>
+          <textarea v-model="rejectionReason"
+            class="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-hidden text-sm" rows="3"
+            placeholder="Tulis alasan penolakan..."
+            required></textarea>
+          <div class="flex justify-end space-x-2 mt-4">
+            <button @click="showRejectModal = false"
+              class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">Batal</button>
+            <button @click="confirmReject"
+              class="bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-red-700 active:scale-95 transition-all">Tolak Pemesanan</button>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
 
     <!-- Cancel Modal -->
-    <div v-if="showCancelModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <h3 class="text-lg font-semibold mb-4">Batalkan Pemesanan</h3>
-        <p class="mb-2 text-gray-700">Pemesanan yang sudah disetujui akan dibatalkan.</p>
-        <p class="mb-4 text-sm text-gray-600">Alasan pembatalan (opsional):</p>
-        <textarea v-model="cancellationReason"
-          class="w-full border border-gray-300 p-2 rounded-lg focus:ring-2 focus:ring-orange-500" rows="3"
-          placeholder="Masukkan alasan pembatalan..."></textarea>
-        <div class="flex justify-end space-x-2 mt-4">
-          <button @click="showCancelModal = false"
-            class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg">Batal</button>
-          <button @click="confirmCancel"
-            class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">Batalkan Pemesanan</button>
+    <Transition name="modal">
+      <div v-if="showCancelModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto" @click="showCancelModal = false">
+        <div class="modal-content-box bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full border border-gray-100 my-auto" @click.stop>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0 text-amber-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Batalkan Pemesanan</h3>
+          </div>
+          <p class="mb-2 text-sm text-gray-700">Pemesanan yang sudah disetujui akan diubah statusnya menjadi dibatalkan.</p>
+          <p class="mb-2 text-xs font-bold text-gray-600 uppercase">Alasan pembatalan (opsional):</p>
+          <textarea v-model="cancellationReason"
+            class="w-full border border-gray-300 p-3 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent outline-hidden text-sm" rows="3"
+            placeholder="Masukkan alasan pembatalan..."></textarea>
+          <div class="flex justify-end space-x-2 mt-4">
+            <button @click="showCancelModal = false"
+              class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">Batal</button>
+            <button @click="confirmCancel"
+              class="bg-amber-600 text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-amber-700 active:scale-95 transition-all">Batalkan Pemesanan</button>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
 
     <!-- Toast Notification -->
     <Transition name="toast">
       <div v-if="toast.show" :class="[
-        'fixed bottom-4 right-4 px-6 py-4 rounded-lg shadow-lg text-white z-50 flex items-center gap-3',
-        toast.type === 'success' ? 'bg-green-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-blue-600'
+        'fixed bottom-4 right-4 px-6 py-4 rounded-xl shadow-xl text-white z-50 flex items-center gap-3 backdrop-blur-xs',
+        toast.type === 'success' ? 'bg-green-600/95' : toast.type === 'error' ? 'bg-red-600/95' : 'bg-blue-600/95'
       ]">
         <span class="text-2xl">{{ toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️' }}</span>
-        <span>{{ toast.message }}</span>
+        <span class="font-medium text-sm">{{ toast.message }}</span>
       </div>
     </Transition>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-        <div class="flex items-center mb-4">
-          <svg class="w-6 h-6 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
-          <h3 class="text-lg font-semibold text-gray-900">Konfirmasi Hapus Pemesanan</h3>
-        </div>
-        <div class="mb-4">
-          <p class="text-gray-700 mb-2">Apakah Anda yakin ingin menghapus pemesanan ini?</p>
-          <div class="bg-gray-50 p-3 rounded border border-gray-200">
-            <p class="text-sm font-semibold text-gray-900">{{ selectedBooking?.event_name }}</p>
-            <p class="text-sm text-gray-600">{{ selectedBooking?.room_name }}</p>
-            <p class="text-sm text-gray-600">{{ selectedBooking?.user_name }}</p>
+    <Transition name="modal">
+      <div v-if="showDeleteModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4 overflow-y-auto" @click="showDeleteModal = false">
+        <div class="modal-content-box bg-white p-6 rounded-2xl shadow-2xl max-w-md w-full border border-gray-100 my-auto" @click.stop>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Konfirmasi Hapus Pemesanan</h3>
           </div>
-          <p class="text-red-600 text-sm mt-2 font-medium">⚠️ Pemesanan akan masuk ke "Soft Delete"</p>
-        </div>
-        <div class="flex justify-end space-x-2">
-          <button @click="showDeleteModal = false"
-            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Batal</button>
-          <button @click="deleteBooking" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Hapus
-            Pemesanan</button>
+          <div class="mb-4">
+            <p class="text-gray-600 text-sm mb-3">Apakah Anda yakin ingin menghapus pemesanan ini?</p>
+            <div class="bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+              <p class="text-sm font-bold text-gray-900">{{ selectedBooking?.event_name }}</p>
+              <p class="text-xs text-gray-600 mt-0.5">{{ selectedBooking?.room_name }}</p>
+              <p class="text-xs text-gray-500 mt-0.5">Pemohon: {{ selectedBooking?.user_name }}</p>
+            </div>
+            <p class="text-red-600 text-xs mt-2.5 font-medium flex items-center gap-1.5">
+              <span>⚠️</span>
+              <span>Pemesanan akan masuk ke "Soft Delete" dan dapat dipulihkan.</span>
+            </p>
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button @click="showDeleteModal = false"
+              class="px-4 py-2 text-sm font-semibold bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors">Batal</button>
+            <button @click="deleteBooking" class="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-xl hover:bg-red-700 active:scale-95 transition-all">Hapus
+              Pemesanan</button>
+          </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -1400,5 +1428,27 @@ watch([bookingTotalPages, auditTotalPages, deletedTotalPages], ([bookingPages, a
 .toast-leave-to {
   opacity: 0;
   transform: translateX(10rem);
+}
+
+/* Modal Vue Transition (Smooth Zoom & Backdrop Fade) */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-active .modal-content-box,
+.modal-leave-active .modal-content-box {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-enter-from .modal-content-box,
+.modal-leave-to .modal-content-box {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
 }
 </style>

@@ -1064,14 +1064,16 @@
               </div>
 
               <!-- Booking Modal -->
-              <div
-                v-if="selectedRoom"
-                class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-300 overflow-y-auto"
-              >
+              <Transition name="modal">
                 <div
-                  class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto border border-gray-100 transform transition-all animate-fadeIn my-auto"
-                  @click.stop
+                  v-if="selectedRoom"
+                  class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+                  @click="closeBookingModal"
                 >
+                  <div
+                    class="modal-content-box bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto border border-gray-100 my-auto"
+                    @click.stop
+                  >
                   <!-- Modal Header -->
                   <div
                     class="p-6 border-b border-gray-200 bg-gray-50/50 sticky top-0 bg-white z-10"
@@ -1762,6 +1764,7 @@
                   </form>
                 </div>
               </div>
+            </Transition>
 
               <!-- My Bookings -->
               <div
@@ -2159,290 +2162,303 @@
               </div>
 
               <!-- Booking Detail Modal -->
-              <div
-                v-if="selectedBookingDetail"
-                class="fixed top-16 left-0 right-0 bottom-0 bg-black bg-opacity-50 flex items-center justify-center z-10 p-4"
-                @click="closeBookingDetail"
-              >
+              <Transition name="modal">
                 <div
-                  class="bg-white rounded-lg shadow-xl max-w-lg w-full pointer-events-auto"
-                  @click.stop
+                  v-if="selectedBookingDetail"
+                  class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+                  @click="closeBookingDetail"
                 >
-                  <div class="bg-[#882f1d] text-white p-6 rounded-t-lg">
-                    <div class="flex justify-between items-center">
-                      <h2 class="text-2xl font-cinzel font-bold">
-                        Detail Pemesanan
-                      </h2>
-                      <button
-                        @click.stop="closeBookingDetail"
-                        class="text-white hover:text-gray-200"
-                      >
-                        <svg
-                          class="w-6 h-6"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                  <div
+                    class="modal-content-box bg-white rounded-2xl shadow-2xl max-w-lg w-full pointer-events-auto overflow-hidden border border-gray-100 my-auto"
+                    @click.stop
+                  >
+                    <div class="bg-gradient-to-r from-[#882f1d] to-[#a33923] text-white p-6">
+                      <div class="flex justify-between items-center">
+                        <h2 class="text-2xl font-cinzel font-bold">
+                          Detail Pemesanan
+                        </h2>
+                        <button
+                          @click.stop="closeBookingDetail"
+                          class="text-white/80 hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors"
                         >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="p-6 space-y-5">
-                    <div>
-                      <label
-                        class="text-sm font-semibold text-gray-500 uppercase tracking-wide"
-                        >Nama Acara</label
-                      >
-                      <p class="text-lg font-bold text-gray-800 mt-1">
-                        {{ selectedBookingDetail.event_name }}
-                      </p>
+                          <svg
+                            class="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="p-6 space-y-5">
                       <div>
                         <label
-                          class="text-sm font-semibold text-gray-500 uppercase tracking-wide"
-                          >Ruangan</label
+                          class="text-xs font-bold text-gray-500 uppercase tracking-wider"
+                          >Nama Acara</label
                         >
-                        <p class="text-gray-800 mt-1">
-                          {{ selectedBookingDetail.room_name }}
+                        <p class="text-lg font-bold text-gray-800 mt-1">
+                          {{ selectedBookingDetail.event_name }}
                         </p>
                       </div>
+
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label
+                            class="text-xs font-bold text-gray-500 uppercase tracking-wider"
+                            >Ruangan</label
+                          >
+                          <p class="text-gray-800 font-medium mt-1">
+                            {{ selectedBookingDetail.room_name }}
+                          </p>
+                        </div>
+                        <div>
+                          <label
+                            class="text-xs font-bold text-gray-500 uppercase tracking-wider"
+                            >Status</label
+                          >
+                          <p class="mt-1">
+                            <span
+                              :class="
+                                getStatusBadgeClass(selectedBookingDetail.status)
+                              "
+                              class="inline-block px-3 py-1 rounded-full text-xs font-bold"
+                            >
+                              {{
+                                getStatusText(
+                                  selectedBookingDetail.status,
+                                  selectedBookingDetail.start_time,
+                                  selectedBookingDetail.end_time,
+                                )
+                              }}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
                       <div>
                         <label
-                          class="text-sm font-semibold text-gray-500 uppercase tracking-wide"
-                          >Status</label
+                          class="text-xs font-bold text-gray-500 uppercase tracking-wider"
+                          >Tanggal & Waktu</label
                         >
-                        <p class="mt-1">
+                        <div class="mt-1.5 bg-gray-50 border border-gray-200/80 p-4 rounded-xl">
+                          <div class="flex items-center text-gray-700 mb-2">
+                            <svg
+                              class="w-5 h-5 mr-2 text-[#882f1d]"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                              />
+                            </svg>
+                            <span class="font-semibold text-gray-900">{{
+                              formatDate(selectedBookingDetail.start_time)
+                            }}</span>
+                          </div>
+                          <div class="flex items-center text-gray-700">
+                            <svg
+                              class="w-5 h-5 mr-2 text-[#882f1d]"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            <span class="font-medium text-gray-800"
+                              >{{
+                                formatTime(selectedBookingDetail.start_time)
+                              }}
+                              -
+                              {{
+                                formatTime(selectedBookingDetail.end_time)
+                              }}</span
+                            >
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Info Pemesanan Berulang / Rutin -->
+                      <div
+                        v-if="
+                          selectedBookingDetail.recurrence_pattern ||
+                          selectedBookingDetail.parent_booking_id
+                        "
+                      >
+                        <label
+                          class="text-xs font-bold text-purple-800 uppercase tracking-wider"
+                          >Tipe Pemesanan</label
+                        >
+                        <div
+                          class="mt-1 bg-purple-50 border border-purple-200 rounded-xl p-3 flex items-center justify-between"
+                        >
+                          <div
+                            class="flex items-center text-purple-900 text-sm font-medium"
+                          >
+                            <svg
+                              class="w-4 h-4 mr-2 text-purple-600 flex-shrink-0"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                              />
+                            </svg>
+                            <span>{{
+                              getRecurrenceLabel(
+                                selectedBookingDetail.recurrence_pattern,
+                              )
+                            }}</span>
+                          </div>
                           <span
-                            :class="
-                              getStatusBadgeClass(selectedBookingDetail.status)
-                            "
-                            class="inline-block px-3 py-1 rounded-full text-sm font-semibold"
+                            class="text-xs text-purple-700 bg-purple-100 px-2 py-0.5 rounded font-semibold"
                           >
                             {{
-                              getStatusText(
-                                selectedBookingDetail.status,
-                                selectedBookingDetail.start_time,
-                                selectedBookingDetail.end_time,
-                              )
+                              selectedBookingDetail.parent_booking_id
+                                ? "Jadwal Seri"
+                                : "Jadwal Utama"
                             }}
                           </span>
+                        </div>
+                      </div>
+
+                      <div
+                        v-if="selectedBookingDetail.rejection_reason"
+                        class="bg-red-50 border border-red-200 rounded-xl p-4"
+                      >
+                        <label
+                          class="text-xs font-bold text-red-700 uppercase tracking-wider"
+                          >Alasan Penolakan</label
+                        >
+                        <p class="text-red-800 mt-1 text-sm">
+                          {{ selectedBookingDetail.rejection_reason }}
                         </p>
                       </div>
-                    </div>
 
-                    <div>
-                      <label
-                        class="text-sm font-semibold text-gray-500 uppercase tracking-wide"
-                        >Tanggal & Waktu</label
-                      >
-                      <div class="mt-2 bg-gray-50 p-4 rounded-lg">
-                        <div class="flex items-center text-gray-700 mb-2">
-                          <svg
-                            class="w-5 h-5 mr-2 text-[#882f1d]"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                            />
-                          </svg>
-                          <span class="font-medium">{{
-                            formatDate(selectedBookingDetail.start_time)
-                          }}</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                          <svg
-                            class="w-5 h-5 mr-2 text-[#882f1d]"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          <span
-                            >{{
-                              formatTime(selectedBookingDetail.start_time)
-                            }}
-                            -
-                            {{
-                              formatTime(selectedBookingDetail.end_time)
-                            }}</span
-                          >
-                        </div>
+                      <div class="pt-2">
+                        <button
+                          @click.stop="closeBookingDetail"
+                          class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-xl font-semibold transition-colors"
+                        >
+                          Tutup
+                        </button>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </Transition>
 
-                    <!-- Info Pemesanan Berulang / Rutin -->
-                    <div
-                      v-if="
-                        selectedBookingDetail.recurrence_pattern ||
-                        selectedBookingDetail.parent_booking_id
-                      "
-                    >
-                      <label
-                        class="text-sm font-semibold text-purple-800 uppercase tracking-wide"
-                        >Tipe Pemesanan</label
-                      >
-                      <div
-                        class="mt-1 bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-center justify-between"
-                      >
-                        <div
-                          class="flex items-center text-purple-900 text-sm font-medium"
-                        >
-                          <svg
-                            class="w-4 h-4 mr-2 text-purple-600 flex-shrink-0"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                            />
-                          </svg>
-                          <span>{{
-                            getRecurrenceLabel(
-                              selectedBookingDetail.recurrence_pattern,
-                            )
-                          }}</span>
-                        </div>
-                        <span
-                          class="text-xs text-purple-700 bg-purple-100 px-2 py-0.5 rounded font-semibold"
-                        >
-                          {{
-                            selectedBookingDetail.parent_booking_id
-                              ? "Jadwal Seri"
-                              : "Jadwal Utama"
-                          }}
-                        </span>
+              <!-- Modal Konfirmasi Pembatalan dengan Alasan Wajib -->
+              <Transition name="modal">
+                <div
+                  v-if="cancelBookingId"
+                  class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-[9999] p-4 overflow-y-auto"
+                  @click="cancelBookingId = null"
+                >
+                  <div
+                    class="modal-content-box bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-gray-100 my-auto"
+                    @click.stop
+                  >
+                    <div class="flex items-center gap-3 mb-3">
+                      <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
                       </div>
+                      <h3 class="text-xl font-bold text-gray-900">
+                        Konfirmasi Pembatalan
+                      </h3>
                     </div>
 
-                    <div
-                      v-if="selectedBookingDetail.rejection_reason"
-                      class="bg-red-50 border border-red-200 rounded-lg p-4"
-                    >
+                    <p class="text-sm text-gray-600 mb-4">
+                      Apakah Anda yakin ingin membatalkan pemesanan ini? Mohon
+                      berikan alasan pembatalan untuk kebutuhan evaluasi pengurus
+                      paroki.
+                    </p>
+
+                    <div class="mb-4">
                       <label
-                        class="text-sm font-semibold text-red-700 uppercase tracking-wide"
-                        >Alasan Penolakan</label
+                        class="block text-xs font-bold text-gray-700 uppercase mb-1"
+                        >Alasan Pembatalan *</label
                       >
-                      <p class="text-red-800 mt-1">
-                        {{ selectedBookingDetail.rejection_reason }}
+                      <textarea
+                        v-model="cancellationReasonInput"
+                        rows="3"
+                        placeholder="Tuliskan alasan pembatalan (minimal 5 karakter)..."
+                        class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#882f1d] focus:border-transparent outline-hidden transition-all"
+                      ></textarea>
+                      <p
+                        v-if="cancelError"
+                        class="text-xs text-red-600 mt-1.5 font-medium"
+                      >
+                        {{ cancelError }}
                       </p>
                     </div>
 
-                    <div class="pt-4">
+                    <div class="flex items-center justify-end gap-2">
                       <button
-                        @click.stop="closeBookingDetail"
-                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+                        @click="cancelBookingId = null"
+                        type="button"
+                        class="px-4 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                       >
-                        Tutup
+                        Batal
+                      </button>
+                      <button
+                        @click="submitCancellation"
+                        :disabled="
+                          cancelLoading ||
+                          !cancellationReasonInput ||
+                          cancellationReasonInput.trim().length < 5
+                        "
+                        type="button"
+                        class="px-4 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 active:scale-95 disabled:opacity-50 disabled:active:scale-100 rounded-xl transition-all flex items-center gap-2"
+                      >
+                        <svg
+                          v-if="cancelLoading"
+                          class="w-4 h-4 animate-spin"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            class="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            stroke-width="4"
+                          />
+                          <path
+                            class="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8H4z"
+                          />
+                        </svg>
+                        <span>Ya, Batalkan Pemesanan</span>
                       </button>
                     </div>
                   </div>
                 </div>
-              </div>
-              <!-- Modal Konfirmasi Pembatalan dengan Alasan Wajib -->
-              <div
-                v-if="cancelBookingId"
-                class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-                @click="cancelBookingId = null"
-              >
-                <div
-                  class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
-                  @click.stop
-                >
-                  <h3 class="text-xl font-bold text-gray-900 mb-2">
-                    Konfirmasi Pembatalan
-                  </h3>
-                  <p class="text-sm text-gray-600 mb-4">
-                    Apakah Anda yakin ingin membatalkan pemesanan ini? Mohon
-                    berikan alasan pembatalan untuk kebutuhan evaluasi pengurus
-                    paroki.
-                  </p>
-
-                  <div class="mb-4">
-                    <label
-                      class="block text-xs font-bold text-gray-700 uppercase mb-1"
-                      >Alasan Pembatalan *</label
-                    >
-                    <textarea
-                      v-model="cancellationReasonInput"
-                      rows="3"
-                      placeholder="Tuliskan alasan pembatalan (minimal 5 karakter)..."
-                      class="w-full p-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-[#882f1d] focus:border-transparent"
-                    ></textarea>
-                    <p
-                      v-if="cancelError"
-                      class="text-xs text-red-600 mt-1.5 font-medium"
-                    >
-                      {{ cancelError }}
-                    </p>
-                  </div>
-
-                  <div class="flex items-center justify-end gap-2">
-                    <button
-                      @click="cancelBookingId = null"
-                      type="button"
-                      class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
-                    >
-                      Batal
-                    </button>
-                    <button
-                      @click="submitCancellation"
-                      :disabled="
-                        cancelLoading ||
-                        !cancellationReasonInput ||
-                        cancellationReasonInput.trim().length < 5
-                      "
-                      type="button"
-                      class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 rounded-xl transition-colors flex items-center gap-2"
-                    >
-                      <svg
-                        v-if="cancelLoading"
-                        class="w-4 h-4 animate-spin"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          class="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          stroke-width="4"
-                        />
-                        <path
-                          class="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v8H4z"
-                        />
-                      </svg>
-                      <span>Ya, Batalkan Pemesanan</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
+              </Transition>
 
               <!-- Room Availability Table -->
               <div class="w-full max-w-full overflow-x-hidden">
@@ -4116,39 +4132,26 @@ const navigateDate = (offset) => {
 </script>
 
 <style scoped>
-/* Modal animations */
-.fixed {
-  animation: fadeIn 0.2s ease-out;
+/* Modal Vue Transition (Smooth Zoom & Backdrop Fade) */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Unified fadeIn: fade in with slight upward movement */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
 }
 
-.fixed > div {
-  animation: slideUp 0.3s ease-out;
+.modal-enter-active .modal-content-box,
+.modal-leave-active .modal-content-box {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* slideUp: used for modal inner panel and mobile cards */
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.modal-enter-from .modal-content-box,
+.modal-leave-to .modal-content-box {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
 }
 
 .animate-fade-in {
