@@ -563,7 +563,7 @@ const loadUserCategories = async () => {
   try {
     const data = await $fetch('/api/user-categories')
     if (data && Array.isArray(data) && data.length > 0) {
-      userCategories.value = data.map((cat: any) => ({
+      userCategories.value = data.map(cat => ({
         value: cat.name,
         label: cat.display_name || cat.name
       }))
@@ -761,7 +761,7 @@ const openCreateModal = async () => {
   showModal.value = true
 }
 
-const openEditModal = async (room: any) => {
+const openEditModal = async (room) => {
   if (userCategories.value.length === 0) {
     await loadUserCategories()
   }
@@ -770,7 +770,7 @@ const openEditModal = async (room: any) => {
 
   const facs = parseFacilities(room.facilities).join(', ')
 
-  let parsedCats: string[] = []
+  let parsedCats = []
   if (Array.isArray(room.allowed_categories)) {
     parsedCats = room.allowed_categories
   } else if (typeof room.allowed_categories === 'string' && room.allowed_categories.trim() !== '') {
@@ -778,7 +778,7 @@ const openEditModal = async (room: any) => {
       const p = JSON.parse(room.allowed_categories)
       parsedCats = Array.isArray(p) ? p : []
     } catch (e) {
-      parsedCats = room.allowed_categories.split(',').map((s: string) => s.trim()).filter(Boolean)
+      parsedCats = room.allowed_categories.split(',').map(s => s.trim()).filter(Boolean)
     }
   }
 
