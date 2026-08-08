@@ -358,14 +358,14 @@
             :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`"
             link-text="Baca Artikel →" />
         </div>
-        <div v-else class="grid md:grid-cols-3 gap-4">
-          <ArticleCard image="Renungan Harian" title="Renungan Minggu Ini: Kasih dan Pengampunan"
+        <div v-else class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+          <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Renungan Harian" title="Renungan Minggu Ini: Kasih dan Pengampunan"
             description="Artikel singkat tentang ajaran Yesus mengenai pengampunan, dihubungkan dengan kehidupan sehari-hari umat."
             to="/artikel/renungan-kasih" link-text="Baca Artikel →" />
-          <ArticleCard image="Khotbah Pastor" title="Khotbah Minggu Lalu: Iman di Tengah Tantangan"
+          <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Khotbah Pastor" title="Khotbah Minggu Lalu: Iman di Tengah Tantangan"
             description="Transkrip khotbah Pastor Yohanes tentang mempertahankan iman di era modern."
             to="/artikel/khotbah-iman" link-text="Baca Lengkap →" />
-          <ArticleCard image="Pengumuman" title="Panduan Retret Rohani 2024"
+          <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Pengumuman" title="Panduan Retret Rohani 2024"
             description="Informasi lengkap tentang retret tahunan paroki, termasuk jadwal dan persiapan."
             to="/artikel/retret-2024" link-text="Lihat Detail →" />
         </div>
@@ -396,9 +396,9 @@
         <div v-else-if="agendaError" class="text-center text-red-500">
           Gagal memuat agenda mendatang.
         </div>
-        <div v-else-if="upcomingAgendas && upcomingAgendas.length > 0" class="grid md:grid-cols-3 gap-4">
+        <div v-else-if="upcomingAgendas && upcomingAgendas.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
           <div v-for="(agenda, idx) in upcomingAgendas.slice(0, 3)" :key="agenda.id"
-            class="group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
+            class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
             <div class="p-6">
               <div class="flex items-center space-x-2 mb-3">
                 <span :style="getCategoryStyle(agenda)"
