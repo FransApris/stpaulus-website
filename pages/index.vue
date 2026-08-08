@@ -14,7 +14,7 @@
     </ClientOnly>
 
     <!-- Section 1: Welcome / About Teaser -->
-    <section class="py-16 bg-white">
+    <section class="py-16 bg-white reveal-on-scroll">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-12">
           <div class="flex items-center justify-center mb-3">
@@ -26,15 +26,15 @@
           </p>
         </div>
         <div class="grid md:grid-cols-3 gap-8">
-          <SimpleCard title="Gallery Foto"
+          <SimpleCard class="reveal-on-scroll reveal-delay-100" title="Gallery Foto"
             description="Lihat momen indah kegiatan paroki kami. Dari misa hingga retret rohani." to="/galeri"
-            link-text="Lihat Gallery →" />
-          <SimpleCard title="Sejarah Gereja"
+            link-text="Lihat Gallery" />
+          <SimpleCard class="reveal-on-scroll reveal-delay-200" title="Sejarah Gereja"
             description="Pelajari perjalanan Paroki St. Paulus sejak didirikan. Warisan iman yang kaya." to="/sejarah"
-            link-text="Baca Sejarah →" />
-          <SimpleCard title="Kontak Kami"
+            link-text="Baca Sejarah" />
+          <SimpleCard class="reveal-on-scroll reveal-delay-300" title="Kontak Kami"
             description="Hubungi pastor, staf, atau komunitas untuk informasi lebih lanjut." to="/kontak"
-            link-text="Hubungi →" />
+            link-text="Hubungi" />
         </div>
       </div>
     </section>
@@ -46,7 +46,7 @@
 
     <!-- Section 2: Teritorial Lingkungan -->
     <ClientOnly>
-      <section class="py-16 bg-white">
+      <section class="py-16 bg-white reveal-on-scroll">
         <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
           <div class="text-center mb-12">
             <div class="flex items-center justify-center mb-3">
@@ -70,7 +70,7 @@
     </ClientOnly>
 
     <!-- Section 3: Album Terbaru -->
-    <section class="py-16 bg-white">
+    <section class="py-16 bg-white reveal-on-scroll">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-12">
           <div class="flex items-center justify-center mb-3">
@@ -107,19 +107,19 @@
 
         <!-- Albums Grid -->
         <div v-else-if="latestAlbums && latestAlbums.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <a v-for="album in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
-            rel="noopener noreferrer" class="group">
+          <a v-for="(album, idx) in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
+            rel="noopener noreferrer" class="group reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
             <div
-              class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              class="bg-white rounded-2xl shadow-xs border border-gray-100/90 overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between h-full">
               <!-- Album Cover -->
-              <div class="relative overflow-hidden h-48">
+              <div class="relative overflow-hidden h-48 bg-gradient-to-br from-[#882f1d] to-[#c58229]">
                 <img :src="optimizeImageUrl(album.thumbnail_url || '/images/default-gallery.jpg', 600)" :alt="album.title"
-                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   @error="handleAlbumImageError">
 
                 <!-- Google Photos Badge -->
                 <div
-                  class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1">
+                  class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 flex items-center gap-1 shadow-xs">
                   <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                     <path
                       d="M12 .5a11.5 11.5 0 0 1 11.5 11.5A11.5 11.5 0 0 1 12 23.5 11.5 11.5 0 0 1 .5 12 11.5 11.5 0 0 1 12 .5zm3.5 4.5a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" />
@@ -129,13 +129,15 @@
               </div>
 
               <!-- Album Info -->
-              <div class="p-5">
-                <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2 group-hover:underline line-clamp-2">
-                  {{ album.title }}
-                </h3>
-                <p class="text-gray-600 text-sm line-clamp-2 mb-3">
-                  {{ album.description || 'Album foto kegiatan paroki' }}
-                </p>
+              <div class="p-5 flex flex-col justify-between flex-1">
+                <div>
+                  <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-2 group-hover:text-[#882f1d] transition-colors line-clamp-2">
+                    {{ album.title }}
+                  </h3>
+                  <p class="text-gray-600 text-sm line-clamp-2 mb-3">
+                    {{ album.description || 'Album foto kegiatan paroki' }}
+                  </p>
+                </div>
 
                 <!-- Date and Action -->
                 <div class="flex items-center justify-between pt-3 border-t border-gray-100">
@@ -187,7 +189,7 @@
     </section>
 
     <!-- Section 4: Latest News / Events Teaser -->
-    <section class="py-12 bg-gray-50">
+    <section class="py-12 bg-gray-50 reveal-on-scroll">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-8">
           <div class="flex items-center justify-center mb-3">
@@ -204,7 +206,8 @@
           Gagal memuat berita terbaru.
         </div>
         <div v-else-if="latestNews && latestNews.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <ArticleCard v-for="news in latestNews.slice(0, 3)" :key="news.id"
+          <ArticleCard v-for="(news, idx) in latestNews.slice(0, 3)" :key="news.id"
+            class="reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
             :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url"
             :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" />
         </div>
@@ -230,7 +233,7 @@
     </section>
 
     <!-- Section 5: Dokumen Paroki -->
-    <section class="py-12 bg-white">
+    <section class="py-12 bg-white reveal-on-scroll">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-8">
           <div class="flex items-center justify-center mb-3">
@@ -247,8 +250,8 @@
           Gagal memuat dokumen unggulan.
         </div>
         <div v-else-if="featuredDocuments && featuredDocuments.length > 0" class="grid md:grid-cols-3 gap-4">
-          <div v-for="doc in featuredDocuments.slice(0, 3)" :key="doc.id"
-            class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          <div v-for="(doc, idx) in featuredDocuments.slice(0, 3)" :key="doc.id"
+            class="group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
             <div class="p-6">
               <!-- Category Badge -->
               <div class="flex items-center mb-3">
@@ -332,7 +335,7 @@
     </section>
 
     <!-- Section 6: Artikel Terbaru (Updated to use API) -->
-    <section class="py-12 bg-gray-50">
+    <section class="py-12 bg-gray-50 reveal-on-scroll">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-8">
           <div class="flex items-center justify-center mb-3">
@@ -349,7 +352,8 @@
           Gagal memuat artikel terbaru.
         </div>
         <div v-else-if="latestArticles && latestArticles.length > 0" class="grid md:grid-cols-3 gap-4">
-          <ArticleCard v-for="article in latestArticles.slice(0, 3)" :key="article.id"
+          <ArticleCard v-for="(article, idx) in latestArticles.slice(0, 3)" :key="article.id"
+            class="reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
             :image="article.image || '/images/default-article.jpg'" image-type="url" :title="article.title"
             :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`"
             link-text="Baca Artikel →" />
@@ -376,7 +380,7 @@
     </section>
 
     <!-- Section 7: Agenda Mendatang -->
-    <section class="py-12 bg-white">
+    <section class="py-12 bg-white reveal-on-scroll">
       <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
         <div class="text-center mb-8">
           <div class="flex items-center justify-center mb-3">
@@ -393,8 +397,8 @@
           Gagal memuat agenda mendatang.
         </div>
         <div v-else-if="upcomingAgendas && upcomingAgendas.length > 0" class="grid md:grid-cols-3 gap-4">
-          <div v-for="agenda in upcomingAgendas.slice(0, 3)" :key="agenda.id"
-            class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+          <div v-for="(agenda, idx) in upcomingAgendas.slice(0, 3)" :key="agenda.id"
+            class="group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
             <div class="p-6">
               <div class="flex items-center space-x-2 mb-3">
                 <span :style="getCategoryStyle(agenda)"
@@ -454,7 +458,7 @@
 
     <!-- Section 8: Status Pemesanan Ruangan -->
     <ClientOnly>
-      <section id="booking-section" class="py-16 bg-gray-50">
+      <section id="booking-section" class="py-16 bg-gray-50 reveal-on-scroll">
         <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
           <div class="text-center mb-12">
             <div class="flex items-center justify-center mb-3">
@@ -665,6 +669,7 @@
 <script setup>
 const { optimizeImageUrl } = useOptimizedImage()
 const { isMaintenance } = useMaintenance('beranda')
+const { initObserver } = useScrollReveal()
 
 // DIAGNOSTIC: Temporarily disable SSR to test IPC crash
 definePageMeta({ ssr: false })

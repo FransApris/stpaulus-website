@@ -1,7 +1,10 @@
 <template>
   <article
-    class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+    class="group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden flex flex-col justify-between"
   >
+    <!-- Top accent bar on hover -->
+    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#882f1d] to-[#c58229] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
+
     <!-- Image Section -->
     <div
       v-if="image"
@@ -11,7 +14,7 @@
         v-if="imageType === 'url'"
         :src="imageSrc"
         :alt="title"
-        class="w-full h-full object-cover"
+        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         @error="handleImageError"
       />
       <div
@@ -42,20 +45,24 @@
         </div>
       </div>
     </div>
+
     <!-- Content Section -->
-    <div class="p-6">
-      <h3 class="text-xl font-semibold text-[#882f1d] mb-2">{{ title }}</h3>
-      <p class="text-gray-600 mb-4">{{ truncatedDescription }}</p>
-      <div v-if="date" class="flex justify-between items-center">
-        <span class="text-sm text-gray-500">{{ date }}</span>
-        <NuxtLink :to="to" class="text-[#882f1d] hover:underline font-medium">{{
-          linkText
-        }}</NuxtLink>
+    <div class="p-6 flex flex-col flex-1 justify-between">
+      <div>
+        <h3 class="text-xl font-semibold text-[#882f1d] mb-2 group-hover:text-[#6b2416] transition-colors">{{ title }}</h3>
+        <p class="text-gray-600 mb-4 leading-relaxed text-sm sm:text-base">{{ truncatedDescription }}</p>
       </div>
-      <div v-else class="text-right">
-        <NuxtLink :to="to" class="text-[#882f1d] hover:underline font-medium">{{
-          linkText
-        }}</NuxtLink>
+
+      <div v-if="date" class="flex justify-between items-center pt-3 border-t border-gray-100 text-sm">
+        <span class="text-gray-500">{{ date }}</span>
+        <NuxtLink :to="to" class="text-[#882f1d] group-hover:text-[#6b2416] font-semibold inline-flex items-center gap-1 transition-all">
+          <span>{{ linkText }}</span>
+        </NuxtLink>
+      </div>
+      <div v-else class="text-right pt-3 border-t border-gray-100 text-sm">
+        <NuxtLink :to="to" class="text-[#882f1d] group-hover:text-[#6b2416] font-semibold inline-flex items-center gap-1 transition-all">
+          <span>{{ linkText }}</span>
+        </NuxtLink>
       </div>
     </div>
   </article>
@@ -109,7 +116,6 @@ watch(
   },
   { immediate: true },
 );
-
 
 const handleImageError = () => {
   console.log(
