@@ -26,7 +26,7 @@
           >
             <div
               v-if="show"
-              class="relative transform overflow-hidden rounded-t-3xl sm:rounded-2xl bg-white text-left shadow-2xl transition-all w-full sm:my-8 sm:max-w-lg mt-auto sm:my-auto"
+              class="relative transform overflow-hidden rounded-t-3xl sm:rounded-2xl bg-white text-left shadow-2xl transition-all w-full sm:max-w-lg mt-auto sm:my-auto"
             >
               <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                 <div class="sm:flex sm:items-start">
