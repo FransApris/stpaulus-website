@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="modelValue" class="fixed inset-0 z-[100000] flex items-center justify-center p-4"
+      <div v-if="modelValue" class="fixed inset-0 z-[100000] flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden"
         @mousedown.self="overlayMousedown = true"
         @mouseup.self="if (overlayMousedown) closeModal(); overlayMousedown = false"
         @mouseleave="overlayMousedown = false">
@@ -9,10 +9,10 @@
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
         <!-- Modal Content -->
-        <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="relative bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mt-auto sm:my-auto transition-all duration-300">
           <!-- Close Button -->
           <button @click="closeModal"
-            class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
+            class="touch-feedback absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10"
             aria-label="Close modal">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -20,7 +20,7 @@
           </button>
 
           <!-- Header -->
-          <div class="bg-gradient-to-br from-paulus-blue to-blue-700 text-white p-8 pb-6 rounded-t-2xl">
+          <div class="bg-gradient-to-br from-paulus-blue to-blue-700 text-white p-8 pb-6 rounded-t-3xl sm:rounded-t-2xl">
             <div class="flex items-center justify-center mb-4">
               <div class="h-16 w-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
                 <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -508,7 +508,7 @@ onMounted(() => {
 
 .modal-enter-active .relative,
 .modal-leave-active .relative {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-enter-from,
@@ -516,10 +516,22 @@ onMounted(() => {
   opacity: 0;
 }
 
-.modal-enter-from .relative,
-.modal-leave-to .relative {
-  transform: scale(0.9);
-  opacity: 0;
+@media (max-width: 639px) {
+  /* Mobile Bottom Sheet */
+  .modal-enter-from .relative,
+  .modal-leave-to .relative {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@media (min-width: 640px) {
+  /* Desktop Zoom-in */
+  .modal-enter-from .relative,
+  .modal-leave-to .relative {
+    transform: scale(0.95) translateY(10px);
+    opacity: 0;
+  }
 }
 
 .paulus-blue {

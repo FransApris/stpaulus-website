@@ -1067,11 +1067,11 @@
               <Transition name="modal">
                 <div
                   v-if="selectedRoom"
-                  class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+                  class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden"
                   @click="closeBookingModal"
                 >
                   <div
-                    class="modal-content-box bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto border border-gray-100 my-auto"
+                    class="modal-content-box bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto pointer-events-auto border border-gray-100 mt-auto sm:my-auto"
                     @click.stop
                   >
                   <!-- Modal Header -->
@@ -2188,11 +2188,11 @@
               <Transition name="modal">
                 <div
                   v-if="selectedBookingDetail"
-                  class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto"
+                  class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden"
                   @click="closeBookingDetail"
                 >
                   <div
-                    class="modal-content-box bg-white rounded-2xl shadow-2xl max-w-lg w-full pointer-events-auto overflow-hidden border border-gray-100 my-auto"
+                    class="modal-content-box bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-lg w-full max-h-[95vh] sm:max-h-none pointer-events-auto overflow-y-auto border border-gray-100 mt-auto sm:my-auto"
                     @click.stop
                   >
                     <div class="bg-gradient-to-r from-[#882f1d] to-[#a33923] text-white p-6">
@@ -2395,11 +2395,11 @@
               <Transition name="modal">
                 <div
                   v-if="cancelBookingId"
-                  class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-[9999] p-4 overflow-y-auto"
+                  class="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center z-[9999] p-0 sm:p-4 overflow-hidden"
                   @click="cancelBookingId = null"
                 >
                   <div
-                    class="modal-content-box bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-gray-100 my-auto"
+                    class="modal-content-box bg-white rounded-t-3xl sm:rounded-2xl p-6 max-w-md w-full shadow-2xl border border-gray-100 mt-auto sm:my-auto"
                     @click.stop
                   >
                     <div class="flex items-center gap-3 mb-3">
@@ -4207,13 +4207,25 @@ const navigateDate = (offset) => {
 
 .modal-enter-active .modal-content-box,
 .modal-leave-active .modal-content-box {
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-enter-from .modal-content-box,
-.modal-leave-to .modal-content-box {
-  opacity: 0;
-  transform: scale(0.95) translateY(10px);
+@media (max-width: 639px) {
+  /* Mobile Bottom Sheet Animation */
+  .modal-enter-from .modal-content-box,
+  .modal-leave-to .modal-content-box {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+@media (min-width: 640px) {
+  /* Desktop Zoom-in Animation */
+  .modal-enter-from .modal-content-box,
+  .modal-leave-to .modal-content-box {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
 }
 
 .animate-fade-in {

@@ -191,12 +191,12 @@
         <Teleport to="body">
             <Transition name="modal">
                 <div v-if="selectedAnnouncement"
-                    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                    class="fixed inset-0 z-[100000] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm overflow-hidden"
                     @click.self="closeModal">
-                    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                    <div class="modal-content-box bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto mt-auto sm:my-auto transition-all duration-300">
                         <!-- Modal Header -->
                         <div
-                            class="sticky top-0 bg-gradient-to-r from-[#882f1d] to-[#a63b24] text-white px-6 py-4 flex items-center justify-between rounded-t-2xl">
+                            class="sticky top-0 bg-gradient-to-r from-[#882f1d] to-[#a63b24] text-white px-6 py-4 flex items-center justify-between rounded-t-3xl sm:rounded-t-2xl">
                             <h3 class="text-xl font-bold">Detail Pengumuman</h3>
                             <button @click="closeModal"
                                 class="text-white hover:bg-white/20 rounded-full p-2 transition-colors">
@@ -417,13 +417,26 @@ onUnmounted(() => {
     opacity: 0;
 }
 
-.modal-enter-active>div,
-.modal-leave-active>div {
-    transition: transform 0.3s ease;
+.modal-enter-active .modal-content-box,
+.modal-leave-active .modal-content-box {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-enter-from>div,
-.modal-leave-to>div {
-    transform: scale(0.9) translateY(20px);
+@media (max-width: 639px) {
+    /* Mobile Bottom Sheet */
+    .modal-enter-from .modal-content-box,
+    .modal-leave-to .modal-content-box {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+}
+
+@media (min-width: 640px) {
+    /* Desktop Zoom-in */
+    .modal-enter-from .modal-content-box,
+    .modal-leave-to .modal-content-box {
+        transform: scale(0.95) translateY(10px);
+        opacity: 0;
+    }
 }
 </style>
