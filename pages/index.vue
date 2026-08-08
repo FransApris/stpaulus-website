@@ -82,13 +82,14 @@
         </div>
 
         <!-- Loading Skeleton -->
-        <div v-if="pending" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="i in 3" :key="i" class="animate-pulse">
-            <div class="bg-gray-200 h-48 rounded-t-lg"></div>
-            <div class="bg-white p-4 rounded-b-lg shadow">
-              <div class="h-4 bg-gray-200 rounded mb-2"></div>
-              <div class="h-3 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+        <div v-if="pending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible">
+          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse">
+            <div class="bg-gray-200 h-48 rounded-t-2xl"></div>
+            <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0">
+              <div class="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
+              <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-1/2 mb-4"></div>
+              <div class="h-4 bg-gray-200 rounded w-1/4 mt-4 pt-3 border-t border-gray-100"></div>
             </div>
           </div>
         </div>
@@ -199,8 +200,15 @@
           <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Informasi dan berita terkini dari Paroki St.
             Paulus Juanda.</p>
         </div>
-        <div v-if="newsPending" class="text-center text-gray-500">
-          Memuat berita terbaru...
+        <div v-if="newsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible">
+          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse flex flex-col h-[400px]">
+            <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
+            <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
+              <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
+              <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div class="mt-auto h-3 bg-gray-200 rounded w-1/3"></div>
+            </div>
+          </div>
         </div>
         <div v-else-if="newsError" class="text-center text-red-500">
           Gagal memuat berita terbaru.
@@ -243,8 +251,29 @@
           <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting
             Gereja St. Paulus Juanda.</p>
         </div>
-        <div v-if="featuredDocumentsPending" class="text-center text-gray-500">
-          Memuat dokumen unggulan...
+        <div v-if="featuredDocumentsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse">
+            <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100/90">
+              <div class="flex items-center mb-3">
+                <div class="w-4 h-4 bg-gray-200 rounded mr-2"></div>
+                <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+              </div>
+              <div class="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
+              <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-5/6 mb-4"></div>
+              <div class="flex justify-between items-center mb-4">
+                <div class="h-3 bg-gray-200 rounded w-1/4"></div>
+                <div class="h-3 bg-gray-200 rounded w-1/5"></div>
+              </div>
+              <div class="flex justify-between items-center mt-2">
+                <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+                <div class="flex space-x-2">
+                  <div class="w-8 h-8 bg-gray-200 rounded"></div>
+                  <div class="w-8 h-8 bg-gray-200 rounded"></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div v-else-if="featuredDocumentsError" class="text-center text-red-500">
           Gagal memuat dokumen unggulan.
@@ -345,8 +374,15 @@
           <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Baca inspirasi rohani, khotbah, dan artikel
             dari pastor serta komunitas paroki kami.</p>
         </div>
-        <div v-if="articlesPending" class="text-center text-gray-500">
-          Memuat artikel terbaru...
+        <div v-if="articlesPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse flex flex-col h-[400px]">
+            <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
+            <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
+              <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
+              <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div class="mt-auto h-3 bg-gray-200 rounded w-1/3"></div>
+            </div>
+          </div>
         </div>
         <div v-else-if="articlesError" class="text-center text-red-500">
           Gagal memuat artikel terbaru.
@@ -390,8 +426,24 @@
           <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jadwal kegiatan dan acara mendatang di Paroki
             St. Paulus Juanda.</p>
         </div>
-        <div v-if="agendaPending" class="text-center text-gray-500">
-          Memuat agenda mendatang...
+        <div v-if="agendaPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden animate-pulse">
+            <div class="p-6">
+              <div class="flex items-center space-x-2 mb-3">
+                <div class="h-6 bg-gray-200 rounded-full w-24"></div>
+              </div>
+              <div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div class="flex items-center mb-3">
+                <div class="w-5 h-5 bg-gray-200 rounded-full mr-2"></div>
+                <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+              </div>
+              <div class="flex items-center mb-4">
+                <div class="w-5 h-5 bg-gray-200 rounded-full mr-2"></div>
+                <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+              </div>
+              <div class="h-4 bg-gray-200 rounded w-1/4 mt-4"></div>
+            </div>
+          </div>
         </div>
         <div v-else-if="agendaError" class="text-center text-red-500">
           Gagal memuat agenda mendatang.
