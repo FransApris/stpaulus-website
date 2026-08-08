@@ -1,6 +1,6 @@
 <template>
   <article
-    class="group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden flex flex-col justify-between"
+    class="group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 overflow-hidden flex flex-col justify-between touch-feedback-subtle"
   >
     <!-- Top accent bar on hover -->
     <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#882f1d] to-[#c58229] opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>

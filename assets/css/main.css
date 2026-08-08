@@ -75,3 +75,69 @@
       .card-hover-elevate:hover {
         transform: translateY(-5px);
       }
+
+      /* ==========================================================
+       * Mobile Touch Feedback & Micro-Interactions (Tahap 1)
+       * ========================================================== */
+      html {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      button,
+      a,
+      [role="button"],
+      .touch-feedback,
+      .touch-feedback-subtle {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Primary Touch Feedback: responsive bounce on press */
+      .touch-feedback {
+        transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
+        will-change: transform;
+      }
+
+      .touch-feedback:active {
+        transform: scale(0.96);
+        opacity: 0.92;
+      }
+
+      /* Subtle Touch Feedback for cards, list items & large tiles */
+      .touch-feedback-subtle {
+        transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+      }
+
+      .touch-feedback-subtle:active {
+        transform: scale(0.985);
+      }
+
+      /* Mobile-specific active feedback on touchscreens */
+      @media (hover: none) and (pointer: coarse) {
+        button:active,
+        .btn:active,
+        .btn-touch:active {
+          transform: scale(0.96) !important;
+          transition: transform 0.1s ease !important;
+        }
+
+        .card-hover-elevate:active,
+        .interactive-card:active,
+        .touch-card:active {
+          transform: scale(0.985) !important;
+          transition: transform 0.1s ease !important;
+        }
+      }
+
+      /* Accessibility: Reduce motion if user preference is enabled */
+      @media (prefers-reduced-motion: reduce) {
+        .touch-feedback,
+        .touch-feedback-subtle,
+        .reveal-on-scroll,
+        .card-hover-elevate {
+          transition: none !important;
+          transform: none !important;
+          animation: none !important;
+        }
+      }

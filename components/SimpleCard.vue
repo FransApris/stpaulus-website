@@ -1,5 +1,5 @@
 <template>
-  <div class="group relative bg-white border border-gray-100/90 rounded-2xl p-6 sm:p-7 shadow-xs hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 flex flex-col justify-between transform hover:-translate-y-1.5 overflow-hidden text-center">
+  <div class="group relative bg-white border border-gray-100/90 rounded-2xl p-6 sm:p-7 shadow-xs hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 flex flex-col justify-between transform hover:-translate-y-1.5 overflow-hidden text-center touch-feedback-subtle">
     <!-- Top accent gradient on hover -->
     <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#882f1d] to-[#c58229] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 

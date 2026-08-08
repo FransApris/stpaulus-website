@@ -9,7 +9,7 @@
         :to="item.path"
         @click="handleNavClick(item.path)"
         :class="getNavItemClasses(item.path)"
-        class="flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-all duration-200 min-h-[44px] cursor-pointer"
+        class="touch-feedback flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 transition-all duration-200 min-h-[44px] cursor-pointer"
       >
         <!-- Icon -->
         <div class="w-6 h-6 mb-1 flex items-center justify-center">

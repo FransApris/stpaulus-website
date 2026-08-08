@@ -1055,7 +1055,7 @@
                     <!-- Button -->
                     <button
                       @click="selectRoom(room)"
-                      class="w-full bg-[#882f1d] text-white px-6 py-3.5 rounded-xl hover:bg-[#6b2416] transition-colors font-semibold text-base"
+                      class="touch-feedback w-full bg-[#882f1d] text-white px-6 py-3.5 rounded-xl hover:bg-[#6b2416] transition-colors font-semibold text-base"
                     >
                       Pesan
                     </button>
@@ -1723,7 +1723,7 @@
                                 ? 'Waktu ini sudah dipesan. Pilih waktu lain.'
                                 : ''
                         "
-                        class="flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all flex items-center justify-center gap-2"
+                        class="touch-feedback flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all flex items-center justify-center gap-2"
                       >
                         <svg
                           v-if="bookingLoading"
@@ -1756,7 +1756,7 @@
                       <button
                         type="button"
                         @click="closeBookingModal"
-                        class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all"
+                        class="touch-feedback px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all"
                       >
                         Batal
                       </button>
