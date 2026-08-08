@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white p-6 rounded-lg shadow">
-      <h1 class="text-2xl font-bold text-gray-800">Kelola Pemesanan</h1>
+      <h1 class="text-2xl font-bold text-gray-800 tracking-wide uppercase">KELOLA PEMESANAN</h1>
       <p class="text-gray-600 mt-1">Manajemen lengkap pemesanan ruangan</p>
     </div>
 
@@ -102,75 +102,270 @@
             </div>
 
             <!-- Bookings List -->
-            <div v-if="loading" class="text-center py-8 text-gray-500">
-              Loading...
+            <div v-if="loading" class="text-center py-12 text-gray-500">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+              <p>Memuat data pemesanan...</p>
             </div>
-            <div v-else-if="bookings.length === 0" class="text-center py-8 text-gray-500">
-              Belum ada pemesanan.
+            <div v-else-if="bookings.length === 0" class="text-center py-12 text-gray-500 bg-gray-50/50 rounded-lg border border-dashed border-gray-200">
+              <span class="text-3xl block mb-2">📋</span>
+              <p class="font-medium text-gray-700">Belum ada pemesanan.</p>
+              <p class="text-xs text-gray-400 mt-1">Gunakan filter status atau perluas rentang tanggal untuk melihat data lainnya.</p>
             </div>
             <div v-else class="space-y-4">
-              <div v-for="booking in paginatedBookings" :key="booking.id"
-                class="border border-gray-200 p-4 rounded-lg hover:shadow-md transition-shadow">
-                <!-- Card Body: Info -->
-                <div class="mb-3">
-                  <h3 class="font-semibold text-base text-gray-800 leading-snug">{{ booking.event_name }}</h3>
-                  <div class="mt-2 space-y-1 text-sm text-gray-600">
-                    <p>🏢 Ruangan: <span class="font-medium">{{ booking.room_name }}</span></p>
-                    <p>👤 Pemesan: <span class="font-medium">{{ booking.user_name }}</span> ({{ booking.user_category }})</p>
-                    <p>🏛️ Unit: <span class="font-medium">{{ booking.unit_name }}</span></p>
-                    <p>📅 Tanggal: <span class="font-medium">{{ formatBookingDate(booking.start_time) }}</span></p>
-                    <p>⏰ Waktu: <span class="font-medium">{{ formatBookingTime(booking.start_time, booking.end_time) }}</span></p>
-                    <p>📊 Status: <span :class="getStatusClass(booking.status)">{{ booking.status }}</span></p>
-                    <p v-if="booking.recurrence_pattern || booking.parent_booking_id" class="text-purple-700 font-semibold flex items-center gap-1">
-                      🔄 Rutin: <span>{{ getRecurrenceLabel(booking.recurrence_pattern) }}</span>
-                      <span class="text-xs bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-medium">{{ booking.parent_booking_id ? 'Jadwal Seri' : 'Jadwal Utama' }}</span>
-                    </p>
-                    <p v-if="booking.rejection_reason" class="text-red-600">❌ Alasan Penolakan: {{ booking.rejection_reason }}</p>
-                    <p v-if="booking.cancellation_reason" class="text-orange-600">🚫 Alasan Pembatalan: {{ booking.cancellation_reason }}</p>
-                  </div>
+              <!-- Desktop View (Tabel) -->
+              <div class="hidden md:block">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2.5">
+                  <span>🖥️ TAMPILAN DESKTOP (TABEL)</span>
                 </div>
 
-                <!-- Card Footer: Action Icons (horizontal, bottom) -->
-                <div class="flex items-center gap-2 pt-3 border-t border-gray-100">
-                  <!-- View History Button -->
-                  <button @click="viewHistory(booking)" title="Lihat History"
-                    class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 inline-flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </button>
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-xs">
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                      <thead class="bg-gray-50">
+                        <tr>
+                          <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Judul Acara</th>
+                          <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Ruangan</th>
+                          <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Pemesan & Unit</th>
+                          <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tanggal & Waktu</th>
+                          <th scope="col" class="px-6 py-3.5 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
+                          <th scope="col" class="px-6 py-3.5 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody class="bg-white divide-y divide-gray-200">
+                        <tr v-for="booking in paginatedBookings" :key="booking.id" class="hover:bg-gray-50/80 transition-colors">
+                          <!-- Judul Acara -->
+                          <td class="px-6 py-4 text-sm">
+                            <div class="font-bold text-gray-900 leading-snug">{{ booking.event_name }}</div>
+                            <div v-if="booking.recurrence_pattern || booking.parent_booking_id" class="text-xs text-purple-700 font-semibold mt-1 flex items-center gap-1">
+                              <span>🔄 Rutin: {{ getRecurrenceLabel(booking.recurrence_pattern) }}</span>
+                              <span class="bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded text-[10px]">{{ booking.parent_booking_id ? 'Jadwal Seri' : 'Jadwal Utama' }}</span>
+                            </div>
+                            <div v-if="booking.rejection_reason" class="text-xs text-red-600 mt-1 bg-red-50 p-1.5 rounded border border-red-100">
+                              ❌ <strong>Alasan Penolakan:</strong> {{ booking.rejection_reason }}
+                            </div>
+                            <div v-if="booking.cancellation_reason" class="text-xs text-orange-600 mt-1 bg-orange-50 p-1.5 rounded border border-orange-100">
+                              🚫 <strong>Alasan Pembatalan:</strong> {{ booking.cancellation_reason }}
+                            </div>
+                          </td>
 
-                  <!-- Approve Button - Only for PENDING -->
-                  <button v-if="booking.status === 'PENDING'" @click="approveBooking(booking)" title="Setujui"
-                    class="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 inline-flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </button>
+                          <!-- Ruangan -->
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-medium">
+                            <div class="flex items-center gap-1.5">
+                              <span class="text-base">🏢</span>
+                              <span class="font-semibold text-gray-900">{{ booking.room_name }}</span>
+                            </div>
+                          </td>
 
-                  <!-- Reject Button - Only for PENDING -->
-                  <button v-if="booking.status === 'PENDING'" @click="rejectBooking(booking)" title="Tolak"
-                    class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 inline-flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                          <!-- Pemesan & Unit -->
+                          <td class="px-6 py-4 text-sm text-gray-700">
+                            <div class="font-semibold text-gray-900 flex items-center gap-1.5">
+                              <span>👤</span>
+                              <span>{{ booking.user_name }}</span>
+                              <span class="text-xs text-gray-500 font-normal">({{ booking.user_category || '-' }})</span>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1 flex items-center gap-1">
+                              <span>🏛️</span>
+                              <span>{{ booking.unit_name || '-' }}</span>
+                            </div>
+                          </td>
 
-                  <!-- Cancel Button - Only for APPROVED -->
-                  <button v-if="booking.status === 'APPROVED'" @click="cancelBooking(booking)" title="Batalkan"
-                    class="flex-1 bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 inline-flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                    </svg>
-                  </button>
+                          <!-- Tanggal & Waktu -->
+                          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <div class="font-semibold text-gray-900 flex items-center gap-1.5">
+                              <span>📅</span>
+                              <span>{{ formatBookingDate(booking.start_time) }}</span>
+                            </div>
+                            <div class="text-xs text-gray-600 mt-1 flex items-center gap-1.5">
+                              <span>⏰</span>
+                              <span>{{ formatBookingTime(booking.start_time, booking.end_time) }}</span>
+                            </div>
+                          </td>
 
-                  <!-- Delete Button -->
-                  <button @click="confirmDeleteBooking(booking)" title="Hapus"
-                    class="flex-1 bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 inline-flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                          <!-- Status -->
+                          <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span :class="getStatusBadgeClass(booking.status)" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-1 shadow-xs">
+                              <span v-if="booking.status === 'PENDING'">⏳</span>
+                              <span v-else-if="booking.status === 'APPROVED'">✅</span>
+                              <span v-else-if="booking.status === 'REJECTED'">❌</span>
+                              <span v-else-if="booking.status === 'CANCELLED'">🚫</span>
+                              {{ booking.status }}
+                            </span>
+                          </td>
+
+                          <!-- Aksi (Tombol Ikon Kecil Ringkas) -->
+                          <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="inline-flex items-center justify-center gap-1.5">
+                              <!-- Biru: Waktu / History -->
+                              <button @click="viewHistory(booking)" title="Atur Ulang Waktu / Lihat History"
+                                class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </button>
+
+                              <!-- Hijau: Check (Setujui - Only PENDING) -->
+                              <button v-if="booking.status === 'PENDING'" @click="approveBooking(booking)" title="Setujui"
+                                class="p-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors shadow-xs focus:ring-2 focus:ring-green-500 focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                              </button>
+
+                              <!-- Merah: Silang (Tolak - Only PENDING) -->
+                              <button v-if="booking.status === 'PENDING'" @click="rejectBooking(booking)" title="Tolak"
+                                class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shadow-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+
+                              <!-- Orange: Batalkan (Only APPROVED) -->
+                              <button v-if="booking.status === 'APPROVED'" @click="cancelBooking(booking)" title="Batalkan"
+                                class="p-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors shadow-xs focus:ring-2 focus:ring-orange-500 focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                </svg>
+                              </button>
+
+                              <!-- Abu-abu: Tong Sampah (Hapus) -->
+                              <button @click="confirmDeleteBooking(booking)" title="Hapus"
+                                class="p-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors shadow-xs focus:ring-2 focus:ring-gray-500 focus:outline-none">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mobile View (Card) -->
+              <div class="space-y-4 md:hidden">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  <span>📱 TAMPILAN PONSEL (CARD)</span>
+                </div>
+
+                <div v-for="booking in paginatedBookings" :key="booking.id"
+                  class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                  
+                  <!-- Card Header: Title + Big Prominent Status Badge -->
+                  <div class="flex items-start justify-between gap-3 border-b border-gray-100 pb-3">
+                    <div class="flex-1 min-w-0">
+                      <h3 class="font-bold text-lg text-gray-900 leading-snug break-words">{{ booking.event_name }}</h3>
+                      <p v-if="booking.recurrence_pattern || booking.parent_booking_id" class="text-xs text-purple-700 font-semibold mt-1 flex items-center gap-1">
+                        🔄 Rutin: {{ getRecurrenceLabel(booking.recurrence_pattern) }}
+                        <span class="bg-purple-100 text-purple-800 px-1.5 py-0.2 rounded text-[10px]">{{ booking.parent_booking_id ? 'Jadwal Seri' : 'Jadwal Utama' }}</span>
+                      </p>
+                    </div>
+                    <!-- Big Prominent Status Badge on Top -->
+                    <span :class="getStatusBadgeClass(booking.status)" class="px-3.5 py-1.5 text-xs font-bold rounded-full uppercase tracking-wider shadow-xs flex-shrink-0">
+                      {{ booking.status }}
+                    </span>
+                  </div>
+
+                  <!-- Card Details with Icons -->
+                  <div class="space-y-2.5 text-sm text-gray-700">
+                    <div class="flex items-start gap-2.5">
+                      <span class="text-base flex-shrink-0 mt-0.5">🏢</span>
+                      <div>
+                        <span class="text-xs text-gray-400 block uppercase font-semibold">Ruangan</span>
+                        <span class="font-semibold text-gray-900">{{ booking.room_name }}</span>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                      <span class="text-base flex-shrink-0 mt-0.5">👤</span>
+                      <div>
+                        <span class="text-xs text-gray-400 block uppercase font-semibold">Pemesan</span>
+                        <span class="font-semibold text-gray-900">{{ booking.user_name }}</span>
+                        <span class="text-xs text-gray-500 ml-1 font-normal">({{ booking.user_category || '-' }})</span>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                      <span class="text-base flex-shrink-0 mt-0.5">🏛️</span>
+                      <div>
+                        <span class="text-xs text-gray-400 block uppercase font-semibold">Unit</span>
+                        <span class="font-semibold text-gray-900">{{ booking.unit_name || '-' }}</span>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                      <span class="text-base flex-shrink-0 mt-0.5">📅</span>
+                      <div>
+                        <span class="text-xs text-gray-400 block uppercase font-semibold">Tanggal</span>
+                        <span class="font-semibold text-gray-900">{{ formatBookingDate(booking.start_time) }}</span>
+                      </div>
+                    </div>
+
+                    <div class="flex items-start gap-2.5">
+                      <span class="text-base flex-shrink-0 mt-0.5">⏰</span>
+                      <div>
+                        <span class="text-xs text-gray-400 block uppercase font-semibold">Waktu</span>
+                        <span class="font-semibold text-gray-900">{{ formatBookingTime(booking.start_time, booking.end_time) }}</span>
+                      </div>
+                    </div>
+
+                    <div v-if="booking.rejection_reason" class="p-3 bg-red-50 rounded-lg border border-red-200 text-xs text-red-700 leading-relaxed">
+                      <strong>❌ Alasan Penolakan:</strong> {{ booking.rejection_reason }}
+                    </div>
+
+                    <div v-if="booking.cancellation_reason" class="p-3 bg-orange-50 rounded-lg border border-orange-200 text-xs text-orange-700 leading-relaxed">
+                      <strong>🚫 Alasan Pembatalan:</strong> {{ booking.cancellation_reason }}
+                    </div>
+                  </div>
+
+                  <!-- Mobile Action Buttons: 4 Big Full-Color Action Buttons Stacked Vertically -->
+                  <div class="pt-3 border-t border-gray-100 space-y-2.5">
+                    <!-- Biru: Atur Ulang Waktu -->
+                    <button @click="viewHistory(booking)"
+                      class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold rounded-lg flex items-center justify-center gap-2 text-sm shadow-sm transition-colors">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>Atur Ulang Waktu</span>
+                    </button>
+
+                    <!-- Hijau: Setujui (Only for PENDING) -->
+                    <button v-if="booking.status === 'PENDING'" @click="approveBooking(booking)"
+                      class="w-full py-2.5 px-4 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold rounded-lg flex items-center justify-center gap-2 text-sm shadow-sm transition-colors">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Setujui</span>
+                    </button>
+
+                    <!-- Merah: Tolak (Only for PENDING) -->
+                    <button v-if="booking.status === 'PENDING'" @click="rejectBooking(booking)"
+                      class="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold rounded-lg flex items-center justify-center gap-2 text-sm shadow-sm transition-colors">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      <span>Tolak</span>
+                    </button>
+
+                    <!-- Orange: Batalkan (Only for APPROVED) -->
+                    <button v-if="booking.status === 'APPROVED'" @click="cancelBooking(booking)"
+                      class="w-full py-2.5 px-4 bg-orange-600 hover:bg-orange-700 active:bg-orange-800 text-white font-bold rounded-lg flex items-center justify-center gap-2 text-sm shadow-sm transition-colors">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                      </svg>
+                      <span>Batalkan Pemesanan</span>
+                    </button>
+
+                    <!-- Abu-abu: Hapus -->
+                    <button @click="confirmDeleteBooking(booking)"
+                      class="w-full py-2.5 px-4 bg-gray-600 hover:bg-gray-700 active:bg-gray-800 text-white font-bold rounded-lg flex items-center justify-center gap-2 text-sm shadow-sm transition-colors">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      <span>Hapus</span>
+                    </button>
+                  </div>
                 </div>
               </div>
               <div v-if="bookingTotalPages > 1" class="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-4">
@@ -1120,12 +1315,22 @@ const formatDateTime = formatWibDateTime
 
 const getStatusClass = (status) => {
   const classes = {
-    PENDING: 'text-yellow-600 font-semibold',
-    APPROVED: 'text-green-600 font-semibold',
-    REJECTED: 'text-red-600 font-semibold',
-    CANCELLED: 'text-orange-600 font-semibold'
+    PENDING: 'text-amber-700 font-semibold',
+    APPROVED: 'text-green-700 font-semibold',
+    REJECTED: 'text-red-700 font-semibold',
+    CANCELLED: 'text-orange-700 font-semibold'
   }
   return classes[status] || 'text-gray-600'
+}
+
+const getStatusBadgeClass = (status) => {
+  const classes = {
+    PENDING: 'bg-amber-100 text-amber-800 border border-amber-300',
+    APPROVED: 'bg-green-100 text-green-800 border border-green-300',
+    REJECTED: 'bg-red-100 text-red-800 border border-red-300',
+    CANCELLED: 'bg-orange-100 text-orange-800 border border-orange-300'
+  }
+  return classes[status] || 'bg-gray-100 text-gray-800 border border-gray-300'
 }
 
 const getActionBadgeClass = (action) => {
