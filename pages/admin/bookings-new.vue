@@ -7,18 +7,18 @@
     </div>
 
     <!-- Tab Navigation -->
-    <div class="bg-white rounded-lg shadow">
-      <div class="border-b border-gray-200">
+    <div class="bg-white rounded-xl shadow-xs border border-gray-100 overflow-hidden">
+      <div class="border-b border-gray-200 bg-gray-50/50">
         <nav class="flex -mb-px">
           <button v-for="tab in tabs" :key="tab.id" @click="activeTab = tab.id" :class="[
-            'flex-1 flex flex-col items-center justify-center gap-0.5 px-2 py-3 text-xs font-medium border-b-2 transition-colors sm:flex-row sm:space-x-2 sm:px-4 sm:py-4 sm:text-sm',
+            'flex-1 flex flex-col items-center justify-center gap-1 px-3 py-3.5 text-xs font-semibold border-b-2 transition-all duration-200 sm:flex-row sm:space-x-2 sm:px-5 sm:py-4 sm:text-sm cursor-pointer select-none',
             activeTab === tab.id
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              ? 'border-blue-600 text-blue-600 bg-white shadow-xs'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-100/50'
           ]">
-            <span class="text-base sm:text-sm leading-none">{{ tab.icon }}</span>
+            <span class="text-base sm:text-sm leading-none transition-transform duration-200" :class="activeTab === tab.id ? 'scale-110' : ''">{{ tab.icon }}</span>
             <span class="whitespace-nowrap leading-tight text-center">{{ tab.label }}</span>
-            <span v-if="tab.count !== undefined" class="bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs">
+            <span v-if="tab.count !== undefined" :class="activeTab === tab.id ? 'bg-blue-100 text-blue-700 font-bold' : 'bg-gray-200 text-gray-700'" class="px-2 py-0.5 rounded-full text-[10px] sm:text-xs transition-colors">
               {{ tab.count }}
             </span>
           </button>
@@ -28,7 +28,7 @@
       <!-- Tab Content -->
       <div class="p-6">
         <!-- Tab 1: Daftar Pemesanan -->
-        <div v-show="activeTab === 'list'">
+        <div v-show="activeTab === 'list'" class="tab-pane animate-fade-in">
           <div class="space-y-4">
             <!-- Filter & Actions -->
             <div class="flex flex-wrap gap-4 items-center justify-between">
@@ -101,10 +101,58 @@
               </div>
             </div>
 
-            <!-- Bookings List -->
-            <div v-if="loading" class="text-center py-12 text-gray-500">
-              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-              <p>Memuat data pemesanan...</p>
+            <!-- Bookings List Loading Skeleton -->
+            <div v-if="loading" class="space-y-4">
+              <!-- Desktop Table Skeleton -->
+              <div class="hidden md:block bg-white border border-gray-200 rounded-lg overflow-hidden shadow-xs animate-pulse">
+                <table class="min-w-full divide-y divide-gray-200">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-400 uppercase">Judul Acara</th>
+                      <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-400 uppercase">Ruangan</th>
+                      <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-400 uppercase">Pemesan & Unit</th>
+                      <th class="px-6 py-3.5 text-left text-xs font-bold text-gray-400 uppercase">Tanggal & Waktu</th>
+                      <th class="px-6 py-3.5 text-center text-xs font-bold text-gray-400 uppercase">Status</th>
+                      <th class="px-6 py-3.5 text-center text-xs font-bold text-gray-400 uppercase">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 bg-white">
+                    <tr v-for="i in 5" :key="i">
+                      <td class="px-6 py-4">
+                        <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div class="h-3 bg-gray-100 rounded w-1/2"></div>
+                      </td>
+                      <td class="px-6 py-4"><div class="h-4 bg-gray-200 rounded w-24"></div></td>
+                      <td class="px-6 py-4">
+                        <div class="h-4 bg-gray-200 rounded w-28 mb-1"></div>
+                        <div class="h-3 bg-gray-100 rounded w-20"></div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                        <div class="h-3 bg-gray-100 rounded w-16"></div>
+                      </td>
+                      <td class="px-6 py-4 text-center"><div class="h-6 bg-gray-200 rounded-full w-20 mx-auto"></div></td>
+                      <td class="px-6 py-4 text-center"><div class="h-8 bg-gray-100 rounded-lg w-24 mx-auto"></div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Mobile Cards Skeleton -->
+              <div class="md:hidden space-y-3 animate-pulse">
+                <div v-for="i in 3" :key="i" class="bg-white border border-gray-200 rounded-xl p-4 space-y-3 shadow-xs">
+                  <div class="flex justify-between items-center">
+                    <div class="h-4 bg-gray-200 rounded w-1/3"></div>
+                    <div class="h-6 bg-gray-200 rounded-full w-20"></div>
+                  </div>
+                  <div class="h-5 bg-gray-200 rounded w-3/4"></div>
+                  <div class="space-y-2 pt-2 border-t border-gray-100">
+                    <div class="h-3.5 bg-gray-200 rounded w-1/2"></div>
+                    <div class="h-3.5 bg-gray-200 rounded w-2/3"></div>
+                  </div>
+                  <div class="h-10 bg-gray-100 rounded-lg w-full"></div>
+                </div>
+              </div>
             </div>
             <div v-else-if="bookings.length === 0" class="text-center py-12 text-gray-500 bg-gray-50/50 rounded-lg border border-dashed border-gray-200">
               <span class="text-3xl block mb-2">📋</span>
@@ -391,7 +439,7 @@
         </div>
 
         <!-- Tab 2: Audit Log -->
-        <div v-show="activeTab === 'audit'">
+        <div v-show="activeTab === 'audit'" class="tab-pane animate-fade-in">
           <div class="space-y-4">
             <div class="flex justify-between items-center">
               <h2 class="text-lg font-semibold">Log Aktivitas Sistem</h2>
@@ -481,7 +529,7 @@
         </div>
 
         <!-- Tab 3: Deleted Bookings -->
-        <div v-show="activeTab === 'deleted'">
+        <div v-show="activeTab === 'deleted'" class="tab-pane animate-fade-in">
           <div class="space-y-4">
             <div class="flex justify-between items-center">
               <h2 class="text-lg font-semibold">Pemesanan yang Dihapus</h2>
@@ -542,7 +590,7 @@
         </div>
 
         <!-- Tab 4: Statistik -->
-        <div v-show="activeTab === 'stats'">
+        <div v-show="activeTab === 'stats'" class="tab-pane animate-fade-in">
           <div class="space-y-6">
             <h2 class="text-lg font-semibold">Statistik Pemesanan</h2>
 
@@ -1450,5 +1498,21 @@ watch([bookingTotalPages, auditTotalPages, deletedTotalPages], ([bookingPages, a
 .modal-leave-to .modal-content-box {
   opacity: 0;
   transform: scale(0.95) translateY(10px);
+}
+
+/* Tab Pane Transitions */
+.tab-pane {
+  animation: tabFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

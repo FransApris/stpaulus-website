@@ -1871,8 +1871,31 @@
                   </p>
                 </div>
 
+                <!-- Skeleton Loading for My Bookings -->
                 <div
-                  v-if="filteredMyBookings.length === 0"
+                  v-if="isLoadingData"
+                  class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 w-full animate-pulse"
+                >
+                  <div
+                    v-for="i in 3"
+                    :key="i"
+                    class="bg-white border border-gray-200 rounded-2xl p-5 space-y-4 shadow-xs"
+                  >
+                    <div class="flex justify-between items-center">
+                      <div class="h-4 bg-gray-200 rounded-md w-24"></div>
+                      <div class="h-6 bg-gray-200 rounded-full w-20"></div>
+                    </div>
+                    <div class="h-5 bg-gray-200 rounded-md w-3/4"></div>
+                    <div class="space-y-2 pt-2 border-t border-gray-100">
+                      <div class="h-3.5 bg-gray-200 rounded w-1/2"></div>
+                      <div class="h-3.5 bg-gray-200 rounded w-2/3"></div>
+                    </div>
+                    <div class="h-9 bg-gray-100 rounded-xl w-full"></div>
+                  </div>
+                </div>
+
+                <div
+                  v-else-if="filteredMyBookings.length === 0"
                   class="text-center py-12 bg-gray-50 rounded-lg"
                 >
                   <svg
@@ -2585,11 +2608,31 @@
                 <div
                   class="md:hidden space-y-4 mb-6 w-full max-w-full overflow-x-hidden mobile-cards-only"
                 >
-                  <div
-                    v-for="room in roomAvailability"
-                    :key="room.id"
-                    class="bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300 w-full max-w-full overflow-hidden"
-                  >
+                  <!-- Skeleton Loading for Mobile Rooms -->
+                  <template v-if="isLoadingRooms">
+                    <div
+                      v-for="i in 3"
+                      :key="i"
+                      class="bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-5 shadow-xs animate-pulse space-y-4"
+                    >
+                      <div class="flex items-center gap-3 pb-3 border-b-2 border-gray-100">
+                        <div class="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                        <div class="h-6 bg-gray-200 rounded-md w-1/2"></div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-3">
+                        <div class="h-12 bg-gray-100 rounded-lg"></div>
+                        <div class="h-12 bg-gray-100 rounded-lg"></div>
+                      </div>
+                      <div class="h-10 bg-gray-100 rounded-xl w-full"></div>
+                    </div>
+                  </template>
+
+                  <template v-else>
+                    <div
+                      v-for="room in roomAvailability"
+                      :key="room.id"
+                      class="bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300 w-full max-w-full overflow-hidden"
+                    >
                     <!-- Room Name with Icon -->
                     <div
                       class="flex items-center mb-4 pb-3 border-b-2 border-gray-100"
@@ -2862,6 +2905,7 @@
                       </p>
                     </div>
                   </div>
+                  </template>
                 </div>
 
                 <!-- Desktop View: Table -->
@@ -2880,7 +2924,17 @@
                         <th class="px-4 py-2 border-b text-left">Status</th>
                       </tr>
                     </thead>
-                    <tbody>
+                    <!-- Skeleton Loading for Desktop Rooms Table -->
+                    <tbody v-if="isLoadingRooms" class="animate-pulse">
+                      <tr v-for="i in 4" :key="i" class="border-b">
+                        <td class="px-4 py-3.5"><div class="h-4 bg-gray-200 rounded w-3/4"></div></td>
+                        <td class="px-4 py-3.5"><div class="h-4 bg-gray-200 rounded w-1/2"></div></td>
+                        <td class="px-4 py-3.5"><div class="h-4 bg-gray-200 rounded w-2/3"></div></td>
+                        <td class="px-4 py-3.5"><div class="h-4 bg-gray-200 rounded w-4/5"></div></td>
+                        <td class="px-4 py-3.5"><div class="h-6 bg-gray-200 rounded-full w-24"></div></td>
+                      </tr>
+                    </tbody>
+                    <tbody v-else>
                       <tr
                         v-for="room in roomAvailability"
                         :key="room.id"
@@ -3075,6 +3129,8 @@ const isLoggedIn = ref(false);
 const user = ref({});
 const rooms = ref([]);
 const myBookings = ref([]);
+const isLoadingData = ref(true);
+const isLoadingRooms = ref(true);
 const showHistory = ref(false); // Toggle untuk melihat riwayat
 const selectedRoom = ref(null);
 const selectedBookingDetail = ref(null);
@@ -3767,6 +3823,7 @@ const logout = () => {
 };
 
 const loadData = async () => {
+  isLoadingData.value = true;
   try {
     const token = localStorage.getItem("auth_token");
 
@@ -3834,16 +3891,21 @@ const loadData = async () => {
   } catch (error) {
     console.error("[LOAD DATA] Error:", error);
     myBookings.value = [];
+  } finally {
+    isLoadingData.value = false;
   }
 };
 
 const loadRoomAvailability = async () => {
+  isLoadingRooms.value = true;
   try {
     const params = selectedDate.value ? `?date=${selectedDate.value}` : "";
     const availabilityRes = await $fetch(`/api/rooms-availability${params}`);
     roomAvailability.value = availabilityRes.rooms;
   } catch (error) {
     console.error("Failed to load room availability", error);
+  } finally {
+    isLoadingRooms.value = false;
   }
 };
 
