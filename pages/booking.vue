@@ -513,8 +513,7 @@
 
           <!-- Booking Modal -->
           <div v-if="selectedRoom"
-            class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-300 overflow-y-auto"
-            @click="closeBookingModal">
+            class="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 transition-all duration-300 overflow-y-auto">
             <div
               class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto border border-gray-100 transform transition-all animate-fadeIn my-auto"
               @click.stop>
@@ -785,15 +784,33 @@
                 </div>
                 <!-- ── End Availability Panel ─────────────────────────────── -->
 
+                <!-- Admin Notice Box -->
+                <div v-if="isCurrentUserAdmin"
+                  class="flex items-start gap-3 px-4 py-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900">
+                  <svg class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <p class="font-bold text-amber-900">Akses Admin Terdeteksi</p>
+                    <p class="text-xs text-amber-800 mt-0.5">Admin tidak dapat membuat booking melalui halaman publik. Gunakan <strong>Admin Panel</strong> untuk membuat dan mengelola pemesanan ruangan.</p>
+                    <NuxtLink to="/admin/bookings-new" class="inline-flex items-center gap-1.5 mt-2 text-xs font-semibold text-amber-900 hover:text-amber-700 underline">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                      Buka Admin Panel Pemesanan
+                    </NuxtLink>
+                  </div>
+                </div>
+
                 <div class="flex gap-3 pt-2">
-                  <button type="submit" :disabled="bookingLoading || slotChecking || hasHardConflict || hasQuotaExhausted"
-                    :title="hasQuotaExhausted ? 'Kuota pemesanan Anda bulan ini sudah habis' : (hasHardConflict ? 'Waktu ini sudah dipesan. Pilih waktu lain.' : '')"
+                  <button type="submit" :disabled="bookingLoading || slotChecking || hasHardConflict || hasQuotaExhausted || isCurrentUserAdmin"
+                    :title="isCurrentUserAdmin ? 'Admin harus menggunakan Admin Panel untuk booking' : (hasQuotaExhausted ? 'Kuota pemesanan Anda bulan ini sudah habis' : (hasHardConflict ? 'Waktu ini sudah dipesan. Pilih waktu lain.' : ''))"
                     class="flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all flex items-center justify-center gap-2">
                     <svg v-if="bookingLoading" class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
                     </svg>
-                    <span>{{ bookingLoading ? 'Memproses...' : 'Konfirmasi Pemesanan' }}</span>
+                    <span>{{ isCurrentUserAdmin ? 'Gunakan Admin Panel untuk Booking' : (bookingLoading ? 'Memproses...' : 'Konfirmasi Pemesanan') }}</span>
                   </button>
                   <button type="button" @click="closeBookingModal"
                     class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all">
@@ -1731,6 +1748,17 @@ const hasQuotaExhausted = computed(() => {
   if (!userQuota.value) return false
   if (userQuota.value.is_unlimited) return false
   return userQuota.value.remaining <= 0 || !userQuota.value.can_book
+})
+
+// Computed: Cek apakah user yang login adalah admin
+// Digunakan untuk menonaktifkan tombol konfirmasi dan menampilkan pesan info
+const isCurrentUserAdmin = computed(() => {
+  const role = user.value?.role
+  if (!role) return false
+  return role === 'super_admin' ||
+    role === 'admin_komsos' ||
+    role === 'admin_sekretariat' ||
+    role === 'admin'
 })
 
 // Computed: Menampilkan kategori user dengan format yang mudah dibaca

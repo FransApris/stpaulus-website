@@ -708,6 +708,7 @@ const { data: galleryData, pending, error } = await useAsyncData('homepage-galle
     }
   },
   {
+    server: false,
     lazy: true,
     default: () => [],
     transform: (data) => data || []
@@ -725,6 +726,7 @@ const { data: newsData, pending: newsPending, error: newsError } = await useAsyn
     }
   },
   {
+    server: false,
     lazy: true,
     default: () => [],
     transform: (data) => data || []
@@ -742,6 +744,7 @@ const { data: articlesData, pending: articlesPending, error: articlesError } = a
     }
   },
   {
+    server: false,
     lazy: true,
     default: () => [],
     transform: (data) => data || []
@@ -759,6 +762,8 @@ const { data: agendaData, pending: agendaPending, error: agendaError } = await u
     }
   },
   {
+    server: false,
+    lazy: true,
     default: () => [],
     transform: (data) => data || []
   }
@@ -818,6 +823,7 @@ const { data: activeThemeData, error: themeError } = await useAsyncData('active-
       return null
     }
   }, {
+  server: false,
   lazy: true,
   default: () => null,
   transform: (data) => data || null
