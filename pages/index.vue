@@ -25,14 +25,14 @@
             Gedangan, Kabupaten Sidoarjo, Jawa Timur 61254<br />Tel: 031-8557854 | Email: stpaulus.sekretariat@gmail.com
           </p>
         </div>
-        <div class="grid md:grid-cols-3 gap-8">
-          <SimpleCard class="reveal-on-scroll reveal-delay-100" title="Gallery Foto"
+        <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-8 md:overflow-visible">
+          <SimpleCard class="shrink-0 snap-center w-[85vw] sm:w-[60vw] md:w-auto reveal-on-scroll reveal-delay-100" title="Gallery Foto"
             description="Lihat momen indah kegiatan paroki kami. Dari misa hingga retret rohani." to="/galeri"
             link-text="Lihat Gallery" />
-          <SimpleCard class="reveal-on-scroll reveal-delay-200" title="Sejarah Gereja"
+          <SimpleCard class="shrink-0 snap-center w-[85vw] sm:w-[60vw] md:w-auto reveal-on-scroll reveal-delay-200" title="Sejarah Gereja"
             description="Pelajari perjalanan Paroki St. Paulus sejak didirikan. Warisan iman yang kaya." to="/sejarah"
             link-text="Baca Sejarah" />
-          <SimpleCard class="reveal-on-scroll reveal-delay-300" title="Kontak Kami"
+          <SimpleCard class="shrink-0 snap-center w-[85vw] sm:w-[60vw] md:w-auto reveal-on-scroll reveal-delay-300" title="Kontak Kami"
             description="Hubungi pastor, staf, atau komunitas untuk informasi lebih lanjut." to="/kontak"
             link-text="Hubungi" />
         </div>
@@ -106,9 +106,9 @@
         </div>
 
         <!-- Albums Grid -->
-        <div v-else-if="latestAlbums && latestAlbums.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-else-if="latestAlbums && latestAlbums.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible">
           <a v-for="(album, idx) in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
-            rel="noopener noreferrer" class="group reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
+            rel="noopener noreferrer" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
             <div
               class="bg-white rounded-2xl shadow-xs border border-gray-100/90 overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between h-full">
               <!-- Album Cover -->
@@ -249,9 +249,9 @@
         <div v-else-if="featuredDocumentsError" class="text-center text-red-500">
           Gagal memuat dokumen unggulan.
         </div>
-        <div v-else-if="featuredDocuments && featuredDocuments.length > 0" class="grid md:grid-cols-3 gap-4">
+        <div v-else-if="featuredDocuments && featuredDocuments.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
           <div v-for="(doc, idx) in featuredDocuments.slice(0, 3)" :key="doc.id"
-            class="group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
+            class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
             <div class="p-6">
               <!-- Category Badge -->
               <div class="flex items-center mb-3">
@@ -351,9 +351,9 @@
         <div v-else-if="articlesError" class="text-center text-red-500">
           Gagal memuat artikel terbaru.
         </div>
-        <div v-else-if="latestArticles && latestArticles.length > 0" class="grid md:grid-cols-3 gap-4">
+        <div v-else-if="latestArticles && latestArticles.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
           <ArticleCard v-for="(article, idx) in latestArticles.slice(0, 3)" :key="article.id"
-            class="reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
+            class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
             :image="article.image || '/images/default-article.jpg'" image-type="url" :title="article.title"
             :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`"
             link-text="Baca Artikel →" />
