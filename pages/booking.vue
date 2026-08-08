@@ -1753,12 +1753,20 @@ const hasQuotaExhausted = computed(() => {
 // Computed: Cek apakah user yang login adalah admin
 // Digunakan untuk menonaktifkan tombol konfirmasi dan menampilkan pesan info
 const isCurrentUserAdmin = computed(() => {
-  const role = user.value?.role
-  if (!role) return false
-  return role === 'super_admin' ||
+  if (!user.value) return false
+  
+  // Backend logic: admin is any user with role_id > 0
+  const hasAdminRoleId = user.value.role_id !== null && 
+                         user.value.role_id !== undefined && 
+                         Number(user.value.role_id) > 0
+                         
+  const role = user.value.role
+  const hasAdminRoleName = role === 'super_admin' ||
     role === 'admin_komsos' ||
     role === 'admin_sekretariat' ||
     role === 'admin'
+    
+  return hasAdminRoleId || hasAdminRoleName
 })
 
 // Computed: Menampilkan kategori user dengan format yang mudah dibaca
