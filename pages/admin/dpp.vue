@@ -864,14 +864,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from '#imports'
+import { ref, computed, onMounted, watch, nextTick } from '#imports'
 
 definePageMeta({
     layout: 'admin',
     middleware: 'auth'
 })
 
-// State
+// State & Reactive Refs
 const members = ref<any[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -892,57 +892,6 @@ const collapsedSections = ref<Record<string, boolean>>({
 
 // Collapse/Expand state for individual wilayah
 const collapsedWilayah = ref<Record<string, boolean>>({})
-
-const toggleSection = (sectionKey: string) => {
-    collapsedSections.value[sectionKey] = !collapsedSections.value[sectionKey]
-}
-
-const isSectionCollapsed = (sectionKey: string) => {
-    return collapsedSections.value[sectionKey] || false
-}
-
-const toggleWilayah = (wilayahName: string) => {
-    collapsedWilayah.value[wilayahName] = !collapsedWilayah.value[wilayahName]
-}
-
-const isWilayahCollapsed = (wilayahName: string) => {
-    return collapsedWilayah.value[wilayahName] || false
-}
-
-const scrollToTop = () => {
-    nextTick(() => {
-        const target = document.getElementById('dpp-list-section')
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' })
-            const mainEl = target.closest('main') || document.querySelector('main')
-            if (mainEl && typeof target.offsetTop === 'number') {
-                mainEl.scrollTo({
-                    top: Math.max(0, target.offsetTop - 12),
-                    behavior: 'smooth'
-                })
-            }
-        } else {
-            const mainEl = document.querySelector('main')
-            if (mainEl) {
-                mainEl.scrollTo({ top: 0, behavior: 'smooth' })
-            } else {
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-            }
-        }
-    })
-}
-
-const goToPage = (page: number) => {
-    if (page < 1 || page > totalPages.value) return
-    currentPage.value = page
-    scrollToTop()
-}
-
-// Reset page ke 1 saat filter atau pencarian berubah
-watch(filters, () => {
-    currentPage.value = 1
-    scrollToTop()
-}, { deep: true })
 
 // Toast notification
 const showToast = ref(false)
@@ -988,6 +937,8 @@ const formData = ref({
     notes: '',
     is_active: true
 })
+
+const previousGeneratedPosition = ref('')
 
 // Computed - Filtered Members
 const filteredMembers = computed(() => {
@@ -1133,7 +1084,7 @@ const wilayahGroupsAdmin = computed(() => {
     Object.keys(wilayahMap).forEach(wilayahName => {
         if (wilayahMap[wilayahName]?.lingkungan) {
             wilayahMap[wilayahName].lingkungan.sort((a, b) => {
-            return (parseInt(a.lingkungan_number) || 0) - (parseInt(b.lingkungan_number) || 0)
+                return (parseInt(a.lingkungan_number) || 0) - (parseInt(b.lingkungan_number) || 0)
             })
         }
     })
@@ -1150,6 +1101,61 @@ const wilayahGroupsAdmin = computed(() => {
         })
 })
 
+// Lingkungan filtered by selected wilayah
+const filteredLingkunganByWilayah = computed(() => {
+    if (!formData.value.wilayah_name) return lingkunganList.value
+    return lingkunganList.value.filter(
+        (l: any) => l.wilayah_nama === formData.value.wilayah_name ||
+                    l.wilayah_text === formData.value.wilayah_name
+    )
+})
+
+// Methods & Helpers
+const toggleSection = (sectionKey: string) => {
+    collapsedSections.value[sectionKey] = !collapsedSections.value[sectionKey]
+}
+
+const isSectionCollapsed = (sectionKey: string) => {
+    return collapsedSections.value[sectionKey] || false
+}
+
+const toggleWilayah = (wilayahName: string) => {
+    collapsedWilayah.value[wilayahName] = !collapsedWilayah.value[wilayahName]
+}
+
+const isWilayahCollapsed = (wilayahName: string) => {
+    return collapsedWilayah.value[wilayahName] || false
+}
+
+const scrollToTop = () => {
+    nextTick(() => {
+        const target = document.getElementById('dpp-list-section')
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            const mainEl = target.closest('main') || document.querySelector('main')
+            if (mainEl && typeof target.offsetTop === 'number') {
+                mainEl.scrollTo({
+                    top: Math.max(0, target.offsetTop - 12),
+                    behavior: 'smooth'
+                })
+            }
+        } else {
+            const mainEl = document.querySelector('main')
+            if (mainEl) {
+                mainEl.scrollTo({ top: 0, behavior: 'smooth' })
+            } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+            }
+        }
+    })
+}
+
+const goToPage = (page: number) => {
+    if (page < 1 || page > totalPages.value) return
+    currentPage.value = page
+    scrollToTop()
+}
+
 // Toast notification function
 const showToastMessage = (message: string, type: 'success' | 'error' = 'success') => {
     toastMessage.value = message
@@ -1160,7 +1166,6 @@ const showToastMessage = (message: string, type: 'success' | 'error' = 'success'
     }, 3000)
 }
 
-// Methods
 const fetchWilayah = async () => {
     try {
         const response = await $fetch('/api/admin/wilayah') as any
@@ -1186,15 +1191,6 @@ const fetchLingkungan = async () => {
         console.error('Error fetching lingkungan:', err)
     }
 }
-
-// Lingkungan filtered by selected wilayah
-const filteredLingkunganByWilayah = computed(() => {
-    if (!formData.value.wilayah_name) return lingkunganList.value
-    return lingkunganList.value.filter(
-        (l: any) => l.wilayah_nama === formData.value.wilayah_name ||
-                    l.wilayah_text === formData.value.wilayah_name
-    )
-})
 
 const fetchMembers = async () => {
     try {
@@ -1241,7 +1237,6 @@ const openCreateModal = () => {
     showModal.value = true
 }
 
-// Context-specific create methods
 const openCreateForPengurusInti = () => {
     modalMode.value = 'create'
     const currentCount = groupedMembers.value.pengurus_inti?.length || 0
@@ -1357,11 +1352,9 @@ const openCreateForKetuaLingkungan = (wilayahName?: string, lingkunganNo?: numbe
     showModal.value = true
 }
 
-// Wrapper for button click without parameters
 const openCreateForKetuaLingkunganDefault = () => {
     openCreateForKetuaLingkungan()
 }
-
 
 const editMember = (member: any) => {
     modalMode.value = 'edit'
@@ -1393,7 +1386,6 @@ const editMember = (member: any) => {
 const formatDateForInput = (dateString: string | null) => {
     if (!dateString) return ''
     try {
-        // Convert ISO datetime to yyyy-MM-dd format
         const date = new Date(dateString)
         if (isNaN(date.getTime())) return ''
         return date.toISOString().split('T')[0]
@@ -1430,7 +1422,6 @@ const saveMember = async () => {
 
         const method = modalMode.value === 'create' ? 'POST' : 'PUT'
 
-        // Prepare body - exclude auto_shift_order for edit mode
         const body = modalMode.value === 'edit' 
             ? {
                 name: formData.value.name,
@@ -1454,9 +1445,7 @@ const saveMember = async () => {
             }
             : formData.value
 
-        // OPTIMISTIC UPDATE
         if (modalMode.value === 'create') {
-            // Create: Add temporary item to array immediately
             const tempId = `temp_${Date.now()}`
             const tempMember = {
                 ...formData.value,
@@ -1469,11 +1458,9 @@ const saveMember = async () => {
             closeModal()
             saving.value = false
 
-            // Send to server in background
             try {
                 const response = await $fetch(url, { method, body }) as any
                 if (response.success && response.data) {
-                    // Replace temp item with real data using splice for reactivity
                     const index = members.value.findIndex((m: any) => m.id === tempId)
                     if (index !== -1) {
                         members.value.splice(index, 1, response.data)
@@ -1482,7 +1469,6 @@ const saveMember = async () => {
                     showToastMessage('Anggota DPP berhasil ditambahkan!', 'success')
                 }
             } catch (err: any) {
-                // Remove temp item on error
                 const tempIndex = members.value.findIndex((m: any) => m.id === tempId)
                 if (tempIndex !== -1) {
                     members.value.splice(tempIndex, 1)
@@ -1492,7 +1478,6 @@ const saveMember = async () => {
                 console.error('Error creating DPP member:', err)
             }
         } else {
-            // Edit: Update item immediately using splice for reactivity
             const originalMember = { ...members.value.find((m: any) => m.id === formData.value.id) }
             const index = members.value.findIndex((m: any) => m.id === formData.value.id)
             
@@ -1502,23 +1487,19 @@ const saveMember = async () => {
                     ...body,
                     updated_at: new Date().toISOString()
                 }
-                members.value.splice(index, 1, updatedMember) // Use splice for reactivity
+                members.value.splice(index, 1, updatedMember)
             }
             closeModal()
             saving.value = false
 
-            // Send to server in background
             try {
                 const response = await $fetch(url, { method, body }) as any
                 if (response.success && response.data) {
-                    // Update with server data using splice
                     if (index !== -1) {
                         members.value.splice(index, 1, response.data)
                     }
                     showToastMessage('Anggota DPP berhasil diperbarui!', 'success')
 
-                    // ===== AUTO-SYNC TO LINGKUNGAN =====
-                    // Jika ini ketua_lingkungan, update tabel lingkungan juga
                     if (body.position_category === 'ketua_lingkungan' && body.wilayah_name && body.lingkungan_number) {
                         try {
                             const lingRes = await $fetch('/api/admin/lingkungan') as any
@@ -1540,7 +1521,6 @@ const saveMember = async () => {
                     }
                 }
             } catch (err: any) {
-                // Rollback on error using splice
                 if (index !== -1 && originalMember) {
                     members.value.splice(index, 1, originalMember)
                 }
@@ -1567,14 +1547,12 @@ const deleteMember = async () => {
         const memberBackup = { ...memberToDelete.value }
         const memberIndex = members.value.findIndex((m: any) => m.id === memberToDeleteId)
 
-        // OPTIMISTIC UPDATE: Remove immediately using splice for reactivity
         if (memberIndex !== -1) {
             members.value.splice(memberIndex, 1)
         }
         showDeleteConfirm.value = false
         memberToDelete.value = null
 
-        // Send delete request in background
         try {
             const response = await $fetch(`/api/admin/dpp/${memberToDeleteId}`, {
                 method: 'DELETE'
@@ -1583,10 +1561,8 @@ const deleteMember = async () => {
             if (!response.success) {
                 throw new Error(response.message || 'Delete failed')
             }
-            // Success feedback
             showToastMessage('Anggota DPP berhasil dihapus!', 'success')
         } catch (err: any) {
-            // ROLLBACK: Restore member on error using splice
             if (memberIndex !== -1) {
                 members.value.splice(memberIndex, 0, memberBackup)
             } else {
@@ -1649,7 +1625,6 @@ const autoGeneratePosition = () => {
         const seksi = formData.value.seksi_name
         generatedPosition = seksi ? `Ketua Seksi ${seksi} - Bidang ${bidang}` : `Ketua Seksi Bidang ${bidang}`
     } else if (category === 'pengurus_inti') {
-        // Map position_type to readable name
         const typeNames: Record<string, string> = {
             'ketua': 'Ketua',
             'wakil_ketua': 'Wakil Ketua',
@@ -1674,7 +1649,6 @@ const autoGeneratePosition = () => {
         }
     }
 
-    // Only auto-fill if position is empty or same as previous generated
     if (generatedPosition && (!formData.value.position || formData.value.position === previousGeneratedPosition.value)) {
         formData.value.position = generatedPosition
         previousGeneratedPosition.value = generatedPosition
@@ -1701,9 +1675,7 @@ const getPositionPreview = () => {
     return '💡 Isi otomatis sesuai pilihan kategori dan wilayah/bidang'
 }
 
-const previousGeneratedPosition = ref('')
-
-// Watch for changes and auto-generate position
+// Watchers
 watch(
     () => [formData.value.position_category, formData.value.wilayah_name, formData.value.lingkungan_number, formData.value.bidang_name, formData.value.seksi_name, formData.value.sub_seksi_name, formData.value.position_type, formData.value.position_level],
     () => {
@@ -1712,6 +1684,7 @@ watch(
     { deep: true }
 )
 
+// Reset page ke 1 saat filter, search, atau viewMode berubah
 watch(
     () => [
         filters.value.search,
@@ -1724,7 +1697,9 @@ watch(
     ],
     () => {
         currentPage.value = 1
-    }
+        scrollToTop()
+    },
+    { deep: true }
 )
 
 watch(totalPages, (pages: number) => {
