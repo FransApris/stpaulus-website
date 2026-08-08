@@ -4,9 +4,11 @@ import { requireAuth } from '../../utils/auth'
 export default defineEventHandler(async (event) => {
   const decoded = requireAuth(event)
   
-  const allowedRoles = ['kontributor_berita', 'user_kontributor', 'admin_komsos', 'super_admin']
+  // SECURITY: Hanya kontributor yang boleh melihat daftar berita via endpoint ini.
+  // Admin harus menggunakan /api/admin/news.
+  const allowedRoles = ['kontributor_berita', 'user_kontributor']
   if (!allowedRoles.includes(decoded.role)) {
-    throw createError({ statusCode: 403, statusMessage: 'Role tidak diizinkan mengakses data ini' })
+    throw createError({ statusCode: 403, statusMessage: 'Role tidak diizinkan mengakses data ini. Admin gunakan Admin Panel.' })
   }
 
   try {

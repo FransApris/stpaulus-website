@@ -14,9 +14,11 @@ export default defineEventHandler(async (event) => {
   // 1. Authenticate
   const decoded = requireAuth(event)
   
-  const allowedRoles = ['kontributor_berita', 'user_kontributor', 'admin_komsos', 'super_admin']
+  // SECURITY: Hanya kontributor yang boleh posting berita via portal kontributor.
+  // Admin (admin_komsos, super_admin, dll) harus menggunakan /api/admin/news.
+  const allowedRoles = ['kontributor_berita', 'user_kontributor']
   if (!allowedRoles.includes(decoded.role)) {
-    throw createError({ statusCode: 403, statusMessage: 'Role tidak diizinkan membuat berita via portal kontributor' })
+    throw createError({ statusCode: 403, statusMessage: 'Role tidak diizinkan membuat berita via portal kontributor. Admin gunakan Admin Panel.' })
   }
 
   try {
