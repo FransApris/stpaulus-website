@@ -1408,6 +1408,12 @@
 </template>
 
 <script setup>
+// RBAC Guard: Hanya role 'user' biasa yang boleh mengakses halaman booking.
+// Admin group diarahkan ke /admin/dashboard, kontributor ke /kontributor.
+definePageMeta({
+  middleware: 'user-auth'
+})
+
 const { isMaintenance } = useMaintenance('booking')
 const {
   toUtcDate,

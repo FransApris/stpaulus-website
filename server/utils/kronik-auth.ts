@@ -1,6 +1,8 @@
 import { getQuery as getOne } from '~/server/database/db'
 
 const ADMIN_ROLES = new Set(['super_admin', 'admin_komsos', 'admin_sekretariat'])
+// Kontributor tidak boleh mengakses fitur kronik user (Broken Function Level Auth fix)
+const KONTRIBUTOR_ROLES = new Set(['kontributor_berita', 'user_kontributor'])
 // Case-insensitive valid user categories (lowercase comparison)
 const KRONIK_USER_CATEGORIES = new Set([
     'kategorial',
@@ -38,11 +40,21 @@ export const requireKronikUserAccess = async (userId: number): Promise<KronikUse
     }
 
     const role = (user.role || '').toLowerCase()
+
+    // Blokir Admin CMS group
     const hasAdminRole = ADMIN_ROLES.has(role) || ((user.role_id || 0) > 0)
     if (hasAdminRole) {
         throw createError({
             statusCode: 403,
             message: 'Akun admin CMS tidak dapat mengakses fitur kronik user'
+        })
+    }
+
+    // Blokir Kontributor Berita (celah BFLA — mereka tidak boleh bypass via API langsung)
+    if (KONTRIBUTOR_ROLES.has(role)) {
+        throw createError({
+            statusCode: 403,
+            message: 'Akun kontributor tidak dapat mengakses fitur kronik user'
         })
     }
 
