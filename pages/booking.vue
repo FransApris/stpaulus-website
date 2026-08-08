@@ -1975,13 +1975,14 @@ onMounted(async () => {
       console.log('[MOUNTED] User data loaded:', response)
 
       // Check if user is admin - redirect to admin panel
-      // Only redirect confirmed admin roles (NOT generic role_id check which is too broad)
-      const isAdmin = response.role === 'super_admin' ||
-        response.role === 'admin_komsos' ||
-        response.role === 'admin_sekretariat'
+      // Use role_id check (mirrors backend logic): any user with role_id > 0 is an admin
+      const isAdmin = (response.role_id !== null && response.role_id !== undefined && Number(response.role_id) > 0)
+        || response.role === 'super_admin'
+        || response.role === 'admin_komsos'
+        || response.role === 'admin_sekretariat'
 
       if (isAdmin) {
-        console.log('[MOUNTED] Admin user detected, redirecting to admin panel...')
+        console.log('[MOUNTED] Admin user detected (role_id:', response.role_id, ', role:', response.role, '), redirecting to admin panel...')
         await navigateTo('/admin/bookings-new')
         return
       }
@@ -2047,13 +2048,14 @@ const login = async () => {
     console.log('[Booking Login] User response:', userResponse)
 
     // Check if user is admin - redirect to admin panel
-    // Only redirect confirmed admin roles (NOT generic role_id check which is too broad)
-    const isAdmin = userResponse.role === 'super_admin' ||
-      userResponse.role === 'admin_komsos' ||
-      userResponse.role === 'admin_sekretariat'
+    // Use role_id check (mirrors backend logic): any user with role_id > 0 is an admin
+    const isAdmin = (userResponse.role_id !== null && userResponse.role_id !== undefined && Number(userResponse.role_id) > 0)
+      || userResponse.role === 'super_admin'
+      || userResponse.role === 'admin_komsos'
+      || userResponse.role === 'admin_sekretariat'
 
     if (isAdmin) {
-      console.log('[Booking Login] Admin user detected, redirecting to admin panel...')
+      console.log('[Booking Login] Admin user detected (role_id:', userResponse.role_id, ', role:', userResponse.role, '), redirecting to admin panel...')
       await navigateTo('/admin/bookings-new')
       return
     }
