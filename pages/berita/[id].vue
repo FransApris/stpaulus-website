@@ -194,12 +194,12 @@
     <Transition name="slide-up">
       <div 
         v-if="showToast"
-        class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl z-50 flex items-center gap-2"
+        class="fixed bottom-24 md:bottom-8 left-4 right-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 bg-gray-900 text-white px-5 py-3 md:px-6 rounded-xl md:rounded-lg shadow-2xl z-[100000] flex items-center gap-3"
       >
-        <svg v-if="toastType === 'success'" class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg v-if="toastType === 'success'" class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
         </svg>
-        <span>{{ toastMessage }}</span>
+        <span class="text-sm md:text-base font-medium">{{ toastMessage }}</span>
       </div>
     </Transition>
   </div>

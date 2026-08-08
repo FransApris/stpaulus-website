@@ -135,19 +135,21 @@
     </div>
 
     <!-- Toast notification -->
-    <Transition name="toast">
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="translate-y-full opacity-0 md:translate-y-2"
+      enter-to-class="translate-y-0 opacity-100" leave-active-class="transition ease-in duration-200"
+      leave-from-class="translate-y-0 opacity-100" leave-to-class="translate-y-full opacity-0 md:translate-y-2">
       <div v-if="toast.show"
         :class="[
-          'fixed bottom-6 right-6 flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium z-50',
+          'fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:bottom-6 flex items-center gap-3 px-4 py-3 rounded-xl shadow-2xl text-sm font-medium z-[100000]',
           toast.type === 'success' ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'
         ]">
-        <svg v-if="toast.type === 'success'" class="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <svg v-if="toast.type === 'success'" class="w-5 h-5 text-green-400 shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 0116 0zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
         </svg>
-        <svg v-else class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+        <svg v-else class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 0016 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
         </svg>
-        {{ toast.message }}
+        <span class="text-sm md:text-base font-medium">{{ toast.message }}</span>
       </div>
     </Transition>
   </div>

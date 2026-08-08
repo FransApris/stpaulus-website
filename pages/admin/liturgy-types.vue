@@ -221,19 +221,19 @@
     </div>
 
     <!-- Toast Notification -->
-    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="translate-y-2 opacity-0"
+    <Transition enter-active-class="transition ease-out duration-300" enter-from-class="translate-y-full opacity-0 md:translate-y-2"
       enter-to-class="translate-y-0 opacity-100" leave-active-class="transition ease-in duration-200"
-      leave-from-class="translate-y-0 opacity-100" leave-to-class="translate-y-2 opacity-0">
-      <div v-if="toast.show" class="fixed bottom-4 right-4 z-50 max-w-sm">
-        <div class="rounded-lg shadow-lg p-4 flex items-center space-x-3" :class="{
+      leave-from-class="translate-y-0 opacity-100" leave-to-class="translate-y-full opacity-0 md:translate-y-2">
+      <div v-if="toast.show" class="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 z-[100000] md:max-w-sm">
+        <div class="rounded-xl md:rounded-lg shadow-2xl p-4 flex items-center space-x-3" :class="{
           'bg-green-50 border border-green-200': toast.type === 'success',
           'bg-red-50 border border-red-200': toast.type === 'error'
         }">
-          <svg v-if="toast.type === 'success'" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor"
+          <svg v-if="toast.type === 'success'" class="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
           </svg>
-          <svg v-if="toast.type === 'error'" class="w-5 h-5 text-red-600" fill="none" stroke="currentColor"
+          <svg v-if="toast.type === 'error'" class="w-5 h-5 text-red-600 shrink-0" fill="none" stroke="currentColor"
             viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
