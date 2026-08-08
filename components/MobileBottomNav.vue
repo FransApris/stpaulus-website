@@ -1,6 +1,9 @@
 <template>
   <!-- Mobile Bottom Navigation - Only visible on mobile screens -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 md:hidden">
+  <nav :class="[
+    'fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 md:hidden transition-transform duration-300',
+    isHidden ? 'translate-y-full' : 'translate-y-0'
+  ]">
     <div class="flex items-center justify-around py-2 px-4">
       <!-- Navigation Items -->
       <NuxtLink
@@ -23,6 +26,40 @@
 </template>
 
 <script setup>
+// Scroll Hide Logic
+const isHidden = ref(false)
+const lastScrollY = ref(0)
+const scrollThreshold = 100
+
+const handleScroll = () => {
+  const currentScrollY = window.scrollY
+  
+  if (currentScrollY > lastScrollY.value && currentScrollY > scrollThreshold) {
+    isHidden.value = true // hide when scrolling down
+  } else if (currentScrollY < lastScrollY.value) {
+    isHidden.value = false // show when scrolling up
+  }
+  
+  // Also show nav if we are at the very bottom of the page
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
+    isHidden.value = false
+  }
+  
+  lastScrollY.value = currentScrollY
+}
+
+onMounted(() => {
+  if (process.client) {
+    window.addEventListener('scroll', handleScroll, { passive: true })
+  }
+})
+
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('scroll', handleScroll)
+  }
+})
+
 // Import icons (using Heroicons)
 const HomeIcon = () => h('svg', {
   fill: 'none',

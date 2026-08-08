@@ -21,6 +21,28 @@
          box-sizing: border-box !important;
        }
 
+       html {
+         scroll-behavior: smooth;
+       }
+
+       /* Custom Webkit Scrollbar */
+       ::-webkit-scrollbar {
+         width: 6px;
+       }
+       
+       ::-webkit-scrollbar-track {
+         background: transparent;
+       }
+       
+       ::-webkit-scrollbar-thumb {
+         background: rgba(136, 47, 29, 0.3); /* #882f1d with opacity */
+         border-radius: 10px;
+       }
+       
+       ::-webkit-scrollbar-thumb:hover {
+         background: rgba(136, 47, 29, 0.7);
+       }
+
        *,
        *::before,
        *::after {
