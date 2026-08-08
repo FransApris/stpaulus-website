@@ -1974,15 +1974,19 @@ onMounted(async () => {
       })
       console.log('[MOUNTED] User data loaded:', response)
 
-      // Check if user is admin - redirect to admin panel
-      // Use role_id check (mirrors backend logic): any user with role_id > 0 is an admin
-      const isAdmin = (response.role_id !== null && response.role_id !== undefined && Number(response.role_id) > 0)
+      // Check if user is admin AND has admin session - only then redirect to admin panel
+      // If user has role_id > 0 but no admin session token, they are blocked at API level
+      // but we do NOT redirect them to admin/login (which would confuse them).
+      // Instead, isCurrentUserAdmin computed will show the info box and disable the button.
+      const isAdminAccount = (response.role_id !== null && response.role_id !== undefined && Number(response.role_id) > 0)
         || response.role === 'super_admin'
         || response.role === 'admin_komsos'
         || response.role === 'admin_sekretariat'
+      
+      const hasAdminSession = typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('admin_access_token')
 
-      if (isAdmin) {
-        console.log('[MOUNTED] Admin user detected (role_id:', response.role_id, ', role:', response.role, '), redirecting to admin panel...')
+      if (isAdminAccount && hasAdminSession) {
+        console.log('[MOUNTED] Admin user with active session detected (role_id:', response.role_id, '), redirecting to admin panel...')
         await navigateTo('/admin/bookings-new')
         return
       }
@@ -2047,15 +2051,16 @@ const login = async () => {
 
     console.log('[Booking Login] User response:', userResponse)
 
-    // Check if user is admin - redirect to admin panel
-    // Use role_id check (mirrors backend logic): any user with role_id > 0 is an admin
-    const isAdmin = (userResponse.role_id !== null && userResponse.role_id !== undefined && Number(userResponse.role_id) > 0)
+    // Check if user is admin AND has admin session - only then redirect to admin panel
+    const isAdminAccount = (userResponse.role_id !== null && userResponse.role_id !== undefined && Number(userResponse.role_id) > 0)
       || userResponse.role === 'super_admin'
       || userResponse.role === 'admin_komsos'
       || userResponse.role === 'admin_sekretariat'
+    
+    const hasAdminSession = typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem('admin_access_token')
 
-    if (isAdmin) {
-      console.log('[Booking Login] Admin user detected (role_id:', userResponse.role_id, ', role:', userResponse.role, '), redirecting to admin panel...')
+    if (isAdminAccount && hasAdminSession) {
+      console.log('[Booking Login] Admin user with active session detected (role_id:', userResponse.role_id, '), redirecting to admin panel...')
       await navigateTo('/admin/bookings-new')
       return
     }
