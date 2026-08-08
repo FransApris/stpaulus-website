@@ -474,15 +474,18 @@ const locationOptions = [
   'Halaman Depan Gereja'
 ]
 
-// User Category Options
-const userCategories = [
+// User Category Options (Dinamis dari Database)
+const userCategories = ref([
   { value: 'Dewan Pastoral Paroki', label: 'Dewan Pastoral Paroki' },
   { value: 'Kategorial', label: 'Kelompok Kategorial' },
   { value: 'Wilayah', label: 'Wilayah' },
   { value: 'Komunitas', label: 'Komunitas' },
   { value: 'Lingkungan', label: 'Lingkungan' },
-  { value: 'Seksi', label: 'Seksi' }
-]
+  { value: 'Seksi', label: 'Seksi' },
+  { value: 'Sekretariat', label: 'Sekretariat' },
+  { value: 'Admin', label: 'Admin' },
+  { value: 'Badan Gereja Katolik Paroki', label: 'Badan Gereja Katolik Paroki' }
+])
 
 // Modal Form State
 const showModal = ref(false)
@@ -544,14 +547,29 @@ function parseFacilities(fac) {
 
 // Watch modal category changes for selectAll
 watch(() => form.value.allowed_categories, (newVal) => {
-  selectAllModal.value = (newVal || []).length === userCategories.length
+  selectAllModal.value = userCategories.value.length > 0 && (newVal || []).length === userCategories.value.length
 }, { deep: true })
 
 const toggleAllModalCategories = () => {
   if (selectAllModal.value) {
-    form.value.allowed_categories = userCategories.map(c => c.value)
+    form.value.allowed_categories = userCategories.value.map(c => c.value)
   } else {
     form.value.allowed_categories = []
+  }
+}
+
+// Load Master User Categories from DB
+const loadUserCategories = async () => {
+  try {
+    const data = await $fetch('/api/user-categories')
+    if (data && Array.isArray(data) && data.length > 0) {
+      userCategories.value = data.map((cat: any) => ({
+        value: cat.name,
+        label: cat.display_name || cat.name
+      }))
+    }
+  } catch (err) {
+    console.error('Failed to load user categories, using fallback:', err)
   }
 }
 
@@ -569,8 +587,8 @@ const loadRooms = async () => {
   }
 }
 
-onMounted(() => {
-  loadRooms()
+onMounted(async () => {
+  await Promise.all([loadRooms(), loadUserCategories()])
 })
 
 // Filtering & Sorting
@@ -719,14 +737,17 @@ const toggleActiveStatus = async (room) => {
 }
 
 // Open Modal Add / Edit
-const openCreateModal = () => {
+const openCreateModal = async () => {
+  if (userCategories.value.length === 0) {
+    await loadUserCategories()
+  }
   isEditing.value = false
   modalError.value = ''
   form.value = {
     id: null,
     name: '',
     capacity: 20,
-    location: '',
+    location: locationOptions[0] || 'Balai Paroki Lt.1',
     facilities: '',
     description: '',
     photo_url: '',
@@ -734,19 +755,22 @@ const openCreateModal = () => {
     is_active: true,
     is_dedicated: false,
     dedicated_to: '',
-    allowed_categories: userCategories.map(c => c.value) // Default all checked
+    allowed_categories: userCategories.value.map(c => c.value) // Default all checked
   }
   selectAllModal.value = true
   showModal.value = true
 }
 
-const openEditModal = (room) => {
+const openEditModal = async (room: any) => {
+  if (userCategories.value.length === 0) {
+    await loadUserCategories()
+  }
   isEditing.value = true
   modalError.value = ''
 
   const facs = parseFacilities(room.facilities).join(', ')
 
-  let parsedCats = []
+  let parsedCats: string[] = []
   if (Array.isArray(room.allowed_categories)) {
     parsedCats = room.allowed_categories
   } else if (typeof room.allowed_categories === 'string' && room.allowed_categories.trim() !== '') {
@@ -754,7 +778,7 @@ const openEditModal = (room) => {
       const p = JSON.parse(room.allowed_categories)
       parsedCats = Array.isArray(p) ? p : []
     } catch (e) {
-      parsedCats = room.allowed_categories.split(',').map(s => s.trim()).filter(Boolean)
+      parsedCats = room.allowed_categories.split(',').map((s: string) => s.trim()).filter(Boolean)
     }
   }
 
@@ -773,7 +797,7 @@ const openEditModal = (room) => {
     allowed_categories: parsedCats
   }
 
-  selectAllModal.value = parsedCats.length === userCategories.length
+  selectAllModal.value = userCategories.value.length > 0 && parsedCats.length === userCategories.value.length
   showModal.value = true
 }
 

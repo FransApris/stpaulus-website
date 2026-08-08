@@ -5,9 +5,10 @@ export default defineEventHandler(async (event) => {
   requireAuth(event)
 
   const user = event.context.auth
-  // Super admin atau admin_sekretariat (manage_users_komsos_sekretariat) boleh baca
+  // Super admin, admin_sekretariat, atau admin_ruangan (manage_rooms) boleh baca
   const canRead = user?.permissions?.includes('manage_users') ||
-    user?.permissions?.includes('manage_users_komsos_sekretariat')
+    user?.permissions?.includes('manage_users_komsos_sekretariat') ||
+    user?.permissions?.includes('manage_rooms')
 
   if (!canRead) {
     throw createError({
