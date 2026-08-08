@@ -52,39 +52,62 @@
       <div v-if="widgets.pendingBookings > 0 || widgets.pendingUsers > 0"
         class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         
+        <!-- User Pending Activation Banner -->
         <NuxtLink v-if="widgets.pendingUsers > 0" to="/admin/users"
-          class="flex items-center gap-4 bg-blue-50 border border-blue-200 rounded-xl p-5 hover:bg-blue-100 transition-colors shadow-sm cursor-pointer">
-          <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center shrink-0 shadow-sm">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-            </svg>
+          class="group relative flex items-center gap-4 bg-gradient-to-r from-blue-50/90 via-blue-50/50 to-white border border-blue-200/90 hover:border-blue-400/80 rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-xs cursor-pointer overflow-hidden">
+          <!-- Ambient Glow Effect -->
+          <div class="absolute -right-8 -top-8 w-24 h-24 bg-blue-200/30 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500 pointer-events-none"></div>
+          
+          <!-- Pulsing Icon Container -->
+          <div class="relative flex items-center justify-center shrink-0">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-40 animate-ping"></span>
+            <div class="relative w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center shadow-md text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+              </svg>
+            </div>
           </div>
-          <div class="flex-1">
+          
+          <div class="flex-1 min-w-0">
             <div class="text-3xl font-bold text-blue-700 leading-tight">{{ widgets.pendingUsers }}</div>
-            <div class="text-sm text-blue-600 font-medium">User Menunggu Aktivasi</div>
+            <div class="text-sm text-blue-800 font-semibold">User Menunggu Aktivasi</div>
+            <p class="text-xs text-blue-600/80 mt-0.5">Klik untuk meninjau akun baru</p>
           </div>
-          <div class="text-blue-400 shrink-0">
+          
+          <!-- Interactive Arrow -->
+          <div class="text-blue-400 group-hover:text-blue-600 group-hover:translate-x-1.5 transition-all duration-200 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
           </div>
         </NuxtLink>
 
+        <!-- Booking Pending Banner -->
         <NuxtLink v-if="widgets.pendingBookings > 0" to="/admin/bookings-new"
-          class="flex items-center gap-4 bg-amber-50 border border-amber-200 rounded-xl p-5 hover:bg-amber-100 transition-colors shadow-sm cursor-pointer">
-          <div class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center shrink-0 shadow-sm">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
+          class="group relative flex items-center gap-4 bg-gradient-to-r from-amber-50/90 via-amber-50/50 to-white border border-amber-200/90 hover:border-amber-400/80 rounded-2xl p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 shadow-xs cursor-pointer overflow-hidden">
+          <!-- Ambient Glow Effect -->
+          <div class="absolute -right-8 -top-8 w-24 h-24 bg-amber-200/40 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500 pointer-events-none"></div>
+          
+          <!-- Pulsing Icon Container -->
+          <div class="relative flex items-center justify-center shrink-0">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-40 animate-ping"></span>
+            <div class="relative w-12 h-12 rounded-full bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-md text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
           </div>
+          
           <div class="flex-1 min-w-0">
             <div class="text-3xl font-bold text-amber-700 leading-tight">{{ widgets.pendingBookings }}</div>
-            <div class="text-sm text-amber-700 font-medium">Pemesanan Ruangan Pending</div>
+            <div class="text-sm text-amber-800 font-semibold">Pemesanan Ruangan Pending</div>
             <p v-if="widgets.oldestPendingDate" class="text-xs text-amber-800/80 mt-1 leading-snug">
-              {{ widgets.pendingBookings > 1 ? 'Paling awal dibuat' : 'dibuat' }} pada tanggal : <span class="font-medium text-amber-900">{{ formatWibDate(widgets.oldestPendingDate) }}</span> - pukul : <span class="font-medium text-amber-900">{{ formatWibTime(widgets.oldestPendingDate) }} WIB</span> ({{ formatWaitDuration(widgets.oldestPendingDate) }})
+              {{ widgets.pendingBookings > 1 ? 'Paling awal dibuat' : 'dibuat' }} pada tanggal : <span class="font-semibold text-amber-900">{{ formatWibDate(widgets.oldestPendingDate) }}</span> - pukul : <span class="font-semibold text-amber-900">{{ formatWibTime(widgets.oldestPendingDate) }} WIB</span> ({{ formatWaitDuration(widgets.oldestPendingDate) }})
             </p>
           </div>
-          <div class="text-amber-400 shrink-0">
+          
+          <!-- Interactive Arrow -->
+          <div class="text-amber-400 group-hover:text-amber-600 group-hover:translate-x-1.5 transition-all duration-200 shrink-0">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
             </svg>
