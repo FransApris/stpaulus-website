@@ -15,9 +15,9 @@
     <!-- Footer: Always Bottom -->
     <Footer />
 
-    <!-- Mobile Bottom Navigation (Client Only to prevent hydration mismatches) -->
+    <!-- Mobile Bottom Navigation (Lazy Loaded) -->
     <ClientOnly>
-      <MobileBottomNav />
+      <LazyMobileBottomNav />
     </ClientOnly>
 
     <!-- Chat Widget (Lazy Loaded) -->

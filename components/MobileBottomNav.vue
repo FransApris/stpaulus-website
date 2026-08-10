@@ -94,6 +94,15 @@ function handleQuickLink(path: string) {
   handleNavClick(path)
 }
 
+// Quick navigation links for the bottom sheet
+const quickLinks = [
+  { label: 'Jadwal Misa', desc: 'Lihat jadwal misa & liturgi', path: '/jadwal-misa', color: '#882f1d', icon: CalendarIcon },
+  { label: 'Galeri Foto', desc: 'Album foto kegiatan paroki', path: '/galeri', color: '#7c3aed', icon: PhotoIcon },
+  { label: 'Pengumuman', desc: 'Info terkini dari paroki', path: '/pengumuman', color: '#d97706', icon: BellIcon },
+  { label: 'Booking Ruangan', desc: 'Pesan ruangan & fasilitas', path: '/booking', color: '#059669', icon: BuildingIcon },
+  { label: 'Dokumen', desc: 'Dokumen & formulir paroki', path: '/dokumen-paroki', color: '#0284c7', icon: DocumentIcon },
+  { label: 'Kontak', desc: 'Hubungi sekretariat paroki', path: '/kontak', color: '#dc2626', icon: PhoneIcon },
+]
 
 // Scroll Hide Logic
 const isHidden = ref(false)
@@ -111,11 +120,6 @@ const handleScroll = () => {
   
   // Also show nav if we are at the very bottom of the page
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
-    isHidden.value = false
-  }
-
-  // Always show nav if we are at the top
-  if (currentScrollY <= scrollThreshold) {
     isHidden.value = false
   }
   
@@ -228,16 +232,6 @@ const navItems = [
   { label: 'Berita', path: '/berita', icon: DocumentIcon },
   { label: 'Agenda', path: '/agenda', icon: CalendarIcon },
   { label: 'Kontak', path: '/kontak', icon: PhoneIcon },
-]
-
-// Quick navigation links for the bottom sheet
-const quickLinks = [
-  { label: 'Jadwal Misa', desc: 'Lihat jadwal misa & liturgi', path: '/jadwal-misa', color: '#882f1d', icon: CalendarIcon },
-  { label: 'Galeri Foto', desc: 'Album foto kegiatan paroki', path: '/galeri', color: '#7c3aed', icon: PhotoIcon },
-  { label: 'Pengumuman', desc: 'Info terkini dari paroki', path: '/pengumuman', color: '#d97706', icon: BellIcon },
-  { label: 'Booking Ruangan', desc: 'Pesan ruangan & fasilitas', path: '/booking', color: '#059669', icon: BuildingIcon },
-  { label: 'Dokumen', desc: 'Dokumen & formulir paroki', path: '/dokumen-paroki', color: '#0284c7', icon: DocumentIcon },
-  { label: 'Kontak', desc: 'Hubungi sekretariat paroki', path: '/kontak', color: '#dc2626', icon: PhoneIcon },
 ]
 
 // Active state

@@ -1,59 +1,57 @@
 <template>
   <!-- Bottom Sheet / Mobile Drawer — rendered globally via Teleport -->
-  <ClientOnly>
-    <Teleport to="body">
-      <!-- Backdrop -->
-      <Transition name="bs-backdrop">
-        <div
-          v-if="sheetState.isOpen"
-          class="bs-backdrop"
-          aria-hidden="true"
-          @click="onBackdropClick"
-        />
-      </Transition>
+  <Teleport to="body">
+    <!-- Backdrop -->
+    <Transition name="bs-backdrop">
+      <div
+        v-if="sheetState.isOpen"
+        class="bs-backdrop"
+        aria-hidden="true"
+        @click="onBackdropClick"
+      />
+    </Transition>
 
-      <!-- Sheet Panel -->
-      <Transition name="bs-sheet">
-        <div
-          v-if="sheetState.isOpen"
-          ref="sheetEl"
-          role="dialog"
-          aria-modal="true"
-          :aria-label="sheetState.title || 'Panel informasi'"
-          :class="['bs-panel', `bs-size-${sheetState.size}`]"
-          :style="dragStyle"
-          @touchstart.passive="onTouchStart"
-          @touchmove="onTouchMove"
-          @touchend="onTouchEnd"
-        >
-          <!-- Drag handle -->
-          <div class="bs-drag-handle" aria-hidden="true">
-            <div class="bs-drag-indicator" />
-          </div>
-
-          <!-- Header -->
-          <div v-if="sheetState.title" class="bs-header">
-            <h2 class="bs-title">{{ sheetState.title }}</h2>
-            <button
-              class="bs-close-btn"
-              aria-label="Tutup panel"
-              @click="close"
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Content via slot -->
-          <div class="bs-body">
-            <slot />
-          </div>
+    <!-- Sheet Panel -->
+    <Transition name="bs-sheet">
+      <div
+        v-if="sheetState.isOpen"
+        ref="sheetEl"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="sheetState.title || 'Panel informasi'"
+        :class="['bs-panel', `bs-size-${sheetState.size}`]"
+        :style="dragStyle"
+        @touchstart.passive="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
+      >
+        <!-- Drag handle -->
+        <div class="bs-drag-handle" aria-hidden="true">
+          <div class="bs-drag-indicator" />
         </div>
-      </Transition>
-    </Teleport>
-  </ClientOnly>
+
+        <!-- Header -->
+        <div v-if="sheetState.title" class="bs-header">
+          <h2 class="bs-title">{{ sheetState.title }}</h2>
+          <button
+            class="bs-close-btn"
+            aria-label="Tutup panel"
+            @click="close"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Content via slot -->
+        <div class="bs-body">
+          <slot />
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
