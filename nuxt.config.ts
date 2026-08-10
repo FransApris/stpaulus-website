@@ -48,9 +48,8 @@ export default defineNuxtConfig({
   },
 
   css: [
-    'tw-elements/dist/css/tw-elements.css',
+    'tw-elements/css/tw-elements.min.css',
     '~/assets/css/fonts.css',
-    '~/assets/css/tailwind.css',
     '~/assets/css/main.css',
     '~/assets/css/prose-custom.css'
   ],

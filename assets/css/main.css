@@ -5,9 +5,24 @@
  */
      /* Import TW Elements CSS removed from here, now loaded via nuxt.config.ts css array */
 
-     /* @tailwind base; */
-     /* @tailwind components; */
-     /* @tailwind utilities; */
+     @tailwind base;
+     @tailwind components;
+     @tailwind utilities;
+
+     /* WCAG 2.1 AA Accessibility Focus Ring Rules */
+     @layer base {
+       *:focus-visible {
+         outline: 2px solid #882f1d !important;
+         outline-offset: 2px !important;
+       }
+     }
+
+     /* Custom styles untuk aplikasi */
+     @layer components {
+       .btn-primary {
+         @apply bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors;
+       }
+     }
 
      /* Global overflow prevention */
      @layer base {
