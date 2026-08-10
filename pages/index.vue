@@ -148,7 +148,9 @@
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                       </path>
                     </svg>
-                    {{ formatDate(album.created_at) }}
+                    <ClientOnly fallback="Memuat tanggal...">
+                      {{ formatDate(album.created_at) }}
+                    </ClientOnly>
                   </span>
                   <span
                     class="text-[#882f1d] font-semibold text-sm group-hover:gap-2 flex items-center gap-1 transition-all">
@@ -307,7 +309,7 @@
               <div class="flex items-center justify-between">
                 <!-- Upload Date -->
                 <div class="text-xs text-gray-600">
-                  Diunggah: {{ formatDate(doc.created_at) }}
+                  Diunggah: <ClientOnly fallback="...">{{ formatDate(doc.created_at) }}</ClientOnly>
                 </div>
 
 
@@ -466,7 +468,7 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <span class="font-medium">{{ formatDate(agenda.start_date) }}</span>
+                <ClientOnly fallback="..."><span class="font-medium">{{ formatDate(agenda.start_date) }}</span></ClientOnly>
               </div>
 
               <div class="flex items-center text-gray-600 mb-3">
@@ -722,6 +724,125 @@
 const { optimizeImageUrl } = useOptimizedImage()
 const { isMaintenance } = useMaintenance('beranda')
 const { initObserver } = useScrollReveal()
+
+// ── HYDRATION & UTILITY HOISTING (MENCEGAH REFERENCE ERROR) ──
+const isMounted = ref(false)
+onMounted(() => {
+  isMounted.value = true
+})
+
+// Pagination untuk booking
+const currentBookingPage = ref(1)
+const bookingsPerPage = 10
+
+// State loading per-dokumen
+const loadingDocId = ref(null)
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'UTC'
+  })
+}
+
+const handleAlbumImageError = (event) => {
+  const img = event?.target
+  if (!img || typeof img.src !== 'string') return
+  if (img.src.includes('/images/default-gallery.jpg')) return
+  img.src = '/images/default-gallery.jpg'
+}
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes'
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+const getDocumentUrl = (docId, mode = 'attachment') => `/api/documents/${docId}/download?mode=${mode}`
+
+const openDocumentAsBlob = async (doc) => {
+  if (!process.client) return
+  const newTab = globalThis.window.open('', '_blank')
+  loadingDocId.value = doc.id
+  try {
+    const response = await fetch(getDocumentUrl(doc.id, 'attachment'))
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const blob = await response.blob()
+    const blobUrl = URL.createObjectURL(blob)
+    if (newTab) {
+      newTab.location.href = blobUrl
+    } else {
+      globalThis.window.open(blobUrl, '_blank', 'noopener')
+    }
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
+  } catch (error) {
+    console.error('Failed to open document:', error)
+    if (newTab) newTab.close()
+    alert('Gagal membuka dokumen. Silakan coba lagi.')
+  } finally {
+    loadingDocId.value = null
+  }
+}
+
+const viewDocument = (doc) => openDocumentAsBlob(doc)
+const printDocument = (doc) => openDocumentAsBlob(doc)
+
+const downloadDocument = (doc) => {
+  if (process.client) {
+    try {
+      const a = globalThis.document.createElement('a')
+      a.href = getDocumentUrl(doc.id, 'attachment')
+      a.download = doc.original_filename
+      globalThis.document.body.appendChild(a)
+      a.click()
+      globalThis.document.body.removeChild(a)
+    } catch (error) {
+      console.error('Failed to download document:', error)
+      alert('Gagal mengunduh dokumen')
+    }
+  }
+}
+
+const getCategoryStyle = (agenda) => {
+  if (agenda.category_color) {
+    const hex = agenda.category_color.replace('#', '')
+    const r = parseInt(hex.substr(0, 2), 16)
+    const g = parseInt(hex.substr(2, 2), 16)
+    const b = parseInt(hex.substr(4, 2), 16)
+    return {
+      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.1)`,
+      color: agenda.category_color,
+      border: `1px solid ${agenda.category_color}`
+    }
+  }
+  return {
+    backgroundColor: 'rgba(156, 163, 175, 0.1)',
+    color: '#6B7280',
+    border: '1px solid #D1D5DB'
+  }
+}
+
+const getBookingStatusStyle = (status) => {
+  switch (status) {
+    case 'APPROVED':
+      return { backgroundColor: 'rgba(34, 197, 94, 0.1)', color: '#16A34A', border: '1px solid #16A34A' }
+    case 'PENDING':
+      return { backgroundColor: 'rgba(251, 191, 36, 0.1)', color: '#D97706', border: '1px solid #D97706' }
+    case 'REJECTED':
+      return { backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#DC2626', border: '1px solid #DC2626' }
+    case 'CANCELLED':
+      return { backgroundColor: 'rgba(249, 115, 22, 0.1)', color: '#EA580C', border: '1px solid #EA580C' }
+    default:
+      return { backgroundColor: 'rgba(156, 163, 175, 0.1)', color: '#6B7280', border: '1px solid #D1D5DB' }
+  }
+}
+// ──────────────────────────────────────────────────────────────
 
 // DIAGNOSTIC: Temporarily disable SSR to test IPC crash
 definePageMeta({ ssr: false })
@@ -1020,163 +1141,7 @@ const publicBookings = computed(() => {
   return filtered;
 });
 
-// Pagination untuk booking
-const currentBookingPage = ref(1)
-const bookingsPerPage = 10
-
-const paginatedBookings = computed(() => {
-  const start = (currentBookingPage.value - 1) * bookingsPerPage
-  const end = start + bookingsPerPage
-  return publicBookings.value.slice(start, end)
-})
-
-const totalBookingPages = computed(() => {
-  return Math.ceil(publicBookings.value.length / bookingsPerPage)
-})
-
-const goToBookingPage = (page) => {
-  if (page >= 1 && page <= totalBookingPages.value) {
-    currentBookingPage.value = page
-    // Scroll to booking section
-    const bookingSection = document.querySelector('#booking-section')
-    if (bookingSection) {
-      bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
-}
-
-// Helper functions
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('id-ID', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'UTC'
-  })
-}
-
-const handleAlbumImageError = (event) => {
-  const img = event?.target
-  if (!img || typeof img.src !== 'string') return
-
-  if (img.src.includes('/images/default-gallery.jpg')) return
-  img.src = '/images/default-gallery.jpg'
-}
-
-const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes'
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-}
-
-const getDocumentUrl = (docId, mode = 'attachment') => `/api/documents/${docId}/download?mode=${mode}`
-
-// State loading per-dokumen untuk beranda
-const loadingDocId = ref(null)
-
-// Buka dokumen lewat API server lalu tampilkan sebagai blob URL
-// Cara ini 100% same-origin, tidak ada masalah cross-origin/chrome-error
-const openDocumentAsBlob = async (doc) => {
-  if (!process.client) return
-  // Buka tab baru dulu (synchronous) agar popup blocker tidak aktif
-  const newTab = globalThis.window.open('', '_blank')
-  loadingDocId.value = doc.id
-  try {
-    const response = await fetch(getDocumentUrl(doc.id, 'attachment'))
-    if (!response.ok) throw new Error(`HTTP ${response.status}`)
-    const blob = await response.blob()
-    const blobUrl = URL.createObjectURL(blob)
-    if (newTab) {
-      newTab.location.href = blobUrl
-    } else {
-      globalThis.window.open(blobUrl, '_blank', 'noopener')
-    }
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000)
-  } catch (error) {
-    console.error('Failed to open document:', error)
-    if (newTab) newTab.close()
-    alert('Gagal membuka dokumen. Silakan coba lagi.')
-  } finally {
-    loadingDocId.value = null
-  }
-}
-
-const viewDocument = (doc) => openDocumentAsBlob(doc)
-const printDocument = (doc) => openDocumentAsBlob(doc)
-
-const downloadDocument = (doc) => {
-  if (process.client) {
-    try {
-      const a = globalThis.document.createElement('a')
-      a.href = getDocumentUrl(doc.id, 'attachment')
-      a.download = doc.original_filename
-      globalThis.document.body.appendChild(a)
-      a.click()
-      globalThis.document.body.removeChild(a)
-    } catch (error) {
-      console.error('Failed to download document:', error)
-      alert('Gagal mengunduh dokumen')
-    }
-  }
-}
-
-const getCategoryStyle = (agenda) => {
-  if (agenda.category_color) {
-    // Convert hex to RGB for background with opacity
-    const hex = agenda.category_color.replace('#', '')
-    const r = parseInt(hex.substr(0, 2), 16)
-    const g = parseInt(hex.substr(2, 2), 16)
-    const b = parseInt(hex.substr(4, 2), 16)
-    return {
-      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.1)`,
-      color: agenda.category_color,
-      border: `1px solid ${agenda.category_color}`
-    }
-  }
-  return {
-    backgroundColor: 'rgba(156, 163, 175, 0.1)',
-    color: '#6B7280',
-    border: '1px solid #D1D5DB'
-  }
-}
-
-const getBookingStatusStyle = (status) => {
-  switch (status) {
-    case 'APPROVED':
-      return {
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-        color: '#16A34A',
-        border: '1px solid #16A34A'
-      }
-    case 'PENDING':
-      return {
-        backgroundColor: 'rgba(251, 191, 36, 0.1)',
-        color: '#D97706',
-        border: '1px solid #D97706'
-      }
-    case 'REJECTED':
-      return {
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        color: '#DC2626',
-        border: '1px solid #DC2626'
-      }
-    case 'CANCELLED':
-      return {
-        backgroundColor: 'rgba(249, 115, 22, 0.1)',
-        color: '#EA580C',
-        border: '1px solid #EA580C'
-      }
-    default:
-      return {
-        backgroundColor: 'rgba(156, 163, 175, 0.1)',
-        color: '#6B7280',
-        border: '1px solid #D1D5DB'
-      }
-  }
-}
+// Note: helper functions and formatting utilities have been hoisted to the top to avoid Temporal Dead Zone (ReferenceError).
 </script>
 
 <style scoped>
