@@ -122,6 +122,11 @@ const handleScroll = () => {
   if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 10) {
     isHidden.value = false
   }
+
+  // Always show nav if we are at the top
+  if (currentScrollY <= scrollThreshold) {
+    isHidden.value = false
+  }
   
   lastScrollY.value = currentScrollY
 }
