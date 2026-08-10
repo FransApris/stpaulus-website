@@ -15,8 +15,10 @@
     <!-- Footer: Always Bottom -->
     <Footer />
 
-    <!-- Mobile Bottom Navigation -->
-    <MobileBottomNav />
+    <!-- Mobile Bottom Navigation (Client Only to prevent hydration mismatches) -->
+    <ClientOnly>
+      <MobileBottomNav />
+    </ClientOnly>
 
     <!-- Chat Widget (Lazy Loaded) -->
     <ClientOnly>
