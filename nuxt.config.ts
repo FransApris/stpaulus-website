@@ -36,9 +36,9 @@ export default defineNuxtConfig({
   // Reduce log noise - suppress non-critical warnings
   logLevel: process.env.NODE_ENV === 'production' ? 'info' : 'info',
 
-  // Disable dev-server-logs for SSR warnings (development only)
+  // Disable inlineSSRStyles to prevent Nitro RollupError on entry-styles resolution
   experimental: {
-    inlineSSRStyles: true
+    inlineSSRStyles: false
   },
 
 
@@ -185,6 +185,8 @@ export default defineNuxtConfig({
       }
     },
     build: {
+      // Prevent CSS extraction issues that cause Nitro UNRESOLVED_IMPORT on entry-styles
+      cssCodeSplit: false,
       rollupOptions: {
         output: {
           manualChunks(id) {
@@ -193,7 +195,6 @@ export default defineNuxtConfig({
               if (id.includes('xlsx')) return 'vendor-xlsx'
               if (id.includes('@google/generative-ai') || id.includes('groq-sdk')) return 'vendor-ai'
               if (id.includes('@vueuse')) return 'vendor-vueuse'
-              if (id.includes('tw-elements')) return 'vendor-ui'
               if (id.includes('vue-router') || id.includes('vue/dist') || id.includes('/vue/')) return 'vendor-vue'
             }
           }
