@@ -188,7 +188,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useMaintenance } from '~/composables/useMaintenance'
 import { useToast } from '~/composables/useToast'
 
@@ -227,7 +227,7 @@ async function shareAlbum(album: any) {
       await navigator.share({ title, url })
       shareCounts.value[id] = (shareCounts.value[id] ?? 0) + 1
       success('Album berhasil dibagikan! 🎉')
-    } catch (e: any) {
+    } catch (_e) {
       // User cancelled — no toast needed
     }
   } else {
