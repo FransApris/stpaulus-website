@@ -1,6 +1,20 @@
+/**
+ * composables/useSwipe.ts
+ *
+ * Reusable swipe gesture detection for mobile carousels & interactions.
+ * Fixed: removed invalid defineEmits() call (only valid inside component setup).
+ * Uses callback pattern instead.
+ */
+
 export interface SwipeOptions {
   threshold?: number
   passive?: boolean
+  onSwipeLeft?: () => void
+  onSwipeRight?: () => void
+  onSwipeUp?: () => void
+  onSwipeDown?: () => void
+  onSwipeStart?: (state: SwipeState) => void
+  onSwipeEnd?: (state: SwipeState) => void
 }
 
 export interface SwipeState {
@@ -10,9 +24,14 @@ export interface SwipeState {
   currentY: number
   isSwiping: boolean
   direction: 'left' | 'right' | 'up' | 'down' | null
+  deltaX: number
+  deltaY: number
 }
 
-export const useSwipe = (element: HTMLElement | null, options: SwipeOptions = {}) => {
+export function useSwipe(
+  elementRef: Ref<HTMLElement | null> | (() => HTMLElement | null),
+  options: SwipeOptions = {}
+) {
   const { threshold = 50, passive = true } = options
 
   const swipeState = reactive<SwipeState>({
@@ -21,133 +40,61 @@ export const useSwipe = (element: HTMLElement | null, options: SwipeOptions = {}
     currentX: 0,
     currentY: 0,
     isSwiping: false,
-    direction: null
+    direction: null,
+    deltaX: 0,
+    deltaY: 0,
   })
 
-  const emit = defineEmits<{
-    swipeStart: [state: SwipeState]
-    swipeMove: [state: SwipeState]
-    swipeEnd: [state: SwipeState]
-    swipeLeft: [state: SwipeState]
-    swipeRight: [state: SwipeState]
-    swipeUp: [state: SwipeState]
-    swipeDown: [state: SwipeState]
-  }>()
+  function getElement(): HTMLElement | null {
+    return typeof elementRef === 'function' ? elementRef() : elementRef.value
+  }
 
   const handleTouchStart = (event: TouchEvent) => {
     const touch = event.touches[0]
+    if (!touch) return
     swipeState.startX = touch.clientX
     swipeState.startY = touch.clientY
     swipeState.currentX = touch.clientX
     swipeState.currentY = touch.clientY
     swipeState.isSwiping = true
     swipeState.direction = null
-
-    emit('swipeStart', { ...swipeState })
+    swipeState.deltaX = 0
+    swipeState.deltaY = 0
+    options.onSwipeStart?.({ ...swipeState })
   }
 
   const handleTouchMove = (event: TouchEvent) => {
     if (!swipeState.isSwiping) return
-
     const touch = event.touches[0]
+    if (!touch) return
     swipeState.currentX = touch.clientX
     swipeState.currentY = touch.clientY
+    swipeState.deltaX = swipeState.currentX - swipeState.startX
+    swipeState.deltaY = swipeState.currentY - swipeState.startY
 
-    const deltaX = swipeState.currentX - swipeState.startX
-    const deltaY = swipeState.currentY - swipeState.startY
-
-    // Determine direction based on larger movement
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      swipeState.direction = deltaX > 0 ? 'right' : 'left'
+    if (Math.abs(swipeState.deltaX) > Math.abs(swipeState.deltaY)) {
+      swipeState.direction = swipeState.deltaX > 0 ? 'right' : 'left'
     } else {
-      swipeState.direction = deltaY > 0 ? 'down' : 'up'
+      swipeState.direction = swipeState.deltaY > 0 ? 'down' : 'up'
     }
-
-    emit('swipeMove', { ...swipeState })
   }
 
-  const handleTouchEnd = (event: TouchEvent) => {
+  const handleTouchEnd = (_event: TouchEvent) => {
     if (!swipeState.isSwiping) return
 
-    const deltaX = swipeState.currentX - swipeState.startX
-    const deltaY = swipeState.currentY - swipeState.startY
+    const { deltaX, deltaY } = swipeState
+    const absX = Math.abs(deltaX)
+    const absY = Math.abs(deltaY)
 
-    // Check if swipe meets threshold
-    if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
-      emit('swipeEnd', { ...swipeState })
+    if (absX > threshold || absY > threshold) {
+      options.onSwipeEnd?.({ ...swipeState })
 
-      // Emit specific direction events
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        if (deltaX > threshold) {
-          emit('swipeRight', { ...swipeState })
-        } else if (deltaX < -threshold) {
-          emit('swipeLeft', { ...swipeState })
-        }
+      if (absX > absY) {
+        if (deltaX > threshold) options.onSwipeRight?.()
+        else if (deltaX < -threshold) options.onSwipeLeft?.()
       } else {
-        if (deltaY > threshold) {
-          emit('swipeDown', { ...swipeState })
-        } else if (deltaY < -threshold) {
-          emit('swipeUp', { ...swipeState })
-        }
-      }
-    }
-
-    // Reset state
-    swipeState.isSwiping = false
-    swipeState.direction = null
-  }
-
-  // Mouse events for desktop testing
-  const handleMouseDown = (event: MouseEvent) => {
-    swipeState.startX = event.clientX
-    swipeState.startY = event.clientY
-    swipeState.currentX = event.clientX
-    swipeState.currentY = event.clientY
-    swipeState.isSwiping = true
-    swipeState.direction = null
-
-    emit('swipeStart', { ...swipeState })
-  }
-
-  const handleMouseMove = (event: MouseEvent) => {
-    if (!swipeState.isSwiping) return
-
-    swipeState.currentX = event.clientX
-    swipeState.currentY = event.clientY
-
-    const deltaX = swipeState.currentX - swipeState.startX
-    const deltaY = swipeState.currentY - swipeState.startY
-
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      swipeState.direction = deltaX > 0 ? 'right' : 'left'
-    } else {
-      swipeState.direction = deltaY > 0 ? 'down' : 'up'
-    }
-
-    emit('swipeMove', { ...swipeState })
-  }
-
-  const handleMouseUp = (event: MouseEvent) => {
-    if (!swipeState.isSwiping) return
-
-    const deltaX = swipeState.currentX - swipeState.startX
-    const deltaY = swipeState.currentY - swipeState.startY
-
-    if (Math.abs(deltaX) > threshold || Math.abs(deltaY) > threshold) {
-      emit('swipeEnd', { ...swipeState })
-
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        if (deltaX > threshold) {
-          emit('swipeRight', { ...swipeState })
-        } else if (deltaX < -threshold) {
-          emit('swipeLeft', { ...swipeState })
-        }
-      } else {
-        if (deltaY > threshold) {
-          emit('swipeDown', { ...swipeState })
-        } else if (deltaY < -threshold) {
-          emit('swipeUp', { ...swipeState })
-        }
+        if (deltaY > threshold) options.onSwipeDown?.()
+        else if (deltaY < -threshold) options.onSwipeUp?.()
       }
     }
 
@@ -155,35 +102,23 @@ export const useSwipe = (element: HTMLElement | null, options: SwipeOptions = {}
     swipeState.direction = null
   }
 
-  // Setup event listeners
   onMounted(() => {
-    if (!element) return
-
-    // Touch events
-    element.addEventListener('touchstart', handleTouchStart, { passive })
-    element.addEventListener('touchmove', handleTouchMove, { passive })
-    element.addEventListener('touchend', handleTouchEnd, { passive })
-
-    // Mouse events for desktop
-    element.addEventListener('mousedown', handleMouseDown)
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
+    const el = getElement()
+    if (!el) return
+    el.addEventListener('touchstart', handleTouchStart, { passive })
+    el.addEventListener('touchmove', handleTouchMove, { passive })
+    el.addEventListener('touchend', handleTouchEnd, { passive })
   })
 
   onUnmounted(() => {
-    if (!element) return
-
-    element.removeEventListener('touchstart', handleTouchStart)
-    element.removeEventListener('touchmove', handleTouchMove)
-    element.removeEventListener('touchend', handleTouchEnd)
-
-    element.removeEventListener('mousedown', handleMouseDown)
-    document.removeEventListener('mousemove', handleMouseMove)
-    document.removeEventListener('mouseup', handleMouseUp)
+    const el = getElement()
+    if (!el) return
+    el.removeEventListener('touchstart', handleTouchStart)
+    el.removeEventListener('touchmove', handleTouchMove)
+    el.removeEventListener('touchend', handleTouchEnd)
   })
 
   return {
     swipeState: readonly(swipeState),
-    emit
   }
 }

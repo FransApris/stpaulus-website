@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <PageMaintenance v-if="isMaintenance" title="Artikel Paroki" />
     <div v-else>
@@ -39,9 +39,21 @@
       <!-- Main Content -->
       <div class="lg:col-span-9">
 
-        <!-- Loading State -->
-        <div v-if="pending" class="text-center py-8">
-          <p class="text-gray-500">Memuat artikel...</p>
+        <!-- Skeleton Loading (Tahap 5) -->
+        <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 gap-6" aria-label="Memuat artikel..." aria-busy="true">
+          <div v-for="i in 6" :key="i" class="bg-white shadow-lg rounded-lg overflow-hidden animate-pulse">
+            <div class="w-full h-48 bg-gray-200"></div>
+            <div class="p-4 space-y-3">
+              <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+              <div class="h-5 bg-gray-200 rounded w-3/4"></div>
+              <div class="h-4 bg-gray-200 rounded w-full"></div>
+              <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+              <div class="flex gap-2 pt-2">
+                <div class="h-3 bg-gray-200 rounded w-16"></div>
+                <div class="h-3 bg-gray-200 rounded w-20"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Error State -->
