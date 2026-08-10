@@ -198,9 +198,9 @@ const currentPage = ref(1)
 const pageLimit = 9
 
 // ── Like / Share / Copy state ─────────────────────────────────
-const likedAlbums = ref<Set<number | string>>(new Set())
-const likeCounts = ref<Record<string | number, number>>({})
-const shareCounts = ref<Record<string | number, number>>({})
+const likedAlbums = ref(new Set() as Set<number | string>)
+const likeCounts = ref({} as Record<string | number, number>)
+const shareCounts = ref({} as Record<string | number, number>)
 
 function toggleLike(album: any) {
   const id = album.id
