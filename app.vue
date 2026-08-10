@@ -44,6 +44,11 @@ onMounted(() => {
     "%c ✨ Crafted with passion ✨ ", 
     "color: #882f1d; font-size: 12px; font-style: italic;"
   );
+
+  // Enable CSS :active state on iOS (Touch Feedback & Micro-Interactions)
+  if (typeof document !== 'undefined') {
+    document.body.addEventListener('touchstart', function() {}, {passive: true});
+  }
 });
 </script>
 

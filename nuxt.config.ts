@@ -38,7 +38,6 @@ export default defineNuxtConfig({
 
   // Disable dev-server-logs for SSR warnings (development only)
   experimental: {
-    devLogs: false,
     inlineSSRStyles: true
   },
 
@@ -51,6 +50,7 @@ export default defineNuxtConfig({
   css: [
     '~/assets/css/fonts.css',
     '~/assets/css/tailwind.css',
+    '~/assets/css/main.css',
     '~/assets/css/prose-custom.css'
   ],
 
@@ -155,7 +155,6 @@ export default defineNuxtConfig({
   // Router configuration
   router: {
     options: {
-      linkPrefetchedClass: 'nuxt-link-prefetched',
       linkExactActiveClass: 'nuxt-link-exact-active',
       linkActiveClass: 'nuxt-link-active',
       scrollBehaviorType: 'smooth'
@@ -223,10 +222,6 @@ export default defineNuxtConfig({
     // Increase body size limit for file uploads (e.g., 50MB)
     bodyParser: {
       maxBodyLength: 52428800 // 50MB in bytes
-    },
-    devProxy: {
-      // Disable SSR logs forwarding in development
-      changeOrigin: false
     },
     routeRules: {
       '/api/**': {

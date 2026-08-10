@@ -21,7 +21,7 @@ function base32Encode(buffer: Buffer): string {
   let output = ''
 
   for (let i = 0; i < buffer.length; i++) {
-    value = (value << 8) | buffer[i]
+    value = (value << 8) | (buffer[i] || 0)
     bits += 8
 
     while (bits >= 5) {
@@ -47,7 +47,9 @@ function base32Decode(base32: string): Buffer {
   let value = 0
 
   for (let i = 0; i < clean.length; i++) {
-    const idx = BASE32_CHARS.indexOf(clean[i])
+    const char = clean[i]
+    if (!char) continue
+    const idx = BASE32_CHARS.indexOf(char)
     if (idx === -1) continue
 
     value = (value << 5) | idx
@@ -72,13 +74,13 @@ function generateOtpForCounter(secretBuffer: Buffer, counter: number): string {
   counterBuffer.writeUInt32BE(counter % 0x100000000, 4)
 
   const hmac = crypto.createHmac('sha1', secretBuffer).update(counterBuffer).digest()
-  const offset = hmac[hmac.length - 1] & 0x0f
+  const offset = (hmac[hmac.length - 1] || 0) & 0x0f
 
   const binary =
-    ((hmac[offset] & 0x7f) << 24) |
-    ((hmac[offset + 1] & 0xff) << 16) |
-    ((hmac[offset + 2] & 0xff) << 8) |
-    (hmac[offset + 3] & 0xff)
+    (((hmac[offset] || 0) & 0x7f) << 24) |
+    (((hmac[offset + 1] || 0) & 0xff) << 16) |
+    (((hmac[offset + 2] || 0) & 0xff) << 8) |
+    ((hmac[offset + 3] || 0) & 0xff)
 
   const otp = binary % 1000000
   return String(otp).padStart(6, '0')

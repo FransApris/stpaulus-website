@@ -6,9 +6,9 @@
      /* Import TW Elements CSS (untuk navbar collapse & ripple) - HARUS DI AWAL */
      @import 'tw-elements/dist/css/tw-elements.css';
 
-     @tailwind base;
-     @tailwind components;
-     @tailwind utilities;
+     /* @tailwind base; */
+     /* @tailwind components; */
+     /* @tailwind utilities; */
 
      /* Global overflow prevention */
      @layer base {

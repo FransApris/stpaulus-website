@@ -1,4 +1,4 @@
-﻿import { authenticateUser, setAuthCookies } from '../../utils/auth'
+import { authenticateUser, setAuthCookies } from '../../utils/auth'
 import { getQuery, runQuery } from '../../database/db'
 import { logger } from '../../utils/logger'
 import { isBlocked, recordFailedAttempt, resetAttempts } from '../../utils/rateLimiter'
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
   }
   // ─────────────────────────────────────────────────────────────────────────
 
-  const ip = getRequestHeader(event, 'x-forwarded-for')?.split(',')[0].trim()
+  const ip = (getRequestHeader(event, 'x-forwarded-for')?.split(','))?.[0]?.trim()
     || getRequestHeader(event, 'x-real-ip')
     || 'unknown'
 

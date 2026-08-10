@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const baseUrl = process.env.NUXT_PUBLIC_SITE_URL || 'https://stpaulusjuanda.org'
 
   // Static pages
-  const staticPages = [
+  const staticPages: Array<{ url: string; priority: string; changefreq: string; lastmod?: string }> = [
     { url: '/', priority: '1.0', changefreq: 'daily' },
     { url: '/jadwal-misa', priority: '0.9', changefreq: 'weekly' },
     { url: '/berita', priority: '0.8', changefreq: 'daily' },
