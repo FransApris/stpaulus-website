@@ -39,18 +39,21 @@
       <!-- Main Content -->
       <div class="lg:col-span-9">
 
-        <!-- Skeleton Loading (Tahap 5) -->
-        <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 gap-6" aria-label="Memuat artikel..." aria-busy="true">
-          <div v-for="i in 6" :key="i" class="bg-white shadow-lg rounded-lg overflow-hidden animate-pulse">
-            <div class="w-full h-48 bg-gray-200"></div>
-            <div class="p-4 space-y-3">
-              <div class="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div class="h-5 bg-gray-200 rounded w-3/4"></div>
-              <div class="h-4 bg-gray-200 rounded w-full"></div>
-              <div class="h-4 bg-gray-200 rounded w-5/6"></div>
-              <div class="flex gap-2 pt-2">
-                <div class="h-3 bg-gray-200 rounded w-16"></div>
-                <div class="h-3 bg-gray-200 rounded w-20"></div>
+        <!-- Loading State (Skeleton Mobile-First) -->
+        <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div v-for="i in 4" :key="i" class="bg-white rounded-lg shadow-lg overflow-hidden animate-pulse">
+            <!-- Skeleton Image -->
+            <div class="h-48 bg-gray-200"></div>
+            <!-- Skeleton Content -->
+            <div class="p-6">
+              <div class="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
+              <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
+              <div class="h-5 bg-gray-200 rounded w-5/6 mb-4"></div>
+              <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div class="flex justify-between mt-4">
+                <div class="h-4 bg-gray-200 rounded w-1/4"></div>
+                <div class="h-4 bg-gray-200 rounded w-1/4"></div>
               </div>
             </div>
           </div>

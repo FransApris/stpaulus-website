@@ -34,8 +34,24 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div v-if="pending" class="text-center text-gray-500">
-        Memuat daftar album...
+      <!-- Loading State (Skeleton Mobile-First) -->
+      <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div v-for="i in 6" :key="i" class="bg-white rounded-xl shadow-md overflow-hidden animate-pulse flex flex-col h-[400px]">
+          <!-- Skeleton Thumbnail -->
+          <div class="h-56 bg-gray-200 flex-shrink-0"></div>
+          <!-- Skeleton Info -->
+          <div class="p-5 flex flex-col flex-1">
+            <div class="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+            <div class="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
+            <div class="h-3 bg-gray-200 rounded w-5/6 mb-auto"></div>
+            <!-- Action bar skeleton -->
+            <div class="mt-4 pt-3 border-t border-gray-100 flex gap-2">
+              <div class="h-8 bg-gray-200 rounded-full w-16"></div>
+              <div class="h-8 bg-gray-200 rounded-full w-16"></div>
+            </div>
+          </div>
+        </div>
       </div>
       <div v-else-if="error" class="text-center text-red-500">
         Gagal memuat album. Coba lagi nanti.

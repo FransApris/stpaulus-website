@@ -233,28 +233,31 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-      <!-- Skeleton Loading (Tahap 5) -->
-      <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Memuat berita..." aria-busy="true">
-        <div v-for="i in 6" :key="i" class="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse">
-          <div class="w-full h-48 bg-gray-200"></div>
-          <div class="p-4 space-y-3">
-            <div class="flex gap-2">
-              <div class="h-5 bg-gray-200 rounded-full w-16"></div>
-              <div class="h-5 bg-gray-200 rounded-full w-20"></div>
+        <!-- Loading State (Skeleton Mobile-First) -->
+        <div v-if="pending" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="i in 6" :key="i" class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+            <!-- Skeleton Image -->
+            <div class="h-48 bg-gray-200"></div>
+            <!-- Skeleton Content -->
+            <div class="p-5">
+              <div class="h-4 bg-gray-200 rounded w-1/4 mb-3"></div>
+              <div class="h-5 bg-gray-200 rounded w-full mb-2"></div>
+              <div class="h-5 bg-gray-200 rounded w-3/4 mb-4"></div>
+              <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
+              <div class="h-3 bg-gray-200 rounded w-5/6 mb-4"></div>
+              <div class="h-4 bg-gray-200 rounded w-1/3 mt-4"></div>
             </div>
-            <div class="h-5 bg-gray-200 rounded w-full"></div>
-            <div class="h-5 bg-gray-200 rounded w-4/5"></div>
-            <div class="h-4 bg-gray-200 rounded w-full"></div>
-            <div class="h-4 bg-gray-200 rounded w-2/3"></div>
-            <div class="h-3 bg-gray-200 rounded w-24 mt-2"></div>
           </div>
         </div>
-      </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="text-center py-12">
         <p class="text-red-500">Error memuat berita: {{ error.message }}</p>
-        <NuxtLink to="/berita" class="mt-4 inline-block text-blue-500 hover:underline">Coba Lagi</NuxtLink>
+        <NuxtLink
+          to="/berita"
+          class="mt-4 inline-block text-blue-500 hover:underline"
+          >Coba Lagi</NuxtLink
+        >
       </div>
 
       <!-- Daftar Berita (Grid Card) -->
