@@ -3,6 +3,8 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
+  <!-- Mobile Snackbars / Toasts (Tahap 6) — rendered globally via Teleport to body -->
+  <ToastContainer />
 </template>
 
 <script setup>
