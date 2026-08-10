@@ -15,10 +15,8 @@
     <!-- Footer: Always Bottom -->
     <Footer />
 
-    <!-- Mobile Bottom Navigation (Lazy Loaded) -->
-    <ClientOnly>
-      <LazyMobileBottomNav />
-    </ClientOnly>
+    <!-- Mobile Bottom Navigation -->
+    <MobileBottomNav />
 
     <!-- Chat Widget (Lazy Loaded) -->
     <ClientOnly>
