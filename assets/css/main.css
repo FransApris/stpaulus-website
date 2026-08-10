@@ -3,8 +3,7 @@
  * Developed by Fransiscus Apris Dwiharta
  * ==========================================================
  */
-     /* Import TW Elements CSS (untuk navbar collapse & ripple) - HARUS DI AWAL */
-     @import 'tw-elements/dist/css/tw-elements.css';
+     /* Import TW Elements CSS removed from here, now loaded via nuxt.config.ts css array */
 
      /* @tailwind base; */
      /* @tailwind components; */
