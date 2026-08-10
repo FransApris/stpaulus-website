@@ -25,14 +25,14 @@
             Gedangan, Kabupaten Sidoarjo, Jawa Timur 61254<br />Tel: 031-8557854 | Email: stpaulus.sekretariat@gmail.com
           </p>
         </div>
-        <div class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-8 md:overflow-visible">
-          <SimpleCard class="shrink-0 snap-center w-[85vw] sm:w-[60vw] md:w-auto reveal-on-scroll reveal-delay-100" title="Gallery Foto"
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
+          <SimpleCard class="reveal-on-scroll reveal-delay-100" title="Gallery Foto"
             description="Lihat momen indah kegiatan paroki kami. Dari misa hingga retret rohani." to="/galeri"
             link-text="Lihat Gallery" />
-          <SimpleCard class="shrink-0 snap-center w-[85vw] sm:w-[60vw] md:w-auto reveal-on-scroll reveal-delay-200" title="Sejarah Gereja"
+          <SimpleCard class="reveal-on-scroll reveal-delay-200" title="Sejarah Gereja"
             description="Pelajari perjalanan Paroki St. Paulus sejak didirikan. Warisan iman yang kaya." to="/sejarah"
             link-text="Baca Sejarah" />
-          <SimpleCard class="shrink-0 snap-center w-[85vw] sm:w-[60vw] md:w-auto reveal-on-scroll reveal-delay-300" title="Kontak Kami"
+          <SimpleCard class="reveal-on-scroll reveal-delay-300" title="Kontak Kami"
             description="Hubungi pastor, staf, atau komunitas untuk informasi lebih lanjut." to="/kontak"
             link-text="Hubungi" />
         </div>
@@ -82,8 +82,8 @@
         </div>
 
         <!-- Loading Skeleton -->
-        <div v-if="pending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible">
-          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse">
+        <div v-if="pending" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="i in 3" :key="i" class="animate-pulse">
             <div class="bg-gray-200 h-48 rounded-t-2xl"></div>
             <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0">
               <div class="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
@@ -107,9 +107,9 @@
         </div>
 
         <!-- Albums Grid -->
-        <div v-else-if="latestAlbums && latestAlbums.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible">
+        <div v-else-if="latestAlbums && latestAlbums.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <a v-for="(album, idx) in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
-            rel="noopener noreferrer" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
+            rel="noopener noreferrer" class="group reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
             <div
               class="bg-white rounded-2xl shadow-xs border border-gray-100/90 overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between h-full">
               <!-- Album Cover -->
