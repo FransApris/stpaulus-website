@@ -220,8 +220,15 @@ const isMapActive = ref(false)
 const mapActivated = ref(false)
 const imageError = ref(false)
 const loadingText = ref('Memuat peta...')
-const isMobile = ref(false)
-const windowWidth = ref(0) // Track window width for responsive height
+// ── SSR-safe responsive state ────────────────────────────────────────────
+// isMobile dan windowWidth HARUS dimulai dari nilai netral yang sama
+// antara SSR dan client-mount awal, baru diupdate di onMounted.
+// Ini mencegah: computed(mapThumbnailUrl/actualHeight) menghasilkan nilai
+// berbeda antara server dan client → hydration mismatch.
+const isMobile = ref(false)    // false = desktop default (aman di SSR)
+const windowWidth = ref(0)     // 0 = belum diketahui (aman di SSR)
+const _isMounted = ref(false)  // guard: computed tidak menggunakan window sebelum hydration
+// ─────────────────────────────────────────────────────────────────
 let loadingTimer = null
 let activationTime = 0
 let isComponentMounted = true
@@ -229,6 +236,7 @@ let isComponentMounted = true
 // Detect mobile/desktop on mount and resize
 onMounted(() => {
   if (process.client) {
+    _isMounted.value = true  // Aktifkan guard: setelah ini computed boleh pakai window
     windowWidth.value = window.innerWidth
     isMobile.value = window.innerWidth < 768
     window.addEventListener('resize', handleResize)
@@ -247,29 +255,20 @@ const handleResize = () => {
 }
 
 // Map thumbnail URL selection - RESPONSIVE
+// PENTING: Selama belum di-mount (_isMounted = false), kembalikan nilai default
+// yang SAMA antara SSR dan client-initial-render untuk menghindari hydration mismatch.
 const mapThumbnailUrl = computed(() => {
-  // Priority 1: Use responsive thumbnails if provided (NEW!)
-  if (isMobile.value && props.thumbnailMobile) {
-    console.log('[MapEmbed] Using mobile thumbnail:', props.thumbnailMobile)
-    return props.thumbnailMobile
-  }
-  if (!isMobile.value && props.thumbnailDesktop) {
-    console.log('[MapEmbed] Using desktop thumbnail:', props.thumbnailDesktop)
-    return props.thumbnailDesktop
+  // Sebelum mount: kembalikan path default yang konsisten (SSR-safe)
+  if (!_isMounted.value) {
+    return '/images/map-thumbnail.jpg'
   }
 
-  // Priority 2: Use single custom thumbnail if provided (fallback)
-  if (props.thumbnailImage) {
-    console.log('[MapEmbed] Using custom thumbnail:', props.thumbnailImage)
-    return props.thumbnailImage
-  }
+  // Setelah mount: boleh menggunakan isMobile (sudah diisi dari window)
+  if (isMobile.value && props.thumbnailMobile) return props.thumbnailMobile
+  if (!isMobile.value && props.thumbnailDesktop) return props.thumbnailDesktop
+  if (props.thumbnailImage) return props.thumbnailImage
 
-  // Priority 3: Prefer local JPEG screenshot (map-thumbnail.jpg)
-  // If not present, the image element will fall back to the SVG below.
-  // To use a real screenshot save it as: /public/images/map-thumbnail.jpg
-  const jpgPath = '/images/map-thumbnail.jpg'
-  console.log('[MapEmbed] Preferring local JPG thumbnail (will fallback to SVG if missing):', jpgPath)
-  return jpgPath
+  return '/images/map-thumbnail.jpg'
 })
 
 // Track whether we've already attempted the SVG fallback
@@ -311,7 +310,6 @@ const handleImageLoad = (event) => {
 
 // Activate and load map on click
 const activateAndLoadMap = () => {
-  console.log('[MapEmbed] User clicked - activating map load')
   mapActivated.value = true
   shouldLoadMap.value = true
   isLoading.value = true
@@ -364,19 +362,24 @@ const activateAndLoadMap = () => {
   }, 15000) // 15 seconds timeout
 }
 
-// Responsive height for better map fitting across devices
+// Responsive height — SSR-safe
+// Selama belum di-mount, kembalikan nilai default yang SAMA antara server dan client
+// untuk menghindari hydration mismatch pada :style binding.
 const actualHeight = computed(() => {
-  // If custom height provided, use it
+  // Custom height: selalu konsisten, aman di SSR
   if (props.height && props.height !== 480) {
     return typeof props.height === 'number' ? props.height : parseInt(props.height)
   }
 
-  // Responsive breakpoints for optimal viewing (use windowWidth.value for reactivity)
-  const width = windowWidth.value || (process.client ? window.innerWidth : 1024)
-  if (width >= 1024) return 600  // Desktop: larger view
-  if (width >= 768) return 500   // Tablet landscape
-  if (width >= 640) return 450   // Tablet portrait
-  return 350                      // Mobile: compact view
+  // Sebelum mount: gunakan nilai default desktop (konsisten SSR vs client)
+  if (!_isMounted.value) return 480
+
+  // Setelah mount: responsive berdasarkan windowWidth yang sudah terisi
+  const width = windowWidth.value
+  if (width >= 1024) return 600
+  if (width >= 768) return 500
+  if (width >= 640) return 450
+  return 350
 })
 
 const mapUrl = computed(() =>
@@ -389,26 +392,17 @@ const googleMapsUrl = computed(() =>
 
 // Smart Intersection Observer for optimal loading
 onMounted(() => {
-  console.log('[MapEmbed] Component mounted - showing thumbnail only')
-
   // Add click outside listener for map deactivation
   if (process.client) {
     document.addEventListener('click', handleClickOutside)
   }
-
-  // NO AUTO-LOADING - map will only load when user clicks
-  // This dramatically improves initial page load performance
 })
 
 const onLoad = () => {
-  console.log('[MapEmbed] Map loaded successfully')
-
-  // Clear loading timer
   if (loadingTimer) {
     clearInterval(loadingTimer)
     loadingTimer = null
   }
-
   isLoading.value = false
 
   // Show hint for first-time visitors
@@ -438,7 +432,6 @@ const onError = () => {
 }
 
 const retry = () => {
-  console.log('[MapEmbed] Retrying map load')
   hasError.value = false
   isLoading.value = true
   shouldLoadMap.value = false
@@ -456,9 +449,8 @@ const retry = () => {
 
 // Activate map for interaction (prevent scroll capture)
 const activateMap = () => {
-  console.log('[MapEmbed] Map activated for interaction')
   isMapActive.value = true
-  activationTime = Date.now() // Record activation time
+  activationTime = Date.now()
 }
 
 const getDirections = () => {
@@ -528,15 +520,13 @@ const handleClickOutside = (event) => {
 
 // Cleanup before unmount
 onBeforeUnmount(() => {
-  console.log('[MapEmbed] Component unmounting, cleaning up...')
-  isComponentMounted = false // Prevent further ref updates
+  isComponentMounted = false
 
   if (loadingTimer) {
     clearInterval(loadingTimer)
     loadingTimer = null
   }
 
-  // Remove click outside listener
   if (process.client) {
     document.removeEventListener('click', handleClickOutside)
   }
