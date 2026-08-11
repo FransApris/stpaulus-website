@@ -96,10 +96,16 @@ export function useMaintenance(customRouteKey?: string) {
   })
 
   // Fetch status dari API server (di-cache per halaman)
+  // server:false → hanya fetch di client, menghindari SSR/client mismatch
+  // pada kasus di mana server dan client memiliki timezone / cache berbeda.
   const { data: maintenanceStatus } = useAsyncData(
     'maintenance-status',
     () => $fetch<Record<string, boolean>>('/api/maintenance'),
-    { default: () => ({}) as Record<string, boolean> }
+    {
+      server: false,
+      lazy: true,
+      default: () => ({}) as Record<string, boolean>
+    }
   )
 
   // Cek apakah halaman ini sedang maintenance

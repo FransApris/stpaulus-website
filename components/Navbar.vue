@@ -685,13 +685,10 @@ const iconPaths = {
 
 // Methods
 const toggleMobileMenu = () => {
-  console.log('Toggle mobile menu clicked, current state:', isMobileMenuOpen.value)
   isMobileMenuOpen.value = !isMobileMenuOpen.value
-  console.log('New state:', isMobileMenuOpen.value)
 }
 
 const closeMobileMenu = () => {
-  console.log('Closing mobile menu')
   isMobileMenuOpen.value = false
   activeMobileDropdown.value = null
 }

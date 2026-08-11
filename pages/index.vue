@@ -1,12 +1,24 @@
 <template>
   <div>
+    <!-- isMaintenance: useMaintenance kini server:false, default () => {} -->
+    <!-- Selama client belum fetch, isMaintenance = false → tidak ada flash -->
     <PageMaintenance v-if="isMaintenance" title="Beranda / Home" />
-    <div v-else>
-  <div class="min-h-screen pt-4 bg-gray-50">
-    <!-- HeroSection (Dynamic based on active theme) - FULL WIDTH -->
-    <HeroSection :show-hero="true" title="Selamat Datang di Paroki St. Paulus Juanda"
-      subtitle="Temukan berita, artikel, galeri kegiatan, dan agenda terbaru kami." cta-text="Lihat Jadwal Misa"
-      cta-to="/misa" :hero-image="activeTheme?.image_path || '/images/gereja-stpaulus-hero.jpg'" />
+    <div v-else class="min-h-screen pt-4 bg-gray-50">
+      <!-- HeroSection: hero-image dari activeTheme yang server:false+lazy:true -->
+      <!-- SSR render URL fallback, client render Cloudinary URL = mismatch -->
+      <!-- Gunakan #fallback slot untuk render hero statis saat SSR -->
+      <ClientOnly>
+        <HeroSection :show-hero="true" title="Selamat Datang di Paroki St. Paulus Juanda"
+          subtitle="Temukan berita, artikel, galeri kegiatan, dan agenda terbaru kami." cta-text="Lihat Jadwal Misa"
+          cta-to="/misa" :hero-image="activeTheme?.image_path || '/images/gereja-stpaulus-hero.jpg'" />
+        <template #fallback>
+          <!-- SSR: render hero dengan image default agar konsisten dengan state awal client -->
+          <HeroSection :show-hero="true" title="Selamat Datang di Paroki St. Paulus Juanda"
+            subtitle="Temukan berita, artikel, galeri kegiatan, dan agenda terbaru kami." cta-text="Lihat Jadwal Misa"
+            cta-to="/misa" hero-image="/images/gereja-stpaulus-hero.jpg" />
+        </template>
+      </ClientOnly>
+
 
     <!-- Live Jadwal Misa Widget (Floating) -->
     <ClientOnly>
