@@ -2,6 +2,9 @@
   <div>
     <PageMaintenance v-if="isMaintenance" title="Artikel Paroki" />
     <div v-else>
+      <ClientOnly>
+        <ReadingProgressBar />
+      </ClientOnly>
   <div class="min-h-screen pt-16 bg-gray-50">
     <!-- Loading -->
     <div v-if="pending" class="container mx-auto px-4 py-20 text-center">

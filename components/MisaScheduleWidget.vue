@@ -20,48 +20,50 @@
           <div class="mb-1.5 text-center">
             <div class="text-xs text-[#882f1d] font-semibold">{{ currentDay }}</div>
           </div>
-          <div v-if="loading" class="space-y-1.5">
-            <div v-for="i in 2" :key="i" class="animate-pulse">
-              <div class="h-2 bg-gray-200 rounded"></div>
+          <Transition name="fade" mode="out-in">
+            <div v-if="loading" key="loading" class="space-y-1.5">
+              <div v-for="i in 2" :key="i" class="animate-pulse">
+                <div class="h-2 bg-gray-200 rounded"></div>
+              </div>
             </div>
-          </div>
-          <div v-else-if="error" class="text-center py-2">
-            <p class="text-xs text-red-600">Gagal memuat</p>
-          </div>
-          <div v-else-if="todaySchedule && todaySchedule.length > 0" class="space-y-1.5">
-            <div v-for="(schedule, index) in todaySchedule" :key="index" :class="[
-              'p-1.5 rounded transition-colors',
-              schedule.isSpecial ? 'bg-amber-50 border border-amber-200 hover:bg-amber-100' :
-              schedule.isDevotion ? 'bg-purple-50 border border-purple-200 hover:bg-purple-100' :
-              'bg-gray-50 hover:bg-gray-100'
-            ]">
-              <div class="flex items-center justify-between mb-0.5">
-                <div class="flex-1 min-w-0 mr-1">
-                  <div class="flex items-center gap-1">
+            <div v-else-if="error" key="error" class="text-center py-2">
+              <p class="text-xs text-red-600">Gagal memuat</p>
+            </div>
+            <div v-else-if="todaySchedule && todaySchedule.length > 0" key="data" class="space-y-1.5">
+              <div v-for="(schedule, index) in todaySchedule" :key="index" :class="[
+                'p-1.5 rounded transition-colors',
+                schedule.isSpecial ? 'bg-amber-50 border border-amber-200 hover:bg-amber-100' :
+                schedule.isDevotion ? 'bg-purple-50 border border-purple-200 hover:bg-purple-100' :
+                'bg-gray-50 hover:bg-gray-100'
+              ]">
+                <div class="flex items-center justify-between mb-0.5">
+                  <div class="flex-1 min-w-0 mr-1">
+                    <div class="flex items-center gap-1">
+                      <div :class="[
+                        'font-semibold text-xs truncate',
+                        schedule.isSpecial ? 'text-amber-900' : schedule.isDevotion ? 'text-purple-900' : 'text-gray-900'
+                      ]">{{ schedule.label }}</div>
+                      <span v-if="schedule.isSpecial" class="text-[10px]">⭐</span>
+                      <span v-else-if="schedule.isDevotion" class="text-[10px]">📿</span>
+                    </div>
+                  </div>
+                  <div class="flex-shrink-0">
                     <div :class="[
-                      'font-semibold text-xs truncate',
-                      schedule.isSpecial ? 'text-amber-900' : schedule.isDevotion ? 'text-purple-900' : 'text-gray-900'
-                    ]">{{ schedule.label }}</div>
-                    <span v-if="schedule.isSpecial" class="text-[10px]">⭐</span>
-                    <span v-else-if="schedule.isDevotion" class="text-[10px]">📿</span>
+                      'font-bold text-xs',
+                      schedule.isSpecial ? 'text-amber-700' : schedule.isDevotion ? 'text-purple-700' : 'text-[#882f1d]'
+                    ]">{{ schedule.time }}</div>
                   </div>
                 </div>
-                <div class="flex-shrink-0">
-                  <div :class="[
-                    'font-bold text-xs',
-                    schedule.isSpecial ? 'text-amber-700' : schedule.isDevotion ? 'text-purple-700' : 'text-[#882f1d]'
-                  ]">{{ schedule.time }}</div>
-                </div>
+                <div v-if="schedule.type" :class="[
+                  'text-[10px] leading-tight truncate',
+                  schedule.isSpecial ? 'text-amber-700 font-medium' : schedule.isDevotion ? 'text-purple-700 font-medium' : 'text-gray-600'
+                ]">{{ schedule.type }}</div>
               </div>
-              <div v-if="schedule.type" :class="[
-                'text-[10px] leading-tight truncate',
-                schedule.isSpecial ? 'text-amber-700 font-medium' : schedule.isDevotion ? 'text-purple-700 font-medium' : 'text-gray-600'
-              ]">{{ schedule.type }}</div>
             </div>
-          </div>
-          <div v-else class="text-center py-3">
-            <p class="text-xs text-gray-500">Tidak ada</p>
-          </div>
+            <div v-else key="empty" class="text-center py-3">
+              <p class="text-xs text-gray-500">Tidak ada</p>
+            </div>
+          </Transition>
           <NuxtLink to="/misa" class="block mt-2 text-center text-white bg-[#882f1d] py-1.5 rounded hover:bg-[#6b2416] transition-colors text-xs font-semibold">
             📅 Lengkap
           </NuxtLink>
@@ -115,52 +117,54 @@
           <div class="text-sm text-[#882f1d] font-semibold">{{ currentDay }}</div>
         </div>
 
-        <div v-if="loading" class="space-y-3">
-          <div v-for="i in 2" :key="i" class="animate-pulse">
-            <div class="h-4 bg-gray-200 rounded"></div>
+        <Transition name="fade" mode="out-in">
+          <div v-if="loading" key="loading" class="space-y-3">
+            <div v-for="i in 2" :key="i" class="animate-pulse">
+              <div class="h-4 bg-gray-200 rounded"></div>
+            </div>
           </div>
-        </div>
 
-        <div v-else-if="error" class="text-center py-4">
-          <p class="text-sm text-red-600">Gagal memuat jadwal</p>
-          <button @click="fetchSchedule" class="mt-2 text-xs text-[#882f1d] underline">Coba lagi</button>
-        </div>
+          <div v-else-if="error" key="error" class="text-center py-4">
+            <p class="text-sm text-red-600">Gagal memuat jadwal</p>
+            <button @click="fetchSchedule" class="mt-2 text-xs text-[#882f1d] underline">Coba lagi</button>
+          </div>
 
-        <div v-else-if="todaySchedule && todaySchedule.length > 0" class="space-y-3">
-          <div v-for="(schedule, index) in todaySchedule" :key="index" :class="[
-            'p-3 rounded-lg border transition-colors',
-            schedule.isSpecial ? 'bg-amber-50 border-amber-200 hover:bg-amber-100' :
-            schedule.isDevotion ? 'bg-purple-50 border-purple-200 hover:bg-purple-100' :
-            'bg-gray-50 border-gray-200 hover:bg-gray-100'
-          ]">
-            <div class="flex items-center justify-between mb-1">
-              <div class="flex-1 min-w-0 mr-2">
-                <div class="flex items-center gap-1.5">
+          <div v-else-if="todaySchedule && todaySchedule.length > 0" key="data" class="space-y-3">
+            <div v-for="(schedule, index) in todaySchedule" :key="index" :class="[
+              'p-3 rounded-lg border transition-colors',
+              schedule.isSpecial ? 'bg-amber-50 border-amber-200 hover:bg-amber-100' :
+              schedule.isDevotion ? 'bg-purple-50 border-purple-200 hover:bg-purple-100' :
+              'bg-gray-50 border-gray-200 hover:bg-gray-100'
+            ]">
+              <div class="flex items-center justify-between mb-1">
+                <div class="flex-1 min-w-0 mr-2">
+                  <div class="flex items-center gap-1.5">
+                    <div :class="[
+                      'font-semibold text-sm truncate',
+                      schedule.isSpecial ? 'text-amber-900' : schedule.isDevotion ? 'text-purple-900' : 'text-gray-900'
+                    ]">{{ schedule.label }}</div>
+                    <span v-if="schedule.isSpecial" class="text-xs">⭐</span>
+                    <span v-else-if="schedule.isDevotion" class="text-xs">📿</span>
+                  </div>
+                </div>
+                <div class="flex-shrink-0">
                   <div :class="[
-                    'font-semibold text-sm truncate',
-                    schedule.isSpecial ? 'text-amber-900' : schedule.isDevotion ? 'text-purple-900' : 'text-gray-900'
-                  ]">{{ schedule.label }}</div>
-                  <span v-if="schedule.isSpecial" class="text-xs">⭐</span>
-                  <span v-else-if="schedule.isDevotion" class="text-xs">📿</span>
+                    'font-bold text-sm',
+                    schedule.isSpecial ? 'text-amber-700' : schedule.isDevotion ? 'text-purple-700' : 'text-[#882f1d]'
+                  ]">{{ schedule.time }}</div>
                 </div>
               </div>
-              <div class="flex-shrink-0">
-                <div :class="[
-                  'font-bold text-sm',
-                  schedule.isSpecial ? 'text-amber-700' : schedule.isDevotion ? 'text-purple-700' : 'text-[#882f1d]'
-                ]">{{ schedule.time }}</div>
-              </div>
+              <div v-if="schedule.type" :class="[
+                'text-xs leading-tight',
+                schedule.isSpecial ? 'text-amber-700 font-medium' : schedule.isDevotion ? 'text-purple-700 font-medium' : 'text-gray-600'
+              ]">{{ schedule.type }}</div>
             </div>
-            <div v-if="schedule.type" :class="[
-              'text-xs leading-tight',
-              schedule.isSpecial ? 'text-amber-700 font-medium' : schedule.isDevotion ? 'text-purple-700 font-medium' : 'text-gray-600'
-            ]">{{ schedule.type }}</div>
           </div>
-        </div>
 
-        <div v-else class="text-center py-6">
-          <p class="text-sm text-gray-500">Tidak ada jadwal hari ini</p>
-        </div>
+          <div v-else key="empty" class="text-center py-6">
+            <p class="text-sm text-gray-500">Tidak ada jadwal hari ini</p>
+          </div>
+        </Transition>
 
         <NuxtLink to="/misa" @click="closeMobileSheet" class="block mt-4 text-center text-white bg-[#882f1d] py-2.5 rounded-lg hover:bg-[#6b2416] transition-colors text-sm font-semibold">
           📅 Lihat Jadwal Lengkap

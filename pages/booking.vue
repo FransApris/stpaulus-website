@@ -1221,61 +1221,74 @@
                   </div>
 
                   <form @submit.prevent="createBooking" class="p-6 space-y-5">
-                    <div>
-                      <label
-                        class="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5"
-                      >
-                        <span>Nama Acara *</span>
-                      </label>
+                    <div class="relative pt-2">
                       <input
+                        id="event_name"
                         v-model="bookingForm.event_name"
                         type="text"
                         placeholder="Contoh: Rapat Komisi, Pertemuan Kelompok, Gladi Misa"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all outline-none"
+                        class="peer w-full p-3 pt-5 pb-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-[#882f1d] transition-colors outline-none placeholder-transparent"
                         required
                       />
+                      <label
+                        for="event_name"
+                        class="absolute left-3 top-4 text-gray-500 text-sm transition-all pointer-events-none peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-4 peer-focus:top-1 peer-focus:text-xs peer-focus:text-[#882f1d] peer-valid:top-1 peer-valid:text-xs"
+                      >
+                        Nama Acara *
+                      </label>
                     </div>
 
-                    <div>
-                      <label
-                        class="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5"
-                      >
-                        <span>Tanggal Acara *</span>
-                      </label>
+                    <div class="relative pt-2">
                       <input
+                        id="event_date"
                         v-model="bookingForm.event_date"
                         type="date"
                         :min="getTodayDate()"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all outline-none"
+                        placeholder="Tanggal Acara"
+                        class="peer w-full p-3 pt-5 pb-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-[#882f1d] transition-colors outline-none"
                         required
                       />
+                      <label
+                        for="event_date"
+                        class="absolute left-3 top-1 text-[#882f1d] text-xs font-semibold transition-all pointer-events-none"
+                      >
+                        Tanggal Acara *
+                      </label>
                     </div>
 
                     <div>
                       <div class="grid grid-cols-2 gap-4">
-                        <div>
-                          <label
-                            class="block text-sm font-semibold text-gray-700 mb-1.5"
-                            >Waktu Mulai *</label
-                          >
+                        <div class="relative pt-2">
                           <input
+                            id="start_time"
                             v-model="bookingForm.start_time"
                             type="time"
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all outline-none"
+                            placeholder="Waktu Mulai"
+                            class="peer w-full p-3 pt-5 pb-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-[#882f1d] transition-colors outline-none"
                             required
                           />
-                        </div>
-                        <div>
                           <label
-                            class="block text-sm font-semibold text-gray-700 mb-1.5"
-                            >Waktu Selesai *</label
+                            for="start_time"
+                            class="absolute left-3 top-1 text-[#882f1d] text-xs font-semibold transition-all pointer-events-none"
                           >
+                            Waktu Mulai *
+                          </label>
+                        </div>
+                        <div class="relative pt-2">
                           <input
+                            id="end_time"
                             v-model="bookingForm.end_time"
                             type="time"
-                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-transparent transition-all outline-none"
+                            placeholder="Waktu Selesai"
+                            class="peer w-full p-3 pt-5 pb-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#882f1d] focus:border-[#882f1d] transition-colors outline-none"
                             required
                           />
+                          <label
+                            for="end_time"
+                            class="absolute left-3 top-1 text-[#882f1d] text-xs font-semibold transition-all pointer-events-none"
+                          >
+                            Waktu Selesai *
+                          </label>
                         </div>
                       </div>
 
@@ -1723,35 +1736,26 @@
                                 ? 'Waktu ini sudah dipesan. Pilih waktu lain.'
                                 : ''
                         "
-                        class="touch-feedback flex-1 bg-[#882f1d] text-white px-6 py-3 rounded-lg hover:bg-[#6b2416] disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all flex items-center justify-center gap-2"
+                        :class="[
+                          'touch-feedback flex-1 text-white px-6 py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed font-bold transition-all flex items-center justify-center gap-2 duration-500',
+                          bookingSuccess ? 'bg-green-600 scale-105' : 'bg-[#882f1d] hover:bg-[#6b2416]'
+                        ]"
                       >
                         <svg
                           v-if="bookingLoading"
-                          class="w-4 h-4 animate-spin text-white"
+                          class="w-5 h-5 animate-spin text-white"
                           fill="none"
                           viewBox="0 0 24 24"
                         >
-                          <circle
-                            class="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="4"
-                          />
-                          <path
-                            class="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v8H4z"
-                          />
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                         </svg>
-                        <span>{{
-                          isCurrentUserAdmin
-                            ? "Gunakan Admin Panel untuk Booking"
-                            : bookingLoading
-                              ? "Memproses..."
-                              : "Konfirmasi Pemesanan"
-                        }}</span>
+                        <svg v-else-if="bookingSuccess" class="w-6 h-6 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span :class="bookingLoading || bookingSuccess ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100 transition-opacity'">
+                          {{ isCurrentUserAdmin ? "Gunakan Admin Panel untuk Booking" : "Konfirmasi Pemesanan" }}
+                        </span>
                       </button>
                       <button
                         type="button"
@@ -3339,6 +3343,7 @@ const submitCancellation = async () => {
 
 const loginLoading = ref(false);
 const bookingLoading = ref(false);
+const bookingSuccess = ref(false);
 const loginError = ref("");
 const bookingMessage = ref("");
 const bookingError = ref("");
@@ -4042,6 +4047,7 @@ const createBooking = async () => {
       },
     });
     bookingMessage.value = response.message;
+    bookingSuccess.value = true;
 
     // Refresh data and weekly schedule immediately after successful booking
     await Promise.all([loadData(), loadWeeklySchedule()]);
@@ -4059,6 +4065,7 @@ const createBooking = async () => {
         repeat_until: "",
       };
       bookingMessage.value = "";
+      bookingSuccess.value = false;
     }, 2500);
   } catch (error) {
     bookingError.value = error.data?.statusMessage || "Pemesanan gagal";

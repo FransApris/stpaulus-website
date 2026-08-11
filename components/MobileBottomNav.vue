@@ -15,9 +15,17 @@
         :to="item.path"
         @click="handleNavClick(item.path)"
         :class="getNavItemClasses(item.path)"
-        class="touch-feedback flex flex-col items-center justify-center py-2 px-1 transition-all duration-200 min-h-[44px] cursor-pointer rounded-lg"
+        class="touch-feedback relative flex flex-col items-center justify-center py-2 px-1 transition-all duration-300 min-h-[44px] cursor-pointer"
       >
-        <div class="w-6 h-6 mb-1 flex items-center justify-center">
+        <!-- Active Indicator Line -->
+        <div 
+          class="absolute top-0 left-1/2 -translate-x-1/2 h-1 bg-[#882f1d] rounded-b-md transition-all duration-300 ease-out"
+          :class="isRouteActive(item.path) ? 'w-1/2 opacity-100' : 'w-0 opacity-0'"
+        ></div>
+        <div 
+          class="w-6 h-6 mb-1 flex items-center justify-center transition-transform duration-300"
+          :class="isRouteActive(item.path) ? '-translate-y-0.5' : ''"
+        >
           <component :is="item.icon" class="w-5 h-5" />
         </div>
         <span class="text-xs font-medium text-center leading-tight">{{ item.label }}</span>
@@ -68,12 +76,16 @@ onUnmounted(() => {
   if (process.client) window.removeEventListener('scroll', handleScroll)
 })
 
-const getNavItemClasses = (itemPath: string) => {
-  const isActive = route.path === itemPath ||
+const isRouteActive = (itemPath: string) => {
+  return route.path === itemPath ||
     (itemPath === '/berita' && route.path.startsWith('/berita')) ||
     (itemPath === '/agenda' && route.path.startsWith('/agenda'))
+}
+
+const getNavItemClasses = (itemPath: string) => {
+  const isActive = isRouteActive(itemPath)
   return isActive
-    ? 'text-[#882f1d] bg-[#882f1d]/10'
+    ? 'text-[#882f1d] bg-gradient-to-b from-[#882f1d]/10 to-transparent'
     : 'text-gray-600 hover:text-[#882f1d] hover:bg-gray-50'
 }
 

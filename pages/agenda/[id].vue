@@ -122,12 +122,18 @@
             </NuxtLink>
             <button
               @click="shareAgenda"
-              class="inline-flex items-center justify-center px-6 py-3 bg-[#882f1d] text-white rounded-lg font-medium hover:bg-[#a55e1f] transition-colors"
+              :class="[
+                'inline-flex items-center justify-center px-6 py-3 text-white rounded-lg font-medium transition-colors duration-300',
+                isCopied ? 'bg-green-600 hover:bg-green-700' : 'bg-[#882f1d] hover:bg-[#a55e1f]'
+              ]"
             >
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg v-if="!isCopied" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
               </svg>
-              Bagikan Agenda
+              <svg v-else class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              {{ isCopied ? 'Tersalin!' : 'Bagikan Agenda' }}
             </button>
           </div>
         </div>
@@ -209,19 +215,45 @@ const getCategoryStyle = (agendaRef) => {
   }
 }
 
-const shareAgenda = () => {
+const isCopied = ref(false)
+
+const shareAgenda = async () => {
+  const url = window.location.href
+  const title = `Agenda: ${agenda.value?.title}`
+  const text = `Lihat agenda ${agenda.value?.title} di website Paroki St. Paulus Juanda`
+  
   if (navigator.share) {
-    navigator.share({
-      title: agendaData.value.title,
-      text: `Agenda: ${agendaData.value.title} - ${formatDate(agendaData.value.start_date)}`,
-      url: window.location.href
-    })
+    try {
+      await navigator.share({
+        title,
+        text,
+        url
+      })
+      showCopiedFeedback()
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        copyToClipboard(url)
+      }
+    }
   } else {
-    // Fallback: copy to clipboard
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      alert('Link agenda berhasil disalin ke clipboard!')
-    })
+    copyToClipboard(url)
   }
+}
+
+const copyToClipboard = async (text) => {
+  try {
+    await navigator.clipboard.writeText(text)
+    showCopiedFeedback()
+  } catch (err) {
+    console.error('Failed to copy link:', err)
+  }
+}
+
+const showCopiedFeedback = () => {
+  isCopied.value = true
+  setTimeout(() => {
+    isCopied.value = false
+  }, 2000)
 }
 </script>
 

@@ -153,14 +153,18 @@
               <button
                 :id="`btn-copy-${album.id}`"
                 class="action-btn"
+                :class="copiedAlbumId === album.id ? 'text-green-600' : ''"
                 aria-label="Salin tautan album"
                 @click.prevent="copyLink(album)"
               >
-                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <svg v-if="copiedAlbumId !== album.id" class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke-linecap="round" stroke-linejoin="round" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-                <span>Copy</span>
+                <svg v-else class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{{ copiedAlbumId === album.id ? 'Tersalin!' : 'Copy' }}</span>
               </button>
 
             </div>
@@ -254,10 +258,18 @@ async function shareAlbum(album: any) {
   }
 }
 
+const copiedAlbumId = ref<number | string | null>(null)
+
 async function copyLink(album: any) {
   const url = album.share_url || window.location.href
   await copyToClipboard(url)
-  success('Tautan berhasil disalin ke clipboard! 📋')
+  
+  copiedAlbumId.value = album.id
+  setTimeout(() => {
+    if (copiedAlbumId.value === album.id) {
+      copiedAlbumId.value = null
+    }
+  }, 2000)
 }
 
 async function copyToClipboard(text: string) {
