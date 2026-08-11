@@ -176,7 +176,8 @@
                 </div>
               </div>
             </div>
-          </a>
+            </a>
+          </div>
         </div>
 
         <!-- Empty State -->
