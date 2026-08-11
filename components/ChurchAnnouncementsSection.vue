@@ -280,9 +280,12 @@
 </template>
 
 <script setup>
+// Declare plain constants FIRST, before any reactive/async primitives,
+// to avoid Temporal Dead Zone (TDZ) errors in minified production builds.
+const PAGE_LIMIT = 5
+
 const selectedAnnouncement = ref(null)
 const currentPage = ref(1)
-const pageLimit = 5
 
 // Fetch announcements with proper error handling
 const { data, pending, error } = useFetch('/api/church-announcements', {
@@ -293,6 +296,12 @@ const { data, pending, error } = useFetch('/api/church-announcements', {
     transform: (response) => response || { data: [], count: 0 }
 })
 
+// Computed declarations must follow strict dependency order to avoid TDZ in minified bundles:
+// 1. announcements (depends on data, error)
+// 2. totalPages (depends on announcements)
+// 3. paginatedAnnouncements (depends on announcements, currentPage)
+// 4. visiblePages (depends on totalPages, currentPage)
+
 const announcements = computed(() => {
     if (error.value) {
         console.error('[ChurchAnnouncements] Fetch error:', error.value)
@@ -302,13 +311,13 @@ const announcements = computed(() => {
 })
 
 const totalPages = computed(() => {
-    const pages = Math.ceil(announcements.value.length / pageLimit)
+    const pages = Math.ceil(announcements.value.length / PAGE_LIMIT)
     return pages > 0 ? pages : 1
 })
 
 const paginatedAnnouncements = computed(() => {
-    const start = (currentPage.value - 1) * pageLimit
-    return announcements.value.slice(start, start + pageLimit)
+    const start = (currentPage.value - 1) * PAGE_LIMIT
+    return announcements.value.slice(start, start + PAGE_LIMIT)
 })
 
 const visiblePages = computed(() => {
