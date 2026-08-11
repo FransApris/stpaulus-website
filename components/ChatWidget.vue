@@ -3,21 +3,22 @@
     <!-- Chat Button -->
     <button @click="toggleChat"
       aria-label="Buka Chatbot AI Paroki St. Paulus Juanda"
-      class="bg-paulus-blue hover:bg-blue-700 text-white rounded-full w-16 h-16 md:w-20 md:h-20 flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-110"
+      class="chat-fab bg-paulus-blue hover:bg-blue-700 text-white rounded-full w-16 h-16 md:w-20 md:h-20 flex items-center justify-center shadow-lg"
       :class="[
-        { 'rotate-45': isOpen },
         isBouncing && !isOpen ? 'animate-bounce' : '',
-        !isBouncing && !isOpen ? 'animate-pulse-light' : ''
+        !isBouncing && !isOpen ? 'idle-float' : ''
       ]">
 
-      <svg v-if="!isOpen" class="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-        </path>
-      </svg>
-      <svg v-else class="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-      </svg>
+      <span class="transition-transform duration-300 flex items-center justify-center" :class="{ 'rotate-45': isOpen }">
+        <svg v-if="!isOpen" class="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+          </path>
+        </svg>
+        <svg v-else class="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </span>
     </button>
 
     <!-- Chat Window with optimized transition -->
@@ -242,12 +243,29 @@ onUnmounted(() => {
 
 <style scoped>
 /* Optimized animations for INSTANT perceived performance */
-@keyframes pulse-light {
-  0%, 100% { transform: scale(1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-  50% { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
-.animate-pulse-light {
-  animation: pulse-light 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.idle-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes rubberBand {
+  from { transform: scale3d(1, 1, 1); }
+  30% { transform: scale3d(1.25, 0.75, 1); }
+  40% { transform: scale3d(0.75, 1.25, 1); }
+  50% { transform: scale3d(1.15, 0.85, 1); }
+  65% { transform: scale3d(0.95, 1.05, 1); }
+  75% { transform: scale3d(1.05, 0.95, 1); }
+  to { transform: scale3d(1.1, 1.1, 1); }
+}
+.chat-fab {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s;
+}
+.chat-fab:hover, .chat-fab:active {
+  animation: rubberBand 0.8s forwards;
+  /* `forwards` keeps the 1.1 scale from the last keyframe of rubberBand */
 }
 
 /* Use GPU acceleration for all animations */

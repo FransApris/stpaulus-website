@@ -19,7 +19,7 @@
         </p>
 
         <NuxtLink v-if="ctaTo" :to="ctaTo"
-          class="inline-block rounded-full border-2 border-white px-8 py-3 text-base font-bold uppercase leading-normal text-white transition-all duration-300 ease-in-out hover:bg-white hover:text-black hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] focus:outline-none focus:ring-2 focus:ring-white ring-0 shadow-lg drop-shadow-md">
+          class="btn-attention inline-block rounded-full border-2 border-white px-8 py-3 text-base font-bold uppercase leading-normal text-white transition-all duration-300 ease-in-out hover:bg-white hover:text-black hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] focus:outline-none focus:ring-2 focus:ring-white ring-0 shadow-lg drop-shadow-md">
           {{ ctaText }}
         </NuxtLink>
       </div>
@@ -67,5 +67,23 @@ h1 {
 
 h3 {
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Custom Breathe Animation untuk Tombol CTA */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.7);
+  }
+}
+.btn-attention {
+  animation: breathe 3.5s ease-in-out infinite;
+}
+.btn-attention:hover {
+  animation: none; /* Matikan animasi idle saat hover agar scale-105 Tailwind bekerja optimal */
 }
 </style>
