@@ -237,8 +237,8 @@
             <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Informasi dan berita terkini dari Paroki St.
               Paulus Juanda.</p>
           </div>
-          <div v-if="newsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible">
-            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse flex flex-col h-[400px]">
+          <div v-if="newsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] animate-pulse flex flex-col h-[400px]">
               <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
               <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
                 <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
@@ -250,11 +250,12 @@
           <div v-else-if="newsError" class="text-center text-red-500">
             Gagal memuat berita terbaru.
           </div>
-          <div v-else-if="latestNews && latestNews.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible">
-            <ArticleCard v-for="(news, idx) in latestNews.slice(0, 3)" :key="news.id"
-              class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
-              :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url"
-              :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" />
+          <div v-else-if="latestNews && latestNews.length > 0" class="relative group">
+            <button @click="scrollNewsCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button @click="scrollNewsCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            <div ref="newsCarouselRef" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing" @mousedown="onNewsDragStart" @mouseleave="onNewsDragEnd" @mouseup="onNewsDragEnd" @mousemove="onNewsDragMove">
+              <ArticleCard v-for="(news, idx) in latestNews.slice(0, 6)" :key="news.id" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] reveal-on-scroll pointer-events-none-img" :class="`reveal-delay-${(idx % 3 + 1) * 100}`" :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url" :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" draggable="false" />
+            </div>
           </div>
           <div v-else class="text-center py-12">
             <div class="inline-flex flex-col items-center justify-center gap-4 bg-white rounded-lg shadow-md p-8">
@@ -291,8 +292,8 @@
             <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting
               Gereja St. Paulus Juanda.</p>
           </div>
-          <div v-if="featuredDocumentsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse">
+          <div v-if="featuredDocumentsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] animate-pulse">
               <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100/90">
                 <div class="flex items-center mb-3">
                   <div class="w-4 h-4 bg-gray-200 rounded mr-2"></div>
@@ -318,9 +319,11 @@
           <div v-else-if="featuredDocumentsError" class="text-center text-red-500">
             Gagal memuat dokumen unggulan.
           </div>
-          <div v-else-if="featuredDocuments && featuredDocuments.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-            <div v-for="(doc, idx) in featuredDocuments.slice(0, 3)" :key="doc.id"
-              class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
+          <div v-else-if="featuredDocuments && featuredDocuments.length > 0" class="relative group">
+            <button @click="scrollDocCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button @click="scrollDocCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            <div ref="docCarouselRef" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing" @mousedown="onDocDragStart" @mouseleave="onDocDragEnd" @mouseup="onDocDragEnd" @mousemove="onDocDragMove">
+            <div v-for="(doc, idx) in featuredDocuments.slice(0, 6)" :key="doc.id" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
               <div class="p-6">
                 <!-- Category Badge -->
                 <div class="flex items-center mb-3">
@@ -382,6 +385,7 @@
                 </div>
               </div>
             </div>
+            </div>
           </div>
           <div v-else class="text-center text-gray-500">
             <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,8 +419,8 @@
             <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Baca inspirasi rohani, khotbah, dan artikel
               dari pastor serta komunitas paroki kami.</p>
           </div>
-          <div v-if="articlesPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse flex flex-col h-[400px]">
+          <div v-if="articlesPending" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] animate-pulse flex flex-col h-[400px]">
               <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
               <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
                 <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
@@ -428,23 +432,17 @@
           <div v-else-if="articlesError" class="text-center text-red-500">
             Gagal memuat artikel terbaru.
           </div>
-          <div v-else-if="latestArticles && latestArticles.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-            <ArticleCard v-for="(article, idx) in latestArticles.slice(0, 3)" :key="article.id"
-              class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
-              :image="article.image || '/images/default-article.jpg'" image-type="url" :title="article.title"
-              :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`"
-              link-text="Baca Artikel →" />
+          <div v-else-if="latestArticles && latestArticles.length > 0" class="relative group">
+            <button @click="scrollArticleCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button @click="scrollArticleCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            <div ref="articleCarouselRef" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing" @mousedown="onArticleDragStart" @mouseleave="onArticleDragEnd" @mouseup="onArticleDragEnd" @mousemove="onArticleDragMove">
+              <ArticleCard v-for="(article, idx) in latestArticles.slice(0, 6)" :key="article.id" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] reveal-on-scroll pointer-events-none-img" :class="`reveal-delay-${(idx % 3 + 1) * 100}`" :image="article.image || '/images/default-article.jpg'" image-type="url" :title="article.title" :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`" link-text="Baca Artikel →" draggable="false" />
+            </div>
           </div>
-          <div v-else class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Renungan Harian" title="Renungan Minggu Ini: Kasih dan Pengampunan"
-              description="Artikel singkat tentang ajaran Yesus mengenai pengampunan, dihubungkan dengan kehidupan sehari-hari umat."
-              to="/artikel/renungan-kasih" link-text="Baca Artikel →" />
-            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Khotbah Pastor" title="Khotbah Minggu Lalu: Iman di Tengah Tantangan"
-              description="Transkrip khotbah Pastor Yohanes tentang mempertahankan iman di era modern."
-              to="/artikel/khotbah-iman" link-text="Baca Lengkap →" />
-            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Pengumuman" title="Panduan Retret Rohani 2024"
-              description="Informasi lengkap tentang retret tahunan paroki, termasuk jadwal dan persiapan."
-              to="/artikel/retret-2024" link-text="Lihat Detail →" />
+          <div v-else class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
+            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw]" image="Renungan Harian" title="Renungan Minggu Ini: Kasih dan Pengampunan" description="Artikel singkat tentang ajaran Yesus mengenai pengampunan, dihubungkan dengan kehidupan sehari-hari umat." to="/artikel/renungan-kasih" link-text="Baca Artikel →" />
+            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw]" image="Khotbah Pastor" title="Khotbah Minggu Lalu: Iman di Tengah Tantangan" description="Transkrip khotbah Pastor Yohanes tentang mempertahankan iman di era modern." to="/artikel/khotbah-iman" link-text="Baca Lengkap →" />
+            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw]" image="Pengumuman" title="Panduan Retret Rohani 2024" description="Informasi lengkap tentang retret tahunan paroki, termasuk jadwal dan persiapan." to="/artikel/retret-2024" link-text="Lihat Detail →" />
           </div>
           <!-- CTA ke Full Artikel -->
           <div class="text-center mt-6">
@@ -469,8 +467,8 @@
             <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jadwal kegiatan dan acara mendatang di Paroki
               St. Paulus Juanda.</p>
           </div>
-          <div v-if="agendaPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden animate-pulse">
+          <div v-if="agendaPending" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden animate-pulse">
               <div class="p-6">
                 <div class="flex items-center space-x-2 mb-3">
                   <div class="h-6 bg-gray-200 rounded-full w-24"></div>
@@ -491,45 +489,29 @@
           <div v-else-if="agendaError" class="text-center text-red-500">
             Gagal memuat agenda mendatang.
           </div>
-          <div v-else-if="upcomingAgendas && upcomingAgendas.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-            <div v-for="(agenda, idx) in upcomingAgendas.slice(0, 3)" :key="agenda.id"
-              class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
-              <div class="p-6">
-                <div class="flex items-center space-x-2 mb-3">
-                  <span :style="getCategoryStyle(agenda)"
-                    class="inline-flex px-3 py-1 text-sm font-semibold rounded-full">
-                    {{ agenda.category }}
-                  </span>
+          <div v-else-if="upcomingAgendas && upcomingAgendas.length > 0" class="relative group">
+            <button @click="scrollAgendaCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button @click="scrollAgendaCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            <div ref="agendaCarouselRef" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing" @mousedown="onAgendaDragStart" @mouseleave="onAgendaDragEnd" @mouseup="onAgendaDragEnd" @mousemove="onAgendaDragMove">
+              <div v-for="(agenda, idx) in upcomingAgendas.slice(0, 6)" :key="agenda.id" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
+                <div class="p-6">
+                  <div class="flex items-center space-x-2 mb-3">
+                    <span :style="getCategoryStyle(agenda)" class="inline-flex px-3 py-1 text-sm font-semibold rounded-full">{{ agenda.category }}</span>
+                  </div>
+                  <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">{{ agenda.title }}</h3>
+                  <div class="flex items-center text-gray-600 mb-2">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <ClientOnly fallback="..."><span class="font-medium">{{ formatDate(agenda.start_date) }}</span></ClientOnly>
+                  </div>
+                  <div class="flex items-center text-gray-600 mb-3">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span>{{ agenda.location }}</span>
+                  </div>
+                  <div v-if="agenda.description" class="text-gray-700 mb-4">
+                    <p class="text-sm line-clamp-2">{{ agenda.description }}</p>
+                  </div>
+                  <NuxtLink :to="`/agenda/${agenda.id}`" draggable="false" class="inline-block text-[#882f1d] font-medium hover:text-[#6b2416] transition-colors">Lihat Detail →</NuxtLink>
                 </div>
-
-                <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">{{ agenda.title }}</h3>
-
-                <div class="flex items-center text-gray-600 mb-2">
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <ClientOnly fallback="..."><span class="font-medium">{{ formatDate(agenda.start_date) }}</span></ClientOnly>
-                </div>
-
-                <div class="flex items-center text-gray-600 mb-3">
-                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                  </svg>
-                  <span>{{ agenda.location }}</span>
-                </div>
-
-                <div v-if="agenda.description" class="text-gray-700 mb-4">
-                  <p class="text-sm line-clamp-2">{{ agenda.description }}</p>
-                </div>
-
-                <NuxtLink :to="`/agenda/${agenda.id}`"
-                  class="inline-block text-[#882f1d] font-medium hover:text-[#6b2416] transition-colors">
-                  Lihat Detail →
-                </NuxtLink>
               </div>
             </div>
           </div>
@@ -801,6 +783,130 @@ const onDragMove = (e) => {
   const x = e.pageX - albumCarouselRef.value.offsetLeft
   const walk = (x - startX.value) * 2 // scroll speed multiplier
   albumCarouselRef.value.scrollLeft = scrollLeftPos.value - walk
+}
+
+// ── NEWS CAROUSEL LOGIC ──
+const newsCarouselRef = ref(null)
+const isNewsDragging = ref(false)
+const startNewsX = ref(0)
+const scrollNewsLeftPos = ref(0)
+
+const scrollNewsCarousel = (direction) => {
+  if (newsCarouselRef.value) {
+    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    newsCarouselRef.value.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
+  }
+}
+const onNewsDragStart = (e) => {
+  if (!newsCarouselRef.value) return
+  isNewsDragging.value = true
+  newsCarouselRef.value.classList.remove('snap-x', 'snap-mandatory', 'scroll-smooth')
+  startNewsX.value = e.pageX - newsCarouselRef.value.offsetLeft
+  scrollNewsLeftPos.value = newsCarouselRef.value.scrollLeft
+}
+const onNewsDragEnd = () => {
+  if (!isNewsDragging.value || !newsCarouselRef.value) return
+  isNewsDragging.value = false
+  newsCarouselRef.value.classList.add('snap-x', 'snap-mandatory', 'scroll-smooth')
+}
+const onNewsDragMove = (e) => {
+  if (!isNewsDragging.value || !newsCarouselRef.value) return
+  e.preventDefault()
+  const walk = (e.pageX - newsCarouselRef.value.offsetLeft - startNewsX.value) * 2
+  newsCarouselRef.value.scrollLeft = scrollNewsLeftPos.value - walk
+}
+
+// ── DOC CAROUSEL LOGIC ──
+const docCarouselRef = ref(null)
+const isDocDragging = ref(false)
+const startDocX = ref(0)
+const scrollDocLeftPos = ref(0)
+
+const scrollDocCarousel = (direction) => {
+  if (docCarouselRef.value) {
+    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    docCarouselRef.value.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
+  }
+}
+const onDocDragStart = (e) => {
+  if (!docCarouselRef.value) return
+  isDocDragging.value = true
+  docCarouselRef.value.classList.remove('snap-x', 'snap-mandatory', 'scroll-smooth')
+  startDocX.value = e.pageX - docCarouselRef.value.offsetLeft
+  scrollDocLeftPos.value = docCarouselRef.value.scrollLeft
+}
+const onDocDragEnd = () => {
+  if (!isDocDragging.value || !docCarouselRef.value) return
+  isDocDragging.value = false
+  docCarouselRef.value.classList.add('snap-x', 'snap-mandatory', 'scroll-smooth')
+}
+const onDocDragMove = (e) => {
+  if (!isDocDragging.value || !docCarouselRef.value) return
+  e.preventDefault()
+  const walk = (e.pageX - docCarouselRef.value.offsetLeft - startDocX.value) * 2
+  docCarouselRef.value.scrollLeft = scrollDocLeftPos.value - walk
+}
+
+// ── ARTICLE CAROUSEL LOGIC ──
+const articleCarouselRef = ref(null)
+const isArticleDragging = ref(false)
+const startArticleX = ref(0)
+const scrollArticleLeftPos = ref(0)
+
+const scrollArticleCarousel = (direction) => {
+  if (articleCarouselRef.value) {
+    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    articleCarouselRef.value.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
+  }
+}
+const onArticleDragStart = (e) => {
+  if (!articleCarouselRef.value) return
+  isArticleDragging.value = true
+  articleCarouselRef.value.classList.remove('snap-x', 'snap-mandatory', 'scroll-smooth')
+  startArticleX.value = e.pageX - articleCarouselRef.value.offsetLeft
+  scrollArticleLeftPos.value = articleCarouselRef.value.scrollLeft
+}
+const onArticleDragEnd = () => {
+  if (!isArticleDragging.value || !articleCarouselRef.value) return
+  isArticleDragging.value = false
+  articleCarouselRef.value.classList.add('snap-x', 'snap-mandatory', 'scroll-smooth')
+}
+const onArticleDragMove = (e) => {
+  if (!isArticleDragging.value || !articleCarouselRef.value) return
+  e.preventDefault()
+  const walk = (e.pageX - articleCarouselRef.value.offsetLeft - startArticleX.value) * 2
+  articleCarouselRef.value.scrollLeft = scrollArticleLeftPos.value - walk
+}
+
+// ── AGENDA CAROUSEL LOGIC ──
+const agendaCarouselRef = ref(null)
+const isAgendaDragging = ref(false)
+const startAgendaX = ref(0)
+const scrollAgendaLeftPos = ref(0)
+
+const scrollAgendaCarousel = (direction) => {
+  if (agendaCarouselRef.value) {
+    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    agendaCarouselRef.value.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
+  }
+}
+const onAgendaDragStart = (e) => {
+  if (!agendaCarouselRef.value) return
+  isAgendaDragging.value = true
+  agendaCarouselRef.value.classList.remove('snap-x', 'snap-mandatory', 'scroll-smooth')
+  startAgendaX.value = e.pageX - agendaCarouselRef.value.offsetLeft
+  scrollAgendaLeftPos.value = agendaCarouselRef.value.scrollLeft
+}
+const onAgendaDragEnd = () => {
+  if (!isAgendaDragging.value || !agendaCarouselRef.value) return
+  isAgendaDragging.value = false
+  agendaCarouselRef.value.classList.add('snap-x', 'snap-mandatory', 'scroll-smooth')
+}
+const onAgendaDragMove = (e) => {
+  if (!isAgendaDragging.value || !agendaCarouselRef.value) return
+  e.preventDefault()
+  const walk = (e.pageX - agendaCarouselRef.value.offsetLeft - startAgendaX.value) * 2
+  agendaCarouselRef.value.scrollLeft = scrollAgendaLeftPos.value - walk
 }
 
 // ── HYDRATION & UTILITY HOISTING (MENCEGAH REFERENCE ERROR) ──
