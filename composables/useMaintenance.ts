@@ -16,6 +16,7 @@
  *   <div v-else> ... konten asli ... </div>
  * ─────────────────────────────────────────────────────────────
  */
+import type { Ref } from 'vue'
 
 export interface MaintenancePageConfig {
   active: boolean
@@ -96,21 +97,28 @@ export function useMaintenance(customRouteKey?: string) {
   })
 
   // Fetch status dari API server (di-cache per halaman)
-  // server:false → hanya fetch di client, menghindari SSR/client mismatch
-  // pada kasus di mana server dan client memiliki timezone / cache berbeda.
-  const { data: maintenanceStatus } = useAsyncData(
+  // server:false → hanya fetch di client, menghindari SSR/client mismatch.
+  // Cast eksplisit ke Ref<Record<string, boolean>> untuk menghindari:
+  //   TS2589: Type instantiation is excessively deep and possibly infinite.
+  //   TS7053: Element implicitly has 'any' type (string index on complex union).
+  const { data: _maintenanceRaw } = useAsyncData(
     'maintenance-status',
-    () => $fetch<Record<string, boolean>>('/api/maintenance'),
+    // Cast $fetch result (bukan generic) untuk menghindari deep type inference
+    () => ($fetch('/api/maintenance') as Promise<Record<string, boolean>>),
     {
       server: false,
       lazy: true,
       default: () => ({}) as Record<string, boolean>
     }
   )
+  // Cast ke Ref eksplisit agar TypeScript tahu tipe index-nya
+  const maintenanceStatus = _maintenanceRaw as Ref<Record<string, boolean>>
 
   // Cek apakah halaman ini sedang maintenance
   const isInMaintenance = computed(() => {
-    return maintenanceStatus.value?.[routeKey.value] === true
+    // Cast value ke Record sebelum indexing agar tidak TS7053
+    const status = maintenanceStatus.value as Record<string, boolean>
+    return status?.[routeKey.value] === true
   })
 
   // Gabungkan metadata statis + status dinamis dari server
