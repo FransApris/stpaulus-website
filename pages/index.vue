@@ -119,17 +119,35 @@
         </div>
 
         <!-- Albums Carousel -->
-        <div v-else-if="latestAlbums && latestAlbums.length > 0" class="relative">
-          <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
+        <div v-else-if="latestAlbums && latestAlbums.length > 0" class="relative group">
+          <!-- Left Button (Hidden on Mobile) -->
+          <button @click="scrollAlbumCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+
+          <!-- Right Button (Hidden on Mobile) -->
+          <button @click="scrollAlbumCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>
+
+          <!-- Carousel Container with Drag Events -->
+          <div 
+            ref="albumCarouselRef" 
+            class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing"
+            @mousedown="onDragStart"
+            @mouseleave="onDragEnd"
+            @mouseup="onDragEnd"
+            @mousemove="onDragMove"
+          >
             <a v-for="(album, idx) in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
               rel="noopener noreferrer" class="group reveal-on-scroll shrink-0 w-[85vw] sm:w-[40vw] lg:w-[30vw] snap-center" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
             <div
               class="bg-white rounded-2xl shadow-xs border border-gray-100/90 overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between h-full">
               <!-- Album Cover -->
-              <div class="relative overflow-hidden h-48 bg-gradient-to-br from-[#882f1d] to-[#c58229]">
+              <div class="relative overflow-hidden h-48 bg-gradient-to-br from-[#882f1d] to-[#c58229] pointer-events-none">
                 <img :src="optimizeImageUrl(album.thumbnail_url || '/images/default-gallery.jpg', 600)" :alt="album.title"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  @error="handleAlbumImageError">
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 pointer-events-none"
+                  @error="handleAlbumImageError" draggable="false">
 
                 <!-- Google Photos Badge -->
                 <div
@@ -746,6 +764,44 @@
 const { optimizeImageUrl } = useOptimizedImage()
 const { isMaintenance } = useMaintenance('beranda')
 const { initObserver } = useScrollReveal()
+
+// ── ALBUM CAROUSEL LOGIC ──
+const albumCarouselRef = ref(null)
+const isDragging = ref(false)
+const startX = ref(0)
+const scrollLeftPos = ref(0)
+
+const scrollAlbumCarousel = (direction) => {
+  if (albumCarouselRef.value) {
+    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    albumCarouselRef.value.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    })
+  }
+}
+
+const onDragStart = (e) => {
+  if (!albumCarouselRef.value) return
+  isDragging.value = true
+  albumCarouselRef.value.classList.remove('snap-x', 'snap-mandatory', 'scroll-smooth')
+  startX.value = e.pageX - albumCarouselRef.value.offsetLeft
+  scrollLeftPos.value = albumCarouselRef.value.scrollLeft
+}
+
+const onDragEnd = () => {
+  if (!isDragging.value || !albumCarouselRef.value) return
+  isDragging.value = false
+  albumCarouselRef.value.classList.add('snap-x', 'snap-mandatory', 'scroll-smooth')
+}
+
+const onDragMove = (e) => {
+  if (!isDragging.value || !albumCarouselRef.value) return
+  e.preventDefault()
+  const x = e.pageX - albumCarouselRef.value.offsetLeft
+  const walk = (x - startX.value) * 2 // scroll speed multiplier
+  albumCarouselRef.value.scrollLeft = scrollLeftPos.value - walk
+}
 
 // ── HYDRATION & UTILITY HOISTING (MENCEGAH REFERENCE ERROR) ──
 const isMounted = ref(false)
