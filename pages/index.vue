@@ -1071,9 +1071,6 @@ const featuredDocuments = computed(() => {
 const publicBookings = computed(() => {
   const bookings = bookingsData.value?.bookings || [];
 
-  console.log('[Homepage] Total bookings from API:', bookings.length);
-  console.log('[Homepage] Sample booking data:', bookings[0]);
-
   // Guard hydration: di SSR tidak ada jam lokal yang akurat,
   // kembalikan array kosong dan biarkan client-side yang melakukan filter.
   if (!process.client) return [];
@@ -1081,34 +1078,18 @@ const publicBookings = computed(() => {
   // Gunakan waktu client (WIB) untuk perbandingan
   const now = new Date();
 
-  const filtered = bookings.filter((booking) => {
+  return bookings.filter((booking) => {
     try {
       // ── Prioritas 1: gunakan start_time_utc (ISO string murni dari server) ──
-      // end_time_utc telah diformat ulang sebagai "HH:MM" (string waktu tampilan),
-      // bukan ISO string. Gunakan start_time_utc untuk deteksi booking masa depan.
-      // Booking yang sudah dimulai hari ini juga tetap ditampilkan.
       const utcString = booking.start_time_utc || booking.end_time_utc;
       if (utcString && utcString.includes('T') && utcString.includes('Z')) {
         const bookingStart = new Date(utcString);
-        // Tampilkan jika booking hari ini (sama tanggal WIB) atau masa depan
         const todayWIB = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
         const bookingDateWIB = bookingStart.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
-        const isToday = bookingDateWIB === todayWIB;
-        const isFuture = bookingStart >= now;
-
-        console.log('[Homepage] Checking booking (UTC ISO):', {
-          id: booking.id,
-          event: booking.event_name,
-          bookingDateWIB,
-          todayWIB,
-          isToday,
-          isFuture,
-          isVisible: isToday || isFuture
-        });
-        return isToday || isFuture;
+        return bookingDateWIB === todayWIB || bookingStart >= now;
       }
 
-      // ── Fallback: parse dari event_date + start_time (format lokal) ──
+      // ── Fallback: parse dari event_date (format lokal) ──
       let eventDateStr = booking.event_date;
       if (eventDateStr instanceof Date) {
         const yr = eventDateStr.getFullYear();
@@ -1116,29 +1097,12 @@ const publicBookings = computed(() => {
         const dy = String(eventDateStr.getDate()).padStart(2, '0');
         eventDateStr = `${yr}-${mo}-${dy}`;
       }
-
-      // Bandingkan hanya tanggal (YYYY-MM-DD) untuk menentukan hari ini/masa depan
       const todayStr = now.toLocaleDateString('sv-SE');
-      const bookingDateStr = String(eventDateStr || '').slice(0, 10);
-      const isVisible = bookingDateStr >= todayStr;
-
-      console.log('[Homepage] Checking booking (fallback date):', {
-        id: booking.id,
-        event: booking.event_name,
-        bookingDateStr,
-        todayStr,
-        isVisible
-      });
-
-      return isVisible;
-    } catch (error) {
-      console.error('[Homepage] Error parsing booking date:', error, booking);
+      return String(eventDateStr || '').slice(0, 10) >= todayStr;
+    } catch {
       return false;
     }
   });
-
-  console.log('[Homepage] Filtered bookings count:', filtered.length);
-  return filtered;
 });
 
 // Note: helper functions and formatting utilities have been hoisted to the top to avoid Temporal Dead Zone (ReferenceError).
