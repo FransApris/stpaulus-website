@@ -192,323 +192,333 @@
     </section>
 
     <!-- Section 4: Latest News / Events Teaser -->
-    <section class="py-12 bg-gray-50 reveal-on-scroll">
-      <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <div class="text-center mb-8">
-          <div class="flex items-center justify-center mb-3">
-            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
-          </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Berita Terbaru</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Informasi dan berita terkini dari Paroki St.
-            Paulus Juanda.</p>
-        </div>
-        <div v-if="newsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible">
-          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse flex flex-col h-[400px]">
-            <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
-            <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
-              <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
-              <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div class="mt-auto h-3 bg-gray-200 rounded w-1/3"></div>
+    <!-- ClientOnly: data berita menggunakan server:false + lazy:true -->
+    <!-- SSR akan render skeleton, client render data → mismatch terjamin tanpa ClientOnly -->
+    <ClientOnly>
+      <section class="py-12 bg-gray-50 reveal-on-scroll">
+        <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
+          <div class="text-center mb-8">
+            <div class="flex items-center justify-center mb-3">
+              <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
             </div>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Berita Terbaru</h2>
+            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Informasi dan berita terkini dari Paroki St.
+              Paulus Juanda.</p>
           </div>
-        </div>
-        <div v-else-if="newsError" class="text-center text-red-500">
-          Gagal memuat berita terbaru.
-        </div>
-        <div v-else-if="latestNews && latestNews.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible">
-          <ArticleCard v-for="(news, idx) in latestNews.slice(0, 3)" :key="news.id"
-            class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
-            :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url"
-            :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" />
-        </div>
-        <div v-else class="text-center py-12">
-          <div class="inline-flex flex-col items-center justify-center gap-4 bg-white rounded-lg shadow-md p-8">
-            <p class="text-gray-600 text-lg">Belum ada berita terbaru saat ini.</p>
-            <p class="text-gray-500 max-w-xl">Silakan cek kembali nanti atau kunjungi halaman jadwal misa untuk melihat
-              update kegiatan terbaru.</p>
-            <NuxtLink to="/misa"
-              class="mt-2 inline-flex items-center justify-center rounded-lg bg-[#882f1d] px-6 py-2 text-white hover:bg-[#a55e1f]">
-              Ke Jadwal Misa
-            </NuxtLink>
-          </div>
-        </div>
-        <!-- CTA ke Full Berita -->
-        <div class="text-center mt-6">
-          <NuxtLink to="/berita"
-            class="bg-[#882f1d] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
-            Lihat Semua Berita
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 5: Dokumen Paroki -->
-    <section class="py-12 bg-white reveal-on-scroll">
-      <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <div class="text-center mb-8">
-          <div class="flex items-center justify-center mb-3">
-            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
-          </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Dokumen Paroki</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting
-            Gereja St. Paulus Juanda.</p>
-        </div>
-        <div v-if="featuredDocumentsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse">
-            <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100/90">
-              <div class="flex items-center mb-3">
-                <div class="w-4 h-4 bg-gray-200 rounded mr-2"></div>
-                <div class="h-3 bg-gray-200 rounded w-1/3"></div>
-              </div>
-              <div class="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
-              <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
-              <div class="h-3 bg-gray-200 rounded w-5/6 mb-4"></div>
-              <div class="flex justify-between items-center mb-4">
-                <div class="h-3 bg-gray-200 rounded w-1/4"></div>
-                <div class="h-3 bg-gray-200 rounded w-1/5"></div>
-              </div>
-              <div class="flex justify-between items-center mt-2">
-                <div class="h-3 bg-gray-200 rounded w-1/3"></div>
-                <div class="flex space-x-2">
-                  <div class="w-8 h-8 bg-gray-200 rounded"></div>
-                  <div class="w-8 h-8 bg-gray-200 rounded"></div>
-                </div>
+          <div v-if="newsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse flex flex-col h-[400px]">
+              <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
+              <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
+                <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
+                <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                <div class="mt-auto h-3 bg-gray-200 rounded w-1/3"></div>
               </div>
             </div>
           </div>
-        </div>
-        <div v-else-if="featuredDocumentsError" class="text-center text-red-500">
-          Gagal memuat dokumen unggulan.
-        </div>
-        <div v-else-if="featuredDocuments && featuredDocuments.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-          <div v-for="(doc, idx) in featuredDocuments.slice(0, 3)" :key="doc.id"
-            class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
-            <div class="p-6">
-              <!-- Category Badge -->
-              <div class="flex items-center mb-3">
-                <div class="flex-shrink-0 w-4 h-4 rounded mr-2" :style="{ backgroundColor: doc.category_color }">
-                </div>
-                <span class="text-sm font-medium text-gray-600">{{ doc.category_name }}</span>
-              </div>
-
-              <!-- Title -->
-              <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ doc.title }}</h3>
-
-              <!-- Description -->
-              <p v-if="doc.description" class="text-gray-600 text-sm mb-4 line-clamp-3">
-                {{ doc.description }}
-              </p>
-
-              <!-- File Info -->
-              <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                <span>{{ doc.original_filename }}</span>
-                <span>{{ formatFileSize(doc.file_size) }}</span>
-              </div>
-
-              <!-- Upload Date and Action Buttons Row -->
-              <div class="flex items-center justify-between">
-                <!-- Upload Date -->
-                <div class="text-xs text-gray-600">
-                  Diunggah: <ClientOnly fallback="...">{{ formatDate(doc.created_at) }}</ClientOnly>
-                </div>
-
-
-                <!-- Action Buttons -->
-                <div class="flex space-x-1">
-                  <button @click="viewDocument(doc)"
-                    class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-200"
-                    title="Lihat Dokumen">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
-                  <button @click="printDocument(doc)"
-                    class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200"
-                    title="Cetak (buka PDF lalu Ctrl+P)">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                    </svg>
-                  </button>
-                  <button @click="downloadDocument(doc)"
-                    class="p-2 text-gray-600 hover:text-[#882f1d] hover:bg-red-50 rounded-md transition-colors duration-200"
-                    title="Download Dokumen">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div v-else-if="newsError" class="text-center text-red-500">
+            Gagal memuat berita terbaru.
           </div>
-        </div>
-        <div v-else class="text-center text-gray-500">
-          <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-            </path>
-          </svg>
-          <h3 class="text-lg font-cinzel font-medium text-gray-900 mb-2">Belum ada dokumen unggulan</h3>
-          <p class="text-gray-600">Belum ada dokumen yang ditandai sebagai unggulan.</p>
-        </div>
-        <!-- CTA ke Full Dokumen -->
-        <div class="text-center mt-6">
-          <NuxtLink to="/dokumen-paroki"
-            class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
-            Lihat Semua Dokumen
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 6: Artikel Terbaru (Updated to use API) -->
-    <section class="py-12 bg-gray-50 reveal-on-scroll">
-      <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <div class="text-center mb-8">
-          <div class="flex items-center justify-center mb-3">
-            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+          <div v-else-if="latestNews && latestNews.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:overflow-visible">
+            <ArticleCard v-for="(news, idx) in latestNews.slice(0, 3)" :key="news.id"
+              class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
+              :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url"
+              :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" />
           </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Artikel & Renungan</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Baca inspirasi rohani, khotbah, dan artikel
-            dari pastor serta komunitas paroki kami.</p>
-        </div>
-        <div v-if="articlesPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse flex flex-col h-[400px]">
-            <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
-            <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
-              <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
-              <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div class="mt-auto h-3 bg-gray-200 rounded w-1/3"></div>
-            </div>
-          </div>
-        </div>
-        <div v-else-if="articlesError" class="text-center text-red-500">
-          Gagal memuat artikel terbaru.
-        </div>
-        <div v-else-if="latestArticles && latestArticles.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-          <ArticleCard v-for="(article, idx) in latestArticles.slice(0, 3)" :key="article.id"
-            class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
-            :image="article.image || '/images/default-article.jpg'" image-type="url" :title="article.title"
-            :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`"
-            link-text="Baca Artikel →" />
-        </div>
-        <div v-else class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-          <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Renungan Harian" title="Renungan Minggu Ini: Kasih dan Pengampunan"
-            description="Artikel singkat tentang ajaran Yesus mengenai pengampunan, dihubungkan dengan kehidupan sehari-hari umat."
-            to="/artikel/renungan-kasih" link-text="Baca Artikel →" />
-          <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Khotbah Pastor" title="Khotbah Minggu Lalu: Iman di Tengah Tantangan"
-            description="Transkrip khotbah Pastor Yohanes tentang mempertahankan iman di era modern."
-            to="/artikel/khotbah-iman" link-text="Baca Lengkap →" />
-          <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Pengumuman" title="Panduan Retret Rohani 2024"
-            description="Informasi lengkap tentang retret tahunan paroki, termasuk jadwal dan persiapan."
-            to="/artikel/retret-2024" link-text="Lihat Detail →" />
-        </div>
-        <!-- CTA ke Full Artikel -->
-        <div class="text-center mt-6">
-          <NuxtLink to="/artikel"
-            class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
-            Lihat Semua Artikel
-          </NuxtLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 7: Agenda Mendatang -->
-    <section class="py-12 bg-white reveal-on-scroll">
-      <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
-        <div class="text-center mb-8">
-          <div class="flex items-center justify-center mb-3">
-            <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
-          </div>
-          <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Agenda Mendatang</h2>
-          <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jadwal kegiatan dan acara mendatang di Paroki
-            St. Paulus Juanda.</p>
-        </div>
-        <div v-if="agendaPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-          <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden animate-pulse">
-            <div class="p-6">
-              <div class="flex items-center space-x-2 mb-3">
-                <div class="h-6 bg-gray-200 rounded-full w-24"></div>
-              </div>
-              <div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-              <div class="flex items-center mb-3">
-                <div class="w-5 h-5 bg-gray-200 rounded-full mr-2"></div>
-                <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-              </div>
-              <div class="flex items-center mb-4">
-                <div class="w-5 h-5 bg-gray-200 rounded-full mr-2"></div>
-                <div class="h-4 bg-gray-200 rounded w-2/3"></div>
-              </div>
-              <div class="h-4 bg-gray-200 rounded w-1/4 mt-4"></div>
-            </div>
-          </div>
-        </div>
-        <div v-else-if="agendaError" class="text-center text-red-500">
-          Gagal memuat agenda mendatang.
-        </div>
-        <div v-else-if="upcomingAgendas && upcomingAgendas.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
-          <div v-for="(agenda, idx) in upcomingAgendas.slice(0, 3)" :key="agenda.id"
-            class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
-            <div class="p-6">
-              <div class="flex items-center space-x-2 mb-3">
-                <span :style="getCategoryStyle(agenda)"
-                  class="inline-flex px-3 py-1 text-sm font-semibold rounded-full">
-                  {{ agenda.category }}
-                </span>
-              </div>
-
-              <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">{{ agenda.title }}</h3>
-
-              <div class="flex items-center text-gray-600 mb-2">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <ClientOnly fallback="..."><span class="font-medium">{{ formatDate(agenda.start_date) }}</span></ClientOnly>
-              </div>
-
-              <div class="flex items-center text-gray-600 mb-3">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                <span>{{ agenda.location }}</span>
-              </div>
-
-              <div v-if="agenda.description" class="text-gray-700 mb-4">
-                <p class="text-sm line-clamp-2">{{ agenda.description }}</p>
-              </div>
-
-              <NuxtLink :to="`/agenda/${agenda.id}`"
-                class="inline-block text-[#882f1d] font-medium hover:text-[#6b2416] transition-colors">
-                Lihat Detail →
+          <div v-else class="text-center py-12">
+            <div class="inline-flex flex-col items-center justify-center gap-4 bg-white rounded-lg shadow-md p-8">
+              <p class="text-gray-600 text-lg">Belum ada berita terbaru saat ini.</p>
+              <p class="text-gray-500 max-w-xl">Silakan cek kembali nanti atau kunjungi halaman jadwal misa untuk melihat
+                update kegiatan terbaru.</p>
+              <NuxtLink to="/misa"
+                class="mt-2 inline-flex items-center justify-center rounded-lg bg-[#882f1d] px-6 py-2 text-white hover:bg-[#a55e1f]">
+                Ke Jadwal Misa
               </NuxtLink>
             </div>
           </div>
+          <!-- CTA ke Full Berita -->
+          <div class="text-center mt-6">
+            <NuxtLink to="/berita"
+              class="bg-[#882f1d] text-white px-6 py-2 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
+              Lihat Semua Berita
+            </NuxtLink>
+          </div>
         </div>
-        <div v-else class="text-center text-gray-500">
-          <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-          </svg>
-          <h3 class="text-lg font-cinzel font-medium text-gray-900 mb-2">Tidak ada agenda mendatang</h3>
-          <p class="text-gray-600">Belum ada agenda yang dijadwalkan untuk periode mendatang.</p>
+      </section>
+    </ClientOnly>
+
+    <!-- Section 5: Dokumen Paroki -->
+    <!-- ClientOnly: data dokumen menggunakan server:false + lazy:true -->
+    <ClientOnly>
+      <section class="py-12 bg-white reveal-on-scroll">
+        <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
+          <div class="text-center mb-8">
+            <div class="flex items-center justify-center mb-3">
+              <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+            </div>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Dokumen Paroki</h2>
+            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Koleksi dokumen resmi dan informasi penting
+              Gereja St. Paulus Juanda.</p>
+          </div>
+          <div v-if="featuredDocumentsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse">
+              <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100/90">
+                <div class="flex items-center mb-3">
+                  <div class="w-4 h-4 bg-gray-200 rounded mr-2"></div>
+                  <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+                </div>
+                <div class="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
+                <div class="h-3 bg-gray-200 rounded w-full mb-2"></div>
+                <div class="h-3 bg-gray-200 rounded w-5/6 mb-4"></div>
+                <div class="flex justify-between items-center mb-4">
+                  <div class="h-3 bg-gray-200 rounded w-1/4"></div>
+                  <div class="h-3 bg-gray-200 rounded w-1/5"></div>
+                </div>
+                <div class="flex justify-between items-center mt-2">
+                  <div class="h-3 bg-gray-200 rounded w-1/3"></div>
+                  <div class="flex space-x-2">
+                    <div class="w-8 h-8 bg-gray-200 rounded"></div>
+                    <div class="w-8 h-8 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="featuredDocumentsError" class="text-center text-red-500">
+            Gagal memuat dokumen unggulan.
+          </div>
+          <div v-else-if="featuredDocuments && featuredDocuments.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+            <div v-for="(doc, idx) in featuredDocuments.slice(0, 3)" :key="doc.id"
+              class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
+              <div class="p-6">
+                <!-- Category Badge -->
+                <div class="flex items-center mb-3">
+                  <div class="flex-shrink-0 w-4 h-4 rounded mr-2" :style="{ backgroundColor: doc.category_color }">
+                  </div>
+                  <span class="text-sm font-medium text-gray-600">{{ doc.category_name }}</span>
+                </div>
+
+                <!-- Title -->
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ doc.title }}</h3>
+
+                <!-- Description -->
+                <p v-if="doc.description" class="text-gray-600 text-sm mb-4 line-clamp-3">
+                  {{ doc.description }}
+                </p>
+
+                <!-- File Info -->
+                <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+                  <span>{{ doc.original_filename }}</span>
+                  <span>{{ formatFileSize(doc.file_size) }}</span>
+                </div>
+
+                <!-- Upload Date and Action Buttons Row -->
+                <div class="flex items-center justify-between">
+                  <!-- Upload Date -->
+                  <div class="text-xs text-gray-600">
+                    Diunggah: <ClientOnly fallback="...">{{ formatDate(doc.created_at) }}</ClientOnly>
+                  </div>
+
+                  <!-- Action Buttons -->
+                  <div class="flex space-x-1">
+                    <button @click="viewDocument(doc)"
+                      class="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors duration-200"
+                      title="Lihat Dokumen">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                    <button @click="printDocument(doc)"
+                      class="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors duration-200"
+                      title="Cetak (buka PDF lalu Ctrl+P)">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                      </svg>
+                    </button>
+                    <button @click="downloadDocument(doc)"
+                      class="p-2 text-gray-600 hover:text-[#882f1d] hover:bg-red-50 rounded-md transition-colors duration-200"
+                      title="Download Dokumen">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center text-gray-500">
+            <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+              </path>
+            </svg>
+            <h3 class="text-lg font-cinzel font-medium text-gray-900 mb-2">Belum ada dokumen unggulan</h3>
+            <p class="text-gray-600">Belum ada dokumen yang ditandai sebagai unggulan.</p>
+          </div>
+          <!-- CTA ke Full Dokumen -->
+          <div class="text-center mt-6">
+            <NuxtLink to="/dokumen-paroki"
+              class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
+              Lihat Semua Dokumen
+            </NuxtLink>
+          </div>
         </div>
-        <!-- CTA ke Full Agenda -->
-        <div class="text-center mt-6">
-          <NuxtLink to="/agenda"
-            class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
-            Lihat Semua Agenda
-          </NuxtLink>
+      </section>
+    </ClientOnly>
+
+    <!-- Section 6: Artikel Terbaru (Updated to use API) -->
+    <ClientOnly>
+      <section class="py-12 bg-gray-50 reveal-on-scroll">
+        <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
+          <div class="text-center mb-8">
+            <div class="flex items-center justify-center mb-3">
+              <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+            </div>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Artikel & Renungan</h2>
+            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Baca inspirasi rohani, khotbah, dan artikel
+              dari pastor serta komunitas paroki kami.</p>
+          </div>
+          <div v-if="articlesPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto animate-pulse flex flex-col h-[400px]">
+              <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
+              <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
+                <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
+                <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+                <div class="mt-auto h-3 bg-gray-200 rounded w-1/3"></div>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="articlesError" class="text-center text-red-500">
+            Gagal memuat artikel terbaru.
+          </div>
+          <div v-else-if="latestArticles && latestArticles.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+            <ArticleCard v-for="(article, idx) in latestArticles.slice(0, 3)" :key="article.id"
+              class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`"
+              :image="article.image || '/images/default-article.jpg'" image-type="url" :title="article.title"
+              :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`"
+              link-text="Baca Artikel →" />
+          </div>
+          <div v-else class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Renungan Harian" title="Renungan Minggu Ini: Kasih dan Pengampunan"
+              description="Artikel singkat tentang ajaran Yesus mengenai pengampunan, dihubungkan dengan kehidupan sehari-hari umat."
+              to="/artikel/renungan-kasih" link-text="Baca Artikel →" />
+            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Khotbah Pastor" title="Khotbah Minggu Lalu: Iman di Tengah Tantangan"
+              description="Transkrip khotbah Pastor Yohanes tentang mempertahankan iman di era modern."
+              to="/artikel/khotbah-iman" link-text="Baca Lengkap →" />
+            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto" image="Pengumuman" title="Panduan Retret Rohani 2024"
+              description="Informasi lengkap tentang retret tahunan paroki, termasuk jadwal dan persiapan."
+              to="/artikel/retret-2024" link-text="Lihat Detail →" />
+          </div>
+          <!-- CTA ke Full Artikel -->
+          <div class="text-center mt-6">
+            <NuxtLink to="/artikel"
+              class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
+              Lihat Semua Artikel
+            </NuxtLink>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </ClientOnly>
+
+    <!-- Section 7: Agenda Mendatang -->
+    <ClientOnly>
+      <section class="py-12 bg-white reveal-on-scroll">
+        <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
+          <div class="text-center mb-8">
+            <div class="flex items-center justify-center mb-3">
+              <div class="h-1 w-12 bg-[#882f1d] rounded"></div>
+            </div>
+            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-[#882f1d] mb-3">Agenda Mendatang</h2>
+            <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">Jadwal kegiatan dan acara mendatang di Paroki
+              St. Paulus Juanda.</p>
+          </div>
+          <div v-if="agendaPending" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden animate-pulse">
+              <div class="p-6">
+                <div class="flex items-center space-x-2 mb-3">
+                  <div class="h-6 bg-gray-200 rounded-full w-24"></div>
+                </div>
+                <div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                <div class="flex items-center mb-3">
+                  <div class="w-5 h-5 bg-gray-200 rounded-full mr-2"></div>
+                  <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                </div>
+                <div class="flex items-center mb-4">
+                  <div class="w-5 h-5 bg-gray-200 rounded-full mr-2"></div>
+                  <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                </div>
+                <div class="h-4 bg-gray-200 rounded w-1/4 mt-4"></div>
+              </div>
+            </div>
+          </div>
+          <div v-else-if="agendaError" class="text-center text-red-500">
+            Gagal memuat agenda mendatang.
+          </div>
+          <div v-else-if="upcomingAgendas && upcomingAgendas.length > 0" class="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar md:grid md:grid-cols-3 md:gap-4 md:overflow-visible">
+            <div v-for="(agenda, idx) in upcomingAgendas.slice(0, 3)" :key="agenda.id"
+              class="shrink-0 snap-center w-[85vw] sm:w-[45vw] md:w-auto group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx + 1) * 100}`">
+              <div class="p-6">
+                <div class="flex items-center space-x-2 mb-3">
+                  <span :style="getCategoryStyle(agenda)"
+                    class="inline-flex px-3 py-1 text-sm font-semibold rounded-full">
+                    {{ agenda.category }}
+                  </span>
+                </div>
+
+                <h3 class="text-lg sm:text-xl font-semibold text-gray-900 mb-3">{{ agenda.title }}</h3>
+
+                <div class="flex items-center text-gray-600 mb-2">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <ClientOnly fallback="..."><span class="font-medium">{{ formatDate(agenda.start_date) }}</span></ClientOnly>
+                </div>
+
+                <div class="flex items-center text-gray-600 mb-3">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  </svg>
+                  <span>{{ agenda.location }}</span>
+                </div>
+
+                <div v-if="agenda.description" class="text-gray-700 mb-4">
+                  <p class="text-sm line-clamp-2">{{ agenda.description }}</p>
+                </div>
+
+                <NuxtLink :to="`/agenda/${agenda.id}`"
+                  class="inline-block text-[#882f1d] font-medium hover:text-[#6b2416] transition-colors">
+                  Lihat Detail →
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center text-gray-500">
+            <svg class="mx-auto h-24 w-24 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h3 class="text-lg font-cinzel font-medium text-gray-900 mb-2">Tidak ada agenda mendatang</h3>
+            <p class="text-gray-600">Belum ada agenda yang dijadwalkan untuk periode mendatang.</p>
+          </div>
+          <!-- CTA ke Full Agenda -->
+          <div class="text-center mt-6">
+            <NuxtLink to="/agenda"
+              class="bg-[#882f1d] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#a55e1f] transition-colors">
+              Lihat Semua Agenda
+            </NuxtLink>
+          </div>
+        </div>
+      </section>
+    </ClientOnly>
 
     <!-- Section 8: Status Pemesanan Ruangan -->
     <ClientOnly>
@@ -844,8 +854,9 @@ const getBookingStatusStyle = (status) => {
 }
 // ──────────────────────────────────────────────────────────────
 
-// DIAGNOSTIC: Temporarily disable SSR to test IPC crash
-definePageMeta({ ssr: false })
+// Page Meta — SSR diaktifkan kembali (ssr:false hanya untuk diagnostik sementara, sudah selesai)
+// Semua section data-dynamic sudah dibungkus <ClientOnly> untuk mencegah hydration mismatch.
+definePageMeta({ ssr: true })
 
 // Set page title and meta
 useHead({
@@ -968,10 +979,7 @@ const { data: featuredDocumentsData, pending: featuredDocumentsPending, error: f
 const { data: bookingsData, pending: bookingsPending, error: bookingsError } = await useAsyncData('homepage-bookings',
   async () => {
     try {
-      console.log('[Homepage] Fetching bookings from API...');
       const response = await $fetch('/api/bookings/public-list');
-      console.log('[Homepage] API Response:', response);
-      console.log('[Homepage] Bookings count:', response?.bookings?.length || 0);
       return response;
     } catch (err) {
       console.error('[Homepage] Failed to fetch bookings:', err);
@@ -982,7 +990,6 @@ const { data: bookingsData, pending: bookingsPending, error: bookingsError } = a
   lazy: true,
   default: () => ({ bookings: [], total: 0 }),
   transform: (data) => {
-    // Ensure we return object with bookings array
     if (!data) return { bookings: [], total: 0 };
     if (Array.isArray(data)) return { bookings: data, total: data.length };
     if (data.bookings && Array.isArray(data.bookings)) return data;
@@ -1015,7 +1022,6 @@ const latestAlbums = computed(() => {
 
 // Get active hero theme with fallback
 const activeTheme = computed(() => {
-  // If error or no data, return default theme
   if (themeError.value || !activeThemeData.value) {
     return {
       id: 0,
@@ -1026,25 +1032,23 @@ const activeTheme = computed(() => {
   return activeThemeData.value
 })
 
-// ── Preload Hero Image (hanya di halaman beranda) ──────────────────────────
-// Menggunakan onMounted + useHead untuk menghindari hydration mismatch:
-// SSR tidak mengirim preload untuk gambar Cloudinary (karena URL belum diketahui),
-// preload baru ditambahkan setelah client mount + data tema selesai di-fetch.
-// Ini mencegah warning "preloaded but not used" untuk gambar Cloudinary.
-if (process.client) {
+// ── Preload Hero Image (hanya di halaman beranda) ────────────────────────────
+// Diletakkan di onMounted agar tidak pernah dieksekusi di server.
+// watch di dalam onMounted adalah pattern yang aman untuk avoid hydration mismatch.
+onMounted(() => {
   watch(activeTheme, (theme) => {
     if (theme?.image_path) {
       useHead({
         link: [{
           rel: 'preload',
           as: 'image',
-          href: theme.image_path,
+          href: optimizeImageUrl(theme.image_path, 1200),
           fetchpriority: 'high'
         }]
       })
     }
   }, { immediate: true })
-}
+})
 // ──────────────────────────────────────────────────────────────────────────
 
 // Get latest news (first 3)
