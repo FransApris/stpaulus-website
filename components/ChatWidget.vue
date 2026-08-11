@@ -1,10 +1,14 @@
 <template>
-  <div class="chat-widget fixed bottom-20 md:bottom-6 z-50" style="right: 5%">
+  <div class="chat-widget fixed bottom-24 right-4 md:bottom-6 md:right-8 z-50">
     <!-- Chat Button -->
     <button @click="toggleChat"
       aria-label="Buka Chatbot AI Paroki St. Paulus Juanda"
-      class="bg-paulus-blue hover:bg-blue-700 text-white rounded-full w-16 h-16 md:w-20 md:h-20 flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105"
-      :class="{ 'rotate-45': isOpen }">
+      class="bg-paulus-blue hover:bg-blue-700 text-white rounded-full w-16 h-16 md:w-20 md:h-20 flex items-center justify-center shadow-lg transition-transform duration-300 hover:scale-110"
+      :class="[
+        { 'rotate-45': isOpen },
+        isBouncing && !isOpen ? 'animate-bounce' : '',
+        !isBouncing && !isOpen ? 'animate-pulse-light' : ''
+      ]">
 
       <svg v-if="!isOpen" class="w-7 h-7 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -217,11 +221,18 @@ const handleClickOutside = (event) => {
   }
 }
 
+const isBouncing = ref(true)
+
 onMounted(() => {
   // Add listener with slight delay to avoid immediate trigger
   setTimeout(() => {
     document.addEventListener('click', handleClickOutside, true)
   }, 100)
+
+  // Stop bouncing after 3 seconds
+  setTimeout(() => {
+    isBouncing.value = false
+  }, 3000)
 })
 
 onUnmounted(() => {
@@ -231,6 +242,13 @@ onUnmounted(() => {
 
 <style scoped>
 /* Optimized animations for INSTANT perceived performance */
+@keyframes pulse-light {
+  0%, 100% { transform: scale(1); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+  50% { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+}
+.animate-pulse-light {
+  animation: pulse-light 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
 
 /* Use GPU acceleration for all animations */
 .chat-widget,

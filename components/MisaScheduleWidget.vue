@@ -77,9 +77,9 @@
     </svg>
   </button>
 
-  <!-- Mobile FAB -->
+  <!-- Mobile FAB (Disembunyikan sesuai permintaan karena diwakili oleh CTA Hero) -->
   <button v-if="!isMobileSheetOpen" @click="openMobileSheet"
-    class="fixed bottom-20 left-4 z-[90] w-14 h-14 bg-[#882f1d] text-white rounded-full shadow-xl border-2 border-white hover:bg-[#6b2416] transition-all hover:scale-110 md:hidden flex items-center justify-center"
+    class="hidden fixed bottom-20 left-4 z-[90] w-14 h-14 bg-[#882f1d] text-white rounded-full shadow-xl border-2 border-white hover:bg-[#6b2416] transition-all hover:scale-110 items-center justify-center"
     aria-label="Jadwal Misa Hari Ini">
     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

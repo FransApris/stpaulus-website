@@ -19,7 +19,7 @@
         </p>
 
         <NuxtLink v-if="ctaTo" :to="ctaTo"
-          class="inline-block rounded-full border-2 border-white px-8 py-3 text-base font-medium uppercase leading-normal text-white transition-all duration-300 ease-in-out hover:border-paulus-blue hover:text-paulus-blue hover:bg-white/20 focus:border-paulus-blue focus:text-paulus-blue focus:outline-none focus:ring-2 focus:ring-paulus-blue ring-0 active:border-paulus-blue active:text-paulus-blue shadow-lg hover:shadow-xl drop-shadow-md">
+          class="inline-block rounded-full border-2 border-white px-8 py-3 text-base font-bold uppercase leading-normal text-white transition-all duration-300 ease-in-out hover:bg-white hover:text-black hover:scale-105 hover:shadow-[0_0_20px_rgba(255,255,255,0.4)] focus:outline-none focus:ring-2 focus:ring-white ring-0 shadow-lg drop-shadow-md">
           {{ ctaText }}
         </NuxtLink>
       </div>
