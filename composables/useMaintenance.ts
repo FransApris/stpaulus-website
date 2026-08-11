@@ -16,7 +16,6 @@
  *   <div v-else> ... konten asli ... </div>
  * ─────────────────────────────────────────────────────────────
  */
-import type { Ref } from 'vue'
 
 export interface MaintenancePageConfig {
   active: boolean
@@ -96,25 +95,27 @@ export function useMaintenance(customRouteKey?: string) {
     return route.path.replace(/^\//, '').replace(/\/$/, '') || 'index'
   })
 
-  // Fetch status dari API server (di-cache per halaman)
-  // server:false → hanya fetch di client, menghindari SSR/client mismatch.
-  // Cast eksplisit ke Ref<Record<string, boolean>> untuk menghindari:
-  //   TS2589: Type instantiation is excessively deep and possibly infinite.
-  //   TS7053: Element implicitly has 'any' type (string index on complex union).
-  const { data: _maintenanceRaw } = useAsyncData(
+  // Fetch status maintenance dari API — client-only (tidak butuh SSR)
+  // Menggunakan useState + onMounted sebagai pengganti useAsyncData untuk menghindari
+  // TS2589: Nuxt's useAsyncData<TypedInternalResponse<R,...>> memicu type instantiation
+  // yang terlalu dalam saat TypeScript mencoba meresolusi union semua API routes.
+  // useState<T> adalah simple Ref tanpa type inference chain yang kompleks.
+  const maintenanceStatus = useState<Record<string, boolean>>(
     'maintenance-status',
-    // Cast URL ke `any` untuk mencegah Nuxt's typed $fetch overload resolver
-    // mencocokkan '/api/maintenance' dengan generated route types (TS2589).
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    () => $fetch('/api/maintenance' as any) as Promise<Record<string, boolean>>,
-    {
-      server: false,
-      lazy: true,
-      default: () => ({}) as Record<string, boolean>
-    }
+    () => ({})
   )
-  // Cast ke Ref eksplisit agar TypeScript tahu tipe index-nya
-  const maintenanceStatus = _maintenanceRaw as Ref<Record<string, boolean>>
+
+  onMounted(async () => {
+    try {
+      // Gunakan `as any` hanya pada cast, bukan pada URL, untuk bypass typed $fetch
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data = await (($fetch as any)('/api/maintenance') as Promise<Record<string, boolean>>)
+      maintenanceStatus.value = data ?? {}
+    } catch {
+      // Jika fetch gagal, anggap semua halaman tidak dalam maintenance
+      maintenanceStatus.value = {}
+    }
+  })
 
   // Cek apakah halaman ini sedang maintenance
   const isInMaintenance = computed(() => {
