@@ -105,12 +105,17 @@ function onBackdropClick() {
   if (sheetState.value.closeOnBackdrop) close()
 }
 
-// Close on Escape
-if (process.client) {
-  useEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && sheetState.value.isOpen) close()
-  })
+// Close on Escape — menggunakan onMounted/onUnmounted native
+// (useEventListener dari @vueuse/core tidak diimport, sehingga menyebabkan ReferenceError)
+const handleEscapeKey = (e: KeyboardEvent) => {
+  if (e.key === 'Escape' && sheetState.value.isOpen) close()
 }
+onMounted(() => {
+  if (process.client) window.addEventListener('keydown', handleEscapeKey)
+})
+onUnmounted(() => {
+  if (process.client) window.removeEventListener('keydown', handleEscapeKey)
+})
 </script>
 
 <style scoped>
