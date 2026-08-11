@@ -735,10 +735,8 @@
       </section>
     </ClientOnly>
 
-    <!-- Section 9: QR Persembahan - Sebelum Footer -->
     <QRPersembahan />
   </div>
-    </div>
   </div>
 </template>
 
