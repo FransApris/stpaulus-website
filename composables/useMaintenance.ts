@@ -103,8 +103,10 @@ export function useMaintenance(customRouteKey?: string) {
   //   TS7053: Element implicitly has 'any' type (string index on complex union).
   const { data: _maintenanceRaw } = useAsyncData(
     'maintenance-status',
-    // Cast $fetch result (bukan generic) untuk menghindari deep type inference
-    () => ($fetch('/api/maintenance') as Promise<Record<string, boolean>>),
+    // Cast URL ke `any` untuk mencegah Nuxt's typed $fetch overload resolver
+    // mencocokkan '/api/maintenance' dengan generated route types (TS2589).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    () => $fetch('/api/maintenance' as any) as Promise<Record<string, boolean>>,
     {
       server: false,
       lazy: true,
