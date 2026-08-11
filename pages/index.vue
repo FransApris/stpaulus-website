@@ -118,10 +118,11 @@
           </div>
         </div>
 
-        <!-- Albums Grid -->
-        <div v-else-if="latestAlbums && latestAlbums.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <a v-for="(album, idx) in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
-            rel="noopener noreferrer" class="group reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
+        <!-- Albums Carousel -->
+        <div v-else-if="latestAlbums && latestAlbums.length > 0" class="relative">
+          <div class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
+            <a v-for="(album, idx) in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
+              rel="noopener noreferrer" class="group reveal-on-scroll shrink-0 w-[85vw] sm:w-[40vw] lg:w-[30vw] snap-center" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
             <div
               class="bg-white rounded-2xl shadow-xs border border-gray-100/90 overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between h-full">
               <!-- Album Cover -->
