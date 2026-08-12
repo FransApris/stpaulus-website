@@ -2,12 +2,12 @@
   <div class="chat-widget fixed bottom-28 right-4 sm:bottom-8 sm:right-8 z-[9999]">
     
     <!-- Tooltip Sapaan -->
-    <Transition name="fade-slide-up">
-      <div v-if="showTooltip && !isOpen" class="absolute bottom-[110%] right-0 mb-2 w-max bg-white text-gray-800 text-sm font-medium px-4 py-2.5 rounded-2xl rounded-br-sm shadow-xl border border-gray-100 flex items-center gap-2.5">
-        <span class="animate-pulse">👋</span>
-        <span>Ada yang bisa kami bantu?</span>
-        <button @click.stop="showTooltip = false" class="ml-1 text-gray-400 hover:text-gray-600 focus:outline-none p-0.5 rounded-full hover:bg-gray-100 transition-colors" aria-label="Tutup sapaan">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <Transition name="fade-slide-down">
+      <div v-if="showTooltip && !isOpen" class="absolute top-[110%] right-0 mt-2 w-max bg-white text-gray-800 font-medium px-2.5 py-1.5 rounded-xl rounded-tr-sm shadow-md border border-gray-100 flex items-center gap-1.5 pointer-events-auto">
+        <span class="animate-pulse text-xs">👋</span>
+        <span class="text-[11px] leading-tight">Ada yang bisa dibantu?</span>
+        <button @click.stop="showTooltip = false" class="ml-0.5 text-gray-400 hover:text-gray-600 focus:outline-none p-0.5 rounded-full hover:bg-gray-100 transition-colors" aria-label="Tutup sapaan">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
     </Transition>
@@ -344,17 +344,17 @@ onUnmounted(() => {
 
 <style scoped>
 /* Tooltip Animations */
-.fade-slide-up-enter-active,
-.fade-slide-up-leave-active {
+.fade-slide-down-enter-active,
+.fade-slide-down-leave-active {
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-.fade-slide-up-enter-from {
+.fade-slide-down-enter-from {
   opacity: 0;
-  transform: translateY(10px) scale(0.9);
+  transform: translateY(-10px) scale(0.9);
 }
-.fade-slide-up-leave-to {
+.fade-slide-down-leave-to {
   opacity: 0;
-  transform: translateY(10px) scale(0.9);
+  transform: translateY(-10px) scale(0.9);
 }
 
 /* Chat Window Transitions - Elastic/Bounce */
