@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-widget fixed bottom-6 right-4 sm:bottom-8 sm:right-8 z-50">
+  <div class="chat-widget fixed bottom-28 right-4 sm:bottom-8 sm:right-8 z-[9999]">
     
     <!-- Tooltip Sapaan -->
     <Transition name="fade-slide-up">
