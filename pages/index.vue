@@ -1299,6 +1299,15 @@ const goToBookingPage = (page) => {
   const total = totalBookingPages.value;
   if (page < 1 || page > total) return;
   currentBookingPage.value = page;
+
+  // Scroll to top of booking section smoothly
+  setTimeout(() => {
+    const el = document.getElementById('booking-section');
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 80; // Offset untuk header navbar
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, 50);
 };
 
 // Note: helper functions and formatting utilities have been hoisted to the top to avoid Temporal Dead Zone (ReferenceError).
