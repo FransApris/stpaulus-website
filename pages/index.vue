@@ -571,8 +571,30 @@
             Gagal memuat status pemesanan. Silakan refresh halaman.
           </div>
           <div v-else-if="publicBookings && publicBookings.length > 0">
+            <!-- Search Bar -->
+            <div class="mb-6 max-w-4xl mx-auto flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-[#882f1d] focus-within:border-transparent transition-all">
+              <svg class="w-5 h-5 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input v-model="bookingSearchQuery" @input="currentBookingPage = 1" type="text" placeholder="Cari acara, ruangan, atau pemesan..." class="w-full bg-transparent border-none outline-hidden text-gray-700 placeholder-gray-400 p-1 text-sm sm:text-base" />
+              <button v-if="bookingSearchQuery" @click="bookingSearchQuery = ''; currentBookingPage = 1" class="text-gray-400 hover:text-gray-600 p-1 shrink-0 ml-1">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Empty Search Results -->
+            <div v-if="filteredPublicBookings.length === 0" class="text-center text-gray-500 py-10">
+              <svg class="mx-auto h-16 w-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-lg font-medium text-gray-600">Pemesanan tidak ditemukan</p>
+              <p class="text-sm mt-1">Coba gunakan kata kunci pencarian lain.</p>
+            </div>
+
             <!-- Mobile View: Card Layout -->
-            <div class="md:hidden space-y-4 mb-6">
+            <div v-else class="md:hidden space-y-4 mb-6">
               <div v-for="booking in paginatedBookings" :key="booking.id"
                 class="bg-white border-2 border-gray-200 rounded-2xl p-5 shadow-md hover:shadow-xl hover:border-[#882f1d]/30 transition-all duration-300">
                 <!-- Event Name with Icon -->
@@ -674,8 +696,8 @@
               </table>
             </div>
 
-            <!-- Pagination Controls -->
-            <div v-if="totalBookingPages > 1" class="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+            <!-- Pagination Controls (Hanya tampil jika filtered bookings ada dan halamannya > 1) -->
+            <div v-if="filteredPublicBookings.length > 0 && totalBookingPages > 1" class="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               <!-- Previous Button -->
               <button @click="goToBookingPage(currentBookingPage - 1)" :disabled="currentBookingPage === 1" :class="[
                 'px-3 py-2 sm:px-4 rounded-lg font-medium transition-colors text-sm sm:text-base',
@@ -713,10 +735,10 @@
             </div>
 
             <!-- Info Text -->
-            <div class="mt-4 text-center text-sm text-gray-600">
+            <div v-if="filteredPublicBookings.length > 0" class="mt-4 text-center text-sm text-gray-600">
               Menampilkan {{ (currentBookingPage - 1) * bookingsPerPage + 1 }} -
-              {{ Math.min(currentBookingPage * bookingsPerPage, publicBookings.length) }}
-              dari {{ publicBookings.length }} pemesanan
+              {{ Math.min(currentBookingPage * bookingsPerPage, filteredPublicBookings.length) }}
+              dari {{ filteredPublicBookings.length }} pemesanan
             </div>
           </div>
           <div v-else class="text-center text-gray-500">
@@ -1285,14 +1307,34 @@ const publicBookings = computed(() => {
   });
 });
 
+// ── Booking Search State ──
+const bookingSearchQuery = ref('');
+
+const filteredPublicBookings = computed(() => {
+  if (!publicBookings.value) return [];
+  
+  const query = bookingSearchQuery.value.trim().toLowerCase();
+  if (!query) return publicBookings.value;
+
+  return publicBookings.value.filter((booking) => {
+    const eventName = (booking.event_name || '').toLowerCase();
+    const roomName = (booking.room_name || '').toLowerCase();
+    const requester = (booking.requester_name || booking.user_name || '').toLowerCase();
+    
+    return eventName.includes(query) || 
+           roomName.includes(query) || 
+           requester.includes(query);
+  });
+});
+
 // Pagination untuk tabel booking di beranda
 const paginatedBookings = computed(() => {
   const start = (currentBookingPage.value - 1) * bookingsPerPage;
-  return publicBookings.value.slice(start, start + bookingsPerPage);
+  return filteredPublicBookings.value.slice(start, start + bookingsPerPage);
 });
 
 const totalBookingPages = computed(() =>
-  Math.ceil(publicBookings.value.length / bookingsPerPage)
+  Math.ceil(filteredPublicBookings.value.length / bookingsPerPage)
 );
 
 const goToBookingPage = (page) => {
