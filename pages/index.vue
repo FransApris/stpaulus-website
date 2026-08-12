@@ -571,26 +571,49 @@
             Gagal memuat status pemesanan. Silakan refresh halaman.
           </div>
           <div v-else-if="publicBookings && publicBookings.length > 0">
-            <!-- Search Bar -->
-            <div class="mb-6 max-w-4xl mx-auto flex items-center bg-white border border-gray-300 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-[#882f1d] focus-within:border-transparent transition-all">
-              <svg class="w-5 h-5 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <input v-model="bookingSearchQuery" @input="currentBookingPage = 1" type="text" placeholder="Cari acara, ruangan, atau pemesan..." class="w-full bg-transparent border-none outline-hidden text-gray-700 placeholder-gray-400 p-1 text-sm sm:text-base" />
-              <button v-if="bookingSearchQuery" @click="bookingSearchQuery = ''; currentBookingPage = 1" class="text-gray-400 hover:text-gray-600 p-1 shrink-0 ml-1">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            <!-- Advanced Search Area -->
+            <div class="mb-6 max-w-4xl mx-auto">
+              <!-- Quick Filter Categories -->
+              <div class="flex flex-wrap items-center gap-2 mb-3">
+                <span class="text-sm font-semibold text-gray-600 mr-2">Filter Cepat:</span>
+                <button v-for="cat in searchCategories" :key="cat" @click="setCategory(cat)"
+                  :class="[
+                    'px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border',
+                    bookingSearchCategory === cat
+                      ? 'bg-[#882f1d] text-white border-[#882f1d] shadow-sm'
+                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                  ]">
+                  {{ cat }}
+                </button>
+              </div>
+
+              <!-- Search Bar -->
+              <div class="flex items-center bg-white border border-gray-300 rounded-xl px-3 py-2.5 shadow-sm focus-within:ring-2 focus-within:ring-[#882f1d] focus-within:border-transparent transition-all">
+                <svg class="w-5 h-5 text-gray-400 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              </button>
+                <input v-model="bookingSearchQuery" @input="onSearchInput" type="text" placeholder="Cari acara, ruangan, atau pemesan..." class="w-full bg-transparent border-none outline-hidden text-gray-700 placeholder-gray-400 p-1 text-sm sm:text-base" />
+                <button v-if="bookingSearchQuery" @click="clearSearch" class="text-gray-400 hover:text-red-500 p-1 shrink-0 ml-1 transition-colors rounded-full hover:bg-red-50">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <!-- Empty Search Results -->
-            <div v-if="filteredPublicBookings.length === 0" class="text-center text-gray-500 py-10">
+            <div v-if="filteredPublicBookings.length === 0" class="text-center text-gray-500 py-10 bg-white rounded-2xl border border-dashed border-gray-300 max-w-4xl mx-auto mb-6">
               <svg class="mx-auto h-16 w-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p class="text-lg font-medium text-gray-600">Pemesanan tidak ditemukan</p>
-              <p class="text-sm mt-1">Coba gunakan kata kunci pencarian lain.</p>
+              <p class="text-lg font-medium text-gray-700">
+                Pemesanan <span v-if="debouncedBookingSearchQuery">untuk "<span class="font-bold text-[#882f1d]">{{ debouncedBookingSearchQuery }}</span>"</span> tidak ditemukan.
+              </p>
+              <p class="text-sm mt-1 text-gray-500">Coba gunakan kata kunci atau filter kategori lain.</p>
+              <button v-if="debouncedBookingSearchQuery || bookingSearchCategory !== 'Semua'" @click="clearSearch" class="mt-4 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                Reset Pencarian
+              </button>
             </div>
 
             <!-- Mobile View: Card Layout -->
@@ -605,9 +628,7 @@
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                   </div>
-                  <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-snug flex-1 break-words">
-                    {{ booking.event_name }}
-                  </h3>
+                  <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-snug flex-1 break-words" v-html="highlightText(booking.event_name, debouncedBookingSearchQuery)"></h3>
                 </div>
 
                 <!-- Info Grid -->
@@ -628,7 +649,7 @@
                   <!-- Room -->
                   <div class="bg-gray-50 rounded-xl p-3">
                     <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">🏢 Ruangan</p>
-                    <p class="text-sm font-bold text-gray-800">{{ booking.room_name }}</p>
+                    <p class="text-sm font-bold text-gray-800"><span v-html="highlightText(booking.room_name, debouncedBookingSearchQuery)"></span></p>
                     <p class="text-xs text-gray-600">{{ booking.room_location }}</p>
                   </div>
 
@@ -644,8 +665,7 @@
 
                 <div class="bg-gray-50 rounded-xl p-3">
                   <p class="text-xs text-gray-500 mb-1 uppercase tracking-wide font-semibold">👤 Pemesan</p>
-                  <p class="text-sm font-bold text-gray-800">{{ booking.requester_name || booking.user_name || '-' }}
-                  </p>
+                  <p class="text-sm font-bold text-gray-800"><span v-html="highlightText(booking.requester_name || booking.user_name || '-', debouncedBookingSearchQuery)"></span></p>
                   <p class="text-xs text-gray-600">Username: {{ booking.username || '-' }}</p>
                 </div>
               </div>
@@ -675,14 +695,14 @@
                       <div class="text-sm text-gray-500">{{ booking.start_time }} - {{ booking.end_time }}</div>
                     </td>
                     <td class="px-6 py-4">
-                      <div class="text-sm font-medium text-gray-900">{{ booking.event_name }}</div>
+                      <div class="text-sm font-medium text-gray-900"><span v-html="highlightText(booking.event_name, debouncedBookingSearchQuery)"></span></div>
                     </td>
                     <td class="px-6 py-4">
-                      <div class="text-sm text-gray-900">{{ booking.room_name }}</div>
+                      <div class="text-sm text-gray-900"><span v-html="highlightText(booking.room_name, debouncedBookingSearchQuery)"></span></div>
                       <div class="text-sm text-gray-500">{{ booking.room_location }}</div>
                     </td>
                     <td class="px-6 py-4">
-                      <div class="text-sm text-gray-900">{{ booking.requester_name || booking.user_name || '-' }}</div>
+                      <div class="text-sm text-gray-900"><span v-html="highlightText(booking.requester_name || booking.user_name || '-', debouncedBookingSearchQuery)"></span></div>
                       <div class="text-sm text-gray-500 break-all">@{{ booking.username || '-' }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -1307,24 +1327,89 @@ const publicBookings = computed(() => {
   });
 });
 
-// ── Booking Search State ──
+// ── Booking Advanced Search State ──
 const bookingSearchQuery = ref('');
+const debouncedBookingSearchQuery = ref('');
+const bookingSearchCategory = ref('Semua');
+
+let searchTimeout = null;
+const onSearchInput = () => {
+  currentBookingPage.value = 1; // reset page immediately
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    debouncedBookingSearchQuery.value = bookingSearchQuery.value;
+  }, 300); // 300ms debounce
+};
+
+const clearSearch = () => {
+  bookingSearchQuery.value = '';
+  debouncedBookingSearchQuery.value = '';
+  bookingSearchCategory.value = 'Semua';
+  currentBookingPage.value = 1;
+};
+
+// Quick Filters
+const searchCategories = ['Semua', 'Gereja/Altar', 'Ruang Serbaguna/Meeting', 'Lainnya'];
+const setCategory = (cat) => {
+  bookingSearchCategory.value = cat;
+  currentBookingPage.value = 1;
+};
+
+// Highlight Text Helper (XSS Safe)
+const escapeHtml = (unsafe) => {
+  return (unsafe || '').toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
+const highlightText = (text, query) => {
+  const safeText = escapeHtml(text);
+  if (!query) return safeText;
+  
+  const safeQuery = escapeHtml(query.trim());
+  if (!safeQuery) return safeText;
+
+  // regex to match query case insensitive
+  const regex = new RegExp(`(${safeQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return safeText.replace(regex, '<mark class="bg-yellow-200 text-[#882f1d] rounded-sm px-0.5 font-semibold">$1</mark>');
+};
 
 const filteredPublicBookings = computed(() => {
   if (!publicBookings.value) return [];
   
-  const query = bookingSearchQuery.value.trim().toLowerCase();
-  if (!query) return publicBookings.value;
+  const query = debouncedBookingSearchQuery.value.trim().toLowerCase();
+  const category = bookingSearchCategory.value;
+  
+  let result = publicBookings.value;
 
-  return publicBookings.value.filter((booking) => {
-    const eventName = (booking.event_name || '').toLowerCase();
-    const roomName = (booking.room_name || '').toLowerCase();
-    const requester = (booking.requester_name || booking.user_name || '').toLowerCase();
-    
-    return eventName.includes(query) || 
-           roomName.includes(query) || 
-           requester.includes(query);
-  });
+  // 1. Filter by category
+  if (category !== 'Semua') {
+    result = result.filter(booking => {
+      const room = (booking.room_name || '').toLowerCase();
+      if (category === 'Gereja/Altar') return room.includes('gereja') || room.includes('altar');
+      if (category === 'Ruang Serbaguna/Meeting') return room.includes('meeting') || room.includes('rapat') || room.includes('serbaguna');
+      if (category === 'Lainnya') return !room.includes('gereja') && !room.includes('altar') && !room.includes('meeting') && !room.includes('rapat') && !room.includes('serbaguna');
+      return true;
+    });
+  }
+
+  // 2. Filter by search query
+  if (query) {
+    result = result.filter((booking) => {
+      const eventName = (booking.event_name || '').toLowerCase();
+      const roomName = (booking.room_name || '').toLowerCase();
+      const requester = (booking.requester_name || booking.user_name || '').toLowerCase();
+      
+      return eventName.includes(query) || 
+             roomName.includes(query) || 
+             requester.includes(query);
+    });
+  }
+
+  return result;
 });
 
 // Pagination untuk tabel booking di beranda
