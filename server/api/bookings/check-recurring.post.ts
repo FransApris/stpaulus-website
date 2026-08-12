@@ -1,6 +1,9 @@
 import { allQuery } from '../../database/db'
+import { requireAuth } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
+  // T-1 Fix: endpoint ini harus terautentikasi — jangan ekspos info jadwal ke publik
+  requireAuth(event)
   try {
     const body = await readBody(event)
     const { room_id, start_date, end_date, start_time, end_time, recurrence_pattern } = body
@@ -12,8 +15,10 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    const startDt = new Date(start_date)
-    const endDt = new Date(end_date)
+    // S-6 Fix: new Date("YYYY-MM-DD") diparse sebagai UTC midnight (off-by-one WIB).
+    // Tambahkan T00:00:00+07:00 agar diparse sebagai WIB midnight yang benar.
+    const startDt   = new Date(`${start_date}T00:00:00+07:00`)
+    const endDt     = new Date(`${end_date}T23:59:59+07:00`)
     const maxFuture = new Date()
     maxFuture.setDate(maxFuture.getDate() + 90) // Max 90 days in future
 
@@ -57,11 +62,13 @@ export default defineEventHandler(async (event) => {
     const results: any[] = []
 
     for (const dateStr of occurrenceDates) {
-      const sDt = new Date(`${dateStr}T${start_time}:00`)
-      const eDt = new Date(`${dateStr}T${end_time}:00`)
+      // S-6 Fix: parse WIB time dengan timezone eksplisit
+      const sDt = new Date(`${dateStr}T${start_time}:00+07:00`)
+      const eDt = new Date(`${dateStr}T${end_time}:00+07:00`)
 
+      // Simpan sebagai UTC MySQL string (sesuai konvensi datetime.ts)
       const mysqlStart = sDt.toISOString().slice(0, 19).replace('T', ' ')
-      const mysqlEnd = eDt.toISOString().slice(0, 19).replace('T', ' ')
+      const mysqlEnd   = eDt.toISOString().slice(0, 19).replace('T', ' ')
 
       let conflicts: any[] = []
       try {

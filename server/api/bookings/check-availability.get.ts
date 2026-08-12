@@ -1,9 +1,10 @@
 import { allQuery } from '~/server/database/db'
+import { requireAuth } from '~/server/utils/auth'
 import { dbToUtcIso, dbToWibTimeStr } from '~/server/utils/datetime'
 
 /**
  * GET /api/bookings/check-availability
- * Real-time slot availability check — no auth required.
+ * Real-time slot availability check — requires authentication.
  *
  * Query params:
  *   room_id    : number  (required)
@@ -20,6 +21,9 @@ import { dbToUtcIso, dbToWibTimeStr } from '~/server/utils/datetime'
  *   }
  */
 export default defineEventHandler(async (event) => {
+  // T-2 Fix: autentikasi diperlukan — cegah pemetaan jadwal oleh aktor tak dikenal
+  requireAuth(event)
+
   const query = getQuery(event)
   const { room_id, date, start_time, end_time } = query as Record<string, string>
 
@@ -32,10 +36,10 @@ export default defineEventHandler(async (event) => {
   }
 
   // ── Build full datetime strings ───────────────────────────────────────────
-  // Client sends HH:MM (local WIB time). We parse as local then convert to
-  // UTC ISO to match how bookings.post.ts stores datetimes.
-  const startDt = new Date(`${date}T${start_time}:00`)
-  const endDt   = new Date(`${date}T${end_time}:00`)
+  // Client sends HH:MM (WIB local time). Parse dengan timezone +07:00 eksplisit
+  // agar tidak tergantung timezone runtime server.
+  const startDt = new Date(`${date}T${start_time}:00+07:00`)
+  const endDt   = new Date(`${date}T${end_time}:00+07:00`)
 
   if (isNaN(startDt.getTime()) || isNaN(endDt.getTime()) || endDt <= startDt) {
     throw createError({ statusCode: 400, statusMessage: 'Waktu tidak valid' })

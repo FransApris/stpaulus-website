@@ -1,8 +1,9 @@
 import { runQuery, getQuery, getConnection } from '../database/db'
-import { requireAuth } from '../utils/auth'
+import { requireAuth, getUserPermissions } from '../utils/auth'
 import { getHeader } from 'h3'
 import { sendBookingCreatedEmail, sendBookingApprovedEmail } from '../utils/email'
 import { getUserQuotaInfo } from '../utils/quota'
+import { todayWib } from '../utils/datetime'
 
 const isMissingColumnError = (error: any, columnName: string) => {
   const message = String(error?.message || '')
@@ -22,7 +23,12 @@ export default defineEventHandler(async (event) => {
     const userId = decoded.userId
 
     const body = await readBody(event)
-    const { room_id, event_name, requester_name, start_time, end_time, is_recurring, recurrence_pattern } = body
+    const { room_id, requester_name, start_time, end_time, is_recurring, recurrence_pattern } = body
+    // S-4 Fix: sanitasi event_name dari HTML tags + batasi panjang 255 karakter
+    const event_name: string = String(body.event_name || '')
+      .trim()
+      .replace(/<[^>]*>/g, '') // strip HTML tags
+      .slice(0, 255)
     // Bug fix: trim repeat_until agar nilai berisi spasi saja ('  ') tidak lolos
     // validasi `if (is_recurring && recurrence_pattern && repeat_until)`.
     const repeat_until: string = typeof body.repeat_until === 'string' ? body.repeat_until.trim() : (body.repeat_until ?? '')
@@ -47,16 +53,22 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    if (start < new Date()) {
+    // T-3 Fix: Validasi "past booking" berbasis tanggal WIB, bukan momen UTC server.
+    // new Date() server bisa UTC sehingga booking jam 08:00 WIB (= 01:00 UTC) diblokir
+    // padahal belum lewat dari perspektif WIB. Bandingkan tanggal WIB saja.
+    const startDateWIB = start.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+    const todayDateWIB = todayWib()  // 'YYYY-MM-DD' WIB hari ini
+    if (startDateWIB < todayDateWIB) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'Tidak dapat memesan untuk waktu yang sudah lewat'
+        statusMessage: 'Tidak dapat memesan untuk tanggal yang sudah lewat'
       })
     }
 
     // Convert to MySQL datetime format (YYYY-MM-DD HH:MM:SS)
     const mysqlStart = start.toISOString().slice(0, 19).replace('T', ' ')
     const mysqlEnd = end.toISOString().slice(0, 19).replace('T', ' ')
+
 
     // Check if room exists and is active
     const room = await getQuery('SELECT * FROM rooms WHERE id = ? AND is_active = 1', [room_id]) as any
@@ -78,13 +90,15 @@ export default defineEventHandler(async (event) => {
     })
     console.log('[CREATE BOOKING] Room allowed_categories:', room.allowed_categories)
 
-    // Admin & Kontributor users should NOT use public booking
+    // T-4 Fix: Gunakan RBAC permission 'manage_bookings' untuk deteksi admin,
+    // bukan heuristic role_id > 0 yang rapuh terhadap penambahan role baru.
     const isKontributorAccount = user.role === 'kontributor_berita' || user.role === 'user_kontributor'
 
-    const isAdminAccount = (user.role_id !== null
-      && user.role_id !== undefined
-      && Number(user.role_id) > 0
-      && !isKontributorAccount) || user.role === 'super_admin' || user.role === 'admin_komsos' || user.role === 'admin_sekretariat'
+    // Ambil permissions RBAC — cek manage_bookings sebagai penanda akun admin
+    const userPermissions = await getUserPermissions(user)
+    const hasManageBookings = userPermissions.includes('manage_bookings')
+    // Admin punya manage_bookings tapi kontributor tidak — pisahkan dengan flag isKontributorAccount
+    const isAdminAccount = hasManageBookings && !isKontributorAccount
 
     if (isAdminAccount) {
       throw createError({
@@ -194,6 +208,44 @@ export default defineEventHandler(async (event) => {
       // Room has no restrictions, allow booking
     }
 
+    // ── S-1 Fix: Hitung occurrences SEKALI di sini untuk kuota + insert ─────────
+    // Sebelumnya ada loop estimasi terpisah di cek kuota dan loop insert yang
+    // berbeda — bisa menghasilkan jumlah berbeda di edge case.
+    const occurrences: { start: string; end: string }[] = [{ start: mysqlStart, end: mysqlEnd }]
+
+    if (is_recurring && recurrence_pattern && repeat_until) {
+      const untilDate = new Date(`${repeat_until}T23:59:59+07:00`)
+      const maxFutureDate = new Date(start)
+      maxFutureDate.setDate(maxFutureDate.getDate() + 90)
+      if (untilDate > maxFutureDate) {
+        throw createError({
+          statusCode: 400,
+          statusMessage: 'Batas pemesanan berulang maksimal 90 hari (3 bulan) ke depan dari tanggal pertama.'
+        })
+      }
+
+      const durationMs = end.getTime() - start.getTime()
+      let currStart = new Date(start)
+
+      while (true) {
+        if (recurrence_pattern === 'WEEKLY')        currStart.setDate(currStart.getDate() + 7)
+        else if (recurrence_pattern === 'BIWEEKLY') currStart.setDate(currStart.getDate() + 14)
+        else if (recurrence_pattern === 'MONTHLY')  currStart.setMonth(currStart.getMonth() + 1)
+        else break
+
+        if (currStart > untilDate) break
+        if (occurrences.length >= 20) break  // Safety cap max 20 occurrences
+
+        const currEnd = new Date(currStart.getTime() + durationMs)
+        occurrences.push({
+          start: currStart.toISOString().slice(0, 19).replace('T', ' '),
+          end:   currEnd.toISOString().slice(0, 19).replace('T', ' ')
+        })
+      }
+    }
+
+    console.log('[CREATE BOOKING] Generated occurrences count:', occurrences.length)
+
     // ── Cek kuota pemesanan bulanan per user ──────────────────────────────────
     // Quota settings dibaca dari DB (user_categories + per-user override).
     // DPP / BGKP (is_unlimited = TRUE) tidak terkena batas.
@@ -220,39 +272,22 @@ export default defineEventHandler(async (event) => {
       `, [userId, firstDay, lastDay]) as any
 
       const monthlyCount = Number(quotaResult?.count ?? 0)
+      // S-1 Fix: gunakan occurrences.length langsung — bukan loop estimasi terpisah
+      const newOccurrenceCount = occurrences.length
 
-      // ── Bug #3B fix: hitung occurrence yang AKAN dibuat ──────────────────
-      // Estimasi jumlah occurrence dari form (sebelum insert) agar kuota
-      // tidak bisa di-bypass dengan recurring booking.
-      let estimatedNewOccurrences = 1
-      if (is_recurring && recurrence_pattern && repeat_until) {
-        const untilDate = new Date(`${repeat_until}T23:59:59`)
-        let tempStart = new Date(start)
-        let count = 1
-        while (count < 20) {
-          if (recurrence_pattern === 'WEEKLY')      tempStart.setDate(tempStart.getDate() + 7)
-          else if (recurrence_pattern === 'BIWEEKLY') tempStart.setDate(tempStart.getDate() + 14)
-          else if (recurrence_pattern === 'MONTHLY')  tempStart.setMonth(tempStart.getMonth() + 1)
-          else break
-          if (tempStart > untilDate) break
-          count++
-        }
-        estimatedNewOccurrences = count
-      }
-
-      if (monthlyCount + estimatedNewOccurrences > MAX_MONTHLY_BOOKINGS) {
+      if (monthlyCount + newOccurrenceCount > MAX_MONTHLY_BOOKINGS) {
         const monthLabel = now.toLocaleDateString('id-ID', {
           month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta'
         })
         throw createError({
           statusCode: 429,
           statusMessage: `Kuota bulan ${monthLabel} tidak mencukupi. ` +
-            `Saat ini: ${monthlyCount} pemesanan, akan ditambah: ${estimatedNewOccurrences}. ` +
+            `Saat ini: ${monthlyCount} pemesanan, akan ditambah: ${newOccurrenceCount}. ` +
             `Maksimal ${MAX_MONTHLY_BOOKINGS} per bulan untuk kategori Anda.`
         })
       }
 
-      console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, estimatedNewOccurrences, max: MAX_MONTHLY_BOOKINGS, source: quotaInfo.source })
+      console.log('[CREATE BOOKING] Monthly quota check passed:', { monthlyCount, newOccurrenceCount, max: MAX_MONTHLY_BOOKINGS, source: quotaInfo.source })
     } else {
       console.log('[CREATE BOOKING] Quota check skipped — unlimited category (source:', quotaInfo.source, ')')
     }
@@ -261,7 +296,6 @@ export default defineEventHandler(async (event) => {
     const lockName = `booking_room_${room_id}`
     const connection = await getConnection()
     let lockAcquired = false
-
 
     try {
       const [lockRows] = await connection.query('SELECT GET_LOCK(?, 10) AS locked', [lockName]) as any
@@ -276,47 +310,7 @@ export default defineEventHandler(async (event) => {
 
       lockAcquired = true
 
-      // Calculate occurrences if recurring requested
-      const occurrences: { start: string; end: string }[] = [{ start: mysqlStart, end: mysqlEnd }]
-
-      if (is_recurring && recurrence_pattern && repeat_until) {
-        // ── Bug #5A fix: validasi maksimum 90 hari ke depan ─────────────────
-        const untilDate = new Date(`${repeat_until}T23:59:59`)
-        const maxFutureDate = new Date(start)
-        maxFutureDate.setDate(maxFutureDate.getDate() + 90)
-        if (untilDate > maxFutureDate) {
-          throw createError({
-            statusCode: 400,
-            statusMessage: 'Batas pemesanan berulang maksimal 90 hari (3 bulan) ke depan dari tanggal pertama.'
-          })
-        }
-
-        const durationMs = end.getTime() - start.getTime()
-        let currStart = new Date(start)
-
-        while (true) {
-          if (recurrence_pattern === 'WEEKLY') {
-            currStart.setDate(currStart.getDate() + 7)
-          } else if (recurrence_pattern === 'BIWEEKLY') {
-            currStart.setDate(currStart.getDate() + 14)
-          } else if (recurrence_pattern === 'MONTHLY') {
-            currStart.setMonth(currStart.getMonth() + 1)
-          } else {
-            break
-          }
-
-          if (currStart > untilDate) break
-          if (occurrences.length >= 20) break // Safety cap max 20 occurrences
-
-          const currEnd = new Date(currStart.getTime() + durationMs)
-          occurrences.push({
-            start: currStart.toISOString().slice(0, 19).replace('T', ' '),
-            end: currEnd.toISOString().slice(0, 19).replace('T', ' ')
-          })
-        }
-      }
-
-      console.log('[CREATE BOOKING] Generated occurrences count:', occurrences.length)
+      // occurrences sudah dihitung di atas — gunakan langsung tanpa re-calculate
 
       // Check conflicts for ALL occurrences
       for (const occ of occurrences) {

@@ -22,12 +22,24 @@ export default defineEventHandler(async (event) => {
     requirePermission('manage_bookings')(event)
 
     const query = getQuery(event)
-    const limit = Number(query.limit) || 50
-    const offset = Number(query.offset) || 0
+    // K-2 Fix: validasi integer eksplisit + batas aman — cegah interpolasi langsung
+    const limit  = Math.min(Math.max(1, Math.floor(Number(query.limit)  || 50)), 500)
+    const offset = Math.max(0, Math.floor(Number(query.offset) || 0))
 
     const bookings = await allQuery(
-      `SELECT b.id, b.room_id, b.user_id, b.event_name, b.start_time, b.end_time, b.status, b.deleted_at, b.deleted_by, r.name as room_name, u.full_name as user_name, u.email as user_email, du.full_name as deleter_name, du.email as deleter_email FROM bookings b LEFT JOIN rooms r ON b.room_id = r.id LEFT JOIN users u ON b.user_id = u.id LEFT JOIN users du ON b.deleted_by = du.id WHERE b.deleted_at IS NOT NULL ORDER BY b.deleted_at DESC LIMIT ${limit} OFFSET ${offset}`,
-      []
+      `SELECT b.id, b.room_id, b.user_id, b.event_name, b.start_time, b.end_time, b.status,
+              b.deleted_at, b.deleted_by,
+              r.name as room_name,
+              u.full_name as user_name, u.email as user_email,
+              du.full_name as deleter_name, du.email as deleter_email
+       FROM bookings b
+       LEFT JOIN rooms r  ON b.room_id  = r.id
+       LEFT JOIN users u  ON b.user_id  = u.id
+       LEFT JOIN users du ON b.deleted_by = du.id
+       WHERE b.deleted_at IS NOT NULL
+       ORDER BY b.deleted_at DESC
+       LIMIT ? OFFSET ?`,
+      [limit, offset]
     )
 
     return bookings || []

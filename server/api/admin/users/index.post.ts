@@ -19,12 +19,31 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Akses ditolak'
       })
     }
-
+    
     const body = await readBody(event)
     console.log('[Create User] ===== START CREATE USER =====')
     console.log('[Create User] Request body:', JSON.stringify(body, null, 2))
     
     const { username, email, password, full_name, contact_phone, user_category, unit_name, role } = body
+    
+    // ✅ SECURITY: Enforce strict Role-Based Access Control (RBAC)
+    const allowedCreators = ['super_admin', 'admin_sekretariat', 'admin_komsos']
+    if (!allowedCreators.includes(admin.role_name)) {
+      console.warn(`[Create User] SECURITY: User ${adminId} with role ${admin.role_name} attempted to create a user`)
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Akses ditolak: Hanya admin yang berwenang yang dapat membuat pengguna baru'
+      })
+    }
+    
+    // admin_komsos is ONLY allowed to create kontributor_berita
+    if (admin.role_name === 'admin_komsos' && role?.toLowerCase() !== 'kontributor_berita') {
+      console.warn(`[Create User] SECURITY: admin_komsos attempted to create a non-kontributor user (role requested: ${role})`)
+      throw createError({
+        statusCode: 403,
+        statusMessage: 'Akses ditolak: Admin Komsos hanya dapat membuat akun Kontributor Berita'
+      })
+    }
 
     console.log('[Create User] Parsed fields:', {
       username,

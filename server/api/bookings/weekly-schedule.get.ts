@@ -25,7 +25,8 @@ export default defineEventHandler(async (event) => {
     let weekStart: Date
 
     if (query.start_date && typeof query.start_date === 'string') {
-      const parsed = new Date(`${query.start_date}T00:00:00`)
+      // Parse dengan +07:00 agar tidak diinterpretasi sebagai UTC midnight
+      const parsed = new Date(`${query.start_date}T00:00:00+07:00`)
       if (isNaN(parsed.getTime())) {
         throw createError({
           statusCode: 400,
@@ -48,23 +49,20 @@ export default defineEventHandler(async (event) => {
     weekEnd.setDate(weekStart.getDate() + 6)
     weekEnd.setHours(23, 59, 59, 999)
 
-    // Helper: Format Date to YYYY-MM-DD
-    const toLocalDateStr = (d: Date) => {
-      const y = d.getFullYear()
-      const m = String(d.getMonth() + 1).padStart(2, '0')
-      const day = String(d.getDate()).padStart(2, '0')
-      return `${y}-${m}-${day}`
-    }
+    // Helper: Format Date to YYYY-MM-DD berdasarkan WIB timezone
+    // (bukan server local time yang bisa berbeda 7 jam dari WIB)
+    const toWibDateStr = (d: Date): string =>
+      d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
 
-    const weekStartStr = toLocalDateStr(weekStart)
-    const weekEndStr   = toLocalDateStr(weekEnd)
+    const weekStartStr = toWibDateStr(weekStart)
+    const weekEndStr   = toWibDateStr(weekEnd)
 
-    // Generate array of 7 date strings
+    // Generate array of 7 date strings (WIB)
     const days: string[] = []
     for (let i = 0; i < 7; i++) {
       const d = new Date(weekStart)
       d.setDate(weekStart.getDate() + i)
-      days.push(toLocalDateStr(d))
+      days.push(toWibDateStr(d))
     }
 
     // ── 2. Fetch all rooms with fallback ─────────────────────────────────────
@@ -86,20 +84,20 @@ export default defineEventHandler(async (event) => {
     }
 
     // ── 3. Fetch bookings in this week with fallback ─────────────────────────
-    const startBuffer = new Date(weekStart)
-    startBuffer.setDate(startBuffer.getDate() - 1)
-    const endBuffer = new Date(weekEnd)
-    endBuffer.setDate(endBuffer.getDate() + 1)
+    // S-5 Fix: Gunakan wibDayBoundariesUtc() untuk batas hari yang benar.
+    // Sebelumnya menggunakan getDate()/getMonth() yang bergantung pada timezone
+    // runtime server — jika server UTC, hasilnya salah 7 jam dari WIB.
+    const { dayStart: mysqlStart } = wibDayBoundariesUtc(weekStartStr)
+    // +1 hari buffer sebelum week start dan setelah week end untuk keamanan overlap
+    const bufferStart = new Date(`${weekStartStr}T00:00:00+07:00`)
+    bufferStart.setDate(bufferStart.getDate() - 1)
+    const bufferStartStr = bufferStart.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
+    const { dayStart: mysqlStartBuf } = wibDayBoundariesUtc(bufferStartStr)
 
-    const formatLocalDateStr = (d: Date) => {
-      const y = d.getFullYear()
-      const m = String(d.getMonth() + 1).padStart(2, '0')
-      const day = String(d.getDate()).padStart(2, '0')
-      return `${y}-${m}-${day}`
-    }
-
-    const mysqlStart = `${formatLocalDateStr(startBuffer)} 00:00:00`
-    const mysqlEnd   = `${formatLocalDateStr(endBuffer)} 23:59:59`
+    const bufferEnd = new Date(`${weekEndStr}T23:59:59+07:00`)
+    bufferEnd.setDate(bufferEnd.getDate() + 1)
+    const bufferEndStr = bufferEnd.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
+    const { dayEnd: mysqlEnd } = wibDayBoundariesUtc(bufferEndStr)
 
     let bookings: any[] = []
     try {
@@ -119,7 +117,7 @@ export default defineEventHandler(async (event) => {
           AND b.start_time < ?
           AND b.end_time > ?
         ORDER BY b.start_time ASC
-      `, [mysqlEnd, mysqlStart])
+      `, [mysqlEnd, mysqlStartBuf])
     } catch (bookingErr: any) {
       const msg = String(bookingErr?.message || '')
       // Fallback if deleted_at or requester_name columns are missing
@@ -139,7 +137,7 @@ export default defineEventHandler(async (event) => {
             AND b.start_time < ?
             AND b.end_time > ?
           ORDER BY b.start_time ASC
-        `, [mysqlEnd, mysqlStart])
+        `, [mysqlEnd, mysqlStartBuf])
       } else {
         throw bookingErr
       }

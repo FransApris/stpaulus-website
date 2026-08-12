@@ -33,6 +33,25 @@ export default defineEventHandler(async (event) => {
     const dateTo = query.dateTo as string
     const sortBy = query.sort as string || 'relevance'
 
+    // ✅ SECURITY: Validate inputs to prevent SQL Injection
+    const isValidDate = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d);
+    if (dateFrom && !isValidDate(dateFrom)) {
+      throw createError({ statusCode: 400, statusMessage: 'Invalid dateFrom format. Expected YYYY-MM-DD' })
+    }
+    if (dateTo && !isValidDate(dateTo)) {
+      throw createError({ statusCode: 400, statusMessage: 'Invalid dateTo format. Expected YYYY-MM-DD' })
+    }
+    
+    const allowedSorts = ['relevance', 'date_desc', 'date_asc', 'title_asc']
+    if (query.sort && !allowedSorts.includes(sortBy)) {
+      throw createError({ statusCode: 400, statusMessage: 'Invalid sort option' })
+    }
+    
+    const allowedTypes = ['', 'article', 'news', 'agenda', 'document']
+    if (filterType && !allowedTypes.includes(filterType)) {
+      throw createError({ statusCode: 400, statusMessage: 'Invalid filter type' })
+    }
+
     if (!searchTerm || searchTerm.trim().length < 2) {
       return {
         query: searchTerm || '',

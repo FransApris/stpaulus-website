@@ -1253,8 +1253,9 @@ const publicBookings = computed(() => {
   // kembalikan array kosong dan biarkan client-side yang melakukan filter.
   if (!process.client) return [];
 
-  // Gunakan waktu client (WIB) untuk perbandingan
-  const now = new Date();
+  // Tanggal WIB hari ini (YYYY-MM-DD) — dibandingkan per-tanggal, bukan per-momen,
+  // agar booking hari ini yang jamnya sudah lewat tetap ditampilkan.
+  const todayWIB = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
 
   return bookings.filter((booking) => {
     try {
@@ -1262,9 +1263,9 @@ const publicBookings = computed(() => {
       const utcString = booking.start_time_utc || booking.end_time_utc;
       if (utcString && utcString.includes('T') && utcString.includes('Z')) {
         const bookingStart = new Date(utcString);
-        const todayWIB = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
         const bookingDateWIB = bookingStart.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' });
-        return bookingDateWIB === todayWIB || bookingStart >= now;
+        // Tampilkan jika tanggal booking >= hari ini WIB
+        return bookingDateWIB >= todayWIB;
       }
 
       // ── Fallback: parse dari event_date (format lokal) ──
@@ -1275,13 +1276,28 @@ const publicBookings = computed(() => {
         const dy = String(eventDateStr.getDate()).padStart(2, '0');
         eventDateStr = `${yr}-${mo}-${dy}`;
       }
-      const todayStr = now.toLocaleDateString('sv-SE');
-      return String(eventDateStr || '').slice(0, 10) >= todayStr;
+      return String(eventDateStr || '').slice(0, 10) >= todayWIB;
     } catch {
       return false;
     }
   });
 });
+
+// Pagination untuk tabel booking di beranda
+const paginatedBookings = computed(() => {
+  const start = (currentBookingPage.value - 1) * bookingsPerPage;
+  return publicBookings.value.slice(start, start + bookingsPerPage);
+});
+
+const totalBookingPages = computed(() =>
+  Math.ceil(publicBookings.value.length / bookingsPerPage)
+);
+
+const goToBookingPage = (page: number) => {
+  const total = totalBookingPages.value;
+  if (page < 1 || page > total) return;
+  currentBookingPage.value = page;
+};
 
 // Note: helper functions and formatting utilities have been hoisted to the top to avoid Temporal Dead Zone (ReferenceError).
 </script>
