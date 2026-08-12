@@ -3,8 +3,12 @@
     
     <!-- Tooltip Sapaan -->
     <Transition name="fade-slide-up">
-      <div v-if="showTooltip && !isOpen" class="absolute bottom-[110%] right-0 mb-2 w-max bg-white text-gray-800 text-sm font-medium px-4 py-2 rounded-2xl rounded-br-sm shadow-xl border border-gray-100 flex items-center gap-2">
-        <span class="animate-pulse">👋</span> Ada yang bisa kami bantu?
+      <div v-if="showTooltip && !isOpen" class="absolute bottom-[110%] right-0 mb-2 w-max bg-white text-gray-800 text-sm font-medium px-4 py-2.5 rounded-2xl rounded-br-sm shadow-xl border border-gray-100 flex items-center gap-2.5">
+        <span class="animate-pulse">👋</span>
+        <span>Ada yang bisa kami bantu?</span>
+        <button @click.stop="showTooltip = false" class="ml-1 text-gray-400 hover:text-gray-600 focus:outline-none p-0.5 rounded-full hover:bg-gray-100 transition-colors" aria-label="Tutup sapaan">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
       </div>
     </Transition>
 
@@ -316,7 +320,13 @@ onMounted(() => {
   loadChatHistory()
   
   tooltipTimer = setTimeout(() => {
-    if (!isOpen.value) showTooltip.value = true
+    if (!isOpen.value) {
+      showTooltip.value = true
+      // Auto-hide tooltip after 5 seconds to prevent blocking UI
+      setTimeout(() => {
+        showTooltip.value = false
+      }, 5000)
+    }
   }, 3000)
 
   setTimeout(() => isBouncing.value = false, 5000)
