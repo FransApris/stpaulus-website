@@ -536,7 +536,7 @@
 
     <!-- Section 8: Status Pemesanan Ruangan -->
     <ClientOnly>
-      <section id="booking-section" class="py-16 bg-gray-50 reveal-on-scroll">
+      <section id="booking-section" class="py-16 bg-gray-50 reveal-on-scroll scroll-mt-24">
         <div class="container mx-auto px-4 sm:px-[5%] md:px-[7%] lg:px-[10%]">
           <div class="text-center mb-12">
             <div class="flex items-center justify-center mb-3">
@@ -1304,8 +1304,9 @@ const goToBookingPage = (page) => {
   setTimeout(() => {
     const el = document.getElementById('booking-section');
     if (el) {
-      const y = el.getBoundingClientRect().top + window.scrollY - 80; // Offset untuk header navbar
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      // Menggunakan scrollIntoView yang lebih reliabel ketimbang window.scrollTo manual offset
+      // Offset navbar ditangani oleh class scroll-mt-24 pada tag <section>
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, 50);
 };
