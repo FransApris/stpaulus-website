@@ -675,21 +675,22 @@
             </div>
 
             <!-- Pagination Controls -->
-            <div v-if="totalBookingPages > 1" class="mt-6 flex items-center justify-center space-x-2">
+            <div v-if="totalBookingPages > 1" class="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
               <!-- Previous Button -->
               <button @click="goToBookingPage(currentBookingPage - 1)" :disabled="currentBookingPage === 1" :class="[
-                'px-4 py-2 rounded-lg font-medium transition-colors',
+                'px-3 py-2 sm:px-4 rounded-lg font-medium transition-colors text-sm sm:text-base',
                 currentBookingPage === 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-white text-[#882f1d] border border-[#882f1d] hover:bg-[#882f1d] hover:text-white'
               ]">
-                ‹ Sebelumnya
+                <span class="hidden sm:inline">‹ Sebelumnya</span>
+                <span class="sm:hidden">‹ Prev</span>
               </button>
 
               <!-- Page Numbers -->
-              <div class="flex space-x-1">
+              <div class="flex flex-wrap justify-center gap-1">
                 <button v-for="page in totalBookingPages" :key="page" @click="goToBookingPage(page)" :class="[
-                  'px-4 py-2 rounded-lg font-medium transition-colors',
+                  'px-3 py-2 sm:px-4 rounded-lg font-medium transition-colors text-sm sm:text-base',
                   page === currentBookingPage
                     ? 'bg-[#882f1d] text-white'
                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
@@ -701,12 +702,13 @@
               <!-- Next Button -->
               <button @click="goToBookingPage(currentBookingPage + 1)"
                 :disabled="currentBookingPage === totalBookingPages" :class="[
-                  'px-4 py-2 rounded-lg font-medium transition-colors',
+                  'px-3 py-2 sm:px-4 rounded-lg font-medium transition-colors text-sm sm:text-base',
                   currentBookingPage === totalBookingPages
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-white text-[#882f1d] border border-[#882f1d] hover:bg-[#882f1d] hover:text-white'
                 ]">
-                Selanjutnya ›
+                <span class="hidden sm:inline">Selanjutnya ›</span>
+                <span class="sm:hidden">Next ›</span>
               </button>
             </div>
 
