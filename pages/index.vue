@@ -1293,7 +1293,7 @@ const totalBookingPages = computed(() =>
   Math.ceil(publicBookings.value.length / bookingsPerPage)
 );
 
-const goToBookingPage = (page: number) => {
+const goToBookingPage = (page) => {
   const total = totalBookingPages.value;
   if (page < 1 || page > total) return;
   currentBookingPage.value = page;

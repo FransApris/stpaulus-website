@@ -67,6 +67,25 @@
                 <button @click="loadBookings" class="bg-gray-100 px-4 py-2 rounded-lg hover:bg-gray-200">
                   🔄 Refresh
                 </button>
+
+                <!-- Sort Dropdown (desktop + mobile) -->
+                <div class="flex items-center gap-1.5">
+                  <label class="text-xs font-medium text-gray-600 whitespace-nowrap">Urutkan:</label>
+                  <select v-model="sortBy" @change="bookingPage = 1"
+                    class="border border-gray-300 p-2 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                    <option value="start_time">Tanggal Acara</option>
+                    <option value="created_at">Tanggal Daftar</option>
+                    <option value="event_name">Judul Acara (A-Z)</option>
+                    <option value="room_name">Ruangan (A-Z)</option>
+                    <option value="status">Status</option>
+                  </select>
+                  <button @click="sortDir = sortDir === 'asc' ? 'desc' : 'asc'; bookingPage = 1"
+                    :title="sortDir === 'asc' ? 'Urutan: Terlama → Terbaru (klik untuk balik)' : 'Urutan: Terbaru → Terlama (klik untuk balik)'"
+                    class="p-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition text-base leading-none"
+                    :class="sortDir === 'asc' ? 'text-blue-600' : 'text-orange-600'">
+                    {{ sortDir === 'asc' ? '⬆️' : '⬇️' }}
+                  </button>
+                </div>
               </div>
               <button @click="exportToExcel"
                 class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center gap-2">
@@ -171,12 +190,61 @@
                     <table class="min-w-full divide-y divide-gray-200">
                       <thead class="bg-gray-50">
                         <tr>
-                          <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Judul Acara</th>
-                          <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Ruangan</th>
-                          <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Pemesan & Unit</th>
-                          <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tanggal & Waktu</th>
-                          <th scope="col" class="px-6 py-3.5 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Status</th>
-                          <th scope="col" class="px-6 py-3.5 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Aksi</th>
+                          <!-- Judul Acara -->
+                          <th scope="col"
+                            class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            <button @click="toggleSort('event_name')"
+                              class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                              Judul Acara
+                              <span class="text-[11px] leading-none opacity-60 group-hover:opacity-100">{{ sortIcon('event_name') }}</span>
+                            </button>
+                          </th>
+
+                          <!-- Ruangan -->
+                          <th scope="col"
+                            class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            <button @click="toggleSort('room_name')"
+                              class="flex items-center gap-1 group hover:text-blue-600 transition-colors">
+                              Ruangan
+                              <span class="text-[11px] leading-none opacity-60 group-hover:opacity-100">{{ sortIcon('room_name') }}</span>
+                            </button>
+                          </th>
+
+                          <!-- Pemesan -->
+                          <th scope="col"
+                            class="px-6 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            Pemesan &amp; Unit
+                          </th>
+
+                          <!-- Tanggal & Waktu — sortable (primary sort column) -->
+                          <th scope="col"
+                            class="px-6 py-3.5 text-left text-xs font-bold uppercase tracking-wider cursor-pointer select-none transition-colors"
+                            :class="sortBy === 'start_time' ? 'text-blue-600 bg-blue-50' : 'text-gray-600 hover:text-blue-600 hover:bg-gray-100'">
+                            <button @click="toggleSort('start_time')" class="flex items-center gap-1.5 w-full">
+                              <span>📅 Tanggal &amp; Waktu</span>
+                              <span class="text-sm leading-none">
+                                <span v-if="sortBy === 'start_time' && sortDir === 'asc'">⬆️</span>
+                                <span v-else-if="sortBy === 'start_time' && sortDir === 'desc'">⬇️</span>
+                                <span v-else class="opacity-40">↕️</span>
+                              </span>
+                            </button>
+                          </th>
+
+                          <!-- Status -->
+                          <th scope="col"
+                            class="px-6 py-3.5 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            <button @click="toggleSort('status')"
+                              class="flex items-center justify-center gap-1 w-full group hover:text-blue-600 transition-colors">
+                              Status
+                              <span class="text-[11px] leading-none opacity-60 group-hover:opacity-100">{{ sortIcon('status') }}</span>
+                            </button>
+                          </th>
+
+                          <!-- Aksi -->
+                          <th scope="col"
+                            class="px-6 py-3.5 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">
+                            Aksi
+                          </th>
                         </tr>
                       </thead>
                       <tbody class="bg-white divide-y divide-gray-200">
@@ -810,6 +878,25 @@ const useCustomRange = ref(false)
 const customStartDate = ref('')
 const customEndDate = ref('')
 
+// Sort state — default: tanggal acara terdekat dulu (asc)
+const sortBy  = ref('start_time')  // 'start_time' | 'event_name' | 'room_name' | 'status' | 'created_at'
+const sortDir = ref('asc')          // 'asc' | 'desc'
+
+const toggleSort = (column) => {
+  if (sortBy.value === column) {
+    sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value  = column
+    sortDir.value = column === 'start_time' ? 'asc' : 'asc'
+  }
+  bookingPage.value = 1  // reset ke halaman 1 setelah sort berubah
+}
+
+const sortIcon = (column) => {
+  if (sortBy.value !== column) return '↕️'
+  return sortDir.value === 'asc' ? '⬆️' : '⬇️'
+}
+
 const toggleCustomRange = () => {
   useCustomRange.value = !useCustomRange.value
   if (!useCustomRange.value) {
@@ -869,12 +956,57 @@ const tabs = computed(() => [
   { id: 'stats', label: 'Statistik', icon: '📊' }
 ])
 
-const bookingTotalPages = computed(() => Math.max(1, Math.ceil(bookings.value.length / pageLimit)))
+const sortedBookings = computed(() => {
+  const list = [...bookings.value]
+  const dir = sortDir.value === 'asc' ? 1 : -1
+
+  list.sort((a, b) => {
+    let aVal
+    let bVal
+
+    switch (sortBy.value) {
+      case 'start_time':
+        // Bandingkan sebagai timestamp (numerik) untuk akurasi
+        aVal = new Date(a.start_time || 0).getTime()
+        bVal = new Date(b.start_time || 0).getTime()
+        break
+      case 'created_at':
+        aVal = new Date(a.created_at || 0).getTime()
+        bVal = new Date(b.created_at || 0).getTime()
+        break
+      case 'event_name':
+        aVal = (a.event_name || '').toLowerCase()
+        bVal = (b.event_name || '').toLowerCase()
+        break
+      case 'room_name':
+        aVal = (a.room_name || '').toLowerCase()
+        bVal = (b.room_name || '').toLowerCase()
+        break
+      case 'status': {
+        // Urutkan PENDING > APPROVED > REJECTED > CANCELLED
+        const order = { PENDING: 0, APPROVED: 1, REJECTED: 2, CANCELLED: 3 }
+        aVal = order[a.status] ?? 99
+        bVal = order[b.status] ?? 99
+        break
+      }
+      default:
+        aVal = 0; bVal = 0
+    }
+
+    if (aVal < bVal) return -1 * dir
+    if (aVal > bVal) return 1  * dir
+    return 0
+  })
+
+  return list
+})
+
+const bookingTotalPages = computed(() => Math.max(1, Math.ceil(sortedBookings.value.length / pageLimit)))
 const auditTotalPages = computed(() => Math.max(1, Math.ceil(auditLogs.value.length / pageLimit)))
 const deletedTotalPages = computed(() => Math.max(1, Math.ceil(deletedBookings.value.length / pageLimit)))
 const paginatedBookings = computed(() => {
   const start = (bookingPage.value - 1) * pageLimit
-  return bookings.value.slice(start, start + pageLimit)
+  return sortedBookings.value.slice(start, start + pageLimit)
 })
 const paginatedAuditLogs = computed(() => {
   const start = (auditPage.value - 1) * pageLimit
