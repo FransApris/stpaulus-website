@@ -132,9 +132,11 @@
 
 
 <script setup>
-import { ref, nextTick, onMounted, onUnmounted, watch } from '#imports'
+import { ref, nextTick, onMounted, onUnmounted, watch, useRoute } from '#imports'
 import { marked } from 'marked'
 import DOMPurify from 'isomorphic-dompurify'
+
+const route = useRoute()
 
 const renderMarkdown = (text) => {
   if (!text) return ''
@@ -306,7 +308,13 @@ const sendMessage = async () => {
   try {
     const response = await $fetch('/api/chatbot/chat', {
       method: 'POST',
-      body: { message: messageText },
+      body: { 
+        message: messageText,
+        context: {
+          path: route.path,
+          title: document.title
+        }
+      },
       signal: controller.signal
     })
     

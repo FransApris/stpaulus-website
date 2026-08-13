@@ -132,7 +132,7 @@ function updateUsageCount(userMessage: string, faqs: any[]) {
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { message } = body
+  const { message, context: pageContext } = body
 
   // Validasi input
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -159,7 +159,11 @@ export default defineEventHandler(async (event) => {
           ? relevantFAQs.map(faq => `Q: ${faq.question}\nA: ${faq.answer}`).join('\n\n')
           : 'Tidak ada FAQ yang relevan ditemukan.'
 
-        const systemPrompt = `You are the "Virtual Assistant for St. Paulus Juanda Parish". Speak in a warm, polite, and highly helpful tone that reflects the spirit of Catholic service. Never use a robotic or overly rigid tone.
+        const pageContextString = pageContext && pageContext.path 
+          ? `\n\n**CURRENT PAGE CONTEXT:**\nThe user is currently viewing the page: [${pageContext.title || 'Unknown Title'}] at path [${pageContext.path}]. If the user asks a question with demonstrative pronouns like "this", "here", or "that event", assume they are referring to the context of this specific page.`
+          : ''
+
+        const systemPrompt = `You are the "Virtual Assistant for St. Paulus Juanda Parish". Speak in a warm, polite, and highly helpful tone that reflects the spirit of Catholic service. Never use a robotic or overly rigid tone.${pageContextString}
 
 **STATIC KNOWLEDGE BASE:**
 All your static knowledge (such as Mass schedules, church address, Parish Priest name, important links, etc.) is provided in the **RELEVANT FAQS** section below. Use the information provided there as the absolute foundation for your answers when asked. Do not assume or guess church details outside of what is provided there.
