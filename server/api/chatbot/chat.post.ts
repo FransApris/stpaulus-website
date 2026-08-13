@@ -1,6 +1,5 @@
-// Global cache & retrieval helper dari server/utils/faqCache.ts
 import { fetchCachedFAQs, clearFAQCache } from '../../utils/faqCache'
-import { runQuery } from '../../database/db'
+import { runQuery, allQuery } from '../../database/db'
 import Groq from 'groq-sdk'
 
 // Re-export untuk kompatibilitas jika ada yang mengimpor dari file ini
@@ -200,25 +199,108 @@ Available Routes/Pages on the website:
 **RELEVANT FAQS:**
 ${context}`
 
-        console.log('[Chatbot] Calling Groq API...')
+        // STEP 1: Definisikan Tools/Functions
+        const tools = [
+          {
+            type: "function",
+            function: {
+              name: "check_agenda_by_date",
+              description: "Mengambil daftar agenda, kegiatan, atau pemesanan ruangan gereja berdasarkan tanggal tertentu (format YYYY-MM-DD)",
+              parameters: {
+                type: "object",
+                properties: {
+                  date: {
+                    type: "string",
+                    description: "Tanggal kegiatan yang ingin dicari dalam format YYYY-MM-DD. Jika pengguna menanyakan 'hari ini', gunakan tanggal sistem hari ini."
+                  }
+                },
+                required: ["date"]
+              }
+            }
+          }
+        ]
+
+        let messages = [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: sanitizedMessage }
+        ]
+
+        console.log('[Chatbot] Calling Groq API with tools...')
         const startTime = Date.now()
 
-        const completion = await groq.chat.completions.create({
+        // STEP 1 & 2: Kirim prompt user + tools ke Grok
+        let completion = await groq.chat.completions.create({
           model: 'llama-3.1-8b-instant',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: sanitizedMessage }
-          ],
-          response_format: { type: 'json_object' },
+          messages: messages as any,
+          tools: tools as any,
+          tool_choice: 'auto',
           max_tokens: 400,
           temperature: 0.3,
           top_p: 0.8
         })
 
+        let responseMessage = completion.choices[0]?.message
+
+        // STEP 2: Jika respons Grok mengandung tool_calls
+        if (responseMessage?.tool_calls) {
+          console.log('[Chatbot] Grok calling tool:', responseMessage.tool_calls[0].function.name)
+          messages.push(responseMessage as any) // Append assistant's tool call request
+
+          for (const toolCall of responseMessage.tool_calls) {
+            if (toolCall.function.name === 'check_agenda_by_date') {
+              const args = JSON.parse(toolCall.function.arguments)
+              const requestedDate = args.date
+
+              // STEP 3: Kueri database
+              let queryResult = ''
+              try {
+                const query = `
+                  SELECT b.event_name, b.start_time, b.end_time, r.name as room_name
+                  FROM bookings b
+                  JOIN rooms r ON b.room_id = r.id
+                  WHERE b.deleted_at IS NULL AND b.status = 'APPROVED' 
+                  AND DATE(b.start_time) = ?
+                  ORDER BY b.start_time ASC
+                `
+                const bookings = await allQuery(query, [requestedDate])
+                
+                if (bookings && bookings.length > 0) {
+                  queryResult = JSON.stringify(bookings)
+                } else {
+                  queryResult = `Tidak ada agenda atau pemesanan ruangan pada tanggal ${requestedDate}.`
+                }
+              } catch (e: any) {
+                console.error('[Chatbot] Error querying bookings:', e.message)
+                queryResult = `Error fetching database.`
+              }
+
+              // STEP 4: Kembalikan hasil database sebagai pesan dengan role "tool"
+              messages.push({
+                tool_call_id: toolCall.id,
+                role: "tool",
+                name: toolCall.function.name,
+                content: queryResult
+              } as any)
+            }
+          }
+
+          // STEP 5: Biarkan Grok merangkum hasil database tersebut ke dalam format JSON akhir
+          completion = await groq.chat.completions.create({
+            model: 'llama-3.1-8b-instant',
+            messages: messages as any,
+            response_format: { type: 'json_object' },
+            max_tokens: 400,
+            temperature: 0.3,
+            top_p: 0.8
+          })
+          
+          responseMessage = completion.choices[0]?.message
+        }
+
         const elapsed = Date.now() - startTime
         console.log(`[Chatbot] Groq API responded in ${elapsed}ms`)
 
-        const aiResponse = completion.choices[0]?.message?.content || ''
+        const aiResponse = responseMessage?.content || ''
 
         if (aiResponse.trim().length > 0) {
           try {
