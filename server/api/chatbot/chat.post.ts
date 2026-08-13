@@ -209,6 +209,7 @@ ${context}`
             { role: 'system', content: systemPrompt },
             { role: 'user', content: sanitizedMessage }
           ],
+          response_format: { type: 'json_object' },
           max_tokens: 400,
           temperature: 0.3,
           top_p: 0.8
