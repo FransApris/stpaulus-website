@@ -198,12 +198,16 @@ CRITICAL: If you used the \`search_website_content\` tool and found one or multi
 Mandatory JSON format:
 {
   "reply": "Your full descriptive text response here. You MUST include the full lists and markdown from the FAQ here using \\n for newlines.",
-  "has_action": true, // false if no action needed
-  "actions": [ // array of actions, only if has_action is true
+  "has_action": true,
+  "actions": [
     { "button_text": "Baca Selengkapnya", "target_route": "/path1" },
     { "button_text": "Lihat Agenda", "target_route": "/path2" }
   ]
 }
+
+JSON Field Rules:
+- "has_action": boolean. Set to true ONLY if you provide buttons. Set to false if no action is needed.
+- "actions": array. Omit or leave empty if has_action is false.
 
 Available Routes/Pages on the website:
 - /misa (Mass Schedule)
@@ -460,6 +464,14 @@ ${context}`
           const matchResult = findBestMatch(sanitizedMessage, faqs)
           response = { reply: matchResult.answer, has_action: false }
         }
+        
+        // Ultimate cleanup: remove any hallucinated JSON artifacts that leaked into the reply text
+        if (response && response.reply && typeof response.reply === 'string') {
+          response.reply = response.reply.replace(/\{?\s*"has_action"\s*:\s*(true|false)\s*\}?/gi, '')
+          response.reply = response.reply.replace(/\{?\s*"actions"\s*:\s*\[\]\s*\}?/gi, '')
+          response.reply = response.reply.trim()
+        }
+        
       } catch (groqError: any) {
         console.warn('[Chatbot] Groq API error, falling back to keyword matching:', groqError.message)
         const matchResult = findBestMatch(sanitizedMessage, faqs)
