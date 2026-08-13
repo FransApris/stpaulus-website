@@ -1354,7 +1354,7 @@ const clearSearch = () => {
 };
 
 // Quick Filters
-const searchCategories = ['Semua', 'Gereja/Altar', 'Ruang Serbaguna/Meeting', 'Lainnya'];
+const searchCategories = ['Semua', 'Gereja/Altar', 'Aula', 'Adil', 'Berani', 'Harapan', 'Kanonik', 'Sukacita', 'Ugahari', 'Selasar', 'Lainnya'];
 const setCategory = (cat) => {
   bookingSearchCategory.value = cat;
   currentBookingPage.value = 1;
@@ -1395,8 +1395,11 @@ const filteredPublicBookings = computed(() => {
     result = result.filter(booking => {
       const room = (booking.room_name || '').toLowerCase();
       if (category === 'Gereja/Altar') return room.includes('gereja') || room.includes('altar');
-      if (category === 'Ruang Serbaguna/Meeting') return room.includes('meeting') || room.includes('rapat') || room.includes('serbaguna');
-      if (category === 'Lainnya') return !room.includes('gereja') && !room.includes('altar') && !room.includes('meeting') && !room.includes('rapat') && !room.includes('serbaguna');
+      if (['Aula', 'Adil', 'Berani', 'Harapan', 'Kanonik', 'Sukacita', 'Ugahari', 'Selasar'].includes(category)) return room.includes(category.toLowerCase());
+      if (category === 'Lainnya') {
+        const excludedRooms = ['gereja', 'altar', 'aula', 'adil', 'berani', 'harapan', 'kanonik', 'sukacita', 'ugahari', 'selasar'];
+        return !excludedRooms.some(ex => room.includes(ex));
+      }
       return true;
     });
   }
