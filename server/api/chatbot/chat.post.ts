@@ -147,7 +147,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     const faqs = await fetchCachedFAQs()
-    let response = ''
+    let response: any = { reply: '', has_action: false }
 
     // Coba Groq AI jika API key tersedia
     const groq = getGroqClient()
@@ -167,6 +167,25 @@ export default defineEventHandler(async (event) => {
 3. JANGAN mengarang jawaban di luar informasi FAQ. Jika tidak ada informasi di FAQ, arahkan pengguna ke Sekretariat Paroki.
 4. Jawab dalam bahasa Indonesia yang ramah, sopan, dan jelas.
 5. PENTING: Pertahankan format daftar/bullet point dan baris baru (newlines) persis seperti di FAQ! JANGAN MENGGABUNGKAN (meng-compile) daftar menjadi satu paragraf panjang. Pastikan setiap poin berada di barisnya sendiri.
+6. Anda HARUS membalas dengan format JSON yang terstruktur.
+
+Format JSON wajib:
+{
+  "reply": "Jawaban teks deskriptif dari chatbot",
+  "has_action": true,
+  "button_text": "Teks Singkat",
+  "target_route": "/path"
+}
+
+Daftar Rute/Halaman yang tersedia di website:
+- /misa (Jadwal Misa)
+- /berita (Berita & Pengumuman)
+- /galeri (Galeri Foto)
+- /sejarah (Sejarah Gereja)
+- /kontak (Kontak Sekretariat)
+- /dokumen-paroki (Dokumen & Formulir)
+- /artikel (Artikel & Renungan)
+- /agenda (Agenda Kegiatan)
 
 **FAQ Relevan:**
 ${context}`
@@ -180,6 +199,7 @@ ${context}`
             { role: 'system', content: systemPrompt },
             { role: 'user', content: sanitizedMessage }
           ],
+          response_format: { type: 'json_object' },
           max_tokens: 400,
           temperature: 0.3,
           top_p: 0.8
@@ -191,20 +211,25 @@ ${context}`
         const aiResponse = completion.choices[0]?.message?.content || ''
 
         if (aiResponse.trim().length > 0) {
-          response = aiResponse
+          try {
+            const jsonStr = aiResponse.replace(/\`\`\`json\n?/i, '').replace(/\`\`\`/g, '').trim()
+            response = JSON.parse(jsonStr)
+          } catch (e) {
+            response = { reply: aiResponse, has_action: false }
+          }
         } else {
           const matchResult = findBestMatch(sanitizedMessage, faqs)
-          response = matchResult.answer
+          response = { reply: matchResult.answer, has_action: false }
         }
       } catch (groqError: any) {
         console.warn('[Chatbot] Groq API error, falling back to keyword matching:', groqError.message)
         const matchResult = findBestMatch(sanitizedMessage, faqs)
-        response = matchResult.answer
+        response = { reply: matchResult.answer, has_action: false }
       }
     } else {
       // Tidak ada API key — gunakan keyword matching saja
       const matchResult = findBestMatch(sanitizedMessage, faqs)
-      response = matchResult.answer
+      response = { reply: matchResult.answer, has_action: false }
     }
 
     // Update usage count (non-blocking)

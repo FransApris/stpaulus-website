@@ -70,7 +70,14 @@
                 : 'bg-white text-gray-800 rounded-2xl rounded-tl-sm shadow-sm border border-gray-100 prose prose-sm prose-p:my-1 prose-ul:my-1 prose-li:my-0'
             ]">
               <!-- Render Markdown safely -->
-              <div v-if="message.sender === 'bot'" v-html="renderMarkdown(message.text)" class="markdown-body"></div>
+              <div v-if="message.sender === 'bot'">
+                <div v-html="renderMarkdown(message.text)" class="markdown-body"></div>
+                <div v-if="message.has_action && message.action" class="mt-3 pt-3 border-t border-gray-100">
+                  <NuxtLink :to="message.action.target_route" @click="isOpen = false" class="inline-block bg-[#882f1d] hover:bg-[#a55e1f] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm w-full text-center">
+                    {{ message.action.button_text }}
+                  </NuxtLink>
+                </div>
+              </div>
               <div v-else>{{ message.text }}</div>
             </div>
           </TransitionGroup>
@@ -229,10 +236,25 @@ const handleEnter = (e) => {
 }
 
 // Simulate typewriter effect for streaming response
-const streamResponse = async (fullText) => {
+const streamResponse = async (payload) => {
   isStreaming.value = true
   streamingText.value = ''
   
+  let fullText = ''
+  let actionData = null
+
+  if (typeof payload === 'string') {
+    fullText = payload
+  } else if (payload && payload.reply) {
+    fullText = payload.reply
+    if (payload.has_action) {
+      actionData = {
+        button_text: payload.button_text,
+        target_route: payload.target_route
+      }
+    }
+  }
+
   if (!fullText) fullText = 'Maaf, saya tidak mengerti.'
 
   // Split into words for faster rendering
@@ -250,7 +272,9 @@ const streamResponse = async (fullText) => {
   messages.value.push({
     id: Date.now() + 1,
     text: fullText,
-    sender: 'bot'
+    sender: 'bot',
+    has_action: !!actionData,
+    action: actionData
   })
   
   streamingText.value = ''
