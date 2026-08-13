@@ -256,13 +256,13 @@ ${context}`
         let responseMessage = completion.choices[0]?.message
 
         // STEP 2: Jika respons Grok mengandung tool_calls
-        if (responseMessage?.tool_calls) {
-          console.log('[Chatbot] Grok calling tool:', responseMessage.tool_calls[0].function.name)
+        if (responseMessage?.tool_calls && responseMessage.tool_calls.length > 0) {
+          console.log('[Chatbot] Grok calling tool:', responseMessage.tool_calls[0]?.function?.name)
           messages.push(responseMessage as any) // Append assistant's tool call request
 
           for (const toolCall of responseMessage.tool_calls) {
-            if (toolCall.function.name === 'check_agenda_by_date') {
-              const args = JSON.parse(toolCall.function.arguments)
+            if (toolCall.function?.name === 'check_agenda_by_date') {
+              const args = JSON.parse(toolCall.function?.arguments || '{}')
               const requestedDate = args.date
 
               // STEP 3: Kueri database
