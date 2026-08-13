@@ -293,7 +293,12 @@ ${context}`
 
           for (const toolCall of responseMessage.tool_calls) {
             if (toolCall.function?.name === 'search_agenda' || toolCall.function?.name === 'check_agenda_by_date') {
-              const args = JSON.parse(toolCall.function?.arguments || '{}')
+              let args = {}
+              try {
+                args = JSON.parse(toolCall.function?.arguments || '{}')
+              } catch (e) {
+                console.warn('[Chatbot] Failed to parse tool arguments for agenda:', toolCall.function?.arguments)
+              }
               const requestedDate = args.date
               const keyword = args.keyword
 
@@ -352,7 +357,12 @@ ${context}`
                 content: queryResult
               } as any)
             } else if (toolCall.function?.name === 'search_website_content') {
-              const args = JSON.parse(toolCall.function?.arguments || '{}')
+              let args = {}
+              try {
+                args = JSON.parse(toolCall.function?.arguments || '{}')
+              } catch (e) {
+                console.warn('[Chatbot] Failed to parse tool arguments for website_content:', toolCall.function?.arguments)
+              }
               const keyword = args.keyword || ''
               const contentType = args.content_type || 'semua'
 
@@ -367,11 +377,8 @@ ${context}`
                 if (contentType === 'artikel' || contentType === 'semua') {
                   results.artikel = await allQuery(`SELECT title, slug, SUBSTRING(excerpt, 1, 300) as excerpt FROM articles WHERE status='published' AND title LIKE ? LIMIT 3`, [searchTerm])
                 }
-                if (contentType === 'halaman' || contentType === 'semua') {
-                  results.halaman = await allQuery(`SELECT title, slug, SUBSTRING(content, 1, 300) as excerpt FROM pages WHERE is_published=1 AND title LIKE ? LIMIT 3`, [searchTerm])
-                }
 
-                const totalFound = (results.berita?.length || 0) + (results.artikel?.length || 0) + (results.halaman?.length || 0)
+                const totalFound = (results.berita?.length || 0) + (results.artikel?.length || 0)
                 
                 if (totalFound > 0) {
                   queryResult = JSON.stringify({
