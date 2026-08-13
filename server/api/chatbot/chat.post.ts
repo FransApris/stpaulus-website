@@ -362,13 +362,13 @@ ${context}`
                 const searchTerm = `%${keyword}%`
                 
                 if (contentType === 'berita' || contentType === 'semua') {
-                  results.berita = await allQuery(`SELECT title, slug, excerpt FROM news WHERE status='published' AND title LIKE ? LIMIT 3`, [searchTerm])
+                  results.berita = await allQuery(`SELECT title, slug, SUBSTRING(excerpt, 1, 300) as excerpt FROM news WHERE status='published' AND title LIKE ? LIMIT 3`, [searchTerm])
                 }
                 if (contentType === 'artikel' || contentType === 'semua') {
-                  results.artikel = await allQuery(`SELECT title, slug, excerpt FROM articles WHERE status='published' AND title LIKE ? LIMIT 3`, [searchTerm])
+                  results.artikel = await allQuery(`SELECT title, slug, SUBSTRING(excerpt, 1, 300) as excerpt FROM articles WHERE status='published' AND title LIKE ? LIMIT 3`, [searchTerm])
                 }
                 if (contentType === 'halaman' || contentType === 'semua') {
-                  results.halaman = await allQuery(`SELECT title, slug, SUBSTRING(content, 1, 200) as excerpt FROM pages WHERE is_published=1 AND title LIKE ? LIMIT 3`, [searchTerm])
+                  results.halaman = await allQuery(`SELECT title, slug, SUBSTRING(content, 1, 300) as excerpt FROM pages WHERE is_published=1 AND title LIKE ? LIMIT 3`, [searchTerm])
                 }
 
                 const totalFound = (results.berita?.length || 0) + (results.artikel?.length || 0) + (results.halaman?.length || 0)
