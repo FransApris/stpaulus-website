@@ -39,8 +39,8 @@ function parseKeywords(keywords: any): string[] {
 
 // Hitung skor relevansi antara pesan user dengan FAQ
 function scoreFAQ(userWords: string[], faq: any): number {
-  const keywords = parseKeywords(faq.keywords).map(k => k.toLowerCase())
-  const questionWords = faq.question.toLowerCase().split(/\s+/)
+  const keywords = parseKeywords(faq.keywords || '').map(k => k?.toLowerCase() || '')
+  const questionWords = (faq.question || '').toLowerCase().split(/\s+/)
   const categoryWords = (faq.category || '').toLowerCase().split(/\s+/)
   const allWords = [...keywords, ...questionWords, ...categoryWords]
 
@@ -111,8 +111,8 @@ function updateUsageCount(userMessage: string, faqs: any[]) {
   const userWords = userMessage.toLowerCase().trim().split(/\s+/).filter(w => w.length > 2)
 
   for (const faq of faqs) {
-    const hasMatch = [...parseKeywords(faq.keywords), ...faq.question.toLowerCase().split(/\s+/)]
-      .some(word => userWords.some(userWord => word.toLowerCase().includes(userWord) || userWord.includes(word.toLowerCase())))
+    const hasMatch = [...parseKeywords(faq.keywords), ...(faq.question || '').toLowerCase().split(/\s+/)]
+      .some(word => userWords.some(userWord => word?.toLowerCase()?.includes(userWord) || userWord.includes(word?.toLowerCase())))
 
     if (hasMatch) {
       // Fire-and-forget: log error jika gagal tapi jangan blocking
@@ -267,7 +267,7 @@ ${context}`
         let messages = [
           { role: 'system', content: systemPrompt },
           ...history,
-          { role: 'user', content: sanitizedMessage }
+          { role: 'user', content: sanitizedMessage + '\n\n(Respond strictly in the requested JSON format)' }
         ]
 
         console.log('[Chatbot] Calling Groq API with tools...')
@@ -296,6 +296,7 @@ ${context}`
               let args: any = {}
               try {
                 args = JSON.parse(toolCall.function?.arguments || '{}')
+                if (!args) args = {}
               } catch (e) {
                 console.warn('[Chatbot] Failed to parse tool arguments for agenda:', toolCall.function?.arguments)
               }
@@ -360,6 +361,7 @@ ${context}`
               let args: any = {}
               try {
                 args = JSON.parse(toolCall.function?.arguments || '{}')
+                if (!args) args = {}
               } catch (e) {
                 console.warn('[Chatbot] Failed to parse tool arguments for website_content:', toolCall.function?.arguments)
               }

@@ -325,7 +325,7 @@ const sendMessage = async () => {
     }))
 
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 15000)
+  const timeoutId = setTimeout(() => controller.abort(), 30000) // Timeout dinaikkan ke 30 detik
 
   try {
     const response = await $fetch('/api/chatbot/chat', {
@@ -352,8 +352,15 @@ const sendMessage = async () => {
     isTyping.value = false
 
     let errorMessage = 'Maaf, terjadi kesalahan. Silakan coba lagi.'
-    if (error.name === 'AbortError') errorMessage = 'Permintaan timeout. Silakan coba lagi nanti.'
-    else if (error?.status === 429) errorMessage = 'Terlalu banyak permintaan. Mohon tunggu sebentar.'
+    if (error.name === 'AbortError' || error?.cause?.name === 'AbortError') {
+      errorMessage = 'Permintaan timeout. Silakan coba lagi nanti.'
+    } else if (error?.status === 429) {
+      errorMessage = 'Terlalu banyak permintaan. Mohon tunggu sebentar.'
+    } else if (error?.response?._data?.statusMessage || error?.response?._data?.message) {
+      errorMessage = `Error Server: ${error.response._data.statusMessage || error.response._data.message}`
+    } else if (error.message) {
+      errorMessage = `Sistem Error: ${error.message}`
+    }
     
     await streamResponse(errorMessage)
   }
