@@ -181,8 +181,10 @@ All your static knowledge (such as Mass schedules, church address, Parish Priest
 5. IMPORTANT: Maintain the list/bullet point format and newlines exactly as provided in the Relevant FAQs. DO NOT compile lists into a single long paragraph.
 
 **TOOL CALLING INSTRUCTIONS:**
-You have access to a tool named \`search_agenda\`.
-If the user asks about the agenda, schedule, activities, or whether a room is used (e.g., "kapan pelajaran katekumen", "hari ini ada acara apa", "besok ruangan kosong"), you MUST invoke this tool natively to check the database. 
+You have access to 2 tools:
+1. \`search_agenda\`: Use this for questions about the agenda, schedule, activities, or room bookings (e.g., "kapan pelajaran katekumen", "hari ini ada acara apa", "besok ruangan kosong").
+2. \`search_website_content\`: Use this for questions about news (berita), articles (artikel), history (sejarah), devotions (renungan), or general parish profile/content.
+
 DO NOT rely on the FAQ to answer questions about specific daily schedules or room bookings.
 DO NOT tell the user to use the tool. YOU must invoke the tool yourself.
 If you invoke a tool, do not worry about the JSON FORMAT INTEGRITY yet.
@@ -232,6 +234,28 @@ ${context}`
                   }
                 },
                 required: []
+              }
+            }
+          },
+          {
+            type: "function",
+            function: {
+              name: "search_website_content",
+              description: "Mencari berita, artikel, renungan, sejarah, atau profil gereja berdasarkan kata kunci.",
+              parameters: {
+                type: "object",
+                properties: {
+                  keyword: {
+                    type: "string",
+                    description: "Kata kunci pencarian (contoh: 'paskah', 'sejarah', 'maria')"
+                  },
+                  content_type: {
+                    type: "string",
+                    description: "Opsional. Jenis konten yang dicari. Pilih antara: 'berita', 'artikel', 'halaman', atau 'semua'. Jika tidak yakin, pilih 'semua'.",
+                    enum: ["berita", "artikel", "halaman", "semua"]
+                  }
+                },
+                required: ["keyword"]
               }
             }
           }
@@ -321,6 +345,49 @@ ${context}`
               messages.push({
                 tool_call_id: toolCall.id,
                 role: "tool",
+                name: toolCall.function.name,
+                content: queryResult
+              } as any)
+            } else if (toolCall.function?.name === 'search_website_content') {
+              const args = JSON.parse(toolCall.function?.arguments || '{}')
+              const keyword = args.keyword || ''
+              const contentType = args.content_type || 'semua'
+
+              let queryResult = ''
+              try {
+                let results: any = {}
+                const searchTerm = `%${keyword}%`
+                
+                if (contentType === 'berita' || contentType === 'semua') {
+                  results.berita = await allQuery(`SELECT title, slug, excerpt FROM news WHERE status='published' AND title LIKE ? LIMIT 3`, [searchTerm])
+                }
+                if (contentType === 'artikel' || contentType === 'semua') {
+                  results.artikel = await allQuery(`SELECT title, slug, excerpt FROM articles WHERE status='published' AND title LIKE ? LIMIT 3`, [searchTerm])
+                }
+                if (contentType === 'halaman' || contentType === 'semua') {
+                  results.halaman = await allQuery(`SELECT title, slug, SUBSTRING(content, 1, 200) as excerpt FROM pages WHERE is_published=1 AND title LIKE ? LIMIT 3`, [searchTerm])
+                }
+
+                const totalFound = (results.berita?.length || 0) + (results.artikel?.length || 0) + (results.halaman?.length || 0)
+                
+                if (totalFound > 0) {
+                  queryResult = JSON.stringify({
+                    message: "Berikut adalah hasil pencarian dari database website.",
+                    results: results
+                  })
+                } else {
+                  queryResult = JSON.stringify({
+                    message: `Tidak ada berita, artikel, atau halaman yang cocok dengan kata kunci '${keyword}'.`
+                  })
+                }
+              } catch (e: any) {
+                console.error('[Chatbot] Error querying website content:', e.message)
+                queryResult = `Error fetching database for website content.`
+              }
+
+              messages.push({
+                role: 'tool',
+                tool_call_id: toolCall.id,
                 name: toolCall.function.name,
                 content: queryResult
               } as any)
