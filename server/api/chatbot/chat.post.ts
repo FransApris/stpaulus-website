@@ -276,11 +276,19 @@ ${context}`
                   ORDER BY b.start_time ASC
                 `
                 const bookings = await allQuery(query, [requestedDate])
+                const activeRoomsRows = await allQuery(`SELECT name FROM rooms WHERE is_active = 1`)
+                const activeRoomsList = activeRoomsRows.map((r: any) => r.name).join(', ')
                 
                 if (bookings && bookings.length > 0) {
-                  queryResult = JSON.stringify(bookings)
+                  queryResult = JSON.stringify({
+                    booked_events: bookings,
+                    all_available_rooms: activeRoomsList
+                  })
                 } else {
-                  queryResult = `Tidak ada agenda atau pemesanan ruangan pada tanggal ${requestedDate}.`
+                  queryResult = JSON.stringify({
+                    message: `Tidak ada agenda atau pemesanan ruangan pada tanggal ${requestedDate}.`,
+                    all_available_rooms: activeRoomsList
+                  })
                 }
               } catch (e: any) {
                 console.error('[Chatbot] Error querying bookings:', e.message)
