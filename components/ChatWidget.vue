@@ -302,6 +302,15 @@ const sendMessage = async () => {
   isTyping.value = true
   scrollToBottom()
 
+  // Ambil maksimal 5 pesan terakhir (tidak termasuk pesan saat ini) untuk history
+  const recentHistory = messages.value
+    .slice(Math.max(0, messages.value.length - 6), messages.value.length - 1)
+    .filter(m => m.id !== 'welcome')
+    .map(m => ({
+      role: m.sender === 'bot' ? 'assistant' : 'user',
+      content: m.text
+    }))
+
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 15000)
 
@@ -310,6 +319,7 @@ const sendMessage = async () => {
       method: 'POST',
       body: { 
         message: messageText,
+        history: recentHistory,
         context: {
           path: route.path,
           title: document.title

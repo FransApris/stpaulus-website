@@ -131,7 +131,7 @@ function updateUsageCount(userMessage: string, faqs: any[]) {
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { message, context: pageContext } = body
+  const { message, context: pageContext, history = [] } = body
 
   // Validasi input
   if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -235,6 +235,7 @@ ${context}`
 
         let messages = [
           { role: 'system', content: systemPrompt },
+          ...history,
           { role: 'user', content: sanitizedMessage }
         ]
 
