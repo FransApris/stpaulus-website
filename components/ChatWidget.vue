@@ -78,9 +78,11 @@
                     {{ message.action.button_text }}
                   </NuxtLink>
                   <!-- Support for multiple actions -->
-                  <NuxtLink v-if="message.actions" v-for="(act, idx) in message.actions" :key="idx" :to="act.target_route" @click="isOpen = false" class="inline-block bg-[#882f1d] hover:bg-[#a55e1f] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm w-full text-center">
-                    {{ act.button_text }}
-                  </NuxtLink>
+                  <template v-if="message.actions">
+                    <NuxtLink v-for="(act, idx) in message.actions" :key="idx" :to="act.target_route" @click="isOpen = false" class="inline-block bg-[#882f1d] hover:bg-[#a55e1f] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm w-full text-center">
+                      {{ act.button_text }}
+                    </NuxtLink>
+                  </template>
                 </div>
               </div>
               <div v-else>{{ message.text }}</div>
@@ -255,14 +257,14 @@ const streamResponse = async (payload) => {
     fullText = payload
   } else if (payload && payload.reply) {
     fullText = payload.reply
-    if (payload.has_action) {
-      if (payload.actions && Array.isArray(payload.actions)) {
-        actionsData = payload.actions
-      } else if (payload.button_text && payload.target_route) {
-        actionData = {
-          button_text: payload.button_text,
-          target_route: payload.target_route
-        }
+    
+    // Extrak actions secara agresif, abaikan flag has_action dari AI
+    if (payload.actions && Array.isArray(payload.actions)) {
+      actionsData = payload.actions
+    } else if (payload.button_text && payload.target_route) {
+      actionData = {
+        button_text: payload.button_text,
+        target_route: payload.target_route
       }
     }
   }
