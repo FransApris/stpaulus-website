@@ -178,7 +178,7 @@ All your static knowledge (such as Mass schedules, church address, Parish Priest
 2. If the user asks about politics, programming/coding, weather, or topics completely outside the church context, politely refuse and guide them back to church-related topics.
 3. DO NOT HALLUCINATE. If you do not know the exact answer, honestly say that you do not know and suggest they contact the Parish Secretariat via the Contact page.
 4. Reply in Indonesian (Bahasa Indonesia).
-5. IMPORTANT: You must incorporate the full FAQ answer directly into your "reply" field. Maintain the list/bullet point format by using \n for newlines. DO NOT truncate the answer.
+5. IMPORTANT: You must incorporate the full FAQ answer directly into your "reply" field. Maintain the list/bullet point format by using \\n for newlines. DO NOT truncate the answer.
 
 **TOOL CALLING INSTRUCTIONS:**
 You have access to 2 tools:
@@ -197,7 +197,7 @@ CRITICAL: If you used the \`search_website_content\` tool and found one or multi
 
 Mandatory JSON format:
 {
-  "reply": "Your full descriptive text response here. You MUST include the full lists and markdown from the FAQ here using \n for newlines.",
+  "reply": "Your full descriptive text response here. You MUST include the full lists and markdown from the FAQ here using \\n for newlines.",
   "has_action": true, // false if no action needed
   "actions": [ // array of actions, only if has_action is true
     { "button_text": "Baca Selengkapnya", "target_route": "/path1" },
@@ -430,19 +430,31 @@ ${context}`
             const jsonStr = aiResponse.replace(/\`\`\`json\n?/i, '').replace(/\`\`\`/g, '').trim()
             response = JSON.parse(jsonStr)
           } catch (e) {
-            // Regex fallback to extract reply if JSON is truncated
             let extractedReply = aiResponse
-            const replyMatch = aiResponse.match(/"reply"\s*:\s*"([^]*?)"(?:,|\s*\})/i)
-            if (replyMatch && replyMatch[1]) {
-               extractedReply = replyMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"')
-            } else {
-               // Try to extract even without closing quote if truncated
-               const fallbackMatch = aiResponse.match(/"reply"\s*:\s*"([^]*)/i)
-               if (fallbackMatch && fallbackMatch[1]) {
-                 extractedReply = fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"')
-               }
+            // Clean up common AI JSON syntax errors before attempting fallback
+            const cleanStr = aiResponse.replace(/\`\`\`json\n?/i, '').replace(/\`\`\`/g, '').trim()
+            
+            // Try to fix unescaped newlines first
+            try {
+              const fixedJsonStr = cleanStr.replace(/\n/g, '\\n')
+              response = JSON.parse(fixedJsonStr)
+            } catch (e2) {
+              // Regex fallback
+              const replyMatch = cleanStr.match(/"reply"\s*:\s*"([^]*?)"\s*(?:,\s*"has_action"|\})/i)
+              if (replyMatch && replyMatch[1]) {
+                extractedReply = replyMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"')
+              } else {
+                const fallbackMatch = cleanStr.match(/"reply"\s*:\s*"([^]*)/i)
+                if (fallbackMatch && fallbackMatch[1]) {
+                  let raw = fallbackMatch[1]
+                  // Remove trailing JSON artifacts
+                  raw = raw.replace(/"\s*,\s*"has_action"\s*:\s*(true|false)\s*\}?\s*$/i, '')
+                  raw = raw.replace(/"\s*\}\s*$/i, '')
+                  extractedReply = raw.replace(/\\n/g, '\n').replace(/\\"/g, '"')
+                }
+              }
+              response = { reply: extractedReply, has_action: false }
             }
-            response = { reply: extractedReply, has_action: false }
           }
         } else {
           const matchResult = findBestMatch(sanitizedMessage, faqs)
