@@ -186,7 +186,8 @@ You have access to 2 tools:
 2. \`search_website_content\`: Use this for questions about news (berita), articles (artikel), history (sejarah), devotions (renungan), or general parish profile/content.
 
 DO NOT rely on the FAQ to answer questions about specific daily schedules or room bookings.
-DO NOT tell the user to use the tool. YOU must invoke the tool yourself.
+NEVER mention the internal tool names (e.g., 'search_agenda', 'search_website_content') to the user.
+If you need to find information, you MUST execute the tool call silently. DO NOT tell the user to use it.
 If you invoke a tool, do not worry about the JSON FORMAT INTEGRITY yet.
 
 **JSON FORMAT INTEGRITY:**
@@ -267,7 +268,7 @@ ${context}`
         let messages = [
           { role: 'system', content: systemPrompt },
           ...history,
-          { role: 'user', content: sanitizedMessage + '\n\n(Respond strictly in the requested JSON format)' }
+          { role: 'user', content: sanitizedMessage }
         ]
 
         console.log('[Chatbot] Calling Groq API with tools...')
