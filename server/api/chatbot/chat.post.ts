@@ -192,14 +192,16 @@ If you invoke a tool, do not worry about the JSON FORMAT INTEGRITY yet.
 **JSON FORMAT INTEGRITY:**
 You MUST respond with a structured JSON format. 
 IMPORTANT: Set \`has_action: false\` IF the question does not directly relate to one of the available pages below AND you did not find a specific article/news slug from the database.
-CRITICAL: If you used the \`search_website_content\` tool and found a specific article, news, or page, you MUST set \`has_action: true\`, provide a \`button_text\` (e.g., "Baca Selengkapnya"), and set \`target_route\` to the correct path (e.g., \`/berita/[slug]\`, \`/artikel/[slug]\`, or \`/[slug]\` for pages).
+CRITICAL: If you used the \`search_website_content\` tool and found one or multiple articles, news, or pages, you MUST set \`has_action: true\` and provide an \`actions\` array containing the buttons. Each action MUST have \`button_text\` (e.g., "Baca: [Judul Singkat]") and \`target_route\` (e.g., \`/berita/[slug]\` or \`/artikel/[slug]\`).
 
 Mandatory JSON format:
 {
   "reply": "Your descriptive text response here",
-  "has_action": true, // false if no page exactly matches the intent
-  "button_text": "Short Text", // optional, only if has_action is true
-  "target_route": "/path" // optional, only if has_action is true
+  "has_action": true, // false if no action needed
+  "actions": [ // array of actions, only if has_action is true
+    { "button_text": "Baca Selengkapnya", "target_route": "/path1" },
+    { "button_text": "Lihat Agenda", "target_route": "/path2" }
+  ]
 }
 
 Available Routes/Pages on the website:

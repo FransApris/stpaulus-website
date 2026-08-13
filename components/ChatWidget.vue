@@ -72,9 +72,14 @@
               <!-- Render Markdown safely -->
               <div v-if="message.sender === 'bot'">
                 <div v-html="renderMarkdown(message.text)" class="markdown-body"></div>
-                <div v-if="message.has_action && message.action" class="mt-3 pt-3 border-t border-gray-100">
-                  <NuxtLink :to="message.action.target_route" @click="isOpen = false" class="inline-block bg-[#882f1d] hover:bg-[#a55e1f] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm w-full text-center">
+                <div v-if="message.has_action && (message.action || message.actions)" class="mt-3 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                  <!-- Backward compatibility for single action -->
+                  <NuxtLink v-if="message.action && !message.actions" :to="message.action.target_route" @click="isOpen = false" class="inline-block bg-[#882f1d] hover:bg-[#a55e1f] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm w-full text-center">
                     {{ message.action.button_text }}
+                  </NuxtLink>
+                  <!-- Support for multiple actions -->
+                  <NuxtLink v-if="message.actions" v-for="(act, idx) in message.actions" :key="idx" :to="act.target_route" @click="isOpen = false" class="inline-block bg-[#882f1d] hover:bg-[#a55e1f] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm w-full text-center">
+                    {{ act.button_text }}
                   </NuxtLink>
                 </div>
               </div>
@@ -244,15 +249,20 @@ const streamResponse = async (payload) => {
   
   let fullText = ''
   let actionData = null
+  let actionsData = null
 
   if (typeof payload === 'string') {
     fullText = payload
   } else if (payload && payload.reply) {
     fullText = payload.reply
     if (payload.has_action) {
-      actionData = {
-        button_text: payload.button_text,
-        target_route: payload.target_route
+      if (payload.actions && Array.isArray(payload.actions)) {
+        actionsData = payload.actions
+      } else if (payload.button_text && payload.target_route) {
+        actionData = {
+          button_text: payload.button_text,
+          target_route: payload.target_route
+        }
       }
     }
   }
@@ -275,8 +285,9 @@ const streamResponse = async (payload) => {
     id: Date.now() + 1,
     text: fullText,
     sender: 'bot',
-    has_action: !!actionData,
-    action: actionData
+    has_action: !!actionData || !!actionsData,
+    action: actionData,
+    actions: actionsData
   })
   
   streamingText.value = ''
