@@ -181,8 +181,8 @@ All your static knowledge (such as Mass schedules, church address, Parish Priest
 5. IMPORTANT: Maintain the list/bullet point format and newlines exactly as provided in the Relevant FAQs. DO NOT compile lists into a single long paragraph.
 
 **TOOL CALLING INSTRUCTIONS:**
-You have access to a tool named \`check_agenda_by_date\`.
-If the user asks about the agenda, schedule, activities, or whether a room is used ("dipakai", "kosong") for a specific date (e.g., "hari ini", "besok", or a specific date), you MUST invoke this tool natively to check the database. 
+You have access to a tool named \`search_agenda\`.
+If the user asks about the agenda, schedule, activities, or whether a room is used (e.g., "kapan pelajaran katekumen", "hari ini ada acara apa", "besok ruangan kosong"), you MUST invoke this tool natively to check the database. 
 DO NOT rely on the FAQ to answer questions about specific daily schedules or room bookings.
 DO NOT tell the user to use the tool. YOU must invoke the tool yourself.
 If you invoke a tool, do not worry about the JSON FORMAT INTEGRITY yet.
@@ -217,17 +217,21 @@ ${context}`
           {
             type: "function",
             function: {
-              name: "check_agenda_by_date",
-              description: "Mengambil daftar agenda, kegiatan, atau pemesanan ruangan gereja berdasarkan tanggal tertentu (format YYYY-MM-DD)",
+              name: "search_agenda",
+              description: "Mencari daftar agenda, kegiatan, atau pemesanan ruangan gereja. Bisa dicari berdasarkan tanggal tertentu atau kata kunci nama kegiatan (contoh: katekumen, rapat, dll).",
               parameters: {
                 type: "object",
                 properties: {
                   date: {
                     type: "string",
-                    description: "Tanggal kegiatan yang ingin dicari dalam format YYYY-MM-DD. Jika pengguna menanyakan 'hari ini', gunakan tanggal sistem hari ini."
+                    description: "Opsional. Tanggal dalam format YYYY-MM-DD. Kosongkan jika mencari kegiatan di masa depan secara umum."
+                  },
+                  keyword: {
+                    type: "string",
+                    description: "Opsional. Kata kunci nama kegiatan, misal 'katekumen'. Kosongkan jika mencari semua kegiatan pada tanggal tertentu."
                   }
                 },
-                required: ["date"]
+                required: []
               }
             }
           }
@@ -261,22 +265,39 @@ ${context}`
           messages.push(responseMessage as any) // Append assistant's tool call request
 
           for (const toolCall of responseMessage.tool_calls) {
-            if (toolCall.function?.name === 'check_agenda_by_date') {
+            if (toolCall.function?.name === 'search_agenda' || toolCall.function?.name === 'check_agenda_by_date') {
               const args = JSON.parse(toolCall.function?.arguments || '{}')
               const requestedDate = args.date
+              const keyword = args.keyword
 
               // STEP 3: Kueri database
               let queryResult = ''
               try {
-                const query = `
+                let query = `
                   SELECT b.event_name, b.start_time, b.end_time, r.name as room_name
                   FROM bookings b
                   JOIN rooms r ON b.room_id = r.id
                   WHERE b.deleted_at IS NULL AND b.status = 'APPROVED' 
-                  AND DATE(b.start_time) = ?
-                  ORDER BY b.start_time ASC
                 `
-                const bookings = await allQuery(query, [requestedDate])
+                let params = []
+
+                if (requestedDate && keyword) {
+                  query += ` AND DATE(b.start_time) = ? AND b.event_name LIKE ? `
+                  params.push(requestedDate, `%${keyword}%`)
+                } else if (requestedDate) {
+                  query += ` AND DATE(b.start_time) = ? `
+                  params.push(requestedDate)
+                } else if (keyword) {
+                  query += ` AND DATE(b.start_time) >= ? AND b.event_name LIKE ? `
+                  params.push(todayIso, `%${keyword}%`)
+                } else {
+                  // Fallback: next 7 days
+                  query += ` AND DATE(b.start_time) >= ? AND DATE(b.start_time) <= DATE_ADD(DATE(?), INTERVAL 7 DAY) `
+                  params.push(todayIso, todayIso)
+                }
+
+                query += ` ORDER BY b.start_time ASC LIMIT 20`
+                const bookings = await allQuery(query, params)
                 const activeRoomsRows = await allQuery(`SELECT name FROM rooms WHERE is_active = 1`)
                 const activeRoomsList = activeRoomsRows.map((r: any) => r.name).join(', ')
                 
@@ -287,7 +308,7 @@ ${context}`
                   })
                 } else {
                   queryResult = JSON.stringify({
-                    message: `Tidak ada agenda atau pemesanan ruangan pada tanggal ${requestedDate}.`,
+                    message: `Tidak ada agenda yang ditemukan berdasarkan kriteria pencarian tersebut.`,
                     all_available_rooms: activeRoomsList
                   })
                 }
