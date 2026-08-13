@@ -191,7 +191,8 @@ If you invoke a tool, do not worry about the JSON FORMAT INTEGRITY yet.
 
 **JSON FORMAT INTEGRITY:**
 You MUST respond with a structured JSON format. 
-IMPORTANT: Set \`has_action: false\` IF the question does not directly relate to one of the available pages below. DO NOT invent or hallucinate routes! (Example: if asked for the name of a neighborhood leader / ketua lingkungan, just provide the name and set \`has_action: false\`).
+IMPORTANT: Set \`has_action: false\` IF the question does not directly relate to one of the available pages below AND you did not find a specific article/news slug from the database.
+CRITICAL: If you used the \`search_website_content\` tool and found a specific article, news, or page, you MUST set \`has_action: true\`, provide a \`button_text\` (e.g., "Baca Selengkapnya"), and set \`target_route\` to the correct path (e.g., \`/berita/[slug]\`, \`/artikel/[slug]\`, or \`/[slug]\` for pages).
 
 Mandatory JSON format:
 {
