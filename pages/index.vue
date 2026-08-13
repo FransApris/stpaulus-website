@@ -121,12 +121,12 @@
         <!-- Albums Carousel -->
         <div v-else-if="latestAlbums && latestAlbums.length > 0" class="relative group">
           <!-- Left Button (Hidden on Mobile) -->
-          <button @click="scrollAlbumCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri">
+          <button @click="scrollAlbumCarousel('left')" class="absolute -left-4 md:-left-8 lg:-left-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
           </button>
 
           <!-- Right Button (Hidden on Mobile) -->
-          <button @click="scrollAlbumCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan">
+          <button @click="scrollAlbumCarousel('right')" class="absolute -right-4 md:-right-8 lg:-right-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
           </button>
 
@@ -140,7 +140,7 @@
             @mousemove="onDragMove"
           >
             <a v-for="(album, idx) in latestAlbums" :key="album.id" :href="album.share_url" target="_blank"
-              rel="noopener noreferrer" class="group reveal-on-scroll shrink-0 w-[85vw] sm:w-[40vw] lg:w-[30vw] snap-center" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
+              rel="noopener noreferrer" class="group reveal-on-scroll shrink-0 w-[85vw] md:w-[45%] lg:w-[42%] snap-center" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
             <div
               class="bg-white rounded-2xl shadow-xs border border-gray-100/90 overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col justify-between h-full">
               <!-- Album Cover -->
@@ -238,7 +238,7 @@
               Paulus Juanda.</p>
           </div>
           <div v-if="newsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
-            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] animate-pulse flex flex-col h-[400px]">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%] animate-pulse flex flex-col h-[400px]">
               <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
               <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
                 <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
@@ -251,10 +251,10 @@
             Gagal memuat berita terbaru.
           </div>
           <div v-else-if="latestNews && latestNews.length > 0" class="relative group">
-            <button @click="scrollNewsCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-            <button @click="scrollNewsCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            <button @click="scrollNewsCarousel('left')" class="absolute -left-4 md:-left-8 lg:-left-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button @click="scrollNewsCarousel('right')" class="absolute -right-4 md:-right-8 lg:-right-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
             <div ref="newsCarouselRef" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing" @mousedown="onNewsDragStart" @mouseleave="onNewsDragEnd" @mouseup="onNewsDragEnd" @mousemove="onNewsDragMove">
-              <ArticleCard v-for="(news, idx) in latestNews.slice(0, 6)" :key="news.id" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] reveal-on-scroll pointer-events-none-img" :class="`reveal-delay-${(idx % 3 + 1) * 100}`" :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url" :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" draggable="false" />
+              <ArticleCard v-for="(news, idx) in latestNews.slice(0, 6)" :key="news.id" class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%] reveal-on-scroll pointer-events-none-img" :class="`reveal-delay-${(idx % 3 + 1) * 100}`" :image="news.image || activeTheme?.image_path || '/images/default-news.jpg'" image-type="url" :title="news.title" :description="news.excerpt" :date="news.date" :to="`/berita/${news.slug}`" draggable="false" />
             </div>
           </div>
           <div v-else class="text-center py-12">
@@ -293,7 +293,7 @@
               Gereja St. Paulus Juanda.</p>
           </div>
           <div v-if="featuredDocumentsPending" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
-            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] animate-pulse">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%] animate-pulse">
               <div class="bg-white p-6 rounded-2xl shadow-xs border border-gray-100/90">
                 <div class="flex items-center mb-3">
                   <div class="w-4 h-4 bg-gray-200 rounded mr-2"></div>
@@ -320,10 +320,10 @@
             Gagal memuat dokumen unggulan.
           </div>
           <div v-else-if="featuredDocuments && featuredDocuments.length > 0" class="relative group">
-            <button @click="scrollDocCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-            <button @click="scrollDocCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            <button @click="scrollDocCarousel('left')" class="absolute -left-4 md:-left-8 lg:-left-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button @click="scrollDocCarousel('right')" class="absolute -right-4 md:-right-8 lg:-right-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
             <div ref="docCarouselRef" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing" @mousedown="onDocDragStart" @mouseleave="onDocDragEnd" @mouseup="onDocDragEnd" @mousemove="onDocDragMove">
-            <div v-for="(doc, idx) in featuredDocuments.slice(0, 6)" :key="doc.id" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
+            <div v-for="(doc, idx) in featuredDocuments.slice(0, 6)" :key="doc.id" class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%] group relative bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
               <div class="p-6">
                 <!-- Category Badge -->
                 <div class="flex items-center mb-3">
@@ -420,7 +420,7 @@
               dari pastor serta komunitas paroki kami.</p>
           </div>
           <div v-if="articlesPending" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
-            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] animate-pulse flex flex-col h-[400px]">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%] animate-pulse flex flex-col h-[400px]">
               <div class="bg-gray-200 h-48 rounded-t-2xl shrink-0"></div>
               <div class="bg-white p-5 rounded-b-2xl shadow-xs border border-gray-100/90 border-t-0 flex-1 flex flex-col">
                 <div class="h-5 bg-gray-200 rounded w-full mb-3"></div>
@@ -433,16 +433,16 @@
             Gagal memuat artikel terbaru.
           </div>
           <div v-else-if="latestArticles && latestArticles.length > 0" class="relative group">
-            <button @click="scrollArticleCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-            <button @click="scrollArticleCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            <button @click="scrollArticleCarousel('left')" class="absolute -left-4 md:-left-8 lg:-left-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button @click="scrollArticleCarousel('right')" class="absolute -right-4 md:-right-8 lg:-right-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
             <div ref="articleCarouselRef" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing" @mousedown="onArticleDragStart" @mouseleave="onArticleDragEnd" @mouseup="onArticleDragEnd" @mousemove="onArticleDragMove">
-              <ArticleCard v-for="(article, idx) in latestArticles.slice(0, 6)" :key="article.id" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] reveal-on-scroll pointer-events-none-img" :class="`reveal-delay-${(idx % 3 + 1) * 100}`" :image="article.image || '/images/default-article.jpg'" image-type="url" :title="article.title" :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`" link-text="Baca Artikel →" draggable="false" />
+              <ArticleCard v-for="(article, idx) in latestArticles.slice(0, 6)" :key="article.id" class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%] reveal-on-scroll pointer-events-none-img" :class="`reveal-delay-${(idx % 3 + 1) * 100}`" :image="article.image || '/images/default-article.jpg'" image-type="url" :title="article.title" :description="article.excerpt" :date="article.date" :to="`/artikel/${article.slug}`" link-text="Baca Artikel →" draggable="false" />
             </div>
           </div>
           <div v-else class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
-            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw]" image="Renungan Harian" title="Renungan Minggu Ini: Kasih dan Pengampunan" description="Artikel singkat tentang ajaran Yesus mengenai pengampunan, dihubungkan dengan kehidupan sehari-hari umat." to="/artikel/renungan-kasih" link-text="Baca Artikel →" />
-            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw]" image="Khotbah Pastor" title="Khotbah Minggu Lalu: Iman di Tengah Tantangan" description="Transkrip khotbah Pastor Yohanes tentang mempertahankan iman di era modern." to="/artikel/khotbah-iman" link-text="Baca Lengkap →" />
-            <ArticleCard class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw]" image="Pengumuman" title="Panduan Retret Rohani 2024" description="Informasi lengkap tentang retret tahunan paroki, termasuk jadwal dan persiapan." to="/artikel/retret-2024" link-text="Lihat Detail →" />
+            <ArticleCard class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%]" image="Renungan Harian" title="Renungan Minggu Ini: Kasih dan Pengampunan" description="Artikel singkat tentang ajaran Yesus mengenai pengampunan, dihubungkan dengan kehidupan sehari-hari umat." to="/artikel/renungan-kasih" link-text="Baca Artikel →" />
+            <ArticleCard class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%]" image="Khotbah Pastor" title="Khotbah Minggu Lalu: Iman di Tengah Tantangan" description="Transkrip khotbah Pastor Yohanes tentang mempertahankan iman di era modern." to="/artikel/khotbah-iman" link-text="Baca Lengkap →" />
+            <ArticleCard class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%]" image="Pengumuman" title="Panduan Retret Rohani 2024" description="Informasi lengkap tentang retret tahunan paroki, termasuk jadwal dan persiapan." to="/artikel/retret-2024" link-text="Lihat Detail →" />
           </div>
           <!-- CTA ke Full Artikel -->
           <div class="text-center mt-6">
@@ -468,7 +468,7 @@
               St. Paulus Juanda.</p>
           </div>
           <div v-if="agendaPending" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar">
-            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden animate-pulse">
+            <div v-for="i in 3" :key="i" class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%] group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden animate-pulse">
               <div class="p-6">
                 <div class="flex items-center space-x-2 mb-3">
                   <div class="h-6 bg-gray-200 rounded-full w-24"></div>
@@ -490,10 +490,10 @@
             Gagal memuat agenda mendatang.
           </div>
           <div v-else-if="upcomingAgendas && upcomingAgendas.length > 0" class="relative group">
-            <button @click="scrollAgendaCarousel('left')" class="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-            <button @click="scrollAgendaCarousel('right')" class="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+            <button @click="scrollAgendaCarousel('left')" class="absolute -left-4 md:-left-8 lg:-left-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kiri"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+            <button @click="scrollAgendaCarousel('right')" class="absolute -right-4 md:-right-8 lg:-right-12 top-1/2 -translate-y-1/2 z-10 bg-white/90 backdrop-blur-md p-2.5 rounded-full shadow-lg text-[#882f1d] opacity-80 hover:opacity-100 hover:scale-110 transition-all hover:bg-white focus:outline-none hidden md:flex items-center justify-center border border-gray-100" aria-label="Geser kanan"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
             <div ref="agendaCarouselRef" class="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-8 px-2 -mx-2 hide-scrollbar scroll-smooth select-none cursor-grab active:cursor-grabbing" @mousedown="onAgendaDragStart" @mouseleave="onAgendaDragEnd" @mouseup="onAgendaDragEnd" @mousemove="onAgendaDragMove">
-              <div v-for="(agenda, idx) in upcomingAgendas.slice(0, 6)" :key="agenda.id" class="shrink-0 snap-center w-[85vw] sm:w-[45vw] lg:w-[28vw] group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
+              <div v-for="(agenda, idx) in upcomingAgendas.slice(0, 6)" :key="agenda.id" class="shrink-0 snap-center w-[85vw] md:w-[45%] lg:w-[42%] group bg-white border border-gray-100/90 rounded-2xl shadow-xs overflow-hidden hover:shadow-xl hover:border-[#882f1d]/20 transition-all duration-300 transform hover:-translate-y-1.5 reveal-on-scroll" :class="`reveal-delay-${(idx % 3 + 1) * 100}`">
                 <div class="p-6">
                   <div class="flex items-center space-x-2 mb-3">
                     <span :style="getCategoryStyle(agenda)" class="inline-flex px-3 py-1 text-sm font-semibold rounded-full">{{ agenda.category }}</span>
@@ -799,7 +799,8 @@ const scrollLeftPos = ref(0)
 
 const scrollAlbumCarousel = (direction) => {
   if (albumCarouselRef.value) {
-    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    const card = albumCarouselRef.value.firstElementChild
+    const scrollAmount = card ? card.offsetWidth + 24 : typeof window !== 'undefined' ? window.innerWidth * 0.45 : 300
     albumCarouselRef.value.scrollBy({
       left: direction === 'left' ? -scrollAmount : scrollAmount,
       behavior: 'smooth'
@@ -837,7 +838,8 @@ const scrollNewsLeftPos = ref(0)
 
 const scrollNewsCarousel = (direction) => {
   if (newsCarouselRef.value) {
-    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    const card = newsCarouselRef.value.firstElementChild
+    const scrollAmount = card ? card.offsetWidth + 24 : typeof window !== 'undefined' ? window.innerWidth * 0.45 : 300
     newsCarouselRef.value.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
   }
 }
@@ -868,7 +870,8 @@ const scrollDocLeftPos = ref(0)
 
 const scrollDocCarousel = (direction) => {
   if (docCarouselRef.value) {
-    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    const card = docCarouselRef.value.firstElementChild
+    const scrollAmount = card ? card.offsetWidth + 24 : typeof window !== 'undefined' ? window.innerWidth * 0.45 : 300
     docCarouselRef.value.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
   }
 }
@@ -899,7 +902,8 @@ const scrollArticleLeftPos = ref(0)
 
 const scrollArticleCarousel = (direction) => {
   if (articleCarouselRef.value) {
-    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    const card = articleCarouselRef.value.firstElementChild
+    const scrollAmount = card ? card.offsetWidth + 24 : typeof window !== 'undefined' ? window.innerWidth * 0.45 : 300
     articleCarouselRef.value.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
   }
 }
@@ -930,7 +934,8 @@ const scrollAgendaLeftPos = ref(0)
 
 const scrollAgendaCarousel = (direction) => {
   if (agendaCarouselRef.value) {
-    const scrollAmount = typeof window !== 'undefined' ? window.innerWidth * 0.4 : 300
+    const card = agendaCarouselRef.value.firstElementChild
+    const scrollAmount = card ? card.offsetWidth + 24 : typeof window !== 'undefined' ? window.innerWidth * 0.45 : 300
     agendaCarouselRef.value.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' })
   }
 }
