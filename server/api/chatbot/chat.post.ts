@@ -293,7 +293,7 @@ ${context}`
 
           for (const toolCall of responseMessage.tool_calls) {
             if (toolCall.function?.name === 'search_agenda' || toolCall.function?.name === 'check_agenda_by_date') {
-              let args = {}
+              let args: any = {}
               try {
                 args = JSON.parse(toolCall.function?.arguments || '{}')
               } catch (e) {
@@ -357,7 +357,7 @@ ${context}`
                 content: queryResult
               } as any)
             } else if (toolCall.function?.name === 'search_website_content') {
-              let args = {}
+              let args: any = {}
               try {
                 args = JSON.parse(toolCall.function?.arguments || '{}')
               } catch (e) {
