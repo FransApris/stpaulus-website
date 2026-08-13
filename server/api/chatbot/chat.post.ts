@@ -178,7 +178,7 @@ All your static knowledge (such as Mass schedules, church address, Parish Priest
 2. If the user asks about politics, programming/coding, weather, or topics completely outside the church context, politely refuse and guide them back to church-related topics.
 3. DO NOT HALLUCINATE. If you do not know the exact answer, honestly say that you do not know and suggest they contact the Parish Secretariat via the Contact page.
 4. Reply in Indonesian (Bahasa Indonesia).
-5. IMPORTANT: Maintain the list/bullet point format and newlines exactly as provided in the Relevant FAQs. DO NOT compile lists into a single long paragraph.
+5. IMPORTANT: You must incorporate the full FAQ answer directly into your "reply" field. Maintain the list/bullet point format by using \n for newlines. DO NOT truncate the answer.
 
 **TOOL CALLING INSTRUCTIONS:**
 You have access to 2 tools:
@@ -196,7 +196,7 @@ CRITICAL: If you used the \`search_website_content\` tool and found one or multi
 
 Mandatory JSON format:
 {
-  "reply": "Your descriptive text response here",
+  "reply": "Your full descriptive text response here. You MUST include the full lists and markdown from the FAQ here using \n for newlines.",
   "has_action": true, // false if no action needed
   "actions": [ // array of actions, only if has_action is true
     { "button_text": "Baca Selengkapnya", "target_route": "/path1" },
@@ -279,7 +279,7 @@ ${context}`
           messages: messages as any,
           tools: tools as any,
           tool_choice: 'auto',
-          max_tokens: 400,
+          max_tokens: 800,
           temperature: 0.3,
           top_p: 0.8
         })
@@ -427,7 +427,19 @@ ${context}`
             const jsonStr = aiResponse.replace(/\`\`\`json\n?/i, '').replace(/\`\`\`/g, '').trim()
             response = JSON.parse(jsonStr)
           } catch (e) {
-            response = { reply: aiResponse, has_action: false }
+            // Regex fallback to extract reply if JSON is truncated
+            let extractedReply = aiResponse
+            const replyMatch = aiResponse.match(/"reply"\s*:\s*"([^]*?)"(?:,|\s*\})/i)
+            if (replyMatch && replyMatch[1]) {
+               extractedReply = replyMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"')
+            } else {
+               // Try to extract even without closing quote if truncated
+               const fallbackMatch = aiResponse.match(/"reply"\s*:\s*"([^]*)/i)
+               if (fallbackMatch && fallbackMatch[1]) {
+                 extractedReply = fallbackMatch[1].replace(/\\n/g, '\n').replace(/\\"/g, '"')
+               }
+            }
+            response = { reply: extractedReply, has_action: false }
           }
         } else {
           const matchResult = findBestMatch(sanitizedMessage, faqs)
