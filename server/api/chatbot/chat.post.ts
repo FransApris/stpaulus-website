@@ -168,13 +168,14 @@ export default defineEventHandler(async (event) => {
 4. Jawab dalam bahasa Indonesia yang ramah, sopan, dan jelas.
 5. PENTING: Pertahankan format daftar/bullet point dan baris baru (newlines) persis seperti di FAQ! JANGAN MENGGABUNGKAN (meng-compile) daftar menjadi satu paragraf panjang. Pastikan setiap poin berada di barisnya sendiri.
 6. Anda HARUS membalas dengan format JSON yang terstruktur.
+7. PENTING: Set \`has_action: false\` JIKA pertanyaan TIDAK secara langsung berkaitan dengan halaman di bawah ini. JANGAN mengarang rute! (Contoh: jika ditanya nama ketua lingkungan/wilayah, jawab namanya saja dan set \`has_action: false\`).
 
 Format JSON wajib:
 {
   "reply": "Jawaban teks deskriptif dari chatbot",
-  "has_action": true,
-  "button_text": "Teks Singkat",
-  "target_route": "/path"
+  "has_action": true, // false jika tidak ada halaman yang cocok
+  "button_text": "Teks Singkat", // opsional
+  "target_route": "/path" // opsional
 }
 
 Daftar Rute/Halaman yang tersedia di website:
@@ -199,7 +200,6 @@ ${context}`
             { role: 'system', content: systemPrompt },
             { role: 'user', content: sanitizedMessage }
           ],
-          response_format: { type: 'json_object' },
           max_tokens: 400,
           temperature: 0.3,
           top_p: 0.8
