@@ -53,8 +53,9 @@ export default defineEventHandler((event) => {
     // Fonts: Google Fonts files (gstatic) + Font Awesome webfonts (cdnjs)
     "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com",
 
-    // Images: self + data URIs (used by Vue/CKEditor image previews) + production domain
-    "img-src 'self' data: blob: https://stpaulusjuanda.org https://lh3.googleusercontent.com",
+    // Images: self + data URIs (CKEditor preview) + production domain + Cloudinary CDN
+    // res.cloudinary.com = uploaded article/news/gallery images stored on Cloudinary
+    "img-src 'self' data: blob: https://stpaulusjuanda.org https://res.cloudinary.com https://lh3.googleusercontent.com",
 
     // Fetch/XHR/WebSocket: only same origin (all API calls are relative)
     "connect-src 'self'",
