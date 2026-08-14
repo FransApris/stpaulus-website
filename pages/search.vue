@@ -584,11 +584,25 @@ const getTypeBadgeClasses = (type: string) => {
   return classes[type] || 'bg-gray-100 text-gray-800'
 }
 
-const highlightText = (text: string, query: string) => {
-  if (!query || !text) return text
+// ✅ SECURITY: Escape HTML entities before injecting into v-html to prevent XSS
+const escapeHtml = (unsafe: string): string => {
+  return (unsafe || '').toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
 
-  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
-  return text.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>')
+const highlightText = (text: string, query: string) => {
+  const safeText = escapeHtml(text)   // ✅ escape FIRST, then highlight
+  if (!query || !safeText) return safeText
+
+  const safeQuery = escapeHtml(query.trim())
+  if (!safeQuery) return safeText
+
+  const regex = new RegExp(`(${safeQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  return safeText.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>')
 }
 </script>
 

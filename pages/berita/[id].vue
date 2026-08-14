@@ -159,8 +159,8 @@
             {{ post.excerpt }}
           </p>
 
-          <!-- Main Content -->
-          <div class="article-content max-w-full overflow-hidden" v-html="post.content"></div>
+          <!-- Main Content — sanitized with DOMPurify to prevent Stored XSS -->
+          <div class="article-content max-w-full overflow-hidden" v-html="sanitizedContent"></div>
         </div>
       </section>
 
@@ -211,6 +211,7 @@
 </template>
 
 <script setup>
+import DOMPurify from 'dompurify'
 const { isMaintenance } = useMaintenance('berita')
 const route = useRoute();
 const slug = route.params.id;
@@ -235,6 +236,21 @@ const { data: post, pending, error, refresh } = await useAsyncData(
 );
 
 // Reactive states
+
+// ✅ SECURITY: Sanitize rich-text content with DOMPurify to prevent Stored XSS
+const sanitizedContent = computed(() => {
+  if (!post.value?.content) return ''
+  if (process.server) return post.value.content // SSR: render raw, CSP is the backstop
+  return DOMPurify.sanitize(post.value.content, {
+    ALLOWED_TAGS: ['p','br','b','strong','i','em','u','s','strike','ul','ol','li',
+                   'h1','h2','h3','h4','h5','h6','blockquote','pre','code',
+                   'a','img','figure','figcaption','table','thead','tbody','tr','th','td',
+                   'span','div','hr','sub','sup'],
+    ALLOWED_ATTR: ['href','src','alt','title','class','target','rel','width','height','style'],
+    ALLOW_DATA_ATTR: false,
+    FORCE_BODY: false
+  })
+})
 const isLiking = ref(false);
 const isSharing = ref(false);
 const copied = ref(false);

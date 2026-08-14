@@ -81,8 +81,11 @@ export default defineEventHandler(async (event) => {
     }
 
     // ✅ FASE 3: Build dynamic WHERE clauses for filters
-    const dateFilter = dateFrom && dateTo ? 
-      `AND date BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''
+    // ✅ SECURITY FIX: Use parameterized placeholders — NEVER interpolate user input into SQL
+    const hasDateFilter = !!(dateFrom && dateTo)
+    const dateFilter = hasDateFilter ? 'AND date BETWEEN ? AND ?' : ''
+    // Values that will be injected wherever dateFilter placeholder appears
+    const dateParams: string[] = hasDateFilter ? [dateFrom, `${dateTo} 23:59:59`] : []
     
     // ✅ Build ORDER BY clause based on sort option
     let orderBy = 'ORDER BY relevance DESC, date DESC' // default
@@ -99,56 +102,64 @@ export default defineEventHandler(async (event) => {
     let countSql = ''
     let countParams: string[] = []
     
+    // ✅ SECURITY FIX: All date filters use parameterized placeholders (?), not string interpolation
+    const dateFilterCol = (col: string) => hasDateFilter ? `AND ${col} BETWEEN ? AND ?` : ''
+
     if (!filterType || filterType === '') {
       // All types
       countSql = `
         SELECT COUNT(*) as total FROM (
           SELECT id FROM articles 
           WHERE status = 'published' AND MATCH(title, excerpt, content) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFrom && dateTo ? `AND published_at BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''}
+          ${dateFilterCol('published_at')}
           UNION ALL
           SELECT id FROM news 
           WHERE status = 'published' AND MATCH(title, excerpt, content) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFrom && dateTo ? `AND published_at BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''}
+          ${dateFilterCol('published_at')}
           UNION ALL
           SELECT id FROM agendas 
           WHERE start_date >= NOW() AND MATCH(title, description) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFrom && dateTo ? `AND start_date BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''}
+          ${dateFilterCol('start_date')}
           UNION ALL
           SELECT id FROM documents 
           WHERE MATCH(title, description) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFrom && dateTo ? `AND created_at BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''}
+          ${dateFilterCol('created_at')}
         ) as combined_results
       `
-      countParams = [cleanSearchTerm, cleanSearchTerm, cleanSearchTerm, cleanSearchTerm]
+      countParams = [
+        cleanSearchTerm, ...dateParams,
+        cleanSearchTerm, ...dateParams,
+        cleanSearchTerm, ...dateParams,
+        cleanSearchTerm, ...dateParams
+      ]
     } else if (filterType === 'article') {
       countSql = `
         SELECT COUNT(*) as total FROM articles 
         WHERE status = 'published' AND MATCH(title, excerpt, content) AGAINST(? IN NATURAL LANGUAGE MODE)
-        ${dateFrom && dateTo ? `AND published_at BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''}
+        ${dateFilterCol('published_at')}
       `
-      countParams = [cleanSearchTerm]
+      countParams = [cleanSearchTerm, ...dateParams]
     } else if (filterType === 'news') {
       countSql = `
         SELECT COUNT(*) as total FROM news 
         WHERE status = 'published' AND MATCH(title, excerpt, content) AGAINST(? IN NATURAL LANGUAGE MODE)
-        ${dateFrom && dateTo ? `AND published_at BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''}
+        ${dateFilterCol('published_at')}
       `
-      countParams = [cleanSearchTerm]
+      countParams = [cleanSearchTerm, ...dateParams]
     } else if (filterType === 'agenda') {
       countSql = `
         SELECT COUNT(*) as total FROM agendas 
         WHERE start_date >= NOW() AND MATCH(title, description) AGAINST(? IN NATURAL LANGUAGE MODE)
-        ${dateFrom && dateTo ? `AND start_date BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''}
+        ${dateFilterCol('start_date')}
       `
-      countParams = [cleanSearchTerm]
+      countParams = [cleanSearchTerm, ...dateParams]
     } else if (filterType === 'document') {
       countSql = `
         SELECT COUNT(*) as total FROM documents 
         WHERE MATCH(title, description) AGAINST(? IN NATURAL LANGUAGE MODE)
-        ${dateFrom && dateTo ? `AND created_at BETWEEN '${dateFrom}' AND '${dateTo} 23:59:59'` : ''}
+        ${dateFilterCol('created_at')}
       `
-      countParams = [cleanSearchTerm]
+      countParams = [cleanSearchTerm, ...dateParams]
     }
 
     const [countResult] = await allQuery(countSql, countParams)
@@ -161,8 +172,9 @@ export default defineEventHandler(async (event) => {
     let sql = ''
     let params: string[] = []
     
+    // ⚠️ NOTE: LIMIT and OFFSET must be literal integers (not ?), MySQL does not support placeholders there
+    // ✅ SECURITY: All other dynamic values (searchTerm, dates) use ? parameterization
     if (!filterType || filterType === '') {
-      // ⚠️ IMPORTANT: LIMIT and OFFSET must be literal integers, not placeholders in MySQL
       sql = `
         SELECT
           'article' as type,
@@ -181,7 +193,7 @@ export default defineEventHandler(async (event) => {
         FROM articles a
         WHERE a.status = 'published'
           AND MATCH(a.title, a.excerpt, a.content) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFilter}
+          ${dateFilterCol('a.published_at')}
 
         UNION ALL
 
@@ -202,7 +214,7 @@ export default defineEventHandler(async (event) => {
         FROM news n
         WHERE n.status = 'published'
           AND MATCH(n.title, n.excerpt, n.content) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFilter}
+          ${dateFilterCol('n.published_at')}
 
         UNION ALL
 
@@ -224,7 +236,7 @@ export default defineEventHandler(async (event) => {
         LEFT JOIN agenda_categories c ON ag.category_id = c.id
         WHERE ag.start_date >= NOW()
           AND MATCH(ag.title, ag.description) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFilter}
+          ${dateFilterCol('ag.start_date')}
 
         UNION ALL
 
@@ -245,16 +257,16 @@ export default defineEventHandler(async (event) => {
         FROM documents d
         LEFT JOIN document_categories dc ON d.category_id = dc.id
         WHERE MATCH(d.title, d.description) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFilter}
+          ${dateFilterCol('d.created_at')}
 
         ${orderBy}
         LIMIT ${RESULTS_PER_PAGE} OFFSET ${offset}
       `
       params = [
-        cleanSearchTerm, cleanSearchTerm, // articles
-        cleanSearchTerm, cleanSearchTerm, // news
-        cleanSearchTerm, cleanSearchTerm, // agendas
-        cleanSearchTerm, cleanSearchTerm  // documents
+        cleanSearchTerm, cleanSearchTerm, ...dateParams, // articles
+        cleanSearchTerm, cleanSearchTerm, ...dateParams, // news
+        cleanSearchTerm, cleanSearchTerm, ...dateParams, // agendas
+        cleanSearchTerm, cleanSearchTerm, ...dateParams  // documents
       ]
     } else if (filterType === 'article') {
       sql = `
@@ -275,11 +287,11 @@ export default defineEventHandler(async (event) => {
         FROM articles a
         WHERE a.status = 'published'
           AND MATCH(a.title, a.excerpt, a.content) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFilter}
+          ${dateFilterCol('a.published_at')}
         ${orderBy}
         LIMIT ${RESULTS_PER_PAGE} OFFSET ${offset}
       `
-      params = [cleanSearchTerm, cleanSearchTerm]
+      params = [cleanSearchTerm, cleanSearchTerm, ...dateParams]
     } else if (filterType === 'news') {
       sql = `
         SELECT
@@ -299,11 +311,11 @@ export default defineEventHandler(async (event) => {
         FROM news n
         WHERE n.status = 'published'
           AND MATCH(n.title, n.excerpt, n.content) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFilter}
+          ${dateFilterCol('n.published_at')}
         ${orderBy}
         LIMIT ${RESULTS_PER_PAGE} OFFSET ${offset}
       `
-      params = [cleanSearchTerm, cleanSearchTerm]
+      params = [cleanSearchTerm, cleanSearchTerm, ...dateParams]
     } else if (filterType === 'agenda') {
       sql = `
         SELECT
@@ -324,11 +336,11 @@ export default defineEventHandler(async (event) => {
         LEFT JOIN agenda_categories c ON ag.category_id = c.id
         WHERE ag.start_date >= NOW()
           AND MATCH(ag.title, ag.description) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFilter}
+          ${dateFilterCol('ag.start_date')}
         ${orderBy}
         LIMIT ${RESULTS_PER_PAGE} OFFSET ${offset}
       `
-      params = [cleanSearchTerm, cleanSearchTerm]
+      params = [cleanSearchTerm, cleanSearchTerm, ...dateParams]
     } else if (filterType === 'document') {
       sql = `
         SELECT
@@ -348,11 +360,11 @@ export default defineEventHandler(async (event) => {
         FROM documents d
         LEFT JOIN document_categories dc ON d.category_id = dc.id
         WHERE MATCH(d.title, d.description) AGAINST(? IN NATURAL LANGUAGE MODE)
-          ${dateFilter}
+          ${dateFilterCol('d.created_at')}
         ${orderBy}
         LIMIT ${RESULTS_PER_PAGE} OFFSET ${offset}
       `
-      params = [cleanSearchTerm, cleanSearchTerm]
+      params = [cleanSearchTerm, cleanSearchTerm, ...dateParams]
     }
 
     const results = await allQuery(sql, params)

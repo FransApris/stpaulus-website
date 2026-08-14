@@ -1,11 +1,16 @@
 import { runQuery, getQuery, allQuery } from '../../../database/db'
-import { requireAuth, hashPassword } from '../../../utils/auth'
+import { requireAuth, requireUserManagementPermission, hashPassword } from '../../../utils/auth'
 import { isCategoryUnlimited } from '../../../utils/quota'
 
 export default defineEventHandler(async (event) => {
   try {
     const decoded = requireAuth(event)
     const adminId = decoded.userId
+
+    // ✅ SECURITY FIX: Gate-1 — requireUserManagementPermission must be called
+    // BEFORE reading the body or performing any role-specific checks.
+    // This ensures even authenticated non-admin users are rejected immediately.
+    await requireUserManagementPermission(event)
 
     // Check admin's role using RBAC
     const admin = await getQuery(

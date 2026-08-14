@@ -12,9 +12,9 @@
 
 export default defineEventHandler(async (event) => {
   // ── KEAMANAN: Hanya izinkan dari localhost ─────────────────────────────
-  const ip =
-    event.node.req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ||
-    event.node.req.socket?.remoteAddress ||
+  const ip: string =
+    event.node.req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() ??
+    event.node.req.socket?.remoteAddress ??
     'unknown'
 
   // Hanya izinkan akses lokal (hapus ini setelah selesai debug)

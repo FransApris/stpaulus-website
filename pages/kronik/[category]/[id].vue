@@ -47,7 +47,8 @@
 
         <!-- Narasi/Deskripsi Kegiatan -->
         <div class="prose prose-lg max-w-none">
-          <div v-if="entry.what_description" class="text-gray-700 leading-relaxed whitespace-pre-wrap" v-html="entry.what_description"></div>
+          <!-- Narasi/Deskripsi — sanitized with DOMPurify to prevent Stored XSS -->
+          <div v-if="entry.what_description" class="text-gray-700 leading-relaxed whitespace-pre-wrap" v-html="sanitizedDescription"></div>
           <p v-else class="text-gray-500 italic">Belum ada deskripsi untuk kegiatan ini.</p>
         </div>
 
@@ -77,6 +78,7 @@
 </template>
 
 <script setup>
+import DOMPurify from 'dompurify'
 definePageMeta({
   layout: 'default'
 })
@@ -101,6 +103,19 @@ const entry = computed(() => {
     console.warn('[Kronik Detail] No entry data found')
   }
   return data
+})
+
+// ✅ SECURITY: Sanitize description with DOMPurify to prevent Stored XSS
+// what_description may contain admin-authored HTML (e.g., bold, italic, line breaks)
+const sanitizedDescription = computed(() => {
+  if (!entry.value?.what_description) return ''
+  if (process.server) return entry.value.what_description
+  return DOMPurify.sanitize(entry.value.what_description, {
+    ALLOWED_TAGS: ['p', 'br', 'b', 'strong', 'i', 'em', 'u', 'ul', 'ol', 'li',
+                   'h2', 'h3', 'h4', 'blockquote', 'a', 'span', 'hr'],
+    ALLOWED_ATTR: ['href', 'title', 'class', 'target', 'rel'],
+    ALLOW_DATA_ATTR: false
+  })
 })
 
 const formatDate = (dateString) => {
