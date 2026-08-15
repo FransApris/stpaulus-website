@@ -432,7 +432,6 @@ ${faqContext}`
                     WHERE r.name LIKE ?
                       AND DATE(b.start_time) = ?
                       AND b.status = 'APPROVED'
-                      AND b.deleted_at IS NULL
                     ORDER BY b.start_time ASC
                   `, [`%${roomName}%`, requestedDate])
 
@@ -441,7 +440,7 @@ ${faqContext}`
                   const bookedRoomNamesAll = await allQuery(`
                     SELECT DISTINCT r.name
                     FROM bookings b JOIN rooms r ON b.room_id = r.id
-                    WHERE DATE(b.start_time) = ? AND b.status = 'APPROVED' AND b.deleted_at IS NULL
+                    WHERE DATE(b.start_time) = ? AND b.status = 'APPROVED'
                   `, [requestedDate])
                   const bookedNames = bookedRoomNamesAll.map((r: any) => r.name)
                   const alternativeRooms = (allRooms as any[]).filter((r: any) => !bookedNames.includes(r.name))
@@ -455,7 +454,7 @@ ${faqContext}`
                   })
                 } catch (e: any) {
                   console.error('[Chatbot] Error querying room availability:', e.message)
-                  functionResult = JSON.stringify({ error: 'Gagal mengambil data ketersediaan ruangan dari database.' })
+                  functionResult = JSON.stringify({ error: `Gagal mengambil data ruangan: ${e.message}` })
                 }
               }
 
@@ -484,7 +483,7 @@ ${faqContext}`
                          r.name as room_name
                   FROM bookings b
                   JOIN rooms r ON b.room_id = r.id
-                  WHERE b.deleted_at IS NULL AND b.status = 'APPROVED'
+                  WHERE b.status = 'APPROVED'
                   ${qp.cond}
                   ORDER BY b.start_time ASC LIMIT 20
                 `, qp.params)
@@ -502,7 +501,7 @@ ${faqContext}`
                 }
               } catch (e: any) {
                 console.error('[Chatbot] Error querying bookings:', e.message)
-                functionResult = JSON.stringify({ error: 'Gagal mengambil data agenda dari database.' })
+                functionResult = JSON.stringify({ error: `Gagal mengambil data agenda dari database: ${e.message}` })
               }
             }
           } else if (name === 'search_website_content') {
