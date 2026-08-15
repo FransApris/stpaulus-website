@@ -616,9 +616,17 @@ ${faqContext}`
 
       } catch (geminiError: any) {
         console.warn('[Chatbot] Gemini API error, falling back to keyword matching:', geminiError.message)
-        let fallbackMsg = 'Mohon maaf, layanan AI untuk pengecekan data saat ini sedang sibuk. (Error: ' + geminiError.message + ')'
-        if (geminiError.message && (geminiError.message.includes('403') || geminiError.message.includes('API_KEY_INVALID'))) {
-          fallbackMsg = 'Mohon maaf, fitur AI tidak dapat diakses saat ini karena API Key tidak valid atau tidak memiliki izin (403 Forbidden). Silakan hubungi admin.'
+        
+        // Default error
+        let fallbackMsg = 'Mohon maaf, layanan AI untuk pengecekan data saat ini sedang sibuk atau mengalami gangguan. Silakan coba beberapa saat lagi.'
+        
+        // Handle specific errors gracefully without leaking raw code/JSON
+        if (geminiError.message) {
+          if (geminiError.message.includes('403') || geminiError.message.includes('API_KEY_INVALID')) {
+            fallbackMsg = 'Mohon maaf, fitur AI tidak dapat diakses saat ini karena API Key tidak valid. Silakan hubungi admin.'
+          } else if (geminiError.message.includes('429') || geminiError.message.includes('quota')) {
+            fallbackMsg = 'Mohon maaf, AI sedang memproses terlalu banyak permintaan (melebihi limit kuota server). Silakan tunggu sekitar 1-2 menit dan coba lagi.'
+          }
         }
         
         if (requiresForcedTool) {
