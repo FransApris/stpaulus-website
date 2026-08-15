@@ -558,8 +558,12 @@ ${faqContext}`
             }
           }
         } else {
-          const matchResult = findBestMatch(sanitizedMessage, faqs)
-          response = { reply: matchResult.answer, has_action: false }
+          if (requiresForcedTool) {
+            response = { reply: 'Mohon maaf, sistem pengecekan jadwal/ruangan saat ini sedang sibuk. Silakan coba beberapa saat lagi atau hubungi Sekretariat Paroki.', has_action: false }
+          } else {
+            const matchResult = findBestMatch(sanitizedMessage, faqs)
+            response = { reply: matchResult.answer, has_action: false }
+          }
         }
 
         // Cleanup: hapus JSON artifacts yang bocor ke dalam reply
@@ -571,13 +575,21 @@ ${faqContext}`
 
       } catch (geminiError: any) {
         console.warn('[Chatbot] Gemini API error, falling back to keyword matching:', geminiError.message)
-        const matchResult = findBestMatch(sanitizedMessage, faqs)
-        response = { reply: matchResult.answer, has_action: false }
+        if (requiresForcedTool) {
+          response = { reply: 'Mohon maaf, layanan AI untuk pengecekan data saat ini sedang sibuk atau mengalami gangguan. Silakan coba beberapa saat lagi.', has_action: false }
+        } else {
+          const matchResult = findBestMatch(sanitizedMessage, faqs)
+          response = { reply: matchResult.answer, has_action: false }
+        }
       }
     } else {
       // Tidak ada API key — gunakan keyword matching saja
-      const matchResult = findBestMatch(sanitizedMessage, faqs)
-      response = { reply: matchResult.answer, has_action: false }
+      if (requiresForcedTool) {
+        response = { reply: 'Fitur integrasi AI belum dikonfigurasi. Silakan hubungi Sekretariat Paroki untuk info jadwal dan ruangan.', has_action: false }
+      } else {
+        const matchResult = findBestMatch(sanitizedMessage, faqs)
+        response = { reply: matchResult.answer, has_action: false }
+      }
     }
 
     // Update usage count (non-blocking)
