@@ -344,7 +344,7 @@ ${faqContext}`
           }, [])
 
         const model = genAI.getGenerativeModel({
-          model: 'gemini-3.7-flash',
+          model: 'gemini-3.5-flash',
           systemInstruction,
           tools: tools as any,
           // mode: 'ANY' dihapus karena menyebabkan infinite tool call loop di turn kedua
