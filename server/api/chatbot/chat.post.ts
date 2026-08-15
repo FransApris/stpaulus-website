@@ -389,15 +389,8 @@ ${faqContext}`
 
         let candidate = result.response.candidates?.[0]
 
-        // STEP 2: Proses function calls jika ada
-        // FIX: batasi loop maksimal 3 iterasi untuk mencegah infinite loop
-        let functionCallIterations = 0
-        const MAX_FUNCTION_CALL_ITERATIONS = 3
-        while (
-          functionCallIterations < MAX_FUNCTION_CALL_ITERATIONS &&
-          candidate?.content?.parts?.some((p: any) => p.functionCall)
-        ) {
-          functionCallIterations++
+        // STEP 2: Proses function calls jika ada (Maksimal 1 iterasi untuk cegah infinite loop)
+        if (candidate?.content?.parts?.some((p: any) => p.functionCall)) {
           const functionCallParts = candidate.content.parts.filter((p: any) => p.functionCall)
           const allFunctionResults: string[] = []
 
@@ -530,8 +523,6 @@ ${faqContext}`
               }
             }
 
-            // FIX: jika functionResult masih kosong (function name tidak dikenal),
-            // kirim pesan error agar Gemini tidak hang menunggu respons
             if (!functionResult) {
               functionResult = JSON.stringify({ error: `Unknown function: ${name}` })
             }
@@ -539,12 +530,47 @@ ${faqContext}`
             allFunctionResults.push(functionResult)
           }
 
-          // STEP 3: Kirim hasil function call kembali ke Gemini sebagai pesan konteks
-          // Format ini kompatibel dengan Gemini 3.x dan mencegah error "Role 'function' is not supported"
+          // STEP 3: Rangkum hasil tanpa tools untuk mencegah infinite loop
           const summaryPrompt = `[HASIL SISTEM DATABASE]:\n${allFunctionResults.join('\n\n')}\n\nTolong rangkum hasil pengecekan database di atas dan berikan jawaban yang ramah untuk umat dalam format JSON yang diminta.`
           
+          const modelWithoutTools = genAI.getGenerativeModel({
+            model: 'gemini-3.5-flash',
+            systemInstruction,
+            generationConfig: {
+              temperature: 0.2,
+              topP: 0.8,
+              maxOutputTokens: 1000,
+              responseMimeType: 'application/json',
+              responseSchema: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  reply: { type: SchemaType.STRING, description: 'Jawaban untuk pengguna' },
+                  has_action: { type: SchemaType.BOOLEAN, description: 'Apakah ada tombol navigasi' },
+                  actions: {
+                    type: SchemaType.ARRAY,
+                    items: {
+                      type: SchemaType.OBJECT,
+                      properties: {
+                        button_text: { type: SchemaType.STRING },
+                        target_route: { type: SchemaType.STRING }
+                      }
+                    }
+                  }
+                },
+                required: ['reply', 'has_action']
+              }
+            }
+          })
+
+          const summaryContents = [
+            ...geminiHistory,
+            { role: 'user', parts: [{ text: sanitizedMessage }] },
+            candidate.content,
+            { role: 'user', parts: [{ text: summaryPrompt }] }
+          ]
+
           result = await withTimeout(
-            chat.sendMessage(summaryPrompt),
+            modelWithoutTools.generateContent({ contents: summaryContents }),
             20000,
             'Gemini function-result summarization'
           )
