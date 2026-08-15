@@ -7,9 +7,28 @@ export function invalidateFAQCache() {
   clearFAQCache()
 }
 
+import fs from 'fs'
+import path from 'path'
+
 function getGeminiClient(): GoogleGenerativeAI | null {
   const config = useRuntimeConfig()
-  const apiKey = config.geminiApiKey || process.env.GEMINI_API_KEY
+  let apiKey = config.geminiApiKey || process.env.GEMINI_API_KEY
+  
+  if (!apiKey) {
+    try {
+      const envPath = path.resolve(process.cwd(), '.env')
+      if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf8')
+        const match = envContent.match(/^GEMINI_API_KEY=(.*)$/m)
+        if (match && match[1]) {
+          apiKey = match[1].trim()
+        }
+      }
+    } catch (e) {
+      console.warn('[Chatbot] Error reading .env file:', e)
+    }
+  }
+
   if (!apiKey) {
     console.warn('[Chatbot] GEMINI_API_KEY tidak dikonfigurasi — mode FAQ-only')
     return null
@@ -325,7 +344,7 @@ ${faqContext}`
           }, [])
 
         const model = genAI.getGenerativeModel({
-          model: 'gemini-2.0-flash',
+          model: 'gemini-2.5-flash',
           systemInstruction,
           tools: tools as any,
           // Jika pertanyaan terkait agenda/ruangan, paksa model memanggil salah satu tool
@@ -575,8 +594,13 @@ ${faqContext}`
 
       } catch (geminiError: any) {
         console.warn('[Chatbot] Gemini API error, falling back to keyword matching:', geminiError.message)
+        let fallbackMsg = 'Mohon maaf, layanan AI untuk pengecekan data saat ini sedang sibuk atau mengalami gangguan. Silakan coba beberapa saat lagi.'
+        if (geminiError.message && (geminiError.message.includes('403') || geminiError.message.includes('API_KEY_INVALID'))) {
+          fallbackMsg = 'Mohon maaf, fitur AI tidak dapat diakses saat ini karena API Key tidak valid atau tidak memiliki izin (403 Forbidden). Silakan hubungi admin.'
+        }
+        
         if (requiresForcedTool) {
-          response = { reply: 'Mohon maaf, layanan AI untuk pengecekan data saat ini sedang sibuk atau mengalami gangguan. Silakan coba beberapa saat lagi.', has_action: false }
+          response = { reply: fallbackMsg, has_action: false }
         } else {
           const matchResult = findBestMatch(sanitizedMessage, faqs)
           response = { reply: matchResult.answer, has_action: false }
