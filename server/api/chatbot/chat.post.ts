@@ -352,7 +352,26 @@ ${faqContext}`
           generationConfig: {
             temperature: 0.2,
             topP: 0.8,
-            maxOutputTokens: 1000
+            maxOutputTokens: 1000,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: SchemaType.OBJECT,
+              properties: {
+                reply: { type: SchemaType.STRING, description: 'Jawaban untuk pengguna' },
+                has_action: { type: SchemaType.BOOLEAN, description: 'Apakah ada tombol navigasi' },
+                actions: {
+                  type: SchemaType.ARRAY,
+                  items: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      button_text: { type: SchemaType.STRING },
+                      target_route: { type: SchemaType.STRING }
+                    }
+                  }
+                }
+              },
+              required: ['reply', 'has_action']
+            }
           }
         })
 
