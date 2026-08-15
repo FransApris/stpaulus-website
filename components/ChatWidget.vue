@@ -325,7 +325,7 @@ const sendMessage = async () => {
     }))
 
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 30000) // Timeout dinaikkan ke 30 detik
+  const timeoutId = setTimeout(() => controller.abort(), 50000) // Timeout 50 detik (server max ~45 detik)
 
   try {
     const response = await $fetch('/api/chatbot/chat', {

@@ -37,7 +37,8 @@ export async function fetchCachedFAQs() {
   console.log('[Chatbot] Fetching fresh FAQs from database')
   try {
     const faqs = await allQuery(
-      'SELECT id, question, answer, keywords FROM chatbot_faqs WHERE is_active = 1'
+      // FIX: tambah kolom 'category' agar scoreFAQ dapat menggunakannya untuk scoring relevansi
+      'SELECT id, question, answer, keywords, category FROM chatbot_faqs WHERE is_active = 1'
     ) as any[]
     setFAQCache(faqs)
     return faqs

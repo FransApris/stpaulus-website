@@ -193,7 +193,7 @@ export default defineNuxtConfig({
             if (id.includes('node_modules')) {
               if (id.includes('@ckeditor')) return 'vendor-ckeditor'
               if (id.includes('xlsx')) return 'vendor-xlsx'
-              if (id.includes('@google/generative-ai') || id.includes('groq-sdk')) return 'vendor-ai'
+              if (id.includes('@google/generative-ai')) return 'vendor-ai'
               if (id.includes('@vueuse')) return 'vendor-vueuse'
               if (id.includes('vue-router') || id.includes('vue/dist') || id.includes('/vue/')) return 'vendor-vue'
             }
@@ -309,12 +309,7 @@ export default defineNuxtConfig({
       redirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/api/auth/callback'
     },
 
-    // Groq API configuration for chatbot
-    groq: {
-      apiKey: process.env.GROQ_API_KEY
-    },
-
-    // Google Gemini API configuration for AI narration
+    // Google Gemini API configuration for chatbot and AI narration
     geminiApiKey: process.env.GEMINI_API_KEY || '',
 
     // Google Photos API configuration for gallery integration
