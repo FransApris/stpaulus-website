@@ -401,7 +401,9 @@ ${faqContext}`
           const functionResponseParts: any[] = []
 
           for (const part of functionCallParts) {
-            const { name, args } = part.functionCall
+            const fc = part.functionCall
+            if (!fc) continue
+            const { name, args } = fc
             console.log('[Chatbot] Gemini calling function:', name, args)
 
             let functionResult = ''
