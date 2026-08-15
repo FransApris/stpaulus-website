@@ -460,7 +460,7 @@ ${faqContext}`
                 functionResult = JSON.stringify({ error: 'Format date SALAH. Anda harus mengirimkan format YYYY-MM-DD. Silakan panggil ulang function ini dengan format date yang benar.' })
               } else {
                 try {
-                  // Build parameterized query — gunakan params array, BUKAN string interpolation
+                const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
                 type QueryParts = { cond: string; params: any[] }
                 const qp: QueryParts = (() => {
                   if (requestedDate && keyword) return { cond: 'AND DATE(b.start_time) = ? AND b.event_name LIKE ?', params: [requestedDate, `%${keyword}%`] }
@@ -531,7 +531,7 @@ ${faqContext}`
           }
 
           // STEP 3: Rangkum hasil tanpa tools untuk mencegah infinite loop
-          const summaryPrompt = `[HASIL SISTEM DATABASE]:\n${allFunctionResults.join('\n\n')}\n\nTolong rangkum hasil pengecekan database di atas dan berikan jawaban yang ramah untuk umat dalam format JSON yang diminta.`
+          const summaryPrompt = `[HASIL SISTEM DATABASE]:\n${allFunctionResults.join('\n\n')}\n\nTolong rangkum hasil pengecekan database di atas dan berikan jawaban yang ramah untuk umat dalam format JSON yang diminta. PENTING: Jika hasil sistem berisi teks "error", maka Anda WAJIB menampilkan pesan error tersebut secara utuh huruf demi huruf (termasuk bahasa Inggris teknisnya jika ada) kepada umat agar kami bisa melakukan debugging.`
           
           const modelWithoutTools = genAI.getGenerativeModel({
             model: 'gemini-3.5-flash',
