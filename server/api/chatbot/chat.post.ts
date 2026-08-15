@@ -597,7 +597,7 @@ ${faqContext}`
 
       } catch (geminiError: any) {
         console.warn('[Chatbot] Gemini API error, falling back to keyword matching:', geminiError.message)
-        let fallbackMsg = 'Mohon maaf, layanan AI untuk pengecekan data saat ini sedang sibuk atau mengalami gangguan. Silakan coba beberapa saat lagi.'
+        let fallbackMsg = 'Mohon maaf, layanan AI untuk pengecekan data saat ini sedang sibuk. (Error: ' + geminiError.message + ')'
         if (geminiError.message && (geminiError.message.includes('403') || geminiError.message.includes('API_KEY_INVALID'))) {
           fallbackMsg = 'Mohon maaf, fitur AI tidak dapat diakses saat ini karena API Key tidak valid atau tidak memiliki izin (403 Forbidden). Silakan hubungi admin.'
         }
