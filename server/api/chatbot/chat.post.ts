@@ -154,6 +154,10 @@ export default defineEventHandler(async (event) => {
     console.warn(`[Chatbot] Message truncated from ${message.trim().length} to ${MAX_MESSAGE_LENGTH} chars`)
   }
 
+  // Deteksi server-side: paksa tool calling jika pertanyaan terkait ruangan/agenda
+  const AGENDA_ROOM_PATTERN = /ruang|kosong|tersedia|bebas|acara|kegiatan|agenda|katekumen|koor|rapat|latihan|meeting|booking|pesan|jadwal kegiatan|kapan ada|ada apa/i
+  const requiresForcedTool = AGENDA_ROOM_PATTERN.test(sanitizedMessage)
+
   try {
     const faqs = await fetchCachedFAQs()
     let response: any = { reply: '', has_action: false }
@@ -319,11 +323,6 @@ ${faqContext}`
             if (last && last.role === msg.role) return acc // skip consecutive same-role messages
             return [...acc, msg]
           }, [])
-
-        // Deteksi server-side: paksa tool calling jika pertanyaan terkait ruangan/agenda
-        // Ini mencegah Gemini menjawab dari pengetahuannya sendiri alih-alih cek database
-        const AGENDA_ROOM_PATTERN = /ruang|kosong|tersedia|bebas|acara|kegiatan|agenda|katekumen|koor|rapat|latihan|meeting|booking|pesan|jadwal kegiatan|kapan ada|ada apa/i
-        const requiresForcedTool = AGENDA_ROOM_PATTERN.test(sanitizedMessage)
 
         const model = genAI.getGenerativeModel({
           model: 'gemini-2.0-flash',
