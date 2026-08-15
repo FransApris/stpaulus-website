@@ -155,6 +155,23 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label = 'operation'): P
   return Promise.race([promise, deadline]).finally(() => clearTimeout(timer))
 }
 
+async function withRetry<T>(operation: () => Promise<T>, maxRetries = 2, delayMs = 3000): Promise<T> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation()
+    } catch (e: any) {
+      if (attempt === maxRetries) throw e
+      if (e.message && (e.message.includes('429') || e.message.includes('quota') || e.message.includes('503'))) {
+        console.warn(`[Retry] API rate limit/503 hit, attempt ${attempt}/${maxRetries}. Waiting ${delayMs}ms...`)
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      } else {
+        throw e // don't retry on other errors (like 400 or timeouts if we don't want to)
+      }
+    }
+  }
+  throw new Error('Unreachable')
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HANDLER UTAMA
 // ─────────────────────────────────────────────────────────────────────────────
@@ -381,11 +398,11 @@ ${faqContext}`
         const startTime = Date.now()
 
         // STEP 1: Kirim pesan user ke Gemini (timeout 25 detik)
-        let result = await withTimeout(
+        let result = await withRetry(() => withTimeout(
           chat.sendMessage(sanitizedMessage),
           25000,
           'Gemini initial call'
-        )
+        ), 3, 5000)
 
         let candidate = result.response.candidates?.[0]
 
@@ -569,11 +586,11 @@ ${faqContext}`
             { role: 'user', parts: [{ text: summaryPrompt }] }
           ]
 
-          result = await withTimeout(
+          result = await withRetry(() => withTimeout(
             modelWithoutTools.generateContent({ contents: summaryContents }),
             20000,
             'Gemini function-result summarization'
-          )
+          ), 3, 5000)
           candidate = result.response.candidates?.[0]
         }
 
