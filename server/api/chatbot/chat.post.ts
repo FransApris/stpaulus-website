@@ -399,7 +399,7 @@ ${faqContext}`
         ) {
           functionCallIterations++
           const functionCallParts = candidate.content.parts.filter((p: any) => p.functionCall)
-          const functionResponseParts: any[] = []
+          const allFunctionResults: string[] = []
 
           for (const part of functionCallParts) {
             const fc = part.functionCall
@@ -537,17 +537,15 @@ ${faqContext}`
               functionResult = JSON.stringify({ error: `Unknown function: ${name}` })
             }
 
-            functionResponseParts.push({
-              functionResponse: {
-                name,
-                response: { result: functionResult }
-              }
-            })
+            allFunctionResults.push(functionResult)
           }
 
-          // STEP 3: Kirim hasil function call kembali ke Gemini (timeout 20 detik)
+          // STEP 3: Kirim hasil function call kembali ke Gemini sebagai pesan konteks
+          // Format ini kompatibel dengan Gemini 3.x dan mencegah error "Role 'function' is not supported"
+          const summaryPrompt = `[HASIL SISTEM DATABASE]:\n${allFunctionResults.join('\n\n')}\n\nTolong rangkum hasil pengecekan database di atas dan berikan jawaban yang ramah untuk umat dalam format JSON yang diminta.`
+          
           result = await withTimeout(
-            chat.sendMessage(functionResponseParts),
+            chat.sendMessage(summaryPrompt),
             20000,
             'Gemini function-result summarization'
           )
