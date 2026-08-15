@@ -9,12 +9,12 @@ export function invalidateFAQCache() {
 
 function getGeminiClient(): GoogleGenerativeAI | null {
   const config = useRuntimeConfig()
-  const apiKey = config.geminiApiKey
+  const apiKey = config.geminiApiKey || process.env.GEMINI_API_KEY
   if (!apiKey) {
     console.warn('[Chatbot] GEMINI_API_KEY tidak dikonfigurasi — mode FAQ-only')
     return null
   }
-  return new GoogleGenerativeAI(apiKey)
+  return new GoogleGenerativeAI(apiKey as string)
 }
 
 const FALLBACK_CONTACT = 'Sekretariat Paroki (hubungi langsung di kantor atau lihat halaman Kontak kami)'
@@ -368,7 +368,8 @@ ${faqContext}`
           for (const part of functionCallParts) {
             const fc = part.functionCall
             if (!fc) continue
-            const { name, args } = fc
+            const name = fc.name
+            const args = fc.args as any
             console.log('[Chatbot] Gemini calling function:', name, args)
 
             let functionResult = ''

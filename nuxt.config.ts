@@ -37,8 +37,8 @@ export default defineNuxtConfig({
   logLevel: process.env.NODE_ENV === 'production' ? 'info' : 'info',
 
   // Disable inlineSSRStyles to prevent Nitro RollupError on entry-styles resolution
-  experimental: {
-    inlineSSRStyles: false
+  features: {
+    inlineStyles: false
   },
 
 
@@ -210,8 +210,8 @@ export default defineNuxtConfig({
   nitro: {
     compatibilityDate: '2025-11-09',
     // 🚀 RAILWAY FIX: Listen on dynamic PORT from Railway
-    port: parseInt(process.env.PORT || '3000'),
-    host: process.env.HOST || '0.0.0.0',
+    // port is automatically picked up from process.env.PORT in Nuxt/Nitro
+    // host is automatically picked up from process.env.HOST in Nuxt/Nitro
     externals: {
       inline: ['xlsx']
     },
@@ -221,9 +221,10 @@ export default defineNuxtConfig({
       asyncContext: true
     },
     // Increase body size limit for file uploads (e.g., 50MB)
-    bodyParser: {
-      maxBodyLength: 52428800 // 50MB in bytes
-    },
+    // In Nuxt 3 / Nitro, this is typically handled by server-side hooks or directly in API handlers using readMultipartFormData or readBody config
+    // bodyParser: {
+    //   maxBodyLength: 52428800 // 50MB in bytes
+    // },
     routeRules: {
       '/api/**': {
         cors: true,
