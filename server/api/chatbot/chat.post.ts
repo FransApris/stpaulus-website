@@ -347,10 +347,8 @@ ${faqContext}`
           model: 'gemini-2.5-flash',
           systemInstruction,
           tools: tools as any,
-          // Jika pertanyaan terkait agenda/ruangan, paksa model memanggil salah satu tool
-          toolConfig: requiresForcedTool ? {
-            functionCallingConfig: { mode: 'ANY' as any }
-          } : { functionCallingConfig: { mode: 'AUTO' as any } },
+          // mode: 'ANY' dihapus karena menyebabkan infinite tool call loop di turn kedua
+          toolConfig: { functionCallingConfig: { mode: 'AUTO' as any } },
           generationConfig: {
             temperature: 0.2,
             topP: 0.8,
