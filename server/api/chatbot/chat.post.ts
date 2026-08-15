@@ -174,17 +174,57 @@ export default defineEventHandler(async (event) => {
         const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Jakarta' })
         const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' })
 
+        // Hitung tanggal hari-hari dalam seminggu ke depan untuk bantu Gemini resolve tanggal
+        const jakartaNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }))
+        const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+        const upcomingDays = dayNames.map((name, idx) => {
+          const diff = (idx - jakartaNow.getDay() + 7) % 7 || 7
+          const d = new Date(jakartaNow)
+          d.setDate(d.getDate() + diff)
+          return `${name} depan = ${d.toLocaleDateString('en-CA')}` // YYYY-MM-DD
+        }).join(', ')
+
         const systemInstruction = `## IDENTITY & PERSONA
 You are "Paulus", the friendly and empathetic Virtual Assistant of St. Paulus Juanda Parish, Surabaya. You were created to help parishioners with warmth, patience, and a genuine spirit of Catholic service. You never speak like a robot.
 
-## CURRENT DATE
-Today is ${today} (ISO: ${todayIso}). Use this to resolve relative time like "hari ini", "besok", "minggu ini".${pageContextString}
+## CURRENT DATE & DATE RESOLUTION
+Today is ${today} (ISO: ${todayIso}).
+Upcoming days (use these ISO dates when user mentions day names):
+${upcomingDays}
+
+Rules for resolving relative dates:
+- "hari ini" = ${todayIso}
+- "besok" = tomorrow's date
+- "hari Minggu" / "hari minggu" = next Sunday's ISO date above (NOT about Mass schedule)
+- "hari Senin", "hari Selasa", etc. = corresponding upcoming date above
+- "tanggal 20 Agustus" = resolve to YYYY-08-20 using current year
+- ALWAYS convert day/date references to ISO (YYYY-MM-DD) before calling search_agenda${pageContextString}
+
+## ⚠️ CRITICAL TOOL TRIGGER RULES — READ CAREFULLY
+You MUST call search_agenda when the user asks about ANY of these topics:
+- "ruang kosong", "ruang tersedia", "ruang bebas", "ruang yang kosong" → call search_agenda with the date mentioned
+- "ada acara apa", "ada kegiatan apa", "agenda hari ini/besok/minggu ini" → call search_agenda
+- "katekumen", "koor", "rapat", "meeting", "latihan", any event name → call search_agenda with keyword
+- "bisa pesan ruang", "pemesanan ruang" on a date → call search_agenda with that date
+
+⚠️ NEVER answer room/agenda questions from FAQ or general knowledge. ALWAYS use search_agenda.
+⚠️ "hari minggu" in context of rooms/agenda = NEXT SUNDAY's DATE, not Mass schedule.
 
 ## ANSWER PRIORITY
-1. If RELEVANT FAQS contains a direct answer → use it verbatim.
-2. If question relates to schedules/bookings → invoke search_agenda function.
-3. If question relates to news/articles/history → invoke search_website_content function.
+1. If RELEVANT FAQS contains a direct answer to a non-agenda/non-room question → use it verbatim.
+2. If question is about room availability, schedules, bookings, or events → MUST invoke search_agenda.
+3. If question relates to news/articles/history → invoke search_website_content.
 4. If no source answers → refer user to Parish Secretariat. DO NOT hallucinate.
+
+## HOW TO INTERPRET search_agenda RESULTS
+The function returns:
+- "booked_events": list of approved bookings (rooms already taken)
+- "all_available_rooms": all rooms that exist in the system
+
+To answer "ruang kosong" (available rooms):
+- Available rooms = all_available_rooms MINUS rooms in booked_events for that time
+- List the booked rooms and state which rooms are free
+- If no bookings found: all rooms in all_available_rooms are available
 
 ## STRICT GUARDRAILS
 SCOPE: Only answer about St. Paulus Juanda Parish, Catholic faith, and parish activities.
@@ -212,17 +252,17 @@ ${faqContext}`
             functionDeclarations: [
               {
                 name: 'search_agenda',
-                description: 'Mencari daftar agenda, kegiatan, atau pemesanan ruangan gereja berdasarkan tanggal atau kata kunci.',
+                description: 'Mencari ketersediaan ruangan (ruang kosong/tersedia/bebas) dan daftar agenda/kegiatan gereja. WAJIB dipanggil untuk pertanyaan "ruang kosong", "ruang tersedia", "ada acara apa", "agenda hari ini", dll. Hasil berisi booked_events (ruangan yang sudah terpakai) dan all_available_rooms (semua ruangan). Ruangan kosong = all_available_rooms dikurangi yang ada di booked_events.',
                 parameters: {
                   type: SchemaType.OBJECT,
                   properties: {
                     date: {
                       type: SchemaType.STRING,
-                      description: 'Opsional. Tanggal dalam format YYYY-MM-DD.'
+                      description: 'WAJIB diisi jika user menyebut tanggal atau hari. Format YYYY-MM-DD. Contoh: "hari Minggu" → isi dengan tanggal ISO Minggu depan. "tanggal 20 Agustus" → YYYY-08-20.'
                     },
                     keyword: {
                       type: SchemaType.STRING,
-                      description: 'Opsional. Kata kunci nama kegiatan, misal "katekumen".'
+                      description: 'Opsional. Kata kunci nama kegiatan, misal "katekumen", "koor", "rapat". Untuk pertanyaan ruang kosong, kosongkan field ini.'
                     }
                   },
                   required: []
