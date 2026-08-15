@@ -398,6 +398,8 @@ ${faqContext}`
 
               if (!roomName || !requestedDate) {
                 functionResult = JSON.stringify({ error: 'room_name dan date wajib diisi untuk check_room_availability.' })
+              } else if (!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
+                functionResult = JSON.stringify({ error: 'Format date SALAH. Anda harus mengirimkan format YYYY-MM-DD. Silakan panggil ulang function ini dengan format date yang benar.' })
               } else {
                 try {
                   // Cari booking pada ruangan tertentu di tanggal tsb
@@ -443,8 +445,11 @@ ${faqContext}`
               const requestedDate = args?.date
               const keyword = args?.keyword
 
-              try {
-                // Build parameterized query — gunakan params array, BUKAN string interpolation
+              if (requestedDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
+                functionResult = JSON.stringify({ error: 'Format date SALAH. Anda harus mengirimkan format YYYY-MM-DD. Silakan panggil ulang function ini dengan format date yang benar.' })
+              } else {
+                try {
+                  // Build parameterized query — gunakan params array, BUKAN string interpolation
                 type QueryParts = { cond: string; params: any[] }
                 const qp: QueryParts = (() => {
                   if (requestedDate && keyword) return { cond: 'AND DATE(b.start_time) = ? AND b.event_name LIKE ?', params: [requestedDate, `%${keyword}%`] }
@@ -480,8 +485,8 @@ ${faqContext}`
                 console.error('[Chatbot] Error querying bookings:', e.message)
                 functionResult = JSON.stringify({ error: 'Gagal mengambil data agenda dari database.' })
               }
-
-            } else if (name === 'search_website_content') {
+            }
+          } else if (name === 'search_website_content') {
               const keyword = args?.keyword || ''
               const contentType = args?.content_type || 'semua'
               const searchTerm = `%${keyword}%`
