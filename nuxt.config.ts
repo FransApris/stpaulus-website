@@ -28,12 +28,7 @@ export default defineNuxtConfig({
     enabled: true // Re-enable since we disabled devLogs
   },
 
-  // Suppress false-positive SSR warnings in development
-  vueCompilerOptions: {
-    suppressHydrationMismatchWarnings: true
-  },
 
-  // Reduce log noise - suppress non-critical warnings
   logLevel: process.env.NODE_ENV === 'production' ? 'info' : 'info',
 
   // Disable inlineSSRStyles to prevent Nitro RollupError on entry-styles resolution
