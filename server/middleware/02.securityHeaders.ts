@@ -75,6 +75,11 @@ export default defineEventHandler((event) => {
     // Framing: only allow same origin (replaces X-Frame-Options)
     "frame-ancestors 'self'",
 
+    // Frame/Child sources: allow Google Maps embeds via iframe
+    // Required for <MapEmbed> component that uses google.com/maps/d/embed
+    "frame-src 'self' https://www.google.com https://maps.google.com",
+    "child-src 'self' https://www.google.com https://maps.google.com",
+
     // Workers (Service Workers, Web Workers): only self
     "worker-src 'self' blob:",
   ].join('; ')
@@ -99,8 +104,10 @@ export default defineEventHandler((event) => {
   setHeader(event, 'X-XSS-Protection', '1; mode=block')
 
   // ── 7. Permissions Policy ────────────────────────────────────────────────
-  // Disable access to sensitive device APIs not used by this website
-  setHeader(event, 'Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), display-capture=()')
+  // Disable access to sensitive device APIs not used by this website.
+  // geolocation=(self) diperlukan agar <MapEmbed> getDirections() dapat meminta
+  // koordinat pengguna untuk navigasi ke lokasi paroki.
+  setHeader(event, 'Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=(), display-capture=()')
 
   // ── 8. Cross-Domain Policy ───────────────────────────────────────────────
   setHeader(event, 'X-Permitted-Cross-Domain-Policies', 'none')
