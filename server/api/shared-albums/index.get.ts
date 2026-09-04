@@ -37,7 +37,8 @@ export default defineEventHandler(async (event) => {
     if (activeOnly) {
       sql += ' WHERE is_active = TRUE';
     }
-    sql += ' ORDER BY display_order ASC, created_at DESC';
+    // Urutkan dari album terbaru ke terlama (kronologis)
+    sql += ' ORDER BY created_at DESC';
 
     const [albums] = await connection.query(sql);
     const normalizedAlbums = (albums as any[]).map((album) => ({

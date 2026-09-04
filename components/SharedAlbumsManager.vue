@@ -72,11 +72,6 @@
             </small>
           </div>
 
-          <div class="form-group">
-            <label>Urutan Tampilan</label>
-            <input v-model.number="formData.display_order" type="number" min="0" />
-            <small class="help-text">Album dengan angka lebih kecil akan tampil lebih dulu</small>
-          </div>
 
           <div class="form-group checkbox">
             <label>
@@ -136,7 +131,6 @@
           <h3>{{ album.title }}</h3>
           <p v-if="album.description" class="description">{{ album.description }}</p>
           <small class="metadata">
-            Urutan: {{ album.display_order }} |
             Dibuat: {{ formatDate(album.created_at) }}
           </small>
         </div>
@@ -189,8 +183,7 @@ const formData = ref({
   description: '',
   share_url: '',
   thumbnail_url: '',
-  is_active: true,
-  display_order: 0
+  is_active: true
 });
 
 const toast = ref({
@@ -200,10 +193,8 @@ const toast = ref({
 });
 
 const sortedAlbums = computed(() => {
+  // Urutkan dari tanggal terbaru ke terlama (kronologis terbalik)
   return [...albums.value].sort((a, b) => {
-    if (a.display_order !== b.display_order) {
-      return a.display_order - b.display_order;
-    }
     return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
   });
 });
@@ -263,8 +254,7 @@ const editAlbum = (album: Album) => {
     description: album.description || '',
     share_url: album.share_url,
     thumbnail_url: album.thumbnail_url || '',
-    is_active: album.is_active,
-    display_order: album.display_order
+    is_active: album.is_active
   };
 };
 
@@ -308,8 +298,7 @@ const closeForm = () => {
     description: '',
     share_url: '',
     thumbnail_url: '',
-    is_active: true,
-    display_order: 0
+    is_active: true
   };
   thumbnailError.value = false;
 };
