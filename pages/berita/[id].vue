@@ -376,17 +376,27 @@ const showToastMessage = (message, type = 'success') => {
   color: #374151;
   word-break: break-word;
   overflow-wrap: break-word;
-}
-
-.article-content p {
-  margin-bottom: 1.25rem;
+  font-size: 1rem; /* 16px default */
   line-height: 1.8;
 }
 
-.article-content h1,
-.article-content h2,
-.article-content h3,
-.article-content h4 {
+/* ─── :deep() diperlukan agar style scoped bisa masuk elemen v-html ─────── */
+
+:deep(.article-content) p {
+  margin-bottom: 1.25rem;
+  line-height: 1.8;
+  font-size: 1rem; /* 16px */
+}
+
+/* Paksa semua span CKEditor min 16px — inline style dari CKEditor pakai span */
+:deep(.article-content) span[style*="font-size"] {
+  font-size: max(1rem, 1rem) !important;
+}
+
+:deep(.article-content) h1,
+:deep(.article-content) h2,
+:deep(.article-content) h3,
+:deep(.article-content) h4 {
   font-weight: 700;
   margin-top: 1.75rem;
   margin-bottom: 0.75rem;
@@ -394,22 +404,23 @@ const showToastMessage = (message, type = 'success') => {
   line-height: 1.3;
 }
 
-.article-content h1 { font-size: 1.75rem; }
-.article-content h2 { font-size: 1.4rem; }
-.article-content h3 { font-size: 1.2rem; }
+:deep(.article-content) h1 { font-size: 1.75rem; }
+:deep(.article-content) h2 { font-size: 1.4rem; }
+:deep(.article-content) h3 { font-size: 1.2rem; }
 
-.article-content ul,
-.article-content ol {
+:deep(.article-content) ul,
+:deep(.article-content) ol {
   margin-left: 1.25rem;
   margin-bottom: 1.25rem;
 }
 
-.article-content li {
+:deep(.article-content) li {
   margin-bottom: 0.5rem;
+  font-size: 1rem;
 }
 
 /* Responsive elements inside rich text */
-.article-content img {
+:deep(.article-content) img {
   max-width: 100% !important;
   height: auto !important;
   border-radius: 0.75rem;
@@ -417,14 +428,14 @@ const showToastMessage = (message, type = 'success') => {
   object-fit: cover;
 }
 
-.article-content iframe,
-.article-content video {
+:deep(.article-content) iframe,
+:deep(.article-content) video {
   max-width: 100% !important;
   border-radius: 0.75rem;
   margin: 1rem 0;
 }
 
-.article-content table {
+:deep(.article-content) table {
   width: 100% !important;
   display: block;
   overflow-x: auto;

@@ -260,7 +260,9 @@ function buildConfig(plugins) {
     },
 
     fontSize: {
-      options: [10, 12, 'default', 16, 18, 20, 24, 28, 32],
+      // 'default' = ukuran default editor = 16px (sesuai font-size di CSS editor)
+      // Opsi diurutkan dari kecil ke besar; hilangkan 10px agar tidak terlalu kecil
+      options: [12, 14, 'default', 18, 20, 24, 28, 32, 36],
       supportAllValues: false,
     },
 
