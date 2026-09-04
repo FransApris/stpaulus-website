@@ -4,8 +4,8 @@
 .article-content {
   @apply prose prose-lg max-w-none text-gray-800;
   
-  /* Fallback jika prose tidak ada */
-  font-size: 1.125rem;
+  /* Default font size 16px agar teks konten terbaca nyaman */
+  font-size: 1rem !important;   /* 16px */
   line-height: 1.75;
   color: #1f2937;
 }
@@ -92,6 +92,32 @@
 /* Paragraphs */
 .article-content p {
   @apply mb-4 leading-relaxed text-gray-700;
+  font-size: 1rem !important;   /* Paksa 16px, override prose-lg yang bisa lebih kecil */
+  line-height: 1.8 !important;
+}
+
+/* Override span font-size dari CKEditor agar MINIMUM 16px */
+/* Konten lama yang tersimpan dengan font kecil akan dipaksa ke 16px */
+/* CATATAN: !important dibutuhkan karena inline style selalu menang di cascade biasa */
+.article-content span[style*="font-size"] {
+  font-size: 1rem !important;  /* Force 16px untuk semua span font-size kecil */
+}
+
+/* Izinkan ukuran LEBIH BESAR dari default yang diset user */
+/* CKEditor memakai class ck-font-size-* atau inline px */
+.article-content span[style*="font-size: 18"],
+.article-content span[style*="font-size: 20"],
+.article-content span[style*="font-size: 24"],
+.article-content span[style*="font-size: 28"],
+.article-content span[style*="font-size: 32"],
+.article-content span[style*="font-size: 36"] {
+  font-size: revert !important; /* Kembalikan ke nilai asli untuk ukuran besar */
+}
+
+/* Semua teks inline di dalam article-content minimal 16px */
+.article-content p span,
+.article-content li span {
+  font-size: inherit;  /* inherit dari p/li yang sudah 16px */
 }
 
 /* Text Alignment Support */
