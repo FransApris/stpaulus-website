@@ -165,7 +165,7 @@
                 </a>
                 <!-- WhatsApp -->
                 <a
-                  href="https://wa.me/6285649779883"
+                  href="https://wa.me/6281334960525"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="flex items-center gap-3 text-sm text-gray-600 hover:text-[#882f1d] transition-colors group"

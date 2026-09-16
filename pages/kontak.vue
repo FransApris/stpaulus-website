@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <PageMaintenance v-if="isMaintenance" title="Kontak & Sekretariat" />
     <div v-else>
@@ -131,7 +131,7 @@ const submitForm = async () => {
 }
 
 const openWhatsApp = () => {
-  const whatsappUrl = 'https://wa.me/6285649779883'
+  const whatsappUrl = 'https://wa.me/6281334960525'
   window.open(whatsappUrl, '_blank')
 }
 
