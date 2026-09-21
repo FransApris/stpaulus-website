@@ -1,6 +1,6 @@
-<template>
+﻿<template>
   <div>
-    <PageMaintenance v-if="isMaintenance" title="Berita Paroki" />
+    <PageMaintenance v-if="isMaintenance" pageTitle="Berita Paroki" />
     <div v-else>
       <ClientOnly>
         <ReadingProgressBar />
@@ -122,7 +122,7 @@
             </span>
           </button>
 
-          <!-- ✅ ShareButton Component (menggantikan tombol Share + Copy Link lama) -->
+          <!-- ✅ ShareButton Component -->
           <ShareButton
             :title="post.title"
             :description="post.excerpt"
@@ -133,7 +133,6 @@
           />
         </div>
       </section>
-
 
       <!-- Content -->
       <section class="container mx-auto px-4 max-w-4xl py-6 sm:py-8">
@@ -176,19 +175,6 @@
         Kembali ke Berita
       </NuxtLink>
     </div>
-
-    <!-- Toast Notification -->
-    <Transition name="slide-up">
-      <div 
-        v-if="showToast"
-        class="fixed bottom-24 md:bottom-8 left-4 right-4 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 bg-gray-900 text-white px-5 py-3 md:px-6 rounded-xl md:rounded-lg shadow-2xl z-[100000] flex items-center gap-3"
-      >
-        <svg v-if="toastType === 'success'" class="w-5 h-5 text-green-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        <span class="text-sm md:text-base font-medium">{{ toastMessage }}</span>
-      </div>
-    </Transition>
   </div>
     </div>
   </div>
@@ -196,18 +182,43 @@
 
 <script setup lang="ts">
 import DOMPurify from 'dompurify'
+import { useOgMeta } from '~/composables/useOgMeta'
+
+// ── Tipe data artikel dari API ─────────────────────────────────────────────────
+interface BeritaCategory {
+  id: number
+  name: string
+  slug: string
+}
+
+interface BeritaPost {
+  id: number
+  title: string
+  slug: string
+  excerpt: string | null
+  content: string
+  image: string | null
+  author: string
+  date: string
+  views_count: number
+  likes_count: number
+  shares_count: number
+  user_liked: boolean
+  categories: BeritaCategory[]
+}
+
+// ── Composables ────────────────────────────────────────────────────────────────
 const { isMaintenance } = useMaintenance('berita')
-const route = useRoute();
-const slug = route.params.id;
+const { success: toastSuccess, error: toastError } = useToast()
+const route = useRoute()
+const slug = route.params.id
 
-// Scroll-to-top sudah ditangani secara global oleh router.options.ts
-
-// Fetch data
-const { data: post, pending, error, refresh } = await useAsyncData(
+// ── Fetch data artikel ─────────────────────────────────────────────────────────
+const { data: post, pending, error, refresh } = await useAsyncData<BeritaPost | null>(
   `berita-${slug}`,
   async () => {
     try {
-      return await $fetch(`/api/berita/${slug}`)
+      return await $fetch<BeritaPost>(`/api/berita/${slug}`)
     } catch (err) {
       console.error('Failed to fetch news detail:', err)
       return null
@@ -217,26 +228,23 @@ const { data: post, pending, error, refresh } = await useAsyncData(
     default: () => null,
     transform: (data) => data || null
   }
-);
+)
 
 // ── Dynamic Open Graph / Twitter Card SEO ─────────────────────────────────────
 // Gambar artikel digunakan sebagai og:image saat tautan dibagikan ke WhatsApp/sosmed.
-// Jika artikel tidak memiliki gambar (post.value.image kosong/null),
-// logo paroki akan otomatis digunakan sebagai fallback oleh resolveAbsoluteImageUrl().
+// Jika artikel tidak memiliki gambar, logo paroki digunakan sebagai fallback.
 useOgMeta({
   title: post.value?.title || 'Berita Paroki St. Paulus Juanda',
   description: post.value?.excerpt || null,
-  image: post.value?.image || null,   // URL bisa relatif/absolut — di-resolve otomatis
+  image: post.value?.image || null,
   url: route.path,
   type: 'article',
 })
 
-// Reactive states
-
-// ✅ SECURITY: Sanitize rich-text content with DOMPurify to prevent Stored XSS
+// ── Sanitasi konten HTML (anti XSS) ───────────────────────────────────────────
 const sanitizedContent = computed(() => {
   if (!post.value?.content) return ''
-  if (process.server) return post.value.content // SSR: render raw, CSP is the backstop
+  if (process.server) return post.value.content // SSR: render raw, CSP sebagai backstop
   return DOMPurify.sanitize(post.value.content, {
     ALLOWED_TAGS: ['p','br','b','strong','i','em','u','s','strike','ul','ol','li',
                    'h1','h2','h3','h4','h5','h6','blockquote','pre','code',
@@ -247,62 +255,50 @@ const sanitizedContent = computed(() => {
     FORCE_BODY: false
   })
 })
-const isLiking = ref(false);
 
-// Toggle Like
+// ── State ──────────────────────────────────────────────────────────────────────
+const isLiking = ref(false)
+
+// ── Toggle Like ────────────────────────────────────────────────────────────────
 const toggleLike = async () => {
-  if (isLiking.value || !post.value) return;
+  if (isLiking.value || !post.value) return
 
-  isLiking.value = true;
+  isLiking.value = true
   try {
-    const response = await $fetch(`/api/news/${post.value.id}/like`, {
-      method: 'POST'
-    });
+    const response = await $fetch<{
+      success: boolean
+      action: string
+      likes_count: number
+      message: string
+    }>(`/api/news/${post.value.id}/like`, { method: 'POST' })
 
-    // Update local state
-    post.value.user_liked = response.action === 'like';
-    post.value.likes_count = response.likes_count;
-
-    // Show toast
-    showToastMessage(response.message);
+    post.value.user_liked = response.action === 'like'
+    post.value.likes_count = response.likes_count
+    toastSuccess(response.message)
   } catch (err) {
-    console.error('Error toggling like:', err);
-    showToastMessage('Gagal memproses like', 'error');
+    console.error('Error toggling like:', err)
+    toastError('Gagal memproses like')
   } finally {
-    isLiking.value = false;
+    isLiking.value = false
   }
-};
+}
 
-// ── Handler emit dari <ShareButton> — dipakai untuk tracking share ke API ──
+// ── Handler emit dari <ShareButton> — tracking share count ke API ──────────────
 const onPostShared = async (_method: 'native' | 'whatsapp' | 'copy') => {
-  if (!post.value) return;
+  if (!post.value) return
   try {
-    const response = await $fetch(`/api/news/${post.value.id}/share`, {
-      method: 'POST'
-    });
-    post.value.shares_count = response.shares_count;
+    const response = await $fetch<{ success: boolean; shares_count: number }>(
+      `/api/news/${post.value.id}/share`,
+      { method: 'POST' }
+    )
+    post.value.shares_count = response.shares_count
   } catch (err) {
-    console.error('Error recording share:', err);
+    console.error('Error recording share:', err)
   }
-};
+}
 </script>
 
 <style scoped>
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from {
-  transform: translate(-50%, 100px);
-  opacity: 0;
-}
-
-.slide-up-leave-to {
-  transform: translate(-50%, 100px);
-  opacity: 0;
-}
-
 .article-content {
   color: #374151;
   word-break: break-word;
