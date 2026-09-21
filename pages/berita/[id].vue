@@ -235,6 +235,18 @@ const { data: post, pending, error, refresh } = await useAsyncData(
   }
 );
 
+// ── Dynamic Open Graph / Twitter Card SEO ─────────────────────────────────────
+// Gambar artikel digunakan sebagai og:image saat tautan dibagikan ke WhatsApp/sosmed.
+// Jika artikel tidak memiliki gambar (post.value.image kosong/null),
+// logo paroki akan otomatis digunakan sebagai fallback oleh resolveAbsoluteImageUrl().
+useOgMeta({
+  title: post.value?.title || 'Berita Paroki St. Paulus Juanda',
+  description: post.value?.excerpt || null,
+  image: post.value?.image || null,   // URL bisa relatif/absolut — di-resolve otomatis
+  url: route.path,
+  type: 'article',
+})
+
 // Reactive states
 
 // ✅ SECURITY: Sanitize rich-text content with DOMPurify to prevent Stored XSS

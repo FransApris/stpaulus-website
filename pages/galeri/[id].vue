@@ -149,6 +149,22 @@ const { data: album, pending, error } = await useAsyncData(
   }
 );
 
+// ── Dynamic Open Graph / Twitter Card SEO ─────────────────────────────────────
+// Menggunakan cover_image album jika ada. Jika tidak, coba foto pertama dari album.
+// Fallback terakhir: logo paroki (ditangani otomatis oleh resolveAbsoluteImageUrl).
+const albumOgImage = album.value?.cover_image
+  || album.value?.photos?.[0]?.url
+  || album.value?.photos?.[0]?.photo_url
+  || null
+
+useOgMeta({
+  title: album.value?.title ? `${album.value.title} - Galeri Paroki St. Paulus Juanda` : 'Galeri Foto Paroki St. Paulus Juanda',
+  description: album.value?.description || null,
+  image: albumOgImage,
+  url: route.path,
+  type: 'website',
+})
+
 const totalPages = computed(() => {
   const total = album.value?.photos?.length || 0
   const pages = Math.ceil(total / pageLimit)
