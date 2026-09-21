@@ -223,9 +223,11 @@ const { data: _rawPost, pending, error, refresh } = await useAsyncData(
   `berita-${slug}`,
   async () => {
     try {
-      // 'as string' mencegah Nitro TypedInternalResponse loop (TS2589)
-      const data = await $fetch(`/api/berita/${slug}` as string)
-      return data as unknown as BeritaPost
+      // Gunakan $fetch via any untuk memutus Nitro TypedInternalResponse
+      // loop yang menyebabkan TS2589 "type instantiation excessively deep"
+      const fetchFn = $fetch as (url: string, opts?: object) => Promise<unknown>
+      const data = await fetchFn(`/api/berita/${slug}`)
+      return data as BeritaPost
     } catch (err) {
       console.error('Failed to fetch news detail:', err)
       return null as BeritaPost | null
