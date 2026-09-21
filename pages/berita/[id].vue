@@ -223,7 +223,8 @@ const { data: _rawPost, pending, error, refresh } = await useAsyncData(
   `berita-${slug}`,
   async () => {
     try {
-      const data = await $fetch(`/api/berita/${slug}`)
+      // 'as string' mencegah Nitro TypedInternalResponse loop (TS2589)
+      const data = await $fetch(`/api/berita/${slug}` as string)
       return data as unknown as BeritaPost
     } catch (err) {
       console.error('Failed to fetch news detail:', err)
