@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div>
     <PageMaintenance v-if="isMaintenance" pageTitle="Berita Paroki" />
     <div v-else>
@@ -183,6 +183,7 @@
 <script setup lang="ts">
 import DOMPurify from 'dompurify'
 import { useOgMeta } from '~/composables/useOgMeta'
+import { type Ref } from 'vue'
 
 // ── Tipe data artikel dari API ─────────────────────────────────────────────────
 interface BeritaCategory {
@@ -214,21 +215,28 @@ const route = useRoute()
 const slug = route.params.id
 
 // ── Fetch data artikel ─────────────────────────────────────────────────────────
-const { data: post, pending, error, refresh } = await useAsyncData<BeritaPost | null>(
+// Catatan: Jangan pakai generic <BeritaPost | null> pada useAsyncData karena
+// akan berkonflik dengan Nitro's TypedInternalResponse (TS2769/TS2589).
+// Solusi: gunakan 'as unknown as BeritaPost' di dalam handler → TypeScript
+// akan menyimpulkan tipe yang benar dari return value fungsi itu sendiri.
+const { data: _rawPost, pending, error, refresh } = await useAsyncData(
   `berita-${slug}`,
   async () => {
     try {
-      return await $fetch<BeritaPost>(`/api/berita/${slug}`)
+      const data = await $fetch(`/api/berita/${slug}`)
+      return data as unknown as BeritaPost
     } catch (err) {
       console.error('Failed to fetch news detail:', err)
-      return null
+      return null as BeritaPost | null
     }
   },
   {
-    default: () => null,
-    transform: (data) => data || null
+    default: (): BeritaPost | null => null,
   }
 )
+
+// Typed alias — post.value sekarang dikenali TypeScript sebagai BeritaPost | null
+const post = _rawPost as Ref<BeritaPost | null>
 
 // ── Dynamic Open Graph / Twitter Card SEO ─────────────────────────────────────
 // Gambar artikel digunakan sebagai og:image saat tautan dibagikan ke WhatsApp/sosmed.
