@@ -194,7 +194,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import DOMPurify from 'dompurify'
 const { isMaintenance } = useMaintenance('berita')
 const route = useRoute();
