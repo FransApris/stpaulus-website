@@ -90,12 +90,12 @@
 
       <!-- Social Actions -->
       <section class="container mx-auto px-4 max-w-4xl py-3 sm:py-4 sticky top-16 sm:top-20 z-10 bg-gray-50/95 backdrop-blur-sm">
-        <div class="grid grid-cols-3 gap-1.5 sm:flex sm:items-center sm:justify-between sm:gap-2 bg-white shadow-md rounded-xl p-2 sm:px-6 sm:py-3.5 w-full">
+        <div class="flex items-center justify-between gap-2 bg-white shadow-md rounded-xl p-2 sm:px-6 sm:py-3.5 w-full">
           <!-- Like Button -->
           <button
             @click="toggleLike"
             :disabled="isLiking"
-            class="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 text-xs sm:text-sm font-medium w-full sm:w-auto"
+            class="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 disabled:opacity-50 text-xs sm:text-sm font-medium"
             :class="{
               'text-red-500': post.user_liked,
               'text-gray-600': !post.user_liked
@@ -122,34 +122,18 @@
             </span>
           </button>
 
-          <!-- Share Button -->
-          <button
-            @click="shareNews"
-            :disabled="isSharing"
-            class="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 disabled:opacity-50 text-xs sm:text-sm font-medium w-full sm:w-auto"
-          >
-            <!-- Paper Plane Icon -->
-            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-            </svg>
-            <span>Share</span>
-            <span class="text-[10px] sm:text-xs bg-gray-100 px-1.5 py-0.5 rounded-full font-bold">
-              {{ post.shares_count }}
-            </span>
-          </button>
-
-          <!-- Copy Link -->
-          <button
-            @click="copyLink"
-            class="flex items-center justify-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-200 text-xs sm:text-sm font-medium w-full sm:w-auto"
-          >
-            <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-            </svg>
-            <span>{{ copied ? 'Copied!' : 'Copy' }}<span class="hidden sm:inline"> Link</span></span>
-          </button>
+          <!-- ✅ ShareButton Component (menggantikan tombol Share + Copy Link lama) -->
+          <ShareButton
+            :title="post.title"
+            :description="post.excerpt"
+            :count="post.shares_count"
+            label="Bagikan"
+            dropdown-align="bottom-right"
+            @shared="onPostShared"
+          />
         </div>
       </section>
+
 
       <!-- Content -->
       <section class="container mx-auto px-4 max-w-4xl py-6 sm:py-8">
@@ -264,11 +248,6 @@ const sanitizedContent = computed(() => {
   })
 })
 const isLiking = ref(false);
-const isSharing = ref(false);
-const copied = ref(false);
-const showToast = ref(false);
-const toastMessage = ref('');
-const toastType = ref('success');
 
 // Toggle Like
 const toggleLike = async () => {
@@ -294,77 +273,17 @@ const toggleLike = async () => {
   }
 };
 
-// Share News
-const shareNews = async () => {
-  if (isSharing.value || !post.value) return;
-
-  // Try native share API first
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: post.value.title,
-        text: post.value.excerpt,
-        url: window.location.href
-      });
-
-      // Record share
-      isSharing.value = true;
-      const response = await $fetch(`/api/news/${post.value.id}/share`, {
-        method: 'POST'
-      });
-      post.value.shares_count = response.shares_count;
-      showToastMessage('Berhasil share berita!');
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error('Error sharing:', err);
-      }
-    } finally {
-      isSharing.value = false;
-    }
-  } else {
-    // Fallback: Copy link
-    await copyLink();
-    
-    // Record share
-    isSharing.value = true;
-    try {
-      const response = await $fetch(`/api/news/${post.value.id}/share`, {
-        method: 'POST'
-      });
-      post.value.shares_count = response.shares_count;
-    } catch (err) {
-      console.error('Error recording share:', err);
-    } finally {
-      isSharing.value = false;
-    }
-  }
-};
-
-// Copy Link
-const copyLink = async () => {
+// ── Handler emit dari <ShareButton> — dipakai untuk tracking share ke API ──
+const onPostShared = async (_method: 'native' | 'whatsapp' | 'copy') => {
+  if (!post.value) return;
   try {
-    await navigator.clipboard.writeText(window.location.href);
-    copied.value = true;
-    showToastMessage('Link berhasil disalin!');
-    
-    setTimeout(() => {
-      copied.value = false;
-    }, 2000);
+    const response = await $fetch(`/api/news/${post.value.id}/share`, {
+      method: 'POST'
+    });
+    post.value.shares_count = response.shares_count;
   } catch (err) {
-    console.error('Error copying link:', err);
-    showToastMessage('Gagal menyalin link', 'error');
+    console.error('Error recording share:', err);
   }
-};
-
-// Show Toast
-const showToastMessage = (message, type = 'success') => {
-  toastMessage.value = message;
-  toastType.value = type;
-  showToast.value = true;
-
-  setTimeout(() => {
-    showToast.value = false;
-  }, 3000);
 };
 </script>
 
